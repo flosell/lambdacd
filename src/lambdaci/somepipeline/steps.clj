@@ -1,4 +1,5 @@
-(ns lambdaci.somepipeline.steps)
+(ns lambdaci.somepipeline.steps
+  (:use [clojure.java.shell :only [sh]]))
 
 (defn doCompile [a]
   (println "start compiling")
@@ -38,6 +39,7 @@
 
 (defn publishrpm [{artifacts :artifacts}]
   (println "Publishing artifacts")
+;  (println (:out (sh "bash" "-c" "echo foo")))
   (Thread/sleep 1000)
   (println "Published artifact 1.75.19876")
   { :properties { :nexus-version "1.75.19876"}})
