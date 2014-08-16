@@ -1,9 +1,6 @@
 (ns todopipeline.steps
-  (:require [clojure.java.shell :as jsh]))
+  (:require [lambdaci.shell :as shell]))
 
-;; utilities
-(defn mysh [cwd cmd]
-  (jsh/sh "bash" "-c" cmd :dir cwd))
 
 ;; pipeline steps
 
@@ -16,9 +13,10 @@
 
 ;; TODO: this cannot handle error cases in the first two scripts
 (defn client-package [{cwd :cwd}]
-  (mysh cwd "bower install")
-  (mysh cwd "./package.sh")
-  (mysh cwd "./publish.sh"))
+  (shell/bash cwd
+    "bower install"
+    "./package.sh"
+    "./publish.sh"))
 
 
 ;; ----------------------------------------
