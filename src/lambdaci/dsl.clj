@@ -27,4 +27,5 @@
 
 
 (defn run [pipeline]
-  (execute-steps pipeline {}))
+  (let [runnable-pipeline (map eval pipeline)]
+    (execute-steps runnable-pipeline {})))
