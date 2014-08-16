@@ -28,6 +28,13 @@
     "lein uberjar"
     "./publish.sh"))
 
+(defn server-deploy-ci [{cwd :cwd}]
+  (shell/bash cwd "./deploy.sh backend_ci /tmp/mockrepo/server-snapshot.tar.gz"))
+
+(defn client-deploy-ci [{cwd :cwd}]
+  (shell/bash cwd "./deploy.sh frontend_ci /tmp/mockrepo/client-snapshot.tar.gz"))
+
+
 ;; ----------------------------------------
 
 (defn doCompile [a]
