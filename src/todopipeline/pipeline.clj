@@ -5,7 +5,7 @@
 
 
 
-(def client-pipeline
+(def pipeline
   `(
     (in-parallel
       (in-cwd "/Users/fsellmay/Code/pipeline-as-code/todo-backend-client" ;; I can't checkout yet so this will to to set up a working dir
