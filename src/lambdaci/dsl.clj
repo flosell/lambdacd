@@ -1,8 +1,7 @@
 (ns lambdaci.dsl)
 
-(defn defbuild [trigger steps]
-  {:trigger trigger
-   :steps steps})
+(defn defbuild [& steps]
+  {:steps steps})
 
 (defn execute [& fns]
   fns)
@@ -22,7 +21,4 @@
 
 
 (defn run [pipeline]
-  (let [triggerResult ((:trigger pipeline))
-        triggerChanged (:changed triggerResult)]
-    (if triggerChanged
-      (execute-steps (:steps pipeline)))))
+  (execute-steps (:steps pipeline)))

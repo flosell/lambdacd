@@ -1,5 +1,27 @@
 (ns todopipeline.steps
-  (:use [clojure.java.shell :only [sh]]))
+  (:require [clojure.java.shell :as jsh]))
+
+;; utilities
+(defn mysh [cwd cmd]
+  (jsh/sh "bash" "-c" cmd :dir cwd))
+
+;; pipeline steps
+
+
+(defn cwd [specified-working-directory]
+  (fn [_]
+    {:cwd specified-working-directory }))
+
+
+
+;; TODO: this cannot handle error cases in the first two scripts
+(defn client-package [{cwd :cwd}]
+  (mysh cwd "bower install")
+  (mysh cwd "./package.sh")
+  (mysh cwd "./publish.sh"))
+
+
+;; ----------------------------------------
 
 (defn doCompile [a]
   (println "start compiling")
