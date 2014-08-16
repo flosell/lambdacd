@@ -1,7 +1,6 @@
 (ns lambdaci.core
   (:use [todopipeline.pipeline]
-        [lambdaci.dsl]
-        [lambdaci.git])
+        [lambdaci.dsl])
   (gen-class))
 
 

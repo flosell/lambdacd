@@ -1,6 +1,8 @@
-(ns lambdaci.master
+(ns lambdaci.playground
   (:require [clojure.tools.nrepl :as repl]
    :use [clojure.pprint]))
+
+;; Remote execution stuff
 
 (def repl-port 64772)
 
