@@ -13,9 +13,11 @@
     (println (str "output " step-result))
     step-result))
 
-(defn execute-steps [steps]
-  (reduce #(merge %1 (execute-step %2 %1)) {} steps))
-
+(defn execute-steps
+  ([steps]
+    (reduce #(merge %1 (execute-step %2 %1)) {} steps))
+  ([steps args]
+    (reduce #(merge %1 (execute-step %2 %1)) args steps)))
 (defn inParallel [& fns]
   (fn [_] (execute-steps fns))) ; FIXME?
 

@@ -1,13 +1,14 @@
 (ns todopipeline.steps
-  (:require [lambdaci.shell :as shell]))
+  (:require [lambdaci.shell :as shell]
+            [lambdaci.dsl :as dsl]))
 
 
 ;; pipeline steps
 
 
-(defn cwd [specified-working-directory]
+(defn in-cwd [specified-working-directory & steps]
   (fn [_]
-    {:cwd specified-working-directory }))
+    (dsl/execute-steps steps {:cwd specified-working-directory })))
 
 
 
@@ -18,6 +19,14 @@
     "./package.sh"
     "./publish.sh"))
 
+(defn server-test [{cwd :cwd}]
+  (shell/bash cwd
+    "lein test"))
+
+(defn server-package [{cwd :cwd}]
+  (shell/bash cwd
+    "lein uberjar"
+    "./publish.sh"))
 
 ;; ----------------------------------------
 
