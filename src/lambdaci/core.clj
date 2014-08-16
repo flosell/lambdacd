@@ -1,5 +1,5 @@
 (ns lambdaci.core
-  (:use [lambdaci.somepipeline.pipeline]
+  (:use [todopipeline.pipeline]
         [lambdaci.dsl]
         [lambdaci.git])
   (gen-class))

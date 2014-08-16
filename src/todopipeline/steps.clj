@@ -1,4 +1,4 @@
-(ns lambdaci.somepipeline.steps
+(ns todopipeline.steps
   (:use [clojure.java.shell :only [sh]]))
 
 (defn doCompile [a]

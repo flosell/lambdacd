@@ -1,8 +1,8 @@
-(ns lambdaci.somepipeline.pipeline
+(ns todopipeline.pipeline
   (:require [clojure.tools.nrepl :as repl]
    :use [lambdaci.dsl]
         [lambdaci.git]
-        [lambdaci.somepipeline.steps]))
+        [todopipeline.steps]))
 
 (def deploymentPipeline
   (defbuild
