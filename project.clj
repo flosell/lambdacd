@@ -5,5 +5,8 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/tools.nrepl "0.2.3"]
-                 [org.clojure/data.json "0.2.5"]]
+                 [org.clojure/data.json "0.2.5"]
+                 [compojure "1.1.8"]]
+  :ring {:handler lambdaci.server/app}
+  :plugins [[lein-ring "0.8.11"]]
   :main lambdaci.core)

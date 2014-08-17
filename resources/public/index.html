@@ -1,0 +1,24 @@
+<html>
+    <head>
+        <title>Pipelines</title>
+    </head>
+    <script src="lib/zepto.js"></script>
+    <script src="lib/callbacks.js"></script>
+    <script src="lib/deferred.js"></script>
+    <script src="js/pipeline-visualization.js"></script>
+    <body>
+        <h1>Your build pipeline</h1>
+        <div id="pipeline">
+            Please wait...
+            <!-- inserted by js -->
+        </div>
+        <script>
+            var pipelineElem = document.getElementById("pipeline");
+            $.ajax({url:"/api/pipeline"}).done(function(data) {
+                pipelineElem.innerHTML=pipelineHtml(data);
+            }).fail(function() {
+                pipelineElem.innerHTML="Something went wrong";
+            })
+        </script>
+    </body>
+</html>
