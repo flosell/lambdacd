@@ -3,10 +3,19 @@
   (:require [compojure.route :as route]
             [todopipeline.pipeline :as todo]
             [clojure.data.json :as json :only [write-str]]
-            [lambdaci.visual :as visual]))
+            [lambdaci.visual :as visual]
+            [lambdaci.dsl :as dsl]))
 
 (defn pipeline []
   (visual/display-representation todo/pipeline))
+
+(defn run-pipeline []
+  (dsl/run todo/pipeline))
+
+(defn pipeline-state []
+  (dsl/get-pipeline-state))
+
+
 
 (defn json [data]
   { :headers { "Content-Type" "application/json"}
@@ -15,5 +24,7 @@
 
 (defroutes app
   (GET "/api/pipeline" [] (json (pipeline)))
+  (GET "/api/pipeline-state" [] (json (pipeline-state)))
+  (POST "/api/pipeline" [] (json (run-pipeline)))
   (route/resources "/")
   (route/not-found "<h1>Page not found</h1>"))
