@@ -17,9 +17,11 @@
             var pipelineElem = document.getElementById("pipeline");
             $.ajax({url:"/api/pipeline"}).done(function(data) {
                 pipelineElem.innerHTML=pipelineHtml(data);
+                setTimeout(updateServerState,500);
             }).fail(function() {
                 pipelineElem.innerHTML="Something went wrong";
             })
+
         </script>
     </body>
 </html>

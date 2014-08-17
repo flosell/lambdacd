@@ -1,4 +1,30 @@
 
+var updateServerState = function() {
+  $.ajax({url:"/api/pipeline-state"}).done(function(data) {
+    data.running.forEach(function(stepid) {
+      findByStepId(stepid).addClass("running");
+    })
+
+    data.finished.forEach(function(stepid) {
+      findByStepId(stepid).addClass("finished");
+    })
+
+
+    setTimeout(updateServerState,500);
+  })
+}
+
+var findByStepId = (function() {
+  return function(stepid) {
+    var curPos = $("#pipeline");
+    do {
+      var idx = stepid.pop()-1;
+      curPos = $(curPos.children("ol, ul").children("li").get(idx))
+    } while (stepid.length > 0)
+    return curPos;
+  }
+})()
+
 
 var pipelineHtml = (function(){
 

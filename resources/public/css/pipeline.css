@@ -7,3 +7,12 @@ li {
   margin-left:10px;
   border: thin black solid;
 }
+
+
+.running {
+  background:yellow;
+}
+
+.finished {
+  background:green;
+}
