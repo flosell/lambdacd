@@ -1,9 +1,5 @@
 (ns lambdaci.dsl)
 
-(defn defbuild [& steps]
-  steps)
-
-
 (defn merge-step-results [r1 r2]
   (merge-with vector r1 r2))
 

@@ -21,19 +21,6 @@
 (defn display-name [fun]
   (clear-namespace (str fun)))
 
-; FIXME this is from from clojure.test
-(defn- is-fn?
-  "Returns true if argument is a function or a symbol that resolves to
-  a function (not a macro)."
-  {:added "1.1"}
-  [x]
-  (if (symbol? x)
-    (when-let [v (resolve x)]
-      (when-let [value (var-get v)]
-        (and (fn? value)
-             (not (:macro (meta v))))))
-    (fn? x)))
-
 (declare display-representation) ; display-representatn and display-representation-for-seq are mutually recursive
 
 (defn display-representation-for-seq [part]
