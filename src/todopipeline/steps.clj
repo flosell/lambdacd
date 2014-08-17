@@ -2,10 +2,6 @@
   (:require [lambdaci.shell :as shell]
             [lambdaci.dsl :as dsl]))
 
-(defn in-cwd [specified-working-directory & steps]
-  (fn [_]
-    (dsl/execute-steps steps {:cwd specified-working-directory })))
-
 
 ;; ----------------------------------
 

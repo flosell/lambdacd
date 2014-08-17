@@ -25,6 +25,10 @@
           step-results (map deref step-futures)]
       (reduce #(merge-step-results %1 %2) step-results))))
 
+(defn in-cwd [specified-working-directory & steps]
+  (fn [_]
+    (execute-steps steps {:cwd specified-working-directory })))
+
 
 (defn run [pipeline]
   (let [runnable-pipeline (map eval pipeline)]
