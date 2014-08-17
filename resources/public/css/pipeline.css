@@ -1,0 +1,9 @@
+ol {
+  display:flex;
+}
+
+li {
+  display:flex;
+  margin-left:10px;
+  border: thin black solid;
+}
