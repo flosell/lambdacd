@@ -27,7 +27,7 @@
 
 (deftest execute-step-test
   (testing "that executing returns the step result added to the input args"
-    (is (= {:outputs { [0 0] {:foo :baz :x :y}}} (execute-step-new some-step-processing-input {:x :y} [0 0])))))
+    (is (= {:outputs { [0 0] {:foo :baz :x :y}}} (execute-step some-step-processing-input {:x :y} [0 0])))))
 
 (deftest step-id-test
   (testing "that we can generate proper step-ids for steps"
@@ -35,7 +35,7 @@
 
 (deftest execute-steps-test
   (testing "that executing steps returns outputs of both steps with different step ids"
-    (is (= {:outputs { [1 0] {:foo :baz} [2 0] {:foo :baz}}} (execute-steps-new [some-step some-step] {} [0 0])))))
+    (is (= {:outputs { [1 0] {:foo :baz} [2 0] {:foo :baz}}} (execute-steps [some-step some-step] {} [0 0])))))
 
 
 (deftest in-cwd-test
