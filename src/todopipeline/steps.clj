@@ -5,23 +5,23 @@
 
 ;; ----------------------------------
 
-(defn client-package [{cwd :cwd}]
+(defn client-package [{cwd :cwd} & _]
   (shell/bash cwd
     "bower install"
     "./package.sh"
     "./publish.sh"))
 
-(defn server-test [{cwd :cwd}]
+(defn server-test [{cwd :cwd} & _]
   (shell/bash cwd
     "lein test"))
 
-(defn server-package [{cwd :cwd}]
+(defn server-package [{cwd :cwd} & _]
   (shell/bash cwd
     "lein uberjar"
     "./publish.sh"))
 
-(defn server-deploy-ci [{cwd :cwd}]
+(defn server-deploy-ci [{cwd :cwd} & _]
   (shell/bash cwd "./deploy.sh backend_ci /tmp/mockrepo/server-snapshot.tar.gz"))
 
-(defn client-deploy-ci [{cwd :cwd}]
+(defn client-deploy-ci [{cwd :cwd} & _]
   (shell/bash cwd "./deploy.sh frontend_ci /tmp/mockrepo/client-snapshot.tar.gz"))
