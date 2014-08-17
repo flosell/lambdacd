@@ -21,14 +21,31 @@
       do-even-more-stuff)
   ))
 
+(def simple-pipeline
+  `(
+    do-stuff
+    do-other-stuff
+   ))
+
+(def foo-pipeline
+  `((in-parallel
+     (in-cwd "foo"
+       do-stuff)
+     (in-cwd "bar"
+        do-other-stuff))))
+
 (deftest display-type-test
   (testing "that in-parallel gets detected"
     (is (= :parallel (display-type `in-parallel)))
     (is (= :parallel (display-type (first (first pipeline)))))
   )
-  (testing "that other-steps are just steps"
-    (is (= :step (display-type `in-cwd)))
-    (is (= :step (display-type (first (second pipeline)))))
+  (testing "that container types get detected"
+    (is (= :container (display-type `in-cwd)))
+    (is (= :container (display-type (first (second pipeline)))))
+  )
+  (testing "that normal steps get detected"
+    (is (= :step (display-type `do-stuff)))
+    (is (= :step (display-type (first simple-pipeline))))
   )
 )
 
@@ -41,4 +58,27 @@
     (is (= "in-parallel" (display-name `in-parallel)))
     (is (= "in-parallel" (display-name (first (first pipeline)))))
   )
+)
+
+(deftest display-representation-test
+  (testing "that the display-representation of a step is the display-name and display-type"
+    (is (= {:name "do-even-more-stuff" :type :step } (display-representation (last (second pipeline)))))
+  )
+  (testing "that the display-representation of a step with children has name, type and children"
+    (is (= {:name "in-cwd"
+            :type :container
+            :children [{:name "do-even-more-stuff" :type :step}]} (display-representation (second pipeline))))
+  )
+  (testing "that a display-representation of a sequence of only steps works"
+    (is (= [{:name "do-stuff" :type :step} {:name "do-other-stuff" :type :step}] (display-representation simple-pipeline))))
+  (testing "that foo-pipeline works"
+    (is (= [{:name "in-parallel"
+            :type :parallel
+            :children
+              [{:name "in-cwd"
+               :type :container
+               :children [{:name "do-stuff" :type :step}]}
+              {:name "in-cwd"
+               :type :container
+               :children [{:name "do-other-stuff" :type :step}]}]}] (display-representation foo-pipeline))))
 )
