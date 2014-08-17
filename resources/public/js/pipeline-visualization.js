@@ -1,6 +1,8 @@
 
 var updateServerState = function() {
   $.ajax({url:"/api/pipeline-state"}).done(function(data) {
+    $("li").removeClass("running");
+    $("li").removeClass("finished");
     data.running.forEach(function(stepid) {
       findByStepId(stepid).addClass("running");
     })

@@ -12,7 +12,7 @@
 (defn set-running! [step-id]
   (swap! pipeline-state #(assoc %1 :running (cons step-id (:running %1)))))
 
-(defn set-finished! [step-id]
+(defn set-finished! [step-id] ;; TODO: this should also remove it from the running-list. at the moment, css magic makes appear ok
   (swap! pipeline-state #(assoc %1 :finished (cons step-id (:finished %1)))))
 
 (defn- range-from [from len] (range (inc from) (+ (inc from) len)))
