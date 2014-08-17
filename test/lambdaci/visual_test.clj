@@ -21,11 +21,24 @@
       do-even-more-stuff)
   ))
 
-
-
 (deftest display-type-test
   (testing "that in-parallel gets detected"
     (is (= :parallel (display-type `in-parallel)))
     (is (= :parallel (display-type (first (first pipeline)))))
+  )
+  (testing "that other-steps are just steps"
+    (is (= :step (display-type `in-cwd)))
+    (is (= :step (display-type (first (second pipeline)))))
+  )
+)
+
+(deftest display-name-test
+  (testing "that the display-name for a step is just the function-name"
+    (is (= "do-even-more-stuff" (display-name `do-even-more-stuff)))
+    (is (= "do-even-more-stuff" (display-name (last (second pipeline)))))
+  )
+  (testing "that the display-name for a parallel is just the function-name"
+    (is (= "in-parallel" (display-name `in-parallel)))
+    (is (= "in-parallel" (display-name (first (first pipeline)))))
   )
 )

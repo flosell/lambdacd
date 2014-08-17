@@ -6,3 +6,10 @@
   (if (= `dsl/in-parallel fun)
     :parallel
     :step))
+
+; hacky?
+(defn clear-namespace [s]
+  (clojure.string/replace s #"[^/]+/" ""))
+
+(defn display-name [fun]
+  (clear-namespace (str fun)))
