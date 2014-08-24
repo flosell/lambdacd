@@ -35,20 +35,26 @@
 (defn merge-step-results [r1 r2]
   (merge-with merge r1 r2))
 
-(defn execute-step-and-merge [args [step-id step]]
-  (let [step-result (execute-step step args step-id)]
-    (merge-step-results args step-result)))
-
-
-(defn execute-steps [steps args step-id]
-  (reduce execute-step-and-merge args (steps-with-ids steps step-id)))
-
 (defn execute-step-foo [args [step-id step]]
   (execute-step step args step-id))
 
-(defn execute-steps-in-parallel [steps args step-id]
-  (let [step-results (pmap (partial execute-step-foo args) (steps-with-ids steps step-id))]
+
+(defn execute-steps-internal [step-result-producer steps args step-id]
+  (let [step-results (step-result-producer args (steps-with-ids steps step-id))]
     (reduce merge-step-results args step-results)))
+
+
+(defn serial-step-result-producer [args s-with-id]
+  (map (partial execute-step-foo args) s-with-id))
+
+(defn execute-steps [steps args step-id]
+  (execute-steps-internal serial-step-result-producer steps args step-id))
+
+(defn parallel-step-result-producer [args s-with-id]
+  (pmap (partial execute-step-foo args) s-with-id))
+
+(defn execute-steps-in-parallel [steps args step-id]
+  (execute-steps-internal parallel-step-result-producer steps args step-id))
 
 (defn in-parallel [& steps]
   (fn [args step-id]
