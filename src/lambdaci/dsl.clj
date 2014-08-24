@@ -43,9 +43,16 @@
 (defn execute-steps [steps args step-id]
   (reduce execute-step-and-merge args (steps-with-ids steps step-id)))
 
+(defn execute-step-foo [args [step-id step]]
+  (execute-step step args step-id))
+
+(defn execute-steps-in-parallel [steps args step-id]
+  (let [step-results (pmap (partial execute-step-foo args) (steps-with-ids steps step-id))]
+    (reduce merge-step-results args step-results)))
+
 (defn in-parallel [& steps]
   (fn [args step-id]
-    (execute-steps steps args (cons 0 step-id)))) ; FIXME: this isn't real parallelism!
+    (execute-steps-in-parallel steps args (cons 0 step-id))))
 
 (defn in-cwd [cwd & steps]
   (fn [args step-id]
