@@ -25,19 +25,19 @@
     {:outputs { step-id step-result}} ))
 
 
+(defn execute-step-foo [args [step-id step]]
+  (execute-step step args step-id))
+
+
+(defn merge-step-results [r1 r2]
+  (merge-with merge r1 r2))
+
 (defn steps-with-ids [steps prev-id]
   (let [significant-part (first prev-id)
         rest-part (rest prev-id)
         significant-ids (range-from significant-part (count steps))
         ids (map #(cons %1 rest-part) significant-ids)]
     (map vector ids steps)))
-
-(defn merge-step-results [r1 r2]
-  (merge-with merge r1 r2))
-
-(defn execute-step-foo [args [step-id step]]
-  (execute-step step args step-id))
-
 
 (defn execute-steps-internal [step-result-producer steps args step-id]
   (let [step-results (step-result-producer args (steps-with-ids steps step-id))]
