@@ -17,20 +17,36 @@
 
 (defn- range-from [from len] (range (inc from) (+ (inc from) len)))
 
+(defn- process-step-result [step-id step-result]
+  {:outputs { step-id step-result}
+   :status (get step-result :status :undefined)
+  })
+
 (defn execute-step [step args step-id]
   (set-running! step-id)
   (let [step-result (step args step-id)]
     (println (str "executing step " step-id step-result))
     (set-finished! step-id)
-    {:outputs { step-id step-result}} ))
+    (process-step-result step-id step-result)))
 
 
 (defn execute-step-foo [args [step-id step]]
   (execute-step step args step-id))
 
+(defn- merge-status [r1 r2]
+  (if (= r1 :success)
+    r2
+    (if (= r2 :success)
+      r1
+      r2)))
+
+(defn- merge-entry [r1 r2]
+  (if (keyword? r1)
+    (merge-status r1 r2)
+    (merge r1 r2)))
 
 (defn merge-step-results [r1 r2]
-  (merge-with merge r1 r2))
+  (merge-with merge-entry r1 r2))
 
 (defn steps-with-ids [steps prev-id]
   (let [significant-part (first prev-id)
@@ -43,9 +59,20 @@
   (let [step-results (step-result-producer args (steps-with-ids steps step-id))]
     (reduce merge-step-results args step-results)))
 
+(defn- map-or-abort [f coll]
+  (loop [result ()
+         r coll]
+    ;(println "foo" r)
+    (if (empty? r)
+      result
+      (let [map-result (f (first r))
+            new-result (cons map-result result)]
+        (if (not= :success (:status map-result))
+          new-result
+          (recur (cons map-result result) (rest r)))))))
 
 (defn serial-step-result-producer [args s-with-id]
-  (map (partial execute-step-foo args) s-with-id))
+  (map-or-abort (partial execute-step-foo args) s-with-id))
 
 (defn execute-steps [steps args step-id]
   (execute-steps-internal serial-step-result-producer steps args step-id))
