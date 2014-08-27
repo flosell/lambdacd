@@ -1,19 +1,28 @@
 
 var updateServerState = function() {
   $.ajax({url:"/api/pipeline-state"}).done(function(data) {
-    $("li").removeClass("running");
-    $("li").removeClass("finished");
+    $("li").removeClass("status-running");
+    $("li").removeClass("status-finished");
+    // TODO: clear all status
     data.running.forEach(function(stepid) {
-      findByStepId(stepid).addClass("running");
+      findByStepId(stepid).data("status","running");
     })
 
     data.finished.forEach(function(stepid) {
-      findByStepId(stepid).addClass("finished");
+      var stepResult = data.results[idToBrittleStringRepresentation(stepid)]
+
+      findByStepId(stepid).data("status",stepResult.status);
     })
 
 
     setTimeout(updateServerState,500);
   })
+}
+
+var idToBrittleStringRepresentation = function(id) {
+  // this takes a proper array-like id like [0,1,0] and converts it into a string like this: "(0 1 0)"
+  // because this is what my hacked-together pipeline-state-representation currently outputs as json-keys for results
+  return "("+id.join(" ")+")";
 }
 
 var findByStepId = (function() {

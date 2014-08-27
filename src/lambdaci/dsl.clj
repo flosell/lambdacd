@@ -12,8 +12,19 @@
 (defn set-running! [step-id]
   (swap! pipeline-state #(assoc %1 :running (cons step-id (:running %1)))))
 
-(defn set-finished! [step-id] ;; TODO: this should also remove it from the running-list. at the moment, css magic makes appear ok
-  (swap! pipeline-state #(assoc %1 :finished (cons step-id (:finished %1)))))
+(defn update-pipeline-state [step-id step-result pipeline-state]
+  (let [cur-finished (:finished pipeline-state)
+        new-finished (cons step-id cur-finished)
+        cur-running  (:running pipeline-state)
+        new-running  (remove (partial = step-id) cur-running)
+        cur-results  (:results pipeline-state)
+        new-results  (assoc cur-results step-id step-result)]
+  {:finished new-finished
+   :running new-running
+   :results new-results}))
+
+(defn set-finished! [step-id step-result] ;; TODO: this should also remove it from the running-list. at the moment, css magic makes appear ok
+  (swap! pipeline-state (partial update-pipeline-state step-id step-result)))
 
 (defn- range-from [from len] (range (inc from) (+ (inc from) len)))
 
@@ -26,7 +37,7 @@
   (set-running! step-id)
   (let [step-result (step args step-id)]
     (println (str "executing step " step-id step-result))
-    (set-finished! step-id)
+    (set-finished! step-id step-result)
     (process-step-result step-id step-result)))
 
 

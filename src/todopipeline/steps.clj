@@ -2,9 +2,6 @@
   (:require [lambdaci.shell :as shell]
             [lambdaci.dsl :as dsl]))
 
-
-;; ----------------------------------
-
 (defn client-package [{cwd :cwd} & _]
   (shell/bash cwd
     "bower install"
@@ -25,3 +22,9 @@
 
 (defn client-deploy-ci [{cwd :cwd} & _]
   (shell/bash cwd "./deploy.sh frontend_ci /tmp/mockrepo/client-snapshot.tar.gz"))
+
+(defn some-failing-step [& _]
+  {:status :failure})
+
+(defn some-step-that-cant-be-reached [& _]
+  {:status :success})

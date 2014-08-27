@@ -9,10 +9,18 @@ li {
 }
 
 
-.running {
-  background:yellow;
+li[data-status=running] {
+  background:blue;
 }
 
-.finished {
+li[data-status=success]  {
   background:green;
+}
+
+li[data-status=failure]  {
+  background:red;
+}
+
+li[data-status=undefined] {
+  background:yellow;
 }

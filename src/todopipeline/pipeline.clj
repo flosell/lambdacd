@@ -17,4 +17,6 @@
       client-deploy-ci)
     (in-cwd "/Users/fsellmay/Code/pipeline-as-code/todo-backend-compojure"
       server-deploy-ci)
+    some-failing-step
+    some-step-that-cant-be-reached
   ))
