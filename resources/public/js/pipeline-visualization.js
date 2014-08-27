@@ -10,8 +10,10 @@ var updateServerState = function() {
 
     data.finished.forEach(function(stepid) {
       var stepResult = data.results[idToBrittleStringRepresentation(stepid)]
+      var stepElem = findByStepId(stepid);
+      stepElem.data("status",stepResult.status);
+      stepElem.data("output",stepResult.out);
 
-      findByStepId(stepid).data("status",stepResult.status);
     })
 
 
@@ -35,7 +37,6 @@ var findByStepId = (function() {
     return curPos;
   }
 })()
-
 
 var pipelineHtml = (function(){
 

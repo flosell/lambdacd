@@ -14,11 +14,21 @@
             Please wait...
             <!-- inserted by js -->
         </div>
+        <div id="output">
+        </div>
         <script>
             var pipelineElem = document.getElementById("pipeline");
+            var displayElem = document.getElementById("output");
             $.ajax({url:"/api/pipeline"}).done(function(data) {
                 pipelineElem.innerHTML=pipelineHtml(data);
                 setTimeout(updateServerState,500);
+
+                $(pipelineElem).find("li").click(function(evt) {
+                    var clickedElem = evt.target;
+                    var output = $(clickedElem).data("output");
+                    displayElem.innerHTML="<pre>"+output+"</pre>";
+                });
+
             }).fail(function() {
                 pipelineElem.innerHTML="Something went wrong";
             })

@@ -24,7 +24,7 @@
   (shell/bash cwd "./deploy.sh frontend_ci /tmp/mockrepo/client-snapshot.tar.gz"))
 
 (defn some-failing-step [& _]
-  {:status :failure})
+  (shell/bash "/" "echo 'i am going to fail now...'" "exit 1"))
 
 (defn some-step-that-cant-be-reached [& _]
   {:status :success})
