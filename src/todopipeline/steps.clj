@@ -1,6 +1,10 @@
 (ns todopipeline.steps
   (:require [lambdaci.shell :as shell]
-            [lambdaci.dsl :as dsl]))
+            [lambdaci.dsl :as dsl]
+            [lambdaci.git :as git]))
+
+(defn wait-for-backend-repo [& _]
+  (git/wait-for-git "file:///Users/fsellmay/Code/pipeline-as-code/todo-backend-client" "master"))
 
 (defn client-package [{cwd :cwd} & _]
   (shell/bash cwd
