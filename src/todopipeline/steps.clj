@@ -6,6 +6,11 @@
 (defn wait-for-backend-repo [& _]
   (git/wait-for-git "file:///Users/fsellmay/Code/pipeline-as-code/todo-backend-client" "master"))
 
+(defn with-frontend-git [& steps]
+  (fn [args step-id]
+    (let [repo-location (git/checkout "file:///Users/fsellmay/Code/pipeline-as-code/todo-backend-client" (:revision args))]
+      (dsl/execute-steps steps (assoc args :cwd repo-location) (dsl/new-base-id-for step-id)))))
+
 (defn client-package [{cwd :cwd} & _]
   (shell/bash cwd
     "bower install"

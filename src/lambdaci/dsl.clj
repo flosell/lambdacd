@@ -98,9 +98,12 @@
   (fn [args step-id]
     (execute-steps-in-parallel steps args (cons 0 step-id))))
 
+(defn new-base-id-for [step-id]
+  (cons 0 step-id))
+
 (defn in-cwd [cwd & steps]
   (fn [args step-id]
-    (execute-steps steps (assoc args :cwd cwd) (cons 0 step-id))))
+    (execute-steps steps (assoc args :cwd cwd) (new-base-id-for step-id))))
 
 
 (defn run [pipeline]
