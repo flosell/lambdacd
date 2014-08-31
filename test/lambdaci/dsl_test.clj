@@ -1,6 +1,7 @@
 (ns lambdaci.dsl-test
   (:require [clojure.test :refer :all]
-            [lambdaci.dsl :refer :all]))
+            [lambdaci.dsl :refer :all]
+            [clojure.core.async :as async]))
 
 
 
@@ -43,6 +44,11 @@
 (defn some-step-not-returning-status [arg & _]
   {})
 
+(defn some-step-returning-status-channel [& _]
+  (let [c (async/chan 10)]
+    (async/>!! c :success)
+    {:status c}))
+
 
 (deftest step-result-merge-test
   (testing "merging without collisions"
@@ -62,7 +68,9 @@
   (testing "that executing returns the steps result-status as a special field and leaves it in the output as well"
     (is (= {:outputs { [0 0] {:status :success} } :status :success} (execute-step some-successful-step {} [0 0]))))
   (testing "that the result-status is :undefined if the step doesn't return any"
-    (is (= {:outputs { [0 0] {} } :status :undefined} (execute-step some-step-not-returning-status {} [0 0])))))
+    (is (= {:outputs { [0 0] {} } :status :undefined} (execute-step some-step-not-returning-status {} [0 0]))))
+  (testing "that the result-status can be a channel as well"
+    (is (= {:outputs { [0 0] {:status :success } }:status :success} (execute-step some-step-returning-status-channel {} [0 0])))))
 
 (deftest step-id-test
   (testing "that we can generate proper step-ids for steps"

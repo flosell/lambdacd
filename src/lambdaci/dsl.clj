@@ -1,4 +1,14 @@
-(ns lambdaci.dsl)
+(ns lambdaci.dsl
+  (:require [clojure.core.async :as async]))
+
+(defn wait-for [p]
+  (loop []
+    (if (p)
+      {:status :success}
+      (do
+        (Thread/sleep 1000)
+        (recur))
+      )))
 
 (def initial-pipeline-state {:running [] :finished []})
 (def pipeline-state (atom initial-pipeline-state))
@@ -28,17 +38,32 @@
 
 (defn- range-from [from len] (range (inc from) (+ (inc from) len)))
 
-(defn- process-step-result [step-id step-result]
+(defn- step-output [step-id step-result]
   {:outputs { step-id step-result}
    :status (get step-result :status :undefined)
   })
 
+(defn is-channel? [c]
+  (satisfies? clojure.core.async.impl.protocols/Channel c))
+
+(defn wait-for-success [c]
+  (wait-for #(= (async/<!! c) :success)))
+
+(defn- process-step-result [step-result]
+  (if (is-channel? (:status step-result))
+    (do
+      (wait-for-success (:status step-result))
+      (assoc step-result :status :success))
+    step-result))
+
+
 (defn execute-step [step args step-id]
   (set-running! step-id)
-  (let [step-result (step args step-id)]
-    (println (str "executing step " step-id step-result))
-    (set-finished! step-id step-result)
-    (process-step-result step-id step-result)))
+  (let [step-result (step args step-id)
+        processed-step-result (process-step-result step-result)]
+    (println (str "executed step " step-id processed-step-result))
+    (set-finished! step-id processed-step-result);; somewhere here, we are waiting for the success on the channel if it is a channel
+    (step-output step-id processed-step-result)))
 
 
 (defn execute-step-foo [args [step-id step]]
@@ -105,14 +130,7 @@
   (fn [args step-id]
     (execute-steps steps (assoc args :cwd cwd) (new-base-id-for step-id))))
 
-(defn wait-for [p]
-  (loop []
-    (if (p)
-      {:status :success}
-      (do
-        (Thread/sleep 1000)
-        (recur))
-      )))
+
 
 
 

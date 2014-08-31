@@ -7,6 +7,7 @@
                  [org.clojure/tools.nrepl "0.2.3"]
                  [org.clojure/data.json "0.2.5"]
                  [me.raynes/conch "0.8.0"]
+                 [org.clojure/core.async "0.1.338.0-5c5012-alpha"]
                  [compojure "1.1.8"]]
   :ring {:handler lambdaci.server/app}
   :plugins [[lein-ring "0.8.11"]]
