@@ -105,6 +105,16 @@
   (fn [args step-id]
     (execute-steps steps (assoc args :cwd cwd) (new-base-id-for step-id))))
 
+(defn wait-for [p]
+  (loop []
+    (if (p)
+      {:status :success}
+      (do
+        (Thread/sleep 1000)
+        (recur))
+      )))
+
+
 
 (defn run [pipeline]
   (reset-pipeline-state)

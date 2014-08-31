@@ -7,6 +7,7 @@
 (def pipeline
   `(
    ;; wait-for-backend-repo
+    lambdaci.manualtrigger/wait-for-manual-trigger
     (in-parallel
       (with-frontend-git
         client-package)
