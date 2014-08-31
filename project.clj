@@ -6,6 +6,7 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/tools.nrepl "0.2.3"]
                  [org.clojure/data.json "0.2.5"]
+                 [me.raynes/conch "0.8.0"]
                  [compojure "1.1.8"]]
   :ring {:handler lambdaci.server/app}
   :plugins [[lein-ring "0.8.11"]]

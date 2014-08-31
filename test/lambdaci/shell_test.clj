@@ -16,4 +16,6 @@
     (is (= "foo\n" (:out (bash "/" "echo foo")))))
   (testing "that bash returns the right output for a series of commands"
     (is (= "foo\nbar\n" (:out (bash "/" "echo foo" "echo bar" "exit 1" "echo baz")))))
+  (testing "that the output also contains stderr"
+    (is (= "foo\nerror\nbaz\n" (:out (bash "/" "echo foo" ">&2 echo error" "echo baz")))))
   )
