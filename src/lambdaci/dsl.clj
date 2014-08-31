@@ -94,14 +94,14 @@
 (defn execute-steps-in-parallel [steps args step-id]
   (execute-steps-internal parallel-step-result-producer steps args step-id))
 
-(defn in-parallel [& steps]
+(defn ^{:display-type :parallel} in-parallel [& steps]
   (fn [args step-id]
     (execute-steps-in-parallel steps args (cons 0 step-id))))
 
 (defn new-base-id-for [step-id]
   (cons 0 step-id))
 
-(defn in-cwd [cwd & steps]
+(defn ^{:display-type :container} in-cwd [cwd & steps]
   (fn [args step-id]
     (execute-steps steps (assoc args :cwd cwd) (new-base-id-for step-id))))
 

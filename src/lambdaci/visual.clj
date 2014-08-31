@@ -2,14 +2,29 @@
   (:require [todopipeline.pipeline :as todo]
             [lambdaci.dsl :as dsl]))
 
+
+(defn- is-fn? [fun]
+  (not (or (string? fun) (map? fun)))) ; hackedyhack...
+
 (defn display-type [fun]
-  (if (= `dsl/in-parallel fun)
-    :parallel
-    (if (= `dsl/in-cwd fun)
-      :container
-      (if (not (or (string? fun) (map? fun)))
+  (if (symbol? fun)
+    (let [metadata-dt (:display-type (meta (find-var fun)))]
+    (if (nil? metadata-dt)
+      (if (is-fn? fun)
         :step
-        :unknown))))
+        :unknown)
+      metadata-dt))
+    (if (sequential? fun)
+      :step
+      :unknown)))
+
+  ;(if (= `dsl/in-parallel fun)
+  ;  :parallel
+  ;  (if (=  :container)
+  ;    :container
+  ;    (if (not (or (string? fun) (map? fun)))
+  ;      :step
+  ;      :unknown))))
 
 (defn- is-step? [step]
   (= :step (display-type step)))
@@ -34,6 +49,6 @@
 
 (defn display-representation [part]
 ;;  (println (str "rep for" part))
-  (if (seq? part)
+  (if (sequential? part)
     (display-representation-for-seq part)
     {:name (display-name part) :type (display-type part)}))

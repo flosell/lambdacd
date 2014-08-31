@@ -6,10 +6,10 @@
 (defn wait-for-backend-repo [& _]
   (git/wait-for-git "file:///Users/fsellmay/Code/pipeline-as-code/todo-backend-client" "master"))
 
-(defn with-frontend-git [& steps]
+(defn ^{:display-type :container} with-frontend-git [& steps]
   (git/with-git "file:///Users/fsellmay/Code/pipeline-as-code/todo-backend-client" steps))
 
-(defn with-backend-git [& steps]
+(defn ^{:display-type :container} with-backend-git [& steps]
   (git/with-git "file:///Users/fsellmay/Code/pipeline-as-code/todo-backend-compojure" steps))
 
 

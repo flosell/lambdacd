@@ -47,6 +47,14 @@
     (is (= :step (display-type `do-stuff)))
     (is (= :step (display-type (first simple-pipeline))))
   )
+  (testing "that a string is unknown type"
+    (is (= :unknown (display-type "foo")))
+    (is (= :unknown (display-type (second (second (first pipeline))))))
+  )
+  (testing "that a sequence is a step" ; TODO: display-representation expects it this way. not entirely sure this is correct..
+    (is (= :step (display-type `(do-stuff do-more-stuff))))
+    (is (= :step (display-type simple-pipeline)))
+  )
 )
 
 (deftest display-name-test
