@@ -1,5 +1,6 @@
 (ns lambdaci.git
-  (:require [lambdaci.shell :as sh]))
+  (:require [lambdaci.shell :as sh]
+            [lambdaci.dsl :as dsl]))
 
 (defn current-revision [repo-uri branch]
   (.trim (:out (sh/bash "/" (str "git ls-remote --heads " repo-uri " " branch " | cut -f 1")))))
@@ -23,3 +24,10 @@
   (let [cwd (create-temp-dir)]
     (sh/bash cwd (str "git clone " repo-uri " .") (str "git checkout " revision))
     cwd))
+
+
+(defn with-git [repo-uri steps]
+  (fn [args step-id]
+    (let [repo-location (checkout repo-uri (:revision args))] ;; TODO: wouldn't it be better to pass in the revision?
+      (dsl/execute-steps steps (assoc args :cwd repo-location) (dsl/new-base-id-for step-id)))))
+
