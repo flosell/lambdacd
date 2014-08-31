@@ -4,7 +4,8 @@
             [todopipeline.pipeline :as todo]
             [clojure.data.json :as json :only [write-str]]
             [lambdaci.visual :as visual]
-            [lambdaci.dsl :as dsl]))
+            [lambdaci.dsl :as dsl]
+            [ring.util.response :as resp]))
 
 (defn pipeline []
   (visual/display-representation todo/pipeline))
@@ -26,5 +27,6 @@
   (GET "/api/pipeline" [] (json (pipeline)))
   (GET "/api/pipeline-state" [] (json (pipeline-state)))
   (POST "/api/pipeline" [] (json (run-pipeline)))
+  (GET "/" [] (resp/resource-response "index.html" {:root "public"}))
   (route/resources "/")
   (route/not-found "<h1>Page not found</h1>"))
