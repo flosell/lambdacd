@@ -17,10 +17,15 @@
 (defn- pipeline-state []
   (dsl/get-pipeline-state))
 
+;; TODO: we shouldn't actually exists, we should preprocess this somewhere else
+(defn- serialize-channel [k v]
+  (if (dsl/is-channel? v)
+    :waiting
+    v))
 
 (defn- json [data]
   { :headers { "Content-Type" "application/json"}
-    :body (json/write-str data)
+    :body (json/write-str data :value-fn serialize-channel)
     :status 200 })
 
 (defroutes app

@@ -59,11 +59,12 @@
 
 (defn execute-step [step args step-id]
   (set-running! step-id)
-  (let [step-result (step args step-id)
-        processed-step-result (process-step-result step-result)]
-    (println (str "executed step " step-id processed-step-result))
-    (set-finished! step-id processed-step-result);; somewhere here, we are waiting for the success on the channel if it is a channel
-    (step-output step-id processed-step-result)))
+  (let [step-result (step args step-id)]
+    (set-finished! step-id step-result)
+    (let [processed-step-result (process-step-result step-result)]
+      (println (str "executed step " step-id processed-step-result))
+      (set-finished! step-id processed-step-result)
+      (step-output step-id processed-step-result))))
 
 
 (defn execute-step-foo [args [step-id step]]

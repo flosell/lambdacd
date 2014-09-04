@@ -1,3 +1,8 @@
+var triggerManualStep = function(triggerId){
+  $.ajax({url:"/api/dynamic/"+triggerId, type:"POST"}).done(function(data) {
+    alert("triggered");
+  });
+}
 
 var updateServerState = function() {
   $.ajax({url:"/api/pipeline-state"}).done(function(data) {
@@ -13,6 +18,14 @@ var updateServerState = function() {
       var stepElem = findByStepId(stepid);
       stepElem.data("status",stepResult.status);
       stepElem.data("output",stepResult.out);
+      var triggerId = stepResult["trigger-id"];
+      if (triggerId) {
+        stepElem.off();
+        stepElem.on("click",function() {
+          triggerManualStep(triggerId);
+        })
+      }
+
 
     })
 

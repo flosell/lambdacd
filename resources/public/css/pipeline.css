@@ -9,16 +9,20 @@ li {
 }
 
 
+li[data-status=waiting] {
+  background:lightyellow;
+}
+
 li[data-status=running] {
-  background:blue;
+  background:lightblue;
 }
 
 li[data-status=success]  {
-  background:green;
+  background:lightgreen;
 }
 
 li[data-status=failure]  {
-  background:red;
+  background:tomato;
 }
 
 li[data-status=undefined] {
