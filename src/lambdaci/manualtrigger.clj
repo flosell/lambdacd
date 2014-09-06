@@ -20,5 +20,4 @@
 
 (defn wait-for-manual-trigger [& _]
   (let [id (str (java.util.UUID/randomUUID))]
-    (println "waititing for manual trigger, POST to id" id) ;; try returning a result with status-channel and the id, see what the UI can do with it?
     (assoc (wait-for-async #(was-posted? id)) :trigger-id id)))
