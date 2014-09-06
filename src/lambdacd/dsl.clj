@@ -95,7 +95,6 @@
 (defn- map-or-abort [f coll]
   (loop [result ()
          r coll]
-    ;(println "foo" r)
     (if (empty? r)
       result
       (let [map-result (f (first r))
@@ -126,9 +125,6 @@
 (defn ^{:display-type :container} in-cwd [cwd & steps]
   (fn [args step-id]
     (execute-steps steps (assoc args :cwd cwd) (new-base-id-for step-id))))
-
-
-
 
 
 (defn run [pipeline]

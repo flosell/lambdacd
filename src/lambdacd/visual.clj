@@ -40,7 +40,6 @@
        :children (map display-representation r)})))
 
 (defn display-representation [part]
-;;  (println (str "rep for" part))
   (if (sequential? part)
     (display-representation-for-seq part)
     {:name (display-name part) :type (display-type part)}))
