@@ -4,7 +4,7 @@
             [lambdacd.git :as git]
             [lambdacd.manualtrigger :as manualtrigger]))
 
-(defn wait-for-backend-repo [& _]
+(defn wait-for-frontend-repo [& _]
   (git/wait-for-git "file:///Users/fsellmay/Code/pipeline-as-code/todo-backend-client" "master"))
 
 
