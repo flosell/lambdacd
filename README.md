@@ -1,10 +1,42 @@
-# lambdacd
+# LambdaCD
 
-A Clojure library designed to ... well, that part is up to you.
+* it's a continuous delivery-pipeline, in code
+* it's Jenkins/Go/Teamcity/..., in clojure
+
+## Design
+
+LambdaCD is designed to be a library that provides you with the essential building-blocks to develop a small application that is your build-pipeline. You would then deploy this application like you would deploy any other application or piece of build-infrastructure.
+
+Those building blocks are:
+* steps: Build-steps are normal clojure-functions that receive a map of arguments, perform action (like checking out a repo, running tests or deploying your application) and return a map of result-values.
+* triggers: Are build-steps that wait until some condition (e.g. a commit is pushed to a repo, a user has triggered manually) is true before returning and thereby triggering the next step in the pipeline.
+* container steps: are build-steps that control the way their child-steps are being executed. It may for example execute them in parallel, set arguments for all of them or only run them under certain conditions.
+* pipeline: Is a list of steps that will be executed by the execution-engine
+
+TODO: the building blocks aren't really building blocks, they are the part of the pipeline... we should really be talking about the pipeline-visualization, the execution-engine, the helper-functions...
+
+
+## Status
+
+This project is still in it's early prototype/proof of concept/experimentation stage, so don't rely on everything working flawlessly. There will be bugs, there will be missing features, things will change and things will look ugly.
+
+Nevertheless, give it a try, send in bug reports, feature requests or just give feedback!
 
 ## Usage
 
-FIXME
+* TODO: maybe we should start with a lein template here?
+* TODO: the things in the trello task
+
+## Development
+
+* `lein test` runs all tests
+* `lein ring server` starts a server and opens pipeline-view showing the example-pipeline in your browser
+
+TODO: say something about the example-pipeline? polish it so it runs on different machines?
+
+## Contribute
+
+* TODO
 
 ## License
 
