@@ -8,17 +8,15 @@
 (defn create-temp-dir []
   (.toString (java.nio.file.Files/createTempDirectory "foo" (into-array java.nio.file.attribute.FileAttribute []))))
 
-(defn wait-for-git [repo-uri branch] ;; TODO: dsl/wait-for could probably be used here
-  (loop [last-seen-revision (current-revision repo-uri branch)]
-    (println "waiting for git-commit, last seen revision:" last-seen-revision)
+(defn- revision-changed-from [last-seen-revision repo-uri branch]
+  (fn []
     (let [revision-now (current-revision repo-uri branch)]
-      (if (not= last-seen-revision revision-now)
-        (do
-          {:status :success :revision revision-now})
-        (do
-          (Thread/sleep 1000)
-          (recur revision-now))
-        ))))
+      (println "waiting for new revision. current revision" revision-now "last seen" last-seen-revision)
+      (not= last-seen-revision revision-now))))
+
+(defn wait-for-git [repo-uri branch]
+  (let [last-seen-revision (current-revision repo-uri branch)]
+    (dsl/wait-for (revision-changed-from last-seen-revision repo-uri branch))))
 
 (defn checkout [repo-uri revision]
   (let [cwd (create-temp-dir)]
