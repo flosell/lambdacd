@@ -18,14 +18,6 @@
       :step
       :unknown)))
 
-  ;(if (= `dsl/in-parallel fun)
-  ;  :parallel
-  ;  (if (=  :container)
-  ;    :container
-  ;    (if (not (or (string? fun) (map? fun)))
-  ;      :step
-  ;      :unknown))))
-
 (defn- is-step? [step]
   (= :step (display-type step)))
 
