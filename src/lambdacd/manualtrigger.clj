@@ -1,5 +1,5 @@
-(ns lambdaci.manualtrigger
-  (:require [lambdaci.dsl :as dsl]
+(ns lambdacd.manualtrigger
+  (:require [lambdacd.dsl :as dsl]
             [clojure.core.async :as async]))
 
 (def ids-posted-to (atom #{}))

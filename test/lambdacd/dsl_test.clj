@@ -1,6 +1,6 @@
-(ns lambdaci.dsl-test
+(ns lambdacd.dsl-test
   (:require [clojure.test :refer :all]
-            [lambdaci.dsl :refer :all]
+            [lambdacd.dsl :refer :all]
             [clojure.core.async :as async]))
 
 

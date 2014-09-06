@@ -1,5 +1,5 @@
 (ns todopipeline.pipeline
-   (:use [lambdaci.dsl]
+   (:use [lambdacd.dsl]
          [todopipeline.steps]))
 
 
@@ -7,7 +7,7 @@
 (def pipeline
   `(
    ;; wait-for-backend-repo
-    lambdaci.manualtrigger/wait-for-manual-trigger
+    lambdacd.manualtrigger/wait-for-manual-trigger
     (in-parallel
       (with-frontend-git
         client-package)

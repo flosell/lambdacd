@@ -1,6 +1,6 @@
-(ns lambdaci.git
-  (:require [lambdaci.shell :as sh]
-            [lambdaci.dsl :as dsl]))
+(ns lambdacd.git
+  (:require [lambdacd.shell :as sh]
+            [lambdacd.dsl :as dsl]))
 
 (defn current-revision [repo-uri branch]
   (.trim (:out (sh/bash "/" (str "git ls-remote --heads " repo-uri " " branch " | cut -f 1")))))

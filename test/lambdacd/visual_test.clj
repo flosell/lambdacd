@@ -1,7 +1,7 @@
-(ns lambdaci.visual-test
-  (:use [lambdaci.dsl])
+(ns lambdacd.visual-test
+  (:use [lambdacd.dsl])
   (:require [clojure.test :refer :all]
-            [lambdaci.visual :refer :all]))
+            [lambdacd.visual :refer :all]))
 
 (defn do-stuff [] {})
 (defn do-other-stuff [] {})

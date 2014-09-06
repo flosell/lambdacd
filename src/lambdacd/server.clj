@@ -1,11 +1,11 @@
-(ns lambdaci.server
+(ns lambdacd.server
   (:use compojure.core)
   (:require [compojure.route :as route]
             [todopipeline.pipeline :as todo]
             [clojure.data.json :as json :only [write-str]]
-            [lambdaci.visual :as visual]
-            [lambdaci.manualtrigger :as manualtrigger]
-            [lambdaci.dsl :as dsl]
+            [lambdacd.visual :as visual]
+            [lambdacd.manualtrigger :as manualtrigger]
+            [lambdacd.dsl :as dsl]
             [ring.util.response :as resp]
             [clojure.core.async :as async]))
 

@@ -1,4 +1,4 @@
-(ns lambdaci.shell
+(ns lambdacd.shell
   (:require [clojure.java.shell :as jsh]
             [clojure.string :as string]))
 

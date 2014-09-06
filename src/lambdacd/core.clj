@@ -1,8 +1,8 @@
-(ns lambdaci.core
+(ns lambdacd.core
   (:require [todopipeline.pipeline :as todo]
             [clojure.data.json :as json :only [write-str]]
-            [lambdaci.visual :as visual])
-  (:use [lambdaci.dsl])
+            [lambdacd.visual :as visual])
+  (:use [lambdacd.dsl])
   (gen-class))
 
 

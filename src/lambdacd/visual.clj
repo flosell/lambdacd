@@ -1,6 +1,6 @@
-(ns lambdaci.visual
+(ns lambdacd.visual
   (:require [todopipeline.pipeline :as todo]
-            [lambdaci.dsl :as dsl]))
+            [lambdacd.dsl :as dsl]))
 
 
 (defn- is-fn? [fun]

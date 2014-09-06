@@ -1,4 +1,4 @@
-(ns lambdaci.dsl
+(ns lambdacd.dsl
   (:require [clojure.core.async :as async]))
 
 (defn wait-for [p]

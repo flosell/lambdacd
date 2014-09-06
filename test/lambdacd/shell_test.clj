@@ -1,6 +1,6 @@
-(ns lambdaci.shell-test
+(ns lambdacd.shell-test
   (:require [clojure.test :refer :all]
-            [lambdaci.shell :refer :all]))
+            [lambdacd.shell :refer :all]))
 
 (deftest shell-return-code-test
   (testing "that bash returns the right return code for a single successful command"

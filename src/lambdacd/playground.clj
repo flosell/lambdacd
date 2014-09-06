@@ -1,4 +1,4 @@
-(ns lambdaci.playground
+(ns lambdacd.playground
   (:require [clojure.tools.nrepl :as repl]
    :use [clojure.pprint]))
 
