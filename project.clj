@@ -9,6 +9,7 @@
                  [me.raynes/conch "0.8.0"]
                  [org.clojure/core.async "0.1.338.0-5c5012-alpha"]
                  [compojure "1.1.8"]]
-  :ring {:handler lambdaci.server/app}
+  :ring {:handler lambdaci.server/app
+         :init lambdaci.server/start-pipeline-thread }
   :plugins [[lein-ring "0.8.11"]]
   :main lambdaci.core)

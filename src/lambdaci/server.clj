@@ -6,13 +6,17 @@
             [lambdaci.visual :as visual]
             [lambdaci.manualtrigger :as manualtrigger]
             [lambdaci.dsl :as dsl]
-            [ring.util.response :as resp]))
+            [ring.util.response :as resp]
+            [clojure.core.async :as async]))
 
 (defn- pipeline []
   (visual/display-representation todo/pipeline))
 
 (defn- run-pipeline []
   (dsl/run todo/pipeline))
+
+(defn start-pipeline-thread []
+  (async/thread (while true (run-pipeline))))
 
 (defn- pipeline-state []
   (dsl/get-pipeline-state))
@@ -37,3 +41,4 @@
   (GET "/" [] (resp/resource-response "index.html" {:root "public"}))
   (route/resources "/")
   (route/not-found "<h1>Page not found</h1>"))
+
