@@ -99,3 +99,15 @@
     (is (= {:outputs { [1 0 0] {:status :success} [2 0 0] {:status :failure}} :status :failure} ((in-parallel some-successful-step some-failing-step) {} [0 0]))))
   (testing "that it executes things faster than it would serially"
     (is (close? 3 10 (my-time ((in-parallel some-step-taking-10ms in-parallel some-step-taking-10ms in-parallel some-step-taking-10ms) {} [0 0]))))))
+
+(defn counting-predicate [calls-until-true]
+  (let [counter (atom 0)]
+    (fn []
+      (swap! counter inc)
+      (>= @counter calls-until-true))))
+
+(deftest wait-for-test
+  (testing "that wait for waits until a certain predicate becomes true and waits 1000ms between"
+    (is (close? 100 1000 (my-time (wait-for (counting-predicate 2))))))
+  (testing "that it returns success after waiting"
+    (is (= {:status :success} (wait-for (constantly true))))))

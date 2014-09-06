@@ -2,13 +2,9 @@
   (:require [clojure.core.async :as async]))
 
 (defn wait-for [p]
-  (loop []
-    (if (p)
-      {:status :success}
-      (do
-        (Thread/sleep 1000)
-        (recur))
-      )))
+  (while (not (p))
+    (Thread/sleep 1000))
+  {:status :success})
 
 (def initial-pipeline-state {:running [] :finished []})
 (def pipeline-state (atom initial-pipeline-state))
