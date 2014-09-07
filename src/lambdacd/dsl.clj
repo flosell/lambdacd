@@ -1,5 +1,6 @@
 (ns lambdacd.dsl
-  (:require [clojure.core.async :as async]))
+  (:require [clojure.core.async :as async]
+            [lambdacd.util :as util]))
 
 (defn wait-for [p]
   (while (not (p))
@@ -32,46 +33,41 @@
 (defn set-finished! [step-id step-result] ;; TODO: this should also remove it from the running-list. at the moment, css magic makes appear ok
   (swap! pipeline-state (partial update-pipeline-state step-id step-result)))
 
-(defn- range-from [from len] (range (inc from) (+ (inc from) len)))
 
 (defn- step-output [step-id step-result]
   {:outputs { step-id step-result}
    :status (get step-result :status :undefined)
   })
 
-(defn is-channel? [c]
-  (satisfies? clojure.core.async.impl.protocols/Channel c))
-
 (defn wait-for-success [c]
   (wait-for #(= (async/<!! c) :success)))
 
 (defn- process-step-result [step-result]
-  (if (is-channel? (:status step-result))
+  (if (util/is-channel? (:status step-result))
     (do
       (wait-for-success (:status step-result))
       (assoc step-result :status :success))
     step-result))
 
 
-(defn execute-step [step args step-id]
-  (set-running! step-id)
-  (let [step-result (step args step-id)]
-    (set-finished! step-id step-result)
-    (let [processed-step-result (process-step-result step-result)]
-      (println (str "executed step " step-id processed-step-result))
-      (set-finished! step-id processed-step-result)
-      (step-output step-id processed-step-result))))
+(defn execute-step
+  ([args [step-id step]]
+    (execute-step step args step-id))
+  ([step args step-id]
+    (set-running! step-id)
+    (let [step-result (step args step-id)]
+      (set-finished! step-id step-result)
+      (let [processed-step-result (process-step-result step-result)]
+        (println (str "executed step " step-id processed-step-result))
+        (set-finished! step-id processed-step-result)
+        (step-output step-id processed-step-result)))))
 
-
-(defn execute-step-foo [args [step-id step]]
-  (execute-step step args step-id))
-
-(defn- merge-status [r1 r2]
-  (if (= r1 :success)
-    r2
-    (if (= r2 :success)
-      r1
-      r2)))
+(defn- merge-status [s1 s2]
+  (if (= s1 :success)
+    s2
+    (if (= s2 :success)
+      s1
+      s2)))
 
 (defn- merge-entry [r1 r2]
   (if (keyword? r1)
@@ -84,13 +80,9 @@
 (defn steps-with-ids [steps prev-id]
   (let [significant-part (first prev-id)
         rest-part (rest prev-id)
-        significant-ids (range-from significant-part (count steps))
+        significant-ids (util/range-from significant-part (count steps))
         ids (map #(cons %1 rest-part) significant-ids)]
     (map vector ids steps)))
-
-(defn execute-steps-internal [step-result-producer steps args step-id]
-  (let [step-results (step-result-producer args (steps-with-ids steps step-id))]
-    (reduce merge-step-results args step-results)))
 
 (defn- map-or-abort [f coll]
   (loop [result ()
@@ -104,28 +96,17 @@
           (recur (cons map-result result) (rest r)))))))
 
 (defn serial-step-result-producer [args s-with-id]
-  (map-or-abort (partial execute-step-foo args) s-with-id))
+  (map-or-abort (partial execute-step args) s-with-id))
 
-(defn execute-steps [steps args step-id]
-  (execute-steps-internal serial-step-result-producer steps args step-id))
-
-(defn parallel-step-result-producer [args s-with-id]
-  (pmap (partial execute-step-foo args) s-with-id))
-
-(defn execute-steps-in-parallel [steps args step-id]
-  (execute-steps-internal parallel-step-result-producer steps args step-id))
-
-(defn ^{:display-type :parallel} in-parallel [& steps]
-  (fn [args step-id]
-    (execute-steps-in-parallel steps args (cons 0 step-id))))
+(defn execute-steps
+  ([steps args step-id]
+    (execute-steps serial-step-result-producer steps args step-id))
+  ([step-result-producer steps args step-id]
+    (let [step-results (step-result-producer args (steps-with-ids steps step-id))]
+      (reduce merge-step-results args step-results))))
 
 (defn new-base-id-for [step-id]
   (cons 0 step-id))
-
-(defn ^{:display-type :container} in-cwd [cwd & steps]
-  (fn [args step-id]
-    (execute-steps steps (assoc args :cwd cwd) (new-base-id-for step-id))))
-
 
 (defn run [pipeline]
   (reset-pipeline-state)

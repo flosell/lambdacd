@@ -6,6 +6,7 @@
             [lambdacd.visual :as visual]
             [lambdacd.manualtrigger :as manualtrigger]
             [lambdacd.dsl :as dsl]
+            [lambdacd.util :as util]
             [ring.util.response :as resp]
             [clojure.core.async :as async]))
 
@@ -23,7 +24,7 @@
 
 ;; TODO: we shouldn't actually exists, we should preprocess this somewhere else
 (defn- serialize-channel [k v]
-  (if (dsl/is-channel? v)
+  (if (util/is-channel? v)
     :waiting
     v))
 
