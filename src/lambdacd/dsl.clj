@@ -17,7 +17,7 @@
 (defn- wait-for-success [c]
   (wait-for #(= (async/<!! c) :success)))
 
-(defn- process-step-result [step-result]
+(defn- step-result-after-step-finished [step-result]
   (if (util/is-channel? (:status step-result))
     (do
       (wait-for-success (:status step-result))
@@ -29,13 +29,13 @@
   ([args [step-id step]]
     (execute-step step args step-id))
   ([step args step-id]
-    (pipeline-state/set-running! step-id)
-    (let [step-result (step args step-id)]
-      (pipeline-state/set-finished! step-id step-result)
-      (let [processed-step-result (process-step-result step-result)]
-        (println (str "executed step " step-id processed-step-result))
-        (pipeline-state/set-finished! step-id processed-step-result)
-        (step-output step-id processed-step-result)))))
+    (pipeline-state/running step-id)
+    (let [immediate-step-result (step args step-id)]
+      (pipeline-state/update step-id immediate-step-result)
+      (let [final-step-result (step-result-after-step-finished immediate-step-result)]
+        (println (str "executed step " step-id final-step-result))
+        (pipeline-state/update step-id final-step-result)
+        (step-output step-id final-step-result)))))
 
 (defn- merge-status [s1 s2]
   (if (= s1 :success)
