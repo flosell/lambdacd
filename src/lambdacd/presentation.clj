@@ -9,7 +9,7 @@
 (defn- is-fn? [fun]
   (not (or (string? fun) (map? fun)))) ; hackedyhack...
 
-(defn display-type [fun]
+(defn- display-type [fun]
   (if (symbol? fun)
     (let [metadata-dt (:display-type (meta (find-var fun)))]
     (if (nil? metadata-dt)
@@ -28,12 +28,12 @@
 (defn- clear-namespace [s]
   (clojure.string/replace s #"[^/]+/" ""))
 
-(defn display-name [fun]
+(defn- display-name [fun]
   (clear-namespace (str fun)))
 
 (declare display-representation) ; display-representatn and display-representation-for-seq are mutually recursive
 
-(defn display-representation-for-seq [part]
+(defn- display-representation-for-seq [part]
   (let [f (first part)
           r (filter is-step? (rest part))]
     (if (is-step? f)

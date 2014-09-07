@@ -1,6 +1,7 @@
 (ns lambdacd.presentation-test
   (:use [lambdacd.dsl]
-        [lambdacd.control-flow])
+        [lambdacd.control-flow]
+        [lambdacd.test-util])
   (:require [clojure.test :refer :all]
             [lambdacd.presentation :refer :all]))
 
@@ -34,40 +35,40 @@
        do-stuff)
      (in-cwd "bar"
         do-other-stuff))))
+(with-private-fns [lambdacd.presentation [display-type display-name]]
+  (deftest display-type-test
+    (testing "that in-parallel gets detected"
+      (is (= :parallel (display-type `in-parallel)))
+      (is (= :parallel (display-type (first (first pipeline)))))
+    )
+    (testing "that container types get detected"
+      (is (= :container (display-type `in-cwd)))
+      (is (= :container (display-type (first (second pipeline)))))
+    )
+    (testing "that normal steps get detected"
+      (is (= :step (display-type `do-stuff)))
+      (is (= :step (display-type (first simple-pipeline))))
+    )
+    (testing "that a string is unknown type"
+      (is (= :unknown (display-type "foo")))
+      (is (= :unknown (display-type (second (second (first pipeline))))))
+    )
+    (testing "that a sequence is a step" ; TODO: display-representation expects it this way. not entirely sure this is correct..
+      (is (= :step (display-type `(do-stuff do-more-stuff))))
+      (is (= :step (display-type simple-pipeline)))
+    ))
+  (deftest display-name-test
+    (testing "that the display-name for a step is just the function-name"
+      (is (= "do-even-more-stuff" (display-name `do-even-more-stuff)))
+      (is (= "do-even-more-stuff" (display-name (last (second pipeline)))))
+    )
+    (testing "that the display-name for a parallel is just the function-name"
+      (is (= "in-parallel" (display-name `in-parallel)))
+      (is (= "in-parallel" (display-name (first (first pipeline)))))
+    )))
 
-(deftest display-type-test
-  (testing "that in-parallel gets detected"
-    (is (= :parallel (display-type `in-parallel)))
-    (is (= :parallel (display-type (first (first pipeline)))))
-  )
-  (testing "that container types get detected"
-    (is (= :container (display-type `in-cwd)))
-    (is (= :container (display-type (first (second pipeline)))))
-  )
-  (testing "that normal steps get detected"
-    (is (= :step (display-type `do-stuff)))
-    (is (= :step (display-type (first simple-pipeline))))
-  )
-  (testing "that a string is unknown type"
-    (is (= :unknown (display-type "foo")))
-    (is (= :unknown (display-type (second (second (first pipeline))))))
-  )
-  (testing "that a sequence is a step" ; TODO: display-representation expects it this way. not entirely sure this is correct..
-    (is (= :step (display-type `(do-stuff do-more-stuff))))
-    (is (= :step (display-type simple-pipeline)))
-  )
-)
 
-(deftest display-name-test
-  (testing "that the display-name for a step is just the function-name"
-    (is (= "do-even-more-stuff" (display-name `do-even-more-stuff)))
-    (is (= "do-even-more-stuff" (display-name (last (second pipeline)))))
-  )
-  (testing "that the display-name for a parallel is just the function-name"
-    (is (= "in-parallel" (display-name `in-parallel)))
-    (is (= "in-parallel" (display-name (first (first pipeline)))))
-  )
-)
+
 
 (deftest display-representation-test
   (testing "that the display-representation of a step is the display-name and display-type"
