@@ -17,7 +17,7 @@
 (defn- run-pipeline []
   (dsl/run todo/pipeline))
 
-(defn start-pipeline-thread []
+(defn- start-pipeline-thread []
   (async/thread (while true (run-pipeline))))
 
 (defn- pipeline-state []
