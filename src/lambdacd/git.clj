@@ -1,6 +1,6 @@
 (ns lambdacd.git
   (:require [lambdacd.shell :as sh]
-            [lambdacd.dsl :as dsl]
+            [lambdacd.execution :as execution]
             [lambdacd.util :as util]))
 
 (defn- current-revision [repo-uri branch]
@@ -15,7 +15,7 @@
 
 (defn wait-for-git [repo-uri branch]
   (let [last-seen-revision (current-revision repo-uri branch)]
-    (dsl/wait-for (revision-changed-from last-seen-revision repo-uri branch))))
+    (execution/wait-for (revision-changed-from last-seen-revision repo-uri branch))))
 
 (defn- checkout [repo-uri revision]
   (let [cwd (util/create-temp-dir)]
@@ -26,5 +26,5 @@
 (defn with-git [repo-uri steps]
   (fn [args step-id]
     (let [repo-location (checkout repo-uri (:revision args))] ;; TODO: wouldn't it be better to pass in the revision?
-      (dsl/execute-steps steps (assoc args :cwd repo-location) (dsl/new-base-id-for step-id)))))
+      (execution/execute-steps steps (assoc args :cwd repo-location) (execution/new-base-id-for step-id)))))
 

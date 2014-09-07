@@ -1,5 +1,5 @@
 (ns todopipeline.pipeline
-   (:use [lambdacd.dsl]
+   (:use [lambdacd.execution]
          [lambdacd.control-flow]
          [todopipeline.steps]))
 

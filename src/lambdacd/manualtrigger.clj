@@ -1,5 +1,5 @@
 (ns lambdacd.manualtrigger
-  (:require [lambdacd.dsl :as dsl]
+  (:require [lambdacd.execution :as execution]
             [clojure.core.async :as async]))
 
 (def ids-posted-to (atom #{}))
@@ -13,7 +13,7 @@
 (defn wait-for-async [p]
   (let [status-ch (async/chan 10)
         result {:status status-ch}
-        waiting-future (future (dsl/wait-for p))]
+        waiting-future (future (execution/wait-for p))]
     (async/>!! status-ch :waiting)
     (async/thread (async/>!! status-ch (:status @waiting-future)))
     result))

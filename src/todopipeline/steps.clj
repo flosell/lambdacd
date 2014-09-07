@@ -1,6 +1,6 @@
 (ns todopipeline.steps
   (:require [lambdacd.shell :as shell]
-            [lambdacd.dsl :as dsl]
+            [lambdacd.execution :as execution]
             [lambdacd.git :as git]
             [lambdacd.manualtrigger :as manualtrigger]))
 

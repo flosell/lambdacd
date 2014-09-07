@@ -1,7 +1,7 @@
-(ns lambdacd.dsl-test
+(ns lambdacd.execution-test
   (:use [lambdacd.test-util])
   (:require [clojure.test :refer :all]
-            [lambdacd.dsl :refer :all]
+            [lambdacd.execution :refer :all]
             [clojure.core.async :as async]))
 
 
@@ -38,7 +38,7 @@
     (async/>!! c :success)
     {:status c}))
 
-(with-private-fns [lambdacd.dsl [merge-step-results]]
+(with-private-fns [lambdacd.execution [merge-step-results]]
   (deftest step-result-merge-test
     (testing "merging without collisions"
       (is (= {:foo "hello" :bar "world"} (merge-step-results {:foo "hello"} {:bar "world"}))))

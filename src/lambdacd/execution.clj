@@ -1,4 +1,4 @@
-(ns lambdacd.dsl
+(ns lambdacd.execution
   (:require [clojure.core.async :as async]
             [lambdacd.util :as util]
             [lambdacd.pipeline-state :as pipeline-state]))

@@ -1,7 +1,7 @@
 (ns lambdacd.core
   (:require [todopipeline.pipeline :as todo]
             [clojure.data.json :as json :only [write-str]])
-  (:use [lambdacd.dsl])
+  (:use [lambdacd.execution])
   (gen-class))
 
 

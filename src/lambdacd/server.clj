@@ -5,7 +5,7 @@
             [clojure.data.json :as json :only [write-str]]
             [lambdacd.presentation :as presentation]
             [lambdacd.manualtrigger :as manualtrigger]
-            [lambdacd.dsl :as dsl]
+            [lambdacd.execution :as execution]
             [lambdacd.pipeline-state :as pipeline-state]
             [lambdacd.util :as util]
             [ring.util.response :as resp]
@@ -15,7 +15,7 @@
   (presentation/display-representation todo/pipeline))
 
 (defn- run-pipeline []
-  (dsl/run todo/pipeline))
+  (execution/run todo/pipeline))
 
 (defn- start-pipeline-thread []
   (async/thread (while true (run-pipeline))))

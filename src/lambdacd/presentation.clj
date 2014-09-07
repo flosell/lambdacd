@@ -3,7 +3,7 @@
   into a nice, map-format that we can use to display the pipeline
   in a UI"
   (:require [todopipeline.pipeline :as todo]
-            [lambdacd.dsl :as dsl]))
+            [lambdacd.execution :as execution]))
 
 
 (defn- is-fn? [fun]
