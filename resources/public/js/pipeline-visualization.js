@@ -6,15 +6,10 @@ var triggerManualStep = function(triggerId){
 
 var updateServerState = function() {
   $.ajax({url:"/api/pipeline-state"}).done(function(data) {
-    $("li").removeClass("status-running");
-    $("li").removeClass("status-finished");
     // TODO: clear all status
-    data.running.forEach(function(stepid) {
-      findByStepId(stepid).data("status","running");
-    })
 
-    data.finished.forEach(function(stepid) {
-      var stepResult = data.results[idToBrittleStringRepresentation(stepid)]
+    Object.keys(data.results).forEach(function(stepid) {
+      var stepResult = data.results[stepid]
       var stepElem = findByStepId(stepid);
       stepElem.data("status",stepResult.status);
       stepElem.data("output",stepResult.out);
@@ -25,23 +20,18 @@ var updateServerState = function() {
           triggerManualStep(triggerId);
         })
       }
-
-
     })
-
-
     setTimeout(updateServerState,500);
   })
 }
 
-var idToBrittleStringRepresentation = function(id) {
-  // this takes a proper array-like id like [0,1,0] and converts it into a string like this: "(0 1 0)"
-  // because this is what my hacked-together pipeline-state-representation currently outputs as json-keys for results
-  return "("+id.join(" ")+")";
+var stepIdToArray = function(id) {
+  return id.replace("(","").replace(")","").split(" ");
 }
 
 var findByStepId = (function() {
-  return function(stepid) {
+  return function(idString) {
+    var stepid = stepIdToArray(idString);
     var curPos = $("#pipeline");
     do {
       var idx = stepid.pop()-1;
