@@ -14,7 +14,7 @@
    :status (get step-result :status :undefined)
   })
 
-(defn wait-for-success [c]
+(defn- wait-for-success [c]
   (wait-for #(= (async/<!! c) :success)))
 
 (defn- process-step-result [step-result]
@@ -49,7 +49,7 @@
     (merge-status r1 r2)
     (merge r1 r2)))
 
-(defn merge-step-results [r1 r2]
+(defn- merge-step-results [r1 r2]
   (merge-with merge-entry r1 r2))
 
 (defn steps-with-ids [steps prev-id]
@@ -70,7 +70,7 @@
           new-result
           (recur (cons map-result result) (rest r)))))))
 
-(defn serial-step-result-producer [args s-with-id]
+(defn- serial-step-result-producer [args s-with-id]
   (map-or-abort (partial execute-step args) s-with-id))
 
 (defn execute-steps
