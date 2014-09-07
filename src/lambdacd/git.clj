@@ -1,7 +1,8 @@
 (ns lambdacd.git
   (:require [lambdacd.shell :as sh]
             [lambdacd.execution :as execution]
-            [lambdacd.util :as util]))
+            [lambdacd.util :as util]
+            [clojure.tools.logging :as log]))
 
 (defn- current-revision [repo-uri branch]
   (.trim (:out (sh/bash "/" (str "git ls-remote --heads " repo-uri " " branch " | cut -f 1")))))
@@ -10,7 +11,7 @@
 (defn- revision-changed-from [last-seen-revision repo-uri branch]
   (fn []
     (let [revision-now (current-revision repo-uri branch)]
-      (println "waiting for new revision. current revision" revision-now "last seen" last-seen-revision)
+      (log/debug "waiting for new revision. current revision" revision-now "last seen" last-seen-revision)
       (not= last-seen-revision revision-now))))
 
 (defn wait-for-git [repo-uri branch]

@@ -7,7 +7,11 @@
                  [org.clojure/data.json "0.2.5"]
                  [me.raynes/conch "0.8.0"]
                  [org.clojure/core.async "0.1.338.0-5c5012-alpha"]
-                 [compojure "1.1.8"]]
+                 [compojure "1.1.8"]
+                 [org.clojure/tools.logging "0.3.0"]
+                 [org.slf4j/slf4j-api "1.7.5"]
+                 [ch.qos.logback/logback-core "1.0.13"]
+                 [ch.qos.logback/logback-classic "1.0.13"]]
   :ring {:handler lambdacd.server/app
          :init lambdacd.server/start-pipeline-thread }
   :plugins [[lein-ring "0.8.11"]]

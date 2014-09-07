@@ -1,7 +1,8 @@
 (ns lambdacd.execution
   (:require [clojure.core.async :as async]
             [lambdacd.util :as util]
-            [lambdacd.pipeline-state :as pipeline-state]))
+            [lambdacd.pipeline-state :as pipeline-state]
+            [clojure.tools.logging :as log]))
 
 (defn wait-for [p]
   (while (not (p))
@@ -33,7 +34,7 @@
     (let [immediate-step-result (step args step-id)]
       (pipeline-state/update step-id immediate-step-result)
       (let [final-step-result (step-result-after-step-finished immediate-step-result)]
-        (println (str "executed step " step-id final-step-result))
+        (log/debug (str "executed step " step-id final-step-result))
         (pipeline-state/update step-id final-step-result)
         (step-output step-id final-step-result)))))
 
