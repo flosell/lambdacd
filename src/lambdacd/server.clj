@@ -3,7 +3,7 @@
   (:require [compojure.route :as route]
             [todopipeline.pipeline :as todo]
             [clojure.data.json :as json :only [write-str]]
-            [lambdacd.visual :as visual]
+            [lambdacd.presentation :as presentation]
             [lambdacd.manualtrigger :as manualtrigger]
             [lambdacd.dsl :as dsl]
             [lambdacd.util :as util]
@@ -11,7 +11,7 @@
             [clojure.core.async :as async]))
 
 (defn- pipeline []
-  (visual/display-representation todo/pipeline))
+  (presentation/display-representation todo/pipeline))
 
 (defn- run-pipeline []
   (dsl/run todo/pipeline))

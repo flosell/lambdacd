@@ -1,4 +1,7 @@
-(ns lambdacd.visual
+(ns lambdacd.presentation
+  "this namespace is responsible for converting the pipeline
+  into a nice, map-format that we can use to display the pipeline
+  in a UI"
   (:require [todopipeline.pipeline :as todo]
             [lambdacd.dsl :as dsl]))
 

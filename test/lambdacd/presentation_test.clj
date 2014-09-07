@@ -1,8 +1,8 @@
-(ns lambdacd.visual-test
+(ns lambdacd.presentation-test
   (:use [lambdacd.dsl]
         [lambdacd.control-flow])
   (:require [clojure.test :refer :all]
-            [lambdacd.visual :refer :all]))
+            [lambdacd.presentation :refer :all]))
 
 (defn do-stuff [] {})
 (defn do-other-stuff [] {})
