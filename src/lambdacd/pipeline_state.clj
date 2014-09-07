@@ -4,7 +4,7 @@
   (:require [clojure.core.async :as async]
             [lambdacd.util :as util]))
 
-(def initial-pipeline-state {:results {}})
+(def initial-pipeline-state {})
 (def pipeline-state (atom initial-pipeline-state))
 
 (defn get-pipeline-state []
@@ -13,14 +13,9 @@
 (defn reset-pipeline-state []
   (reset! pipeline-state initial-pipeline-state))
 
-(defn update-pipeline-state [step-id step-result pipeline-state]
-  (let [cur-results  (:results pipeline-state)
-        new-results  (assoc cur-results step-id step-result)]
-    {:results new-results}))
-
 (defn set-running! [step-id]
-  (swap! pipeline-state (partial update-pipeline-state step-id {:status :running})))
+  (swap! pipeline-state #(assoc %1 step-id {:status :running})))
 
 (defn set-finished! [step-id step-result]
-  (swap! pipeline-state (partial update-pipeline-state step-id step-result)))
+  (swap! pipeline-state #(assoc %1 step-id step-result)))
 

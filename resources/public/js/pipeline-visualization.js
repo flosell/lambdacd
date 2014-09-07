@@ -8,8 +8,8 @@ var updateServerState = function() {
   $.ajax({url:"/api/pipeline-state"}).done(function(data) {
     // TODO: clear all status
 
-    Object.keys(data.results).forEach(function(stepid) {
-      var stepResult = data.results[stepid]
+    Object.keys(data).forEach(function(stepid) {
+      var stepResult = data[stepid]
       var stepElem = findByStepId(stepid);
       stepElem.data("status",stepResult.status);
       stepElem.data("output",stepResult.out);
