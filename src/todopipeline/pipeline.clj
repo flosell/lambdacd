@@ -7,7 +7,7 @@
 
 (def pipeline
   `(
-   ;; wait-for-frontend-repo
+     wait-for-frontend-repo
     lambdacd.manualtrigger/wait-for-manual-trigger
     (in-parallel
       (with-frontend-git

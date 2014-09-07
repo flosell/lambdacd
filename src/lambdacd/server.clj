@@ -23,7 +23,7 @@
 (defn- pipeline-state []
   (pipeline-state/get-pipeline-state))
 
-;; TODO: we shouldn't actually exists, we should preprocess this somewhere else
+;; TODO: this shouldn't actually exist, we should preprocess this somewhere else
 (defn- serialize-channel [k v]
   (if (util/is-channel? v)
     :waiting
@@ -38,7 +38,6 @@
   (GET  "/api/pipeline" [] (json (pipeline)))
   (GET  "/api/pipeline-state" [] (json (pipeline-state)))
   (POST "/api/pipeline" [] (json (run-pipeline)))
-  (GET  "/api/dynamic/:id" [id] (json (manualtrigger/was-posted? id)))
   (POST "/api/dynamic/:id" [id] (json (manualtrigger/post-id id)))
   (GET "/" [] (resp/resource-response "index.html" {:root "public"}))
   (route/resources "/")

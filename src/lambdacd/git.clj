@@ -1,4 +1,5 @@
 (ns lambdacd.git
+  "build-steps that let you work with git repositories"
   (:require [lambdacd.shell :as sh]
             [lambdacd.execution :as execution]
             [lambdacd.util :as util]
@@ -14,7 +15,9 @@
       (log/debug "waiting for new revision. current revision" revision-now "last seen" last-seen-revision)
       (not= last-seen-revision revision-now))))
 
-(defn wait-for-git [repo-uri branch]
+(defn wait-for-git
+  "step that waits for the head of a branch to change"
+  [repo-uri branch]
   (let [last-seen-revision (current-revision repo-uri branch)]
     (execution/wait-for (revision-changed-from last-seen-revision repo-uri branch))))
 
@@ -24,7 +27,10 @@
     cwd))
 
 
-(defn with-git [repo-uri steps]
+(defn with-git
+  "creates a container-step that checks out a given revision from a repository.
+   the revision number is passed on as the :revision value in the arguments-map"
+  [repo-uri steps]
   (fn [args step-id]
     (let [repo-location (checkout repo-uri (:revision args))] ;; TODO: wouldn't it be better to pass in the revision?
       (execution/execute-steps steps (assoc args :cwd repo-location) (execution/new-base-id-for step-id)))))

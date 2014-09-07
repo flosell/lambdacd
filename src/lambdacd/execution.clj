@@ -1,4 +1,5 @@
 (ns lambdacd.execution
+  "low level functions for job-execution"
   (:require [clojure.core.async :as async]
             [lambdacd.util :as util]
             [lambdacd.pipeline-state :as pipeline-state]

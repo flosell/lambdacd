@@ -1,4 +1,5 @@
 (ns lambdacd.control-flow
+  "control flow elements for a pipeline: steps that control the way their child-steps are being run"
   (:require [lambdacd.execution :as execution]))
 
 (defn- parallel-step-result-producer [args s-with-id]
