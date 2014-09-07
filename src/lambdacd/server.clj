@@ -6,6 +6,7 @@
             [lambdacd.presentation :as presentation]
             [lambdacd.manualtrigger :as manualtrigger]
             [lambdacd.dsl :as dsl]
+            [lambdacd.pipeline-state :as pipeline-state]
             [lambdacd.util :as util]
             [ring.util.response :as resp]
             [clojure.core.async :as async]))
@@ -20,7 +21,7 @@
   (async/thread (while true (run-pipeline))))
 
 (defn- pipeline-state []
-  (dsl/get-pipeline-state))
+  (pipeline-state/get-pipeline-state))
 
 ;; TODO: we shouldn't actually exists, we should preprocess this somewhere else
 (defn- serialize-channel [k v]

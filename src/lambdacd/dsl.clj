@@ -1,37 +1,12 @@
 (ns lambdacd.dsl
   (:require [clojure.core.async :as async]
-            [lambdacd.util :as util]))
+            [lambdacd.util :as util]
+            [lambdacd.pipeline-state :as pipeline-state]))
 
 (defn wait-for [p]
   (while (not (p))
     (Thread/sleep 1000))
   {:status :success})
-
-(def initial-pipeline-state {:running [] :finished []})
-(def pipeline-state (atom initial-pipeline-state))
-
-(defn get-pipeline-state []
-  @pipeline-state)
-
-(defn reset-pipeline-state []
-  (reset! pipeline-state initial-pipeline-state))
-
-(defn set-running! [step-id]
-  (swap! pipeline-state #(assoc %1 :running (cons step-id (:running %1)))))
-
-(defn update-pipeline-state [step-id step-result pipeline-state]
-  (let [cur-finished (:finished pipeline-state)
-        new-finished (cons step-id cur-finished)
-        cur-running  (:running pipeline-state)
-        new-running  (remove (partial = step-id) cur-running)
-        cur-results  (:results pipeline-state)
-        new-results  (assoc cur-results step-id step-result)]
-  {:finished new-finished
-   :running new-running
-   :results new-results}))
-
-(defn set-finished! [step-id step-result] ;; TODO: this should also remove it from the running-list. at the moment, css magic makes appear ok
-  (swap! pipeline-state (partial update-pipeline-state step-id step-result)))
 
 
 (defn- step-output [step-id step-result]
@@ -54,12 +29,12 @@
   ([args [step-id step]]
     (execute-step step args step-id))
   ([step args step-id]
-    (set-running! step-id)
+    (pipeline-state/set-running! step-id)
     (let [step-result (step args step-id)]
-      (set-finished! step-id step-result)
+      (pipeline-state/set-finished! step-id step-result)
       (let [processed-step-result (process-step-result step-result)]
         (println (str "executed step " step-id processed-step-result))
-        (set-finished! step-id processed-step-result)
+        (pipeline-state/set-finished! step-id processed-step-result)
         (step-output step-id processed-step-result)))))
 
 (defn- merge-status [s1 s2]
@@ -109,6 +84,6 @@
   (cons 0 step-id))
 
 (defn run [pipeline]
-  (reset-pipeline-state)
+  (pipeline-state/reset-pipeline-state)
   (let [runnable-pipeline (map eval pipeline)]
     (execute-steps runnable-pipeline {} [0])))
