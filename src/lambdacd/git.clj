@@ -1,12 +1,11 @@
 (ns lambdacd.git
   (:require [lambdacd.shell :as sh]
-            [lambdacd.dsl :as dsl]))
+            [lambdacd.dsl :as dsl]
+            [lambdacd.util :as util]))
 
-(defn current-revision [repo-uri branch]
+(defn- current-revision [repo-uri branch]
   (.trim (:out (sh/bash "/" (str "git ls-remote --heads " repo-uri " " branch " | cut -f 1")))))
 
-(defn create-temp-dir []
-  (.toString (java.nio.file.Files/createTempDirectory "foo" (into-array java.nio.file.attribute.FileAttribute []))))
 
 (defn- revision-changed-from [last-seen-revision repo-uri branch]
   (fn []
@@ -18,8 +17,8 @@
   (let [last-seen-revision (current-revision repo-uri branch)]
     (dsl/wait-for (revision-changed-from last-seen-revision repo-uri branch))))
 
-(defn checkout [repo-uri revision]
-  (let [cwd (create-temp-dir)]
+(defn- checkout [repo-uri revision]
+  (let [cwd (util/create-temp-dir)]
     (sh/bash cwd (str "git clone " repo-uri " .") (str "git checkout " revision))
     cwd))
 
