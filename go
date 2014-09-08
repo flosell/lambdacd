@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/bin/bash 
+
+set -e
 
 setup() {
   if [ "$(vagrant status | grep running)" == "" ]; then 
@@ -7,6 +9,8 @@ setup() {
 
   vagrant ssh-config frontend_ci >> /tmp/lambdacd-dev-env-ssh-config
   vagrant ssh-config backend_ci >> /tmp/lambdacd-dev-env-ssh-config
+
+  echo "[SUCCESS] You are good to go"
 }
 
 if [ "$1" == "setup" ]; then

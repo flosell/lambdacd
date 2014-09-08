@@ -15,9 +15,9 @@
       (with-backend-git
         server-test
         server-package))
-    (in-cwd "/Users/fsellmay/Code/pipeline-as-code/todo-backend-client"
+    (in-cwd "/tmp/mockrepo"
       client-deploy-ci)
-    (in-cwd "/Users/fsellmay/Code/pipeline-as-code/todo-backend-compojure"
+    (in-cwd "/tmp/mockrepo"
       server-deploy-ci)
     some-failing-step
     some-step-that-cant-be-reached

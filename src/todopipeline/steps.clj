@@ -4,15 +4,18 @@
             [lambdacd.git :as git]
             [lambdacd.manualtrigger :as manualtrigger]))
 
+(def backend-repo "git@github.com:flosell/todo-backend-compojure.git")
+(def frontend-repo "git@github.com:flosell/todo-backend-client.git")
+
 (defn wait-for-frontend-repo [& _]
-  (git/wait-for-git "file:///Users/fsellmay/Code/pipeline-as-code/todo-backend-client" "master"))
+  (git/wait-for-git frontend-repo "master"))
 
 
 (defn ^{:display-type :container} with-frontend-git [& steps]
-  (git/with-git "file:///Users/fsellmay/Code/pipeline-as-code/todo-backend-client" steps))
+  (git/with-git frontend-repo steps))
 
 (defn ^{:display-type :container} with-backend-git [& steps]
-  (git/with-git "file:///Users/fsellmay/Code/pipeline-as-code/todo-backend-compojure" steps))
+  (git/with-git backend-repo steps))
 
 
 (defn client-package [{cwd :cwd} & _]
@@ -31,10 +34,10 @@
     "./publish.sh"))
 
 (defn server-deploy-ci [{cwd :cwd} & _]
-  (shell/bash cwd "./deploy.sh backend_ci /tmp/mockrepo/server-snapshot.tar.gz"))
+  (shell/bash cwd "./deploy-server.sh backend_ci /tmp/mockrepo/server-snapshot.tar.gz"))
 
 (defn client-deploy-ci [{cwd :cwd} & _]
-  (shell/bash cwd "./deploy.sh frontend_ci /tmp/mockrepo/client-snapshot.tar.gz"))
+  (shell/bash cwd "./deploy-frontend.sh frontend_ci /tmp/mockrepo/client-snapshot.tar.gz"))
 
 (defn some-failing-step [& _]
   (shell/bash "/" "echo 'i am going to fail now...'" "exit 1"))
