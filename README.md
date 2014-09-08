@@ -30,9 +30,12 @@ Nevertheless, give it a try, send in bug reports, feature requests or just give 
 ## Development
 
 * `lein test` runs all tests
-* `lein ring server` starts a server and opens pipeline-view showing the example-pipeline in your browser
+* if you want to run the example-pipeline contained in the code, you first need to setup a mock-deployment environment on your machine (two VMs where we deploy a TodoMVC client and server):
+  * install [Vagrant](http://www.vagrantup.com/downloads.html)
+  * have github-access set up (you need to be able to clone with ssh)
+  * `./go setup` starts up two VMs in vagrant where we deploy to and exports the ssh-config for them so that it can be used by the deployment scripts
+  * `lein ring server` starts a server and opens pipeline-view showing the example-pipeline in your browser.
 
-TODO: say something about the example-pipeline? polish it so it runs on different machines?
 
 ## Contribute
 

@@ -15,9 +15,8 @@
       (with-backend-git
         server-test
         server-package))
-    (in-cwd "/tmp/mockrepo"
-      client-deploy-ci)
-    (in-cwd "/tmp/mockrepo"
+    (in-cwd "/tmp/mockrepo" ; the publish-scripts copy deploy-scripts and artifacts into this directory
+      client-deploy-ci
       server-deploy-ci)
     some-failing-step
     some-step-that-cant-be-reached
