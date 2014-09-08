@@ -16,8 +16,8 @@
 (defn some-step-for-cwd [{cwd :cwd} & _]
   {:foo cwd :status :success})
 
-(defn some-step-taking-10ms [arg & _]
-  (Thread/sleep 10)
+(defn some-step-taking-100ms [arg & _]
+  (Thread/sleep 100)
   {:foo :bar})
 
 (defn some-successful-step [arg & _]
@@ -39,7 +39,7 @@
   (testing "that one failing step fails the pipeline"
     (is (= {:outputs { [1 0 0] {:status :success} [2 0 0] {:status :failure}} :status :failure} ((in-parallel some-successful-step some-failing-step) {} [0 0]))))
   (testing "that it executes things faster than it would serially"
-    (is (close? 3 10 (my-time ((in-parallel some-step-taking-10ms some-step-taking-10ms some-step-taking-10ms) {} [0 0]))))))
+    (is (close? 30 100 (my-time ((in-parallel some-step-taking-100ms some-step-taking-100ms some-step-taking-100ms) {} [0 0]))))))
 
 (deftest in-cwd-test
   (testing "that it collects all the outputs together correctly and passes cwd to steps"
