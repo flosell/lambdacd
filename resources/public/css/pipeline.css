@@ -13,6 +13,10 @@ li[data-status=waiting] {
   background:lightyellow;
 }
 
+li[data-status=waiting]:after {
+  content: "click to trigger";
+}
+
 li[data-status=running] {
   background:lightblue;
 }
