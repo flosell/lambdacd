@@ -14,4 +14,5 @@
                  [ch.qos.logback/logback-classic "1.0.13"]]
   :ring {:handler todopipeline.pipeline/app
          :init todopipeline.pipeline/start-pipeline-thread }
-  :plugins [[lein-ring "0.8.11"]])
+  :plugins [[lein-ring "0.8.11"]
+            [lein-kibit "0.0.8"]])
