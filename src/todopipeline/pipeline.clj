@@ -1,7 +1,8 @@
 (ns todopipeline.pipeline
-   (:use [lambdacd.execution]
-         [lambdacd.control-flow]
-         [todopipeline.steps]))
+  (:require [lambdacd.server :as server])
+  (:use [lambdacd.execution]
+        [lambdacd.control-flow]
+        [todopipeline.steps]))
 
 
 
@@ -23,3 +24,7 @@
     some-failing-step
     some-step-that-cant-be-reached
   ))
+
+
+(def app (server/ui-for pipeline))
+(defn start-pipeline-thread [] (server/start-pipeline-thread pipeline))

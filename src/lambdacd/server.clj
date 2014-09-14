@@ -1,7 +1,6 @@
 (ns lambdacd.server
   (:use compojure.core)
   (:require [compojure.route :as route]
-            [todopipeline.pipeline :as todo]
             [clojure.data.json :as json :only [write-str]]
             [lambdacd.presentation :as presentation]
             [lambdacd.manualtrigger :as manualtrigger]
@@ -11,14 +10,14 @@
             [ring.util.response :as resp]
             [clojure.core.async :as async]))
 
-(defn- pipeline []
-  (presentation/display-representation todo/pipeline))
+(defn- pipeline [pipeline-def]
+  (presentation/display-representation pipeline-def))
 
-(defn- run-pipeline []
-  (execution/run todo/pipeline))
+(defn- run-pipeline [pipeline-def]
+  (execution/run pipeline-def))
 
-(defn- start-pipeline-thread []
-  (async/thread (while true (run-pipeline))))
+(defn start-pipeline-thread [pipeline-def]
+  (async/thread (while true (run-pipeline pipeline-def))))
 
 (defn- pipeline-state []
   (pipeline-state/get-pipeline-state))
@@ -34,12 +33,12 @@
     :body (json/write-str data :value-fn serialize-channel)
     :status 200 })
 
-(defroutes app
-  (GET  "/api/pipeline" [] (json (pipeline)))
+(defn ui-for [pipeline-def] (routes
+  (GET  "/api/pipeline" [] (json (pipeline pipeline-def)))
   (GET  "/api/pipeline-state" [] (json (pipeline-state)))
-  (POST "/api/pipeline" [] (json (run-pipeline)))
+  (POST "/api/pipeline" [] (json (run-pipeline pipeline-def)))
   (POST "/api/dynamic/:id" [id] (json (manualtrigger/post-id id)))
   (GET "/" [] (resp/resource-response "index.html" {:root "public"}))
   (route/resources "/")
-  (route/not-found "<h1>Page not found</h1>"))
+  (route/not-found "<h1>Page not found</h1>")))
 
