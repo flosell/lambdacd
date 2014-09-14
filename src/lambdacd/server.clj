@@ -36,7 +36,6 @@
 (defn ui-for [pipeline-def] (routes
   (GET  "/api/pipeline" [] (json (pipeline pipeline-def)))
   (GET  "/api/pipeline-state" [] (json (pipeline-state)))
-  (POST "/api/pipeline" [] (json (run-pipeline pipeline-def)))
   (POST "/api/dynamic/:id" [id] (json (manualtrigger/post-id id)))
   (GET "/" [] (resp/resource-response "index.html" {:root "public"}))
   (route/resources "/")

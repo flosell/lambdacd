@@ -9,7 +9,6 @@
     <link rel="stylesheet" type="text/css" href="css/pipeline.css"/>
     <body>
         <h1>Your build pipeline</h1>
-        <button id="trigger">Trigger Pipeline</button>
         <div id="pipeline">
             Please wait...
             <!-- inserted by js -->
@@ -32,14 +31,6 @@
             }).fail(function() {
                 pipelineElem.innerHTML="Something went wrong";
             })
-
-            $("#trigger").click(function() {
-                $.ajax({
-                    url:"/api/pipeline",
-                    type: "POST"
-                })
-            })
-
         </script>
     </body>
 </html>
