@@ -12,8 +12,11 @@ Nevertheless, give it a try, send in bug reports, feature requests or just give 
 
 ## Usage
 
-* TODO: maybe we should start with a lein template here?
-* TODO: the things in the trello task
+* `lein new lambdacd <NAME>` will create a new pipeline-project 
+* `lein ring server` from the projects folder starts the server and opens the the UI for your pipeline
+* your pipeline is defined in `src/<NAME>/`. Have a look around, change some steps or add some steps on your own
+
+* TODO: add more info here
 
 ## Design
 
