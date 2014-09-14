@@ -6,4 +6,4 @@
   (satisfies? clojure.core.async.impl.protocols/Channel c))
 
 (defn create-temp-dir []
-  (.toString (java.nio.file.Files/createTempDirectory "foo" (into-array java.nio.file.attribute.FileAttribute []))))
+  (str (java.nio.file.Files/createTempDirectory "foo" (into-array java.nio.file.attribute.FileAttribute []))))

@@ -6,7 +6,7 @@
   (jsh/sh "bash" "-c" cmd  :dir cwd))
 
 (defn- exit-code->status [exit-code]
-  (if (= exit-code 0)
+  (if (zero? exit-code)
     :success
     :failure))
 
