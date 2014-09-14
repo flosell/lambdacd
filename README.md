@@ -1,19 +1,7 @@
 # LambdaCD
 
-* it's a continuous delivery-pipeline, in code
-* it's Jenkins/Go/Teamcity/..., in clojure
-
-## Design
-
-LambdaCD is designed to be a library that provides you with the essential building-blocks to develop a small application that is your build-pipeline. You would then deploy this application like you would deploy any other application or piece of build-infrastructure.
-
-Those building blocks are:
-* steps: Build-steps are normal clojure-functions that receive a map of arguments, perform action (like checking out a repo, running tests or deploying your application) and return a map of result-values.
-* triggers: Are build-steps that wait until some condition (e.g. a commit is pushed to a repo, a user has triggered manually) is true before returning and thereby triggering the next step in the pipeline.
-* container steps: are build-steps that control the way their child-steps are being executed. It may for example execute them in parallel, set arguments for all of them or only run them under certain conditions.
-* pipeline: Is a list of steps that will be executed by the execution-engine
-
-TODO: the building blocks aren't really building blocks, they are the part of the pipeline... we should really be talking about the pipeline-visualization, the execution-engine, the helper-functions...
+* it's a continuous delivery pipeline, in code
+* it's Jenkins/Go/TeamCity/..., in clojure
 
 
 ## Status
@@ -26,6 +14,17 @@ Nevertheless, give it a try, send in bug reports, feature requests or just give 
 
 * TODO: maybe we should start with a lein template here?
 * TODO: the things in the trello task
+
+## Design
+
+LambdaCD is designed to be a library that provides you with the essential building-blocks to develop a small application that is your build-pipeline. You would then deploy this application like you would deploy any other application or piece of build-infrastructure.
+
+In this world, a build pipeline is just a sequence of clojure-functions (the build-steps) that implement a certain convention, i.e. they receive a map of parameters and return a map of output-values. We use this design for everything in the pipeline:
+* triggers are build-steps that wait for something (e.g. a new git-commit) before returning
+* containers are build-steps that coordinate a set of child-steps and control their execution (e.g. to execute a set of steps in parallel)
+
+TODO: go on here?
+
 
 ## Development
 
