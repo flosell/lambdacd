@@ -1,4 +1,4 @@
-(defproject org.clojars.flosell/lambdacd "0.1.0-alpha2"
+(defproject lambdacd "0.1.0-alpha2"
   :description "a library to create a continous delivery pipeline in code"
   :url "http://github.com/flosell/lambdacd"
   :license {:name "Apache License, version 2.0"
