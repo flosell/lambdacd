@@ -3,6 +3,7 @@
 * it's a continuous delivery pipeline, in code
 * it's Jenkins/Go/TeamCity/..., in clojure
 
+[![Build Status](https://travis-ci.org/flosell/lambdacd.svg)](https://travis-ci.org/flosell/lambdacd)
 
 ## Status
 
