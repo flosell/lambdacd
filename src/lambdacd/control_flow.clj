@@ -15,5 +15,5 @@
 
 
 (defn ^{:display-type :container} in-cwd [cwd & steps]
-  (fn [args step-id]
+  (fn [args step-id ctx]
     (execution/execute-steps steps (assoc args :cwd cwd) (execution/new-base-id-for step-id))))
