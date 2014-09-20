@@ -11,7 +11,17 @@
                  [org.clojure/tools.logging "0.3.0"]
                  [org.slf4j/slf4j-api "1.7.5"]
                  [ch.qos.logback/logback-core "1.0.13"]
-                 [ch.qos.logback/logback-classic "1.0.13"]]
+                 [ch.qos.logback/logback-classic "1.0.13"]
+                 [ring-server "0.3.1"]
+
+                 ; test-only
+                 [http-kit "2.1.16"]
+                 [org.clojure/data.json "0.2.5"]
+
+                 ]
+  :test-selectors {:default (complement :smoke)
+                   :smoke :smoke
+                   :all (constantly true)}
   :ring {:handler todopipeline.pipeline/app
          :init todopipeline.pipeline/start-pipeline-thread }
   :plugins [[lein-ring "0.8.11"]
