@@ -4,11 +4,6 @@
             [lambdacd.execution :refer :all]
             [clojure.core.async :as async]))
 
-
-
-
-
-
 (defn some-step-processing-input [arg & _]
   (assoc arg :foo :baz :status :success))
 
@@ -32,6 +27,9 @@
 
 (defn some-step-not-returning-status [arg & _]
   {})
+
+(defn some-step-consuming-the-context [arg step-id ctx]
+  {:status :success :context-info (:the-info ctx)})
 
 (defn some-step-returning-status-channel [& _]
   (let [c (async/chan 10)]
@@ -58,7 +56,9 @@
   (testing "that the result-status is :undefined if the step doesn't return any"
     (is (= {:outputs { [0 0] {} } :status :undefined} (execute-step some-step-not-returning-status {} [0 0]))))
   (testing "that the result-status can be a channel as well"
-    (is (= {:outputs { [0 0] {:status :success } }:status :success} (execute-step some-step-returning-status-channel {} [0 0])))))
+    (is (= {:outputs { [0 0] {:status :success } }:status :success} (execute-step some-step-returning-status-channel {} [0 0]))))
+  (testing "that the context data is being passed on to the step"
+    (is (= {:outputs { [0 0] {:status :success :context-info "foo"}} :status :success} (execute-step some-step-consuming-the-context {} [0 0] {:the-info "foo"})))))
 
 (deftest step-id-test
   (testing "that we can generate proper step-ids for steps"

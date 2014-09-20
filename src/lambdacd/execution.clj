@@ -31,8 +31,10 @@
   ([args [step-id step]]
     (execute-step step args step-id))
   ([step args step-id]
+   (execute-step step args step-id {}))
+  ([step args step-id ctx]
     (pipeline-state/running step-id)
-    (let [immediate-step-result (step args step-id)]
+    (let [immediate-step-result (step args step-id ctx)]
       (pipeline-state/update step-id immediate-step-result)
       (let [final-step-result (step-result-after-step-finished immediate-step-result)]
         (log/debug (str "executed step " step-id final-step-result))

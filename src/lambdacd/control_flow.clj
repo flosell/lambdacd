@@ -9,7 +9,7 @@
   (execution/execute-steps parallel-step-result-producer steps args step-id))
 
 (defn ^{:display-type :parallel} in-parallel [& steps]
-  (fn [args step-id]
+  (fn [args step-id ctx]
     (execute-steps-in-parallel steps args (cons 0 step-id))))
 
 
