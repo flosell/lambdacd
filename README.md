@@ -16,7 +16,7 @@ Nevertheless, give it a try, send in bug reports, feature requests or just give 
 * `lein new lambdacd <NAME>` will create a new pipeline-project
 * `lein ring server` from the project folder starts the server and opens the the UI for your pipeline
 * your pipeline is defined in `src/<NAME>/`. Have a look around, change some steps or add some steps on your own.
-* for details, check out the [walkthrough](docs/walkthrough.md), learn more about the [design](docs/design.md) or just dive straight into the [sample code](src/todopipeline)
+* for details, check out the [walkthrough](doc/walkthrough.md), learn more about the [design](doc/design.md) or just dive straight into the [sample code](src/todopipeline)
 
 
 ## Development
