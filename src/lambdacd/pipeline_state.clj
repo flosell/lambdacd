@@ -1,5 +1,5 @@
 (ns lambdacd.pipeline-state
-  "responsible to manage store the current state of the pipeline
+  "responsible to manage the current state of the pipeline
   i.e. what's currently running, what are the results of each step, ..."
   (:require [clojure.core.async :as async]
             [lambdacd.util :as util]))
