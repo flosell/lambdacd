@@ -8,7 +8,7 @@ LambdaCD being a clojure-library, knowing a bit of clojure helps, but if you are
 As LambdaCD is a tool to implement build-pipelines, in this walkthrough we are going to implement one. Specifically, we are going to implement a pipeline that is pulling a [TodoMVC](http://todomvc.com/) client and backend from GitHub, run tests, assemble publish artifacts and deploy those artifacts onto servers to run from.
 
 The whole thing will look more or less like this:
-![Our pipline design](img/pipeline-overview.png)
+![Our pipline design][img/pipeline-overview.png]
 
 ## Setup
 
@@ -26,9 +26,13 @@ So let's get started.
 
 ## Your first pipeline - The template
 
+### Poking around
+
 After all this setup, lets really get started. First of all, we need a new project to develop our pipeline: `lein new lambdacd pipeline-tutorial` will create a new project for you, already set up with some sensible defaults and ready to run.
 
 So let's run it: `cd` ito the newly created `pipeline-tutorial` directory and run `lein ring server`. After a few seconds, this will start up a server listening on port 3000 and your browser will pop up, with the overview-page showing your pipelines current state. Click on the first step (it's a manual trigger) to start the pipeline. Now things start to move and you see a running build.
+
+### Pipeline Structure
 
 But where did this all come from?
 
@@ -37,6 +41,8 @@ Let's find out. Open `src/pipeline_tutorial/pipeline.clj`. This is where your pi
 And after that? What is this list doing there with the `in-parallel`?
 
 You can probably already guess it: This is our way of nesting: Lists indicate that the first function in the list (`in-parallel` in this case) will take care of executing the nested steps. We'll get into this in more detail later so for now, just believe me that this will execute the functions echoing "foo" and "bar" in parallel, waiting for both to finish and then continuing with the rest of the pipeline.
+
+### The steps
 
 So now we know how to set up the structure of the pipeline. But I still haven't told you how the interesting bits work, your build-steps. So here we go:
 
@@ -47,6 +53,8 @@ Build steps are normal functions. They have this contract
 * They return a map of key-value parts. This is the data you pass on to the next step as `args`. Most of it can be arbitrary but one you need to have: `:status` needs to be `:success` if you want the pipeline to go on. Pretty much anything else is a failure but `:failure` is convention for this case.
 
 In our example the steps are defined in `src/pipeline_tutorial/steps.clj`. As those steps are so simple, they don't care much about anything so they just ignore any input (`[& _]` is a good shorthand for this) and either return immediately or pass on the "hard" work to the terminal, using the `bash` function. It takes the working directory and an arbitrary number of commands. Change something simple and restart your `lein ring server` to see some changes.
+
+### Some wiring
 
 Now we covered most of the code that was generated for you, except for some infrastructure that binds the whole thing together. You don't need to care about this to finish the tutorial but a bit of context might help understand what's going on under the hood.
 
