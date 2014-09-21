@@ -71,3 +71,13 @@ The two other lines define the symbols `app` and `start-pipeline-thread`. `app` 
 `start-pipeline-thread` is a function that does just that, starting the pipeline in a seperate thread in the background.
 
 Both of these symbols are referenced from `project.clj` where they are being picked up by Leiningen when you start the server.
+
+**to be continued:**
+
+## A basic deployment script with git and bash
+
+* adding your own steps, using git and bash
+
+## Getting fancier: our own nesting operation
+
+* implementing in-cwd ourselves
