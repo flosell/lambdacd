@@ -164,3 +164,13 @@ Throw a bit of parallelism into the structure and we are good to go:
 ## Getting fancier: our own nesting operation
 
 * implementing in-cwd ourselves
+
+## What's left for you - deployment
+
+So you are done, you have implemented a complete continuous delivery pipeline. Just one problem left: It sits on your machine and you probably want it deployed somewhere in your shiny datacenter, on AWS or DigitalOcean, right next to your beautiful, aging Jenkins snowflake.
+
+As I'm not an expert on your particular infrastructure, you'll probably have to figure things out for yourself from now on. But here are a few pointers.
+
+All you have done so far is develop a normal ring-based clojure application, so you can deploy it like one. [lein-ring](https://github.com/weavejester/lein-ring) will help you out there. It can create an executable uberjar for you or just package everything into a WAR to deploy to your favorite application server.
+
+And then you are done. Well, almost. Maybe you'll want to create a pipeline to deploy your pipeline in case you want to change and redeploy automatically? But that's up to you now.
