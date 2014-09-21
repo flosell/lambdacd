@@ -8,7 +8,7 @@ LambdaCD being a clojure-library, knowing a bit of clojure helps, but if you are
 As LambdaCD is a tool to implement build-pipelines, in this walkthrough we are going to implement one. Specifically, we are going to implement a pipeline that is pulling a [TodoMVC](http://todomvc.com/) client and backend from GitHub, run tests, assemble publish artifacts and deploy those artifacts onto servers to run from.
 
 The whole thing will look more or less like this:
-![Our pipline design][img/pipeline-overview.png]
+![Our pipline design](img/pipeline-overview.png)
 
 ## Setup
 
@@ -76,7 +76,90 @@ Both of these symbols are referenced from `project.clj` where they are being pic
 
 ## A basic deployment script with git and bash
 
-* adding your own steps, using git and bash
+After so much text, you are probably eager to get going, so without further ado, let's start building our pipeline.
+
+Let's start with packaging the frontend. My fork (which includes some scripts for our walkthrough) is here: https://github.com/flosell/todo-backend-client
+
+I'm guessing we need the step to call the `package.sh` and `publish.sh` scripts. And some `bower install` can't hurt as well, it's a frontend project after all.
+
+So let's put this into a function:
+```clojure
+(defn client-package [args & _]
+  (shell/bash <cwd ???> ; I don't know
+    "bower install"
+    "./package.sh"
+    "./publish.sh"))
+```
+
+Almost ready... But what's our working directory? It's probably wherever we checked out the git repository. Let's just assume some other step before took care of it and use argument destructuring to get working directory out of the arguments map the step receives:
+
+```clojure
+(defn frontend-package [{cwd :cwd} & _]
+  (shell/bash cwd
+    "bower install"
+    "./package.sh"
+    "./publish.sh"))
+```
+
+
+Great, a first build step, but without some code to check out, it's not particulary useful... So we want something that checks out our git repo and does something so that client-package is being executed with the path of the checked out git in the `:cwd` value. Fortunately, LambdaCD already provides such a thing: `lambdacd.git/with-git`. It takes a repository-uri and some steps and creates a nesting operation for us where all the given steps are executed with `:cwd` set to a folder containing the checked out repo.
+
+So let's first add this to the `require` statements on the beginning of the file: `[lambdacd.git :as git]`. This imports the `lambdacd.git` namespace, aliased as `git`.
+
+Now we can use it:
+
+```clojure
+(def frontend-repo "git@github.com:flosell/todo-backend-client.git")
+
+(defn ^{:display-type :container} with-frontend-git [& steps]
+  (git/with-git frontend-repo steps))
+```
+
+The `^{:display-type :container}` adds some metadata, telling LambdaCD that this is a step that's nesting and it should be displayed with its children.
+
+So let's use the whole thing in our first complete pipeline:
+
+```clojure
+(def pipeline-def
+  `(
+    lambdacd.manualtrigger/wait-for-manual-trigger
+    (with-frontend-git
+      frontend-package)))
+```
+
+Well, now, if this works, the backend part pretty much works the same:
+
+```clojure
+(def backend-repo "git@github.com:flosell/todo-backend-compojure.git")
+
+(defn ^{:display-type :container} with-backend-git [& steps]
+  (git/with-git backend-repo steps))
+
+(defn server-test [{cwd :cwd} & _]
+  (shell/bash cwd
+    "lein test"))
+
+(defn server-package [{cwd :cwd} & _]
+  (shell/bash cwd
+    "lein uberjar"
+    "./publish.sh"))
+```
+
+Throw a bit of parallelism into the structure and we are good to go:
+
+```clojure
+(def pipeline-def
+  `(
+    ; wait-for-frontend-repo
+    lambdacd.manualtrigger/wait-for-manual-trigger
+    (in-parallel
+      (with-frontend-git
+        client-package)
+      (with-backend-git
+        server-test
+        server-package))
+  ))
+```
 
 ## Getting fancier: our own nesting operation
 
