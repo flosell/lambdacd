@@ -5,19 +5,10 @@
             [lambdacd.util :as util]))
 
 (def initial-pipeline-state {})
-(def pipeline-state (atom initial-pipeline-state))
-
-(defn get-pipeline-state []
-  @pipeline-state)
-
-(defn reset-pipeline-state []
-  (reset! pipeline-state initial-pipeline-state))
-
 
 (defn update [{step-id :step-id state :_pipeline-state} step-result]
   (if (not (nil? state)) ; convenience for tests: if no state exists we just do nothing
     (swap! state #(assoc %1 step-id step-result))))
-
 
 (defn running [ctx]
   (update ctx {:status :running}))

@@ -14,10 +14,6 @@
   (presentation/display-representation pipeline-def))
 
 
-
-(defn- pipeline-state []
-  (pipeline-state/get-pipeline-state))
-
 ;; TODO: this shouldn't actually exist, we should preprocess this somewhere else
 (defn- serialize-channel [k v]
   (if (util/is-channel? v)
@@ -29,9 +25,9 @@
     :body (json/write-str data :value-fn serialize-channel)
     :status 200 })
 
-(defn ui-for [pipeline-def] (routes
+(defn ui-for [pipeline-def pipeline-state] (routes
   (GET  "/api/pipeline" [] (json (pipeline pipeline-def)))
-  (GET  "/api/pipeline-state" [] (json (pipeline-state)))
+  (GET  "/api/pipeline-state" [] (json @pipeline-state))
   (POST "/api/dynamic/:id" [id] (json (manualtrigger/post-id id)))
   (GET "/" [] (resp/resource-response "index.html" {:root "public"}))
   (route/resources "/")
