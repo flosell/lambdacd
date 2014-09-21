@@ -4,10 +4,21 @@ var triggerManualStep = function(triggerId){
   });
 }
 
+var buildToDisplay = function(all) {
+    var queryString = window.location.search;
+    var offset = queryString.indexOf("build");
+    if (offset > -1) {
+        return queryString.substr(offset+"build=".length);
+    } else {
+        return Object.keys(all).sort().reverse()[0];
+    }
+}
+
 var updateServerState = function() {
   $.ajax({url:"/api/pipeline-state"}).done(function(all) {
     // TODO: clear all status
-    var data = all["1"];
+
+    var data = all[buildToDisplay(all)];
     
     Object.keys(data).forEach(function(stepid) {
       var stepResult = data[stepid]
@@ -21,6 +32,11 @@ var updateServerState = function() {
           triggerManualStep(triggerId);
         })
       }
+    })
+    var builds = $("#builds ul");
+    builds.children().remove();
+    Object.keys(all).forEach(function(buildNumber) {
+        builds.append("<li><a href=\"?build="+buildNumber+"\">Build #"+buildNumber+"</a></li>")
     })
     setTimeout(updateServerState,500);
   })
