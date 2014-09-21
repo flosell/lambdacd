@@ -2,11 +2,12 @@
   (:use [lambdacd.control-flow]
         [smoketest.steps])
   (:require [lambdacd.server :as server]
-            [lambdacd.execution :as execution]))
+            [lambdacd.execution :as execution]
+            [lambdacd.core :as core]))
 
 
 
-(def pipeline
+(def pipeline-def
   `(
      lambdacd.manualtrigger/wait-for-manual-trigger
      (in-parallel
@@ -16,5 +17,7 @@
   ))
 
 
-(def app (server/ui-for pipeline))
-(defn start-pipeline-thread [] (execution/start-pipeline-thread pipeline))
+(def pipeline (core/mk-pipeline pipeline-def))
+
+(def app (:ring-handler pipeline))
+(def start-pipeline-thread (:init pipeline))

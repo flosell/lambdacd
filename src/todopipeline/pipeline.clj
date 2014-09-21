@@ -1,12 +1,13 @@
 (ns todopipeline.pipeline
   (:require [lambdacd.server :as server]
-            [lambdacd.execution :as execution])
+            [lambdacd.execution :as execution]
+            [lambdacd.core :as core])
   (:use [lambdacd.control-flow]
         [todopipeline.steps]))
 
 
 
-(def pipeline
+(def pipeline-def
   `(
     ; wait-for-frontend-repo
     lambdacd.manualtrigger/wait-for-manual-trigger
@@ -25,6 +26,7 @@
     some-step-that-cant-be-reached
   ))
 
+(def pipeline (core/mk-pipeline pipeline-def))
 
-(def app (server/ui-for pipeline))
-(defn start-pipeline-thread [] (execution/start-pipeline-thread pipeline))
+(def app (:ring-handler pipeline))
+(def start-pipeline-thread (:init pipeline))
