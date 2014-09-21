@@ -10,6 +10,8 @@ As LambdaCD is a tool to implement build-pipelines, in this walkthrough we are g
 The whole thing will look more or less like this:
 ![Our pipline design](img/pipeline-overview.png)
 
+If you want to see the end-result, look into the LambdaCD-Repository: [../src/todopipeline](../src/todopipeline)
+
 ## Setup
 
 Before we start, I said we wanted to deploy apps to a server, so we probably need a server and some deployment scripts. Fortunately, LambdaCD is using the exact same example during development so there are some things ready for you to use. Basically, the setup is two vagrant boxes to deploy to and some bash scripts that handle most of the deployment.
@@ -71,8 +73,6 @@ The two other lines define the symbols `app` and `start-pipeline-thread`. `app` 
 `start-pipeline-thread` is a function that does just that, starting the pipeline in a seperate thread in the background.
 
 Both of these symbols are referenced from `project.clj` where they are being picked up by Leiningen when you start the server.
-
-**to be continued:**
 
 ## A basic deployment script with git and bash
 
@@ -163,11 +163,42 @@ Throw a bit of parallelism into the structure and we are good to go:
 
 ## Getting fancier: our own nesting operation
 
-* implementing in-cwd ourselves
+So now we have created artifacts for frontend and backend. The scripts put those artifacts into the folder `/tmp/mockrepo`, together with deployment scripts. Of course, we could now repeat what we have been doing before, create a small step that executes the deployment scripts and just hardcode the working directory.
+
+But I kind of liked the style we had before, where the step received the working directory from a container-step (the `with-git` ones). Also, I want to show you one more thing. How to go about creating your own nested operations. So here's what I want to end up with:
+
+```clojure
+(in-cwd "/tmp/mockrepo"
+  deploy-frontend
+  deploy-backend)
+```
+
+If you run this now, it'll probably work already (assuming you defined the deploy-steps on your own) because LambdaCD already comes with `in-cwd`. But let's just assume it wouldn't. How could we implement it ourselves?
+
+LambdaCD just execute the elements in the pipeline one by one. If it is a function-name, it executes this function. If it is a list, it first evaluates the list (i.e. executes the function on the beginning of the list with the rest as parameters) and then executes the result.
+
+So to implement `in-cwd`, we need a function that takes the location of the working directory and a number of functions and returns a function that matches the step-contract. So far so good:
+
+```clojure
+(defn ^{:display-type :container} in-cwd [cwd & steps]
+  (fn [args ctx]
+    {:status :success}))
+```
+
+Now we satisfied the contract, but we still need someone to do the hard work of actually calling the child-steps. For this, we use the functions provided by the `lambdacd.execution` namespace. Specifically, `execute-steps` which some steps to execute, the arguments for the steps and a context. But beware, we can't just use our normal context. We now need something called a base-context, which (in a very simplified way) makes sure that LambdaCD can identify the steps as being children of your step.
+
+To put it all together:
+
+```clojure
+(defn ^{:display-type :container} in-cwd [cwd & steps]
+  (fn [args ctx]
+        (execution/execute-steps steps (assoc args :cwd cwd) (execution/new-base-context-for ctx))))
+```
+
 
 ## What's left for you - deployment
 
-So you are done, you have implemented a complete continuous delivery pipeline. Just one problem left: It sits on your machine and you probably want it deployed somewhere in your shiny datacenter, on AWS or DigitalOcean, right next to your beautiful, aging Jenkins snowflake.
+So you are done, you have implemented a complete continuous delivery pipeline. Just one problem left: It sits on your machine and you probably want it deployed somewhere in your shiny datacenter, on AWS or DigitalOcean, right next to your beautiful, aging Jenkins [snowflake](http://martinfowler.com/bliki/SnowflakeServer.html).
 
 As I'm not an expert on your particular infrastructure, you'll probably have to figure things out for yourself from now on. But here are a few pointers.
 
