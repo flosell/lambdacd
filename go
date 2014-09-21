@@ -10,6 +10,7 @@ setup() {
   vagrant ssh-config frontend_ci >> /tmp/lambdacd-dev-env-ssh-config
   vagrant ssh-config backend_ci >> /tmp/lambdacd-dev-env-ssh-config
 
+  mkdir -p /tmp/mockrepo
   echo "[SUCCESS] You are good to go"
 }
 
