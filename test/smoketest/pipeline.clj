@@ -1,8 +1,8 @@
 (ns smoketest.pipeline
-  (:require [lambdacd.server :as server])
-  (:use [lambdacd.execution]
-        [lambdacd.control-flow]
-        [smoketest.steps]))
+  (:use [lambdacd.control-flow]
+        [smoketest.steps])
+  (:require [lambdacd.server :as server]
+            [lambdacd.execution :as execution]))
 
 
 
@@ -17,4 +17,4 @@
 
 
 (def app (server/ui-for pipeline))
-(defn start-pipeline-thread [] (server/start-pipeline-thread pipeline))
+(defn start-pipeline-thread [] (execution/start-pipeline-thread pipeline))

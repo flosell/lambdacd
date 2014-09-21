@@ -111,3 +111,10 @@
       (execute-steps runnable-pipeline {} {:step-id [0]
                                            :build-number build-number
                                            :_pipeline-state pipeline-state/pipeline-state}))))
+
+
+(defn- run-pipeline [pipeline-def]
+  (run pipeline-def))
+
+(defn start-pipeline-thread [pipeline-def]
+  (async/thread (while true (run-pipeline pipeline-def))))

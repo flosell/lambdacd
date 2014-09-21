@@ -13,11 +13,7 @@
 (defn- pipeline [pipeline-def]
   (presentation/display-representation pipeline-def))
 
-(defn- run-pipeline [pipeline-def]
-  (execution/run pipeline-def))
 
-(defn start-pipeline-thread [pipeline-def]
-  (async/thread (while true (run-pipeline pipeline-def))))
 
 (defn- pipeline-state []
   (pipeline-state/get-pipeline-state))
