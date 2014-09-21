@@ -9,11 +9,11 @@
   (execution/execute-steps parallel-step-result-producer steps args step-id))
 
 (defn ^{:display-type :parallel} in-parallel [& steps]
-  (fn [args step-id ctx]
-    (execute-steps-in-parallel steps args (cons 0 step-id))))
+  (fn [args ctx]
+    (execute-steps-in-parallel steps args (execution/new-base-context-for ctx))))
 
 
 
 (defn ^{:display-type :container} in-cwd [cwd & steps]
-  (fn [args step-id ctx]
-    (execution/execute-steps steps (assoc args :cwd cwd) (execution/new-base-id-for step-id))))
+  (fn [args ctx]
+    (execution/execute-steps steps (assoc args :cwd cwd) (execution/new-base-context-for ctx))))

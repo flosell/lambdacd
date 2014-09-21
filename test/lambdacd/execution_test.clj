@@ -28,7 +28,7 @@
 (defn some-step-not-returning-status [arg & _]
   {})
 
-(defn some-step-consuming-the-context [arg step-id ctx]
+(defn some-step-consuming-the-context [arg ctx]
   {:status :success :context-info (:the-info ctx)})
 
 (defn some-step-returning-status-channel [& _]
@@ -50,25 +50,26 @@
 
 (deftest execute-step-test
   (testing "that executing returns the step result added to the input args"
-    (is (= {:outputs { [0 0] {:foo :baz :x :y :status :success}} :status :success} (execute-step some-step-processing-input {:x :y} [0 0]))))
+    (is (= {:outputs { [0 0] {:foo :baz :x :y :status :success}} :status :success} (execute-step some-step-processing-input {:x :y} {:step-id [0 0]}))))
   (testing "that executing returns the steps result-status as a special field and leaves it in the output as well"
-    (is (= {:outputs { [0 0] {:status :success} } :status :success} (execute-step some-successful-step {} [0 0]))))
+    (is (= {:outputs { [0 0] {:status :success} } :status :success} (execute-step some-successful-step {} {:step-id [0 0]}))))
   (testing "that the result-status is :undefined if the step doesn't return any"
-    (is (= {:outputs { [0 0] {} } :status :undefined} (execute-step some-step-not-returning-status {} [0 0]))))
+    (is (= {:outputs { [0 0] {} } :status :undefined} (execute-step some-step-not-returning-status {} {:step-id [0 0]}))))
   (testing "that the result-status can be a channel as well"
-    (is (= {:outputs { [0 0] {:status :success } }:status :success} (execute-step some-step-returning-status-channel {} [0 0]))))
+    (is (= {:outputs { [0 0] {:status :success } }:status :success} (execute-step some-step-returning-status-channel {} {:step-id [0 0]}))))
   (testing "that the context data is being passed on to the step"
-    (is (= {:outputs { [0 0] {:status :success :context-info "foo"}} :status :success} (execute-step some-step-consuming-the-context {} [0 0] {:the-info "foo"})))))
+    (is (= {:outputs { [0 0] {:status :success :context-info "foo"}} :status :success} (execute-step some-step-consuming-the-context {} {:step-id [0 0] :the-info "foo"})))))
 
-(deftest step-id-test
-  (testing "that we can generate proper step-ids for steps"
-    (is (= [[[1 0] some-step] [[2 0] some-step]] (steps-with-ids [some-step some-step] [0 0])))))
+(deftest context-for-steps-test
+  (testing "that we can generate proper contexts for steps and keep other context info as it is"
+    (is (= [[{:some-value 42 :step-id [1 0]} some-step] [{:some-value 42 :step-id [2 0]} some-step]] (context-for-steps [some-step some-step] {:some-value 42 :step-id [0 0]})))))
+
 
 (deftest execute-steps-test
   (testing "that executing steps returns outputs of both steps with different step ids"
-    (is (= {:outputs { [1 0] {:foo :baz :status :success} [2 0] {:foo :baz :status :success}} :status :success} (execute-steps [some-other-step some-other-step] {} [0 0]))))
+    (is (= {:outputs { [1 0] {:foo :baz :status :success} [2 0] {:foo :baz :status :success}} :status :success} (execute-steps [some-other-step some-other-step] {} { :step-id [0 0] }))))
   (testing "that a failing step prevents the succeeding steps from being executed"
-    (is (= {:outputs { [1 0] {:status :success} [2 0] {:status :failure}} :status :failure} (execute-steps [some-successful-step some-failing-step some-other-step] {} [0 0])))))
+    (is (= {:outputs { [1 0] {:status :success} [2 0] {:status :failure}} :status :failure} (execute-steps [some-successful-step some-failing-step some-other-step] {} { :step-id [0 0] })))))
 
 
 (deftest timing-test

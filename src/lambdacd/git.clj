@@ -31,7 +31,7 @@
   "creates a container-step that checks out a given revision from a repository.
    the revision number is passed on as the :revision value in the arguments-map"
   [repo-uri steps]
-  (fn [args step-id ctx]
+  (fn [args ctx]
     (let [repo-location (checkout repo-uri (:revision args))] ;; TODO: wouldn't it be better to pass in the revision?
-      (execution/execute-steps steps (assoc args :cwd repo-location) (execution/new-base-id-for step-id)))))
+      (execution/execute-steps steps (assoc args :cwd repo-location) (execution/new-base-context-for ctx)))))
 

@@ -28,18 +28,16 @@
 
 
 (defn execute-step
-  ([args [step-id step]]
-    (execute-step step args step-id))
-  ([step args step-id]
-   (execute-step step args step-id {}))
-  ([step args step-id ctx]
-    (pipeline-state/running step-id)
-    (let [immediate-step-result (step args step-id ctx)]
-      (pipeline-state/update step-id immediate-step-result)
-      (let [final-step-result (step-result-after-step-finished immediate-step-result)]
-        (log/debug (str "executed step " step-id final-step-result))
-        (pipeline-state/update step-id final-step-result)
-        (step-output step-id final-step-result)))))
+  ([args [ctx step]]
+    (execute-step step args ctx))
+  ([step args {:keys [step-id] :as ctx}]
+   (pipeline-state/running step-id)
+   (let [immediate-step-result (step args ctx)]
+     (pipeline-state/update step-id immediate-step-result)
+     (let [final-step-result (step-result-after-step-finished immediate-step-result)]
+       (log/debug (str "executed step " step-id final-step-result))
+       (pipeline-state/update step-id final-step-result)
+       (step-output step-id final-step-result)))))
 
 (defn- merge-status [s1 s2]
   (if (= s1 :success)
@@ -56,12 +54,22 @@
 (defn- merge-step-results [r1 r2]
   (merge-with merge-entry r1 r2))
 
-(defn steps-with-ids [steps prev-id]
+(defn- steps-with-ids [steps prev-id]
   (let [significant-part (first prev-id)
         rest-part (rest prev-id)
         significant-ids (util/range-from significant-part (count steps))
         ids (map #(cons %1 rest-part) significant-ids)]
     (map vector ids steps)))
+
+(defn- to-step-with-context [ctx]
+  (fn [[id step]]
+    [(assoc ctx :step-id id) step]))
+
+(defn context-for-steps
+  "creates contexts for steps"
+  [steps base-context]
+  (let [s-with-id (steps-with-ids steps (:step-id base-context))]
+    (map (to-step-with-context base-context) s-with-id)))
 
 (defn- map-or-abort [f coll]
   (loop [result ()
@@ -78,16 +86,23 @@
   (map-or-abort (partial execute-step args) s-with-id))
 
 (defn execute-steps
-  ([steps args step-id]
-    (execute-steps serial-step-result-producer steps args step-id))
-  ([step-result-producer steps args step-id]
-    (let [step-results (step-result-producer args (steps-with-ids steps step-id))]
+  ([steps args ctx]
+    (execute-steps serial-step-result-producer steps args ctx))
+  ([step-result-producer steps args ctx]
+    (let [step-results (step-result-producer args (context-for-steps steps ctx))]
       (reduce merge-step-results args step-results))))
 
-(defn new-base-id-for [step-id]
+(defn- new-base-id-for [step-id]
   (cons 0 step-id))
+
+(defn new-base-context-for [ctx]
+  (let [old-step-id (:step-id ctx)
+        new-step-id (new-base-id-for old-step-id)
+        new-context (assoc ctx :step-id new-step-id)]
+    new-context))
+
 
 (defn run [pipeline]
   (pipeline-state/reset-pipeline-state)
   (let [runnable-pipeline (map eval pipeline)]
-    (execute-steps runnable-pipeline {} [0])))
+    (execute-steps runnable-pipeline {} {:step-id [0]})))
