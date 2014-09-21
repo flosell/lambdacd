@@ -10,15 +10,17 @@
 (defn- test-server [handler options]
   (ring/serve handler (merge {:join? false, :open-browser? false} options)))
 
-"{\"(1)\":{\"trigger-id\":\"8b2dd783-2335-477d-b6ec-9e4481ff7d0e\",\"status\":\"waiting\"}}"
 (defn- server-status []
   (:status (deref (http/get "http://localhost:3000/api/pipeline-state"))))
 
 (defn- pipeline-state []
   (json/read-str (:body (deref (http/get "http://localhost:3000/api/pipeline-state")))))
 
+(defn first-build []
+  (get (pipeline-state) "1"))
+
 (defn- manual-trigger []
-  (get (pipeline-state) "(1)"))
+  (get (first-build) "(1)"))
 
 (defn- manual-trigger-state []
   (get (manual-trigger)  "status"))
@@ -46,6 +48,6 @@
       (is (= "waiting" (manual-trigger-state)))
       (is (= 200 (trigger-manual-trigger)))
       (wait-a-bit)
-      (is (= "waiting" (manual-trigger-state)))
+      (is (= "success" (manual-trigger-state)))
       (is (= 5 @steps/some-counter))
       )))

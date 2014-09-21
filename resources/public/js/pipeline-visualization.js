@@ -5,9 +5,10 @@ var triggerManualStep = function(triggerId){
 }
 
 var updateServerState = function() {
-  $.ajax({url:"/api/pipeline-state"}).done(function(data) {
+  $.ajax({url:"/api/pipeline-state"}).done(function(all) {
     // TODO: clear all status
-
+    var data = all["1"];
+    
     Object.keys(data).forEach(function(stepid) {
       var stepResult = data[stepid]
       var stepElem = findByStepId(stepid);
