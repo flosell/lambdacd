@@ -31,12 +31,12 @@
   ([args [ctx step]]
     (execute-step step args ctx))
   ([step args {:keys [step-id] :as ctx}]
-   (pipeline-state/running step-id)
+   (pipeline-state/running ctx)
    (let [immediate-step-result (step args ctx)]
-     (pipeline-state/update step-id immediate-step-result)
+     (pipeline-state/update ctx immediate-step-result)
      (let [final-step-result (step-result-after-step-finished immediate-step-result)]
        (log/debug (str "executed step " step-id final-step-result))
-       (pipeline-state/update step-id final-step-result)
+       (pipeline-state/update ctx final-step-result)
        (step-output step-id final-step-result)))))
 
 (defn- merge-status [s1 s2]

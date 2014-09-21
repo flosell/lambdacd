@@ -13,9 +13,9 @@
 (defn reset-pipeline-state []
   (reset! pipeline-state initial-pipeline-state))
 
-(defn running [step-id]
-  (swap! pipeline-state #(assoc %1 step-id {:status :running})))
 
-(defn update [step-id step-result]
+(defn update [{step-id :step-id} step-result]
   (swap! pipeline-state #(assoc %1 step-id step-result)))
 
+(defn running [ctx]
+  (update ctx {:status :running}))
