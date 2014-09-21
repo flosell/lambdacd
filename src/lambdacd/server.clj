@@ -4,11 +4,8 @@
             [clojure.data.json :as json :only [write-str]]
             [lambdacd.presentation :as presentation]
             [lambdacd.manualtrigger :as manualtrigger]
-            [lambdacd.execution :as execution]
-            [lambdacd.pipeline-state :as pipeline-state]
             [lambdacd.util :as util]
-            [ring.util.response :as resp]
-            [clojure.core.async :as async]))
+            [ring.util.response :as resp]))
 
 (defn- pipeline [pipeline-def]
   (presentation/display-representation pipeline-def))
@@ -32,4 +29,3 @@
   (GET "/" [] (resp/resource-response "index.html" {:root "public"}))
   (route/resources "/")
   (route/not-found "<h1>Page not found</h1>")))
-
