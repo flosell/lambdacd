@@ -20,8 +20,6 @@
     (in-cwd "/tmp/mockrepo" ; the publish-scripts copy deploy-scripts and artifacts into this directory
       client-deploy-ci
       server-deploy-ci)
-    ;; waiting again because the we are buggy and still want to see the successful server-deployment... TODO: remove when bug resolved
-    lambdacd.manualtrigger/wait-for-manual-trigger
     some-failing-step
     some-step-that-cant-be-reached
   ))
