@@ -2912,20 +2912,30 @@ the LambdaCD REST-API and the UI.</p>
 </td><td class="codes"><pre class="brush: clojure">(def pipeline (core/mk-pipeline pipeline-def))</pre></td></tr><tr><td class="docs"><p>Definitions that are used by the lein-ring plugin to run the application</p>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>the ring handler</p>
 </td><td class="codes"><pre class="brush: clojure">(def app (:ring-handler pipeline))</pre></td></tr><tr><td class="docs"><p>and the function that starts a thread that runs the actual pipeline. </p>
-</td><td class="codes"><pre class="brush: clojure">(def start-pipeline-thread (:init pipeline))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#todopipeline.steps" name="todopipeline.steps"><h1 class="project-name">todopipeline.steps</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def start-pipeline-thread (:init pipeline))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#todopipeline.steps" name="todopipeline.steps"><h1 class="project-name">todopipeline.steps</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h1>Build steps</h1>
+
+<p>This namespace contains the actual buildsteps that test, package and deploy your application.
+They are used in the pipeline-definition you saw in todopipeline.pipeline</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns todopipeline.steps
   (:require [lambdacd.shell :as shell]
             [lambdacd.execution :as execution]
             [lambdacd.git :as git]
-            [lambdacd.manualtrigger :as manualtrigger]))</pre></td></tr><tr><td class="docs">
+            [lambdacd.manualtrigger :as manualtrigger]))</pre></td></tr><tr><td class="docs"><p>Let's define some constants</p>
 </td><td class="codes"><pre class="brush: clojure">(def backend-repo &quot;git@github.com:flosell/todo-backend-compojure.git&quot;)
-(def frontend-repo &quot;git@github.com:flosell/todo-backend-client.git&quot;)</pre></td></tr><tr><td class="docs">
+(def frontend-repo &quot;git@github.com:flosell/todo-backend-client.git&quot;)</pre></td></tr><tr><td class="docs"><p>This step does nothing more than to delegate to a library-function.
+It's a function that just waits until something changes in the repo.
+Once done, it returns and the build can go on</p>
 </td><td class="codes"><pre class="brush: clojure">(defn wait-for-frontend-repo [&amp; _]
-  (git/wait-for-git frontend-repo &quot;master&quot;))</pre></td></tr><tr><td class="docs">
+  (git/wait-for-git frontend-repo &quot;master&quot;))</pre></td></tr><tr><td class="docs"><p>Define some nice syntactic sugar that lets us run arbitrary build-steps with a
+repository checked out. The steps get executed with the folder where the repo
+is checked out as :cwd argument.
+The <code>^{:display-type :container}</code> is a hint for the UI to display the child-steps as well.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn ^{:display-type :container} with-frontend-git [&amp; steps]
   (git/with-git frontend-repo steps))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn ^{:display-type :container} with-backend-git [&amp; steps]
-  (git/with-git backend-repo steps))</pre></td></tr><tr><td class="docs">
+  (git/with-git backend-repo steps))</pre></td></tr><tr><td class="docs"><p>The steps that do the real work testing, packaging, publishing our code.
+They get the :cwd argument from the <code>with-*-git steps</code> we defined above.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn client-package [{cwd :cwd} &amp; _]
   (shell/bash cwd
     &quot;bower install&quot;
@@ -2941,11 +2951,17 @@ the LambdaCD REST-API and the UI.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn server-deploy-ci [{cwd :cwd} &amp; _]
   (shell/bash cwd &quot;./deploy-server.sh backend_ci /tmp/mockrepo/server-snapshot.tar.gz&quot;))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn client-deploy-ci [{cwd :cwd} &amp; _]
-  (shell/bash cwd &quot;./deploy-frontend.sh frontend_ci /tmp/mockrepo/client-snapshot.tar.gz&quot;))</pre></td></tr><tr><td class="docs">
+  (shell/bash cwd &quot;./deploy-frontend.sh frontend_ci /tmp/mockrepo/client-snapshot.tar.gz&quot;))</pre></td></tr><tr><td class="docs"><p>It's so easy to fail :).</p>
 </td><td class="codes"><pre class="brush: clojure">(defn some-failing-step [&amp; _]
-  (shell/bash &quot;/&quot; &quot;echo \&quot;i am going to fail now...\ &quot;exit 1&quot;))</pre></td></tr><tr><td class="docs">
+  (shell/bash &quot;/&quot; &quot;echo \&quot;i am going to fail now...\ &quot;exit 1&quot;))</pre></td></tr><tr><td class="docs"><p>This is just a step that shows you what output steps actually have (since you have only used library functions up to
+here). It's just a map with some information. :status has a special meaning in the sense that it needs to be there
+and be :success for the step to be treated as successful and for the build to continue.
+all other data can be (more or less) arbitrary and will be passed on to the next build-step as input arguments.
+more or less means that some values have special meaning for the UI to display things.
+Check out the implementation of <code>shell/bash</code> if you want to know more.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn some-step-that-cant-be-reached [&amp; _]
-  {:status :success})</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/gdeer81/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_todopipeline.pipeline">todopipeline.pipeline</li><li class="floating-toc-li" id="floating-toc_todopipeline.steps">todopipeline.steps</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
+  { :some-info &quot;hello world&quot;
+    :status :success})</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/gdeer81/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_todopipeline.pipeline">todopipeline.pipeline</li><li class="floating-toc-li" id="floating-toc_todopipeline.steps">todopipeline.steps</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
 SyntaxHighlighter.all();
 
 // hackity hack

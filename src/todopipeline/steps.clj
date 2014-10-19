@@ -1,23 +1,35 @@
+;; # Build steps
+;; This namespace contains the actual buildsteps that test, package and deploy your application.
+;; They are used in the pipeline-definition you saw in todopipeline.pipeline
+
 (ns todopipeline.steps
   (:require [lambdacd.shell :as shell]
             [lambdacd.execution :as execution]
             [lambdacd.git :as git]
             [lambdacd.manualtrigger :as manualtrigger]))
 
+;; Let's define some constants
 (def backend-repo "git@github.com:flosell/todo-backend-compojure.git")
 (def frontend-repo "git@github.com:flosell/todo-backend-client.git")
 
+;; This step does nothing more than to delegate to a library-function.
+;; It's a function that just waits until something changes in the repo.
+;; Once done, it returns and the build can go on
 (defn wait-for-frontend-repo [& _]
   (git/wait-for-git frontend-repo "master"))
 
-
+;; Define some nice syntactic sugar that lets us run arbitrary build-steps with a
+;; repository checked out. The steps get executed with the folder where the repo
+;; is checked out as :cwd argument.
+;; The ```^{:display-type :container}``` is a hint for the UI to display the child-steps as well.
 (defn ^{:display-type :container} with-frontend-git [& steps]
   (git/with-git frontend-repo steps))
 
 (defn ^{:display-type :container} with-backend-git [& steps]
   (git/with-git backend-repo steps))
 
-
+;; The steps that do the real work testing, packaging, publishing our code.
+;; They get the :cwd argument from the ```with-*-git steps``` we defined above.
 (defn client-package [{cwd :cwd} & _]
   (shell/bash cwd
     "bower install"
@@ -39,8 +51,17 @@
 (defn client-deploy-ci [{cwd :cwd} & _]
   (shell/bash cwd "./deploy-frontend.sh frontend_ci /tmp/mockrepo/client-snapshot.tar.gz"))
 
+
+;; It's so easy to fail :).
 (defn some-failing-step [& _]
   (shell/bash "/" "echo \"i am going to fail now...\"" "exit 1"))
 
+;; This is just a step that shows you what output steps actually have (since you have only used library functions up to
+;; here). It's just a map with some information. :status has a special meaning in the sense that it needs to be there
+;; and be :success for the step to be treated as successful and for the build to continue.
+;; all other data can be (more or less) arbitrary and will be passed on to the next build-step as input arguments.
+;; more or less means that some values have special meaning for the UI to display things.
+;; Check out the implementation of ```shell/bash``` if you want to know more.
 (defn some-step-that-cant-be-reached [& _]
-  {:status :success})
+  { :some-info "hello world"
+    :status :success})
