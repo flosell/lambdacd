@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="LambdaCD : a library to define a continuous delivery pipeline in code">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>LambdaCD</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/flosell/lambdacd">View on GitHub</a>
+
+          <h1 id="project_title">LambdaCD</h1>
+          <h2 id="project_tagline">a library to define a continuous delivery pipeline in code</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/flosell/lambdacd/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/flosell/lambdacd/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="lambdacd" class="anchor" href="#lambdacd"><span class="octicon octicon-link"></span></a>LambdaCD</h1>
+
+<ul>
+<li>it's a continuous delivery pipeline, in code</li>
+<li>it's Jenkins/Go/TeamCity/..., in clojure</li>
+</ul>
+
+<p><a href="https://travis-ci.org/flosell/lambdacd"><img src="https://travis-ci.org/flosell/lambdacd.svg" alt="Build Status"></a></p>
+
+<h2>
+<a name="status" class="anchor" href="#status"><span class="octicon octicon-link"></span></a>Status</h2>
+
+<p>This project is still in it's early prototype/proof of concept/experimentation stage, so don't rely on everything working flawlessly. There will be bugs, there will be missing features, things will change and things will look ugly.</p>
+
+<p>Nevertheless, give it a try, send in bug reports, feature requests or just give feedback!</p>
+
+<h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<ul>
+<li>
+<code>lein new lambdacd &lt;NAME&gt;</code> will create a new pipeline-project</li>
+<li>
+<code>lein ring server</code> from the project folder starts the server and opens the the UI for your pipeline</li>
+<li>your pipeline is defined in <code>src/&lt;NAME&gt;/</code>. Have a look around, change some steps or add some steps on your own.</li>
+<li>for details, check out the <a href="doc/walkthrough.md">walkthrough</a>, learn more about the <a href="doc/design.md">design</a> or just dive straight into the <a href="src/todopipeline">sample code</a>
+</li>
+</ul>
+
+<h2>
+<a name="development" class="anchor" href="#development"><span class="octicon octicon-link"></span></a>Development</h2>
+
+<ul>
+<li>
+<code>lein test :all</code> runs all tests</li>
+<li>if you want to run the example-pipeline contained in the code, you first need to setup a mock-deployment environment on your machine (two VMs where we deploy a TodoMVC client and server):
+
+<ul>
+<li>install <a href="http://www.vagrantup.com/downloads.html">Vagrant</a>
+</li>
+<li>have github-access set up (you need to be able to clone with ssh)</li>
+<li>
+<code>./go setup</code> starts up two VMs in vagrant where we deploy to and exports the ssh-config for them so that it can be used by the deployment scripts</li>
+<li>
+<code>lein ring server</code> starts a server and opens pipeline-view showing the example-pipeline in your browser.</li>
+</ul>
+</li>
+</ul>
+
+<h2>
+<a name="contribute" class="anchor" href="#contribute"><span class="octicon octicon-link"></span></a>Contribute</h2>
+
+<ul>
+<li>TODO</li>
+</ul>
+
+<h2>
+<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h2>
+
+<p>Copyright © 2014 Florian Sellmayr</p>
+
+<p>Distributed under the Apache License 2.0</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">LambdaCD maintained by <a href="https://github.com/flosell">flosell</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-55996730-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+
+  </body>
+</html>
