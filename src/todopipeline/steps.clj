@@ -51,11 +51,6 @@
 (defn client-deploy-ci [{cwd :cwd} & _]
   (shell/bash cwd "./deploy-frontend.sh frontend_ci /tmp/mockrepo/client-snapshot.tar.gz"))
 
-
-;; It's so easy to fail :).
-(defn some-failing-step [& _]
-  (shell/bash "/" "echo \"i am going to fail now...\"" "exit 1"))
-
 ;; This is just a step that shows you what output steps actually have (since you have only used library functions up to
 ;; here). It's just a map with some information. :status has a special meaning in the sense that it needs to be there
 ;; and be :success for the step to be treated as successful and for the build to continue.
@@ -65,3 +60,9 @@
 (defn some-step-that-cant-be-reached [& _]
   { :some-info "hello world"
     :status :success})
+
+
+;; Another step that just fails using bash.
+;; We could have made a failing step easier as well by just returning ```{ :status :failure }```
+(defn some-failing-step [& _]
+  (shell/bash "/" "echo \"i am going to fail now...\"" "exit 1"))
