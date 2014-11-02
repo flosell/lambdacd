@@ -31,7 +31,8 @@ Nevertheless, give it a try, send in bug reports, feature requests or just give 
 
 ## Contribute
 
-* TODO
+* File bug reports, give feedback
+* Send Pull Requests, or if you are missing features (support for a different version control system, nicer syntactic sugar, ...) consider creating an extension library.
 
 ## License
 
