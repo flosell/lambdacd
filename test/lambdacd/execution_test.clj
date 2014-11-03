@@ -42,6 +42,14 @@
     (async/>!! c :this-is-not-waiting)
     {:status c}))
 
+(defn some-step-returning-a-channel [& _]
+  (let [c (async/chan 10)]
+    (async/>!! c [:out "hello"])
+    (async/>!! c [:out "hello world"])
+    (async/>!! c [:some-value 42])
+    (async/>!! c [:status :success])
+    c))
+
 (with-private-fns [lambdacd.execution [merge-step-results]]
   (deftest step-result-merge-test
     (testing "merging without collisions"
@@ -65,6 +73,9 @@
     (is (= {:outputs { [0 0] {:status :success } }:status :success} (execute-step some-step-returning-status-channel {} {:step-id [0 0]}))))
   (testing "that the result-channel can fail"
     (is (= {:outputs { [0 0] {:status :this-is-not-waiting } }:status :this-is-not-waiting} (execute-step some-step-returning-a-failing-status-channel {} {:step-id [0 0]}))))
+  (testing "that the result can be a channel"
+    (is (= {:outputs { [0 0] {:status :success :some-value 42 :out "hello world" } } :status :success}
+           (execute-step some-step-returning-a-channel {} {:step-id [0 0]}))))
   (testing "that the context data is being passed on to the step"
     (is (= {:outputs { [0 0] {:status :success :context-info "foo"}} :status :success} (execute-step some-step-consuming-the-context {} {:step-id [0 0] :the-info "foo"})))))
 

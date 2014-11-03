@@ -24,11 +24,28 @@
           s
           (recur)))))))
 
+
+(defn- is-finished [key value]
+  (and (= key :status) (not= value :waiting)))
+
+(defn- process-result-channel [c]
+  (async/<!!
+    (async/go
+      (loop [cur-result {}]
+        (let [[key value] (async/<! c)
+              new-result (assoc cur-result key value)]
+          (if (is-finished key value)
+            new-result
+            (recur new-result)))))))
+
 (defn- step-result-after-step-finished [step-result]
-  (if (util/is-channel? (:status step-result))
-    (let [final-result (wait-for-channel-finished (:status step-result))]
-      (assoc step-result :status final-result))
-    step-result))
+  (cond
+    (util/is-channel? step-result)
+      (process-result-channel step-result)
+    (util/is-channel? (:status step-result))
+      (let [final-result (wait-for-channel-finished (:status step-result))]
+          (assoc step-result :status final-result))
+    :else step-result))
 
 
 (defn execute-step
