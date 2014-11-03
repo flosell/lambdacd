@@ -16,14 +16,18 @@
    :status (get step-result :status :undefined)
   })
 
-(defn- wait-for-success [c]
-  (wait-for #(= (async/<!! c) :success)))
+(defn- wait-for-channel-finished [c]
+  (async/<!! (async/go
+    (loop []
+      (let [s (async/<! c)]
+        (if (not= s :waiting)
+          s
+          (recur)))))))
 
 (defn- step-result-after-step-finished [step-result]
   (if (util/is-channel? (:status step-result))
-    (do
-      (wait-for-success (:status step-result))
-      (assoc step-result :status :success))
+    (let [final-result (wait-for-channel-finished (:status step-result))]
+      (assoc step-result :status final-result))
     step-result))
 
 

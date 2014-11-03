@@ -36,6 +36,12 @@
     (async/>!! c :success)
     {:status c}))
 
+(defn some-step-returning-a-failing-status-channel [& _]
+  (let [c (async/chan 10)]
+    (async/>!! c :waiting)
+    (async/>!! c :fail)
+    {:status c}))
+
 (with-private-fns [lambdacd.execution [merge-step-results]]
   (deftest step-result-merge-test
     (testing "merging without collisions"
@@ -57,6 +63,8 @@
     (is (= {:outputs { [0 0] {} } :status :undefined} (execute-step some-step-not-returning-status {} {:step-id [0 0]}))))
   (testing "that the result-status can be a channel as well"
     (is (= {:outputs { [0 0] {:status :success } }:status :success} (execute-step some-step-returning-status-channel {} {:step-id [0 0]}))))
+  (testing "that the result-channel can fail"
+    (is (= {:outputs { [0 0] {:status :fail } }:status :fail} (execute-step some-step-returning-a-failing-status-channel {} {:step-id [0 0]}))))
   (testing "that the context data is being passed on to the step"
     (is (= {:outputs { [0 0] {:status :success :context-info "foo"}} :status :success} (execute-step some-step-consuming-the-context {} {:step-id [0 0] :the-info "foo"})))))
 
