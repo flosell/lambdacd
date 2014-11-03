@@ -16,8 +16,6 @@
 
                  ; test-only
                  [http-kit "2.1.16"]
-                 [org.clojure/data.json "0.2.5"]
-
                  ]
   :test-selectors {:default (complement :smoke)
                    :smoke :smoke
