@@ -6,12 +6,14 @@ occur without warning between the alpha-releases. The official release will have
 ## 0.1.0-alpha4 [wip]
 
 * Pipeline-Steps can now return a core-async channel to continously update their state while the step is running (e.g for long-running steps that need to indicate progress on the UI):
-  ```clojure 
-  (async/>!! ch [:out "hello"])
-  (async/>!! ch [:out "hello world"])
-  (async/>!! ch [:status :success])
-  (async/close! ch)
-  ```
+ 
+ ```clojure 
+ (async/>!! ch [:out "hello"])
+ (async/>!! ch [:out "hello world"])
+ (async/>!! ch [:status :success])
+ (async/close! ch)
+ ```
+ 
 * Dropped support for core-async channels as `:status` value in a steps result-map. Use channels for the whole result instead (see above)
 
 ## 0.1.0-alpha3
