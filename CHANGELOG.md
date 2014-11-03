@@ -1,6 +1,20 @@
 # Changelog
 
-## 0.1.0-alpha3 [wip]
+This changelog indicates breaking changes to the API. As this is still an experimental library, breaking changes may
+occur without warning between the alpha-releases. The official release will have a defined and more stable API. 
+
+## 0.1.0-alpha4 [wip]
+
+* Pipeline-Steps can now return a core-async channel to continously update their state while the step is running (e.g for long-running steps that need to indicate progress on the UI):
+  ```clojure 
+  (async/>!! ch [:out "hello"])
+  (async/>!! ch [:out "hello world"])
+  (async/>!! ch [:status :success])
+  (async/close! ch)
+  ```
+* Dropped support for core-async channels as `:status` value in a steps result-map. Use channels for the whole result instead (see above)
+
+## 0.1.0-alpha3
 
 * parameters for steps changed. the second argument is now a context-map that contains the step-id and
   other low-level information
