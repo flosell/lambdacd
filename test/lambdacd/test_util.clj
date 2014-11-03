@@ -31,14 +31,6 @@
      ~body
      @history-atom#))
 
-
-(defn last-on [ch]
-  (async/<!! (async/go-loop [last nil]
-    (let [cur (async/<! ch)]
-      (if cur
-        (recur cur)
-        last)))))
-
 (defn result-channel->map [ch]
   (async/<!!
     (async/go-loop [last {}]
