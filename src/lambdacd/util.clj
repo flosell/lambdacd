@@ -1,4 +1,7 @@
-(ns lambdacd.util)
+(ns lambdacd.util
+  (:require [clojure.core.async :as async]
+            [clojure.java.io :as io]
+            [clojure.string :as string]))
 
 (defn range-from [from len] (range (inc from) (+ (inc from) len)))
 

@@ -1,6 +1,6 @@
 (ns lambdacd.test-util
   (:require [clojure.test :refer :all]
-            [lambdacd.execution :refer :all]
+            [lambdacd.execution :as execution]
             [clojure.core.async :as async]))
 
 (defmacro my-time
@@ -30,3 +30,21 @@
                                            (swap! history-atom# conj new#))))
      ~body
      @history-atom#))
+
+
+(defn last-on [ch]
+  (async/<!! (async/go-loop [last nil]
+    (let [cur (async/<! ch)]
+      (if cur
+        (recur cur)
+        last)))))
+
+(defn result-channel->map [ch]
+  (async/<!!
+    (async/go-loop [last {}]
+      (if-let [[key value] (async/<! ch)]
+        (let [new (assoc last key value)]
+          (if (#'execution/is-finished key value)
+            new
+            (recur new)))
+        last))))

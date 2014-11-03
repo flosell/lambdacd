@@ -1,7 +1,9 @@
 (ns lambdacd.util-test
   (:use [lambdacd.util])
   (:require [clojure.test :refer :all]
-            [clojure.core.async :as async]))
+            [clojure.core.async :as async]
+            [clojure.core.async.lab :as lab]
+            [clojure.java.io :as io]))
 
 (deftest range-test
   (testing "that range produces a range from a value+1 with a defined length"
