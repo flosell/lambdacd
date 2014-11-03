@@ -39,7 +39,7 @@
 (defn some-step-returning-a-failing-status-channel [& _]
   (let [c (async/chan 10)]
     (async/>!! c :waiting)
-    (async/>!! c :fail)
+    (async/>!! c :this-is-not-waiting)
     {:status c}))
 
 (with-private-fns [lambdacd.execution [merge-step-results]]
@@ -64,7 +64,7 @@
   (testing "that the result-status can be a channel as well"
     (is (= {:outputs { [0 0] {:status :success } }:status :success} (execute-step some-step-returning-status-channel {} {:step-id [0 0]}))))
   (testing "that the result-channel can fail"
-    (is (= {:outputs { [0 0] {:status :fail } }:status :fail} (execute-step some-step-returning-a-failing-status-channel {} {:step-id [0 0]}))))
+    (is (= {:outputs { [0 0] {:status :this-is-not-waiting } }:status :this-is-not-waiting} (execute-step some-step-returning-a-failing-status-channel {} {:step-id [0 0]}))))
   (testing "that the context data is being passed on to the step"
     (is (= {:outputs { [0 0] {:status :success :context-info "foo"}} :status :success} (execute-step some-step-consuming-the-context {} {:step-id [0 0] :the-info "foo"})))))
 
