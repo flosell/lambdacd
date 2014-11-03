@@ -69,15 +69,30 @@
     (is (= {:outputs { [0 0] {:status :success} } :status :success} (execute-step some-successful-step {} {:step-id [0 0]}))))
   (testing "that the result-status is :undefined if the step doesn't return any"
     (is (= {:outputs { [0 0] {} } :status :undefined} (execute-step some-step-not-returning-status {} {:step-id [0 0]}))))
-  (testing "that the result-status can be a channel as well"
-    (is (= {:outputs { [0 0] {:status :success } }:status :success} (execute-step some-step-returning-status-channel {} {:step-id [0 0]}))))
-  (testing "that the result-channel can fail"
-    (is (= {:outputs { [0 0] {:status :this-is-not-waiting } }:status :this-is-not-waiting} (execute-step some-step-returning-a-failing-status-channel {} {:step-id [0 0]}))))
   (testing "that the result can be a channel"
     (is (= {:outputs { [0 0] {:status :success :some-value 42 :out "hello world" } } :status :success}
            (execute-step some-step-returning-a-channel {} {:step-id [0 0]}))))
   (testing "that the context data is being passed on to the step"
-    (is (= {:outputs { [0 0] {:status :success :context-info "foo"}} :status :success} (execute-step some-step-consuming-the-context {} {:step-id [0 0] :the-info "foo"})))))
+    (is (= {:outputs { [0 0] {:status :success :context-info "foo"}} :status :success} (execute-step some-step-consuming-the-context {} {:step-id [0 0] :the-info "foo"}))))
+  (testing "that the final pipeline-state is properly set for a step returning a channel"
+    (let [pipeline-state-atom (atom {})]
+      (is (= { 5 { [0 0] {:status :success :some-value 42 :out "hello world"} } }
+             (do (execute-step some-step-returning-a-channel {} {:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state-atom})
+                 @pipeline-state-atom)))))
+  (testing "that the final pipeline-state is properly set for a step returning a static result"
+    (let [pipeline-state-atom (atom {})]
+      (is (= { 5 { [0 0] {:status :success } } }
+             (do (execute-step some-successful-step {} {:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state-atom})
+                 @pipeline-state-atom)))))
+  (testing "that the pipeline-state is updated over time"
+    (let [pipeline-state-atom (atom {})]
+      (is (= [{ 5 { [0 0] {:status :running } } }
+              { 5 { [0 0] {:status :running :out "hello"} } }
+              { 5 { [0 0] {:status :running :out "hello world"} } }
+              { 5 { [0 0] {:status :running :some-value 42 :out "hello world"} } }
+              { 5 { [0 0] {:status :success :some-value 42 :out "hello world"} } }]
+             (atom-history-for pipeline-state-atom
+               (execute-step some-step-returning-a-channel {} {:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state-atom})))))))
 
 (deftest context-for-steps-test
   (testing "that we can generate proper contexts for steps and keep other context info as it is"

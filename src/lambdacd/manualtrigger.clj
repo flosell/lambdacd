@@ -11,16 +11,17 @@
   (contains? @ids-posted-to id))
 
 (defn- wait-for-async [p]
-  (let [status-ch (async/chan 10)
-        result {:status status-ch}
+  (let [result-ch (async/chan 10)
         waiting-future (future (execution/wait-for p))]
-    (async/>!! status-ch :waiting)
-    (async/thread (async/>!! status-ch (:status @waiting-future)))
-    result))
+    (async/>!! result-ch [:status :waiting])
+    (async/thread (async/>!! result-ch [:status (:status @waiting-future)]))
+    result-ch))
 
 (defn wait-for-manual-trigger
   "build step that waits for someone to trigger the build by POSTing to the url indicated by a random trigger id.
   the trigger-id is returned as the :trigger-id result value. see UI implementation for details"
   [& _]
-  (let [id (str (java.util.UUID/randomUUID))]
-    (assoc (wait-for-async #(was-posted? id)) :trigger-id id)))
+  (let [id (str (java.util.UUID/randomUUID))
+        ch-wait(wait-for-async #(was-posted? id))]
+    (async/>!! ch-wait [:trigger-id id])
+    ch-wait))

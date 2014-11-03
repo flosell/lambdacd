@@ -16,49 +16,38 @@
    :status (get step-result :status :undefined)
   })
 
-(defn- wait-for-channel-finished [c]
-  (async/<!! (async/go
-    (loop []
-      (let [s (async/<! c)]
-        (if (not= s :waiting)
-          s
-          (recur)))))))
-
-
 (defn- is-finished [key value]
   (and (= key :status) (not= value :waiting)))
 
-(defn- process-result-channel [c]
+(defn- process-channel-result [c ctx]
   (async/<!!
     (async/go
-      (loop [cur-result {}]
+      (loop [cur-result {:status :running}]
         (let [[key value] (async/<! c)
               new-result (assoc cur-result key value)]
+          (pipeline-state/update ctx new-result)
           (if (is-finished key value)
             new-result
             (recur new-result)))))))
 
-(defn- step-result-after-step-finished [step-result]
-  (cond
-    (util/is-channel? step-result)
-      (process-result-channel step-result)
-    (util/is-channel? (:status step-result))
-      (let [final-result (wait-for-channel-finished (:status step-result))]
-          (assoc step-result :status final-result))
-    :else step-result))
+(defn- process-static-result [step-result ctx]
+  (pipeline-state/update ctx step-result)
+  step-result)
 
+(defn- process-step-result [immediate-step-result ctx]
+  (if (util/is-channel? immediate-step-result)
+    (process-channel-result immediate-step-result ctx)
+    (process-static-result immediate-step-result ctx)))
 
 (defn execute-step
   ([args [ctx step]]
     (execute-step step args ctx))
   ([step args {:keys [step-id] :as ctx}]
    (pipeline-state/running ctx)
-   (let [immediate-step-result (step args ctx)]
-     (pipeline-state/update ctx immediate-step-result)
-     (let [final-step-result (step-result-after-step-finished immediate-step-result)]
-       (log/debug (str "executed step " step-id final-step-result))
-       (pipeline-state/update ctx final-step-result)
-       (step-output step-id final-step-result)))))
+   (let [immediate-step-result (step args ctx)
+         final-step-result (process-step-result immediate-step-result ctx)]
+     (log/debug (str "executed step " step-id final-step-result))
+     (step-output step-id final-step-result))))
 
 (defn- merge-status [s1 s2]
   (if (= s1 :success)

@@ -21,3 +21,12 @@
   "Refers private fns from ns and runs tests in context."
   `(let ~(reduce #(conj %1 %2 `(ns-resolve '~ns '~%2)) [] fns)
      ~@tests))
+
+
+(defmacro atom-history-for [value-atom body]
+  `(let [history-atom# (atom [])]
+     (add-watch ~value-atom :foo (fn [key# ref# old# new#]
+                                         (if (not= old# new#)
+                                           (swap! history-atom# conj new#))))
+     ~body
+     @history-atom#))
