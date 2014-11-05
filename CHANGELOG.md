@@ -3,7 +3,9 @@
 This changelog indicates breaking changes to the API. As this is still an experimental library, breaking changes may
 occur without warning between the alpha-releases. The official release will have a defined and more stable API. 
 
-## 0.1.0-alpha4 [wip]
+## 0.1.0-alpha5 [wip]
+
+## 0.1.0-alpha4
 
 * Pipeline-Steps can now return a core-async channel to continously update their state while the step is running (e.g for long-running steps that need to indicate progress on the UI):
  
