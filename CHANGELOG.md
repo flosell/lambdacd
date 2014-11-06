@@ -3,7 +3,12 @@
 This changelog indicates breaking changes to the API. As this is still an experimental library, breaking changes may
 occur without warning between the alpha-releases. The official release will have a defined and more stable API. 
 
-## 0.1.0-alpha5 [wip]
+
+## 0.1.0-alpha6 [wip]
+
+## 0.1.0-alpha5
+
+* just a bugfix for the git-handling 
 
 ## 0.1.0-alpha4
 
