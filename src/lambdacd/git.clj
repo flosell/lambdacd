@@ -6,7 +6,7 @@
             [clojure.tools.logging :as log]))
 
 (defn- current-revision [repo-uri branch]
-  (.trim (:out (sh/bash "/" (str "git ls-remote --heads " repo-uri " " branch " | cut -f 1")))))
+  (.trim (:out (util/bash "/" (str "git ls-remote --heads " repo-uri " " branch " | cut -f 1")))))
 
 
 (defn- revision-changed-from [last-seen-revision repo-uri branch]
