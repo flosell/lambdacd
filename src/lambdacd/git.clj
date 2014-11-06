@@ -23,7 +23,7 @@
 
 (defn- checkout [repo-uri revision]
   (let [cwd (util/create-temp-dir)]
-    (sh/bash cwd (str "git clone " repo-uri " .") (str "git checkout " revision))
+    (util/bash cwd (str "git clone " repo-uri " .") (str "git checkout " revision))
     cwd))
 
 
