@@ -15,8 +15,8 @@
 ;; This step does nothing more than to delegate to a library-function.
 ;; It's a function that just waits until something changes in the repo.
 ;; Once done, it returns and the build can go on
-(defn wait-for-frontend-repo [& _]
-  (git/wait-for-git frontend-repo "master"))
+(defn wait-for-frontend-repo [_ ctx]
+  (git/wait-for-git ctx frontend-repo "master"))
 
 ;; Define some nice syntactic sugar that lets us run arbitrary build-steps with a
 ;; repository checked out. The steps get executed with the folder where the repo

@@ -25,6 +25,9 @@
                     "git commit -m \"some other message\"")
     { :dir dir :commits (git-commits dir) }))
 
+(defn- create-config []
+  { :home-dir (util/create-temp-dir)})
+
 (defn- commit-to [git-dir]
   (util/bash git-dir
              "echo x >> foo"
@@ -44,18 +47,33 @@
     (async/>! c {:status :timeout :current-revision "timeout"}))
   (async/<!! c))
 
+(defn- execute-wait-for-async [git-src-dir config]
+  (let [ch (async/go (wait-for-git { :config config } (repo-uri-for git-src-dir) "master"))]
+    (Thread/sleep 500) ;; dirty hack to make sure we started waiting before making the next commit
+    ch))
 
 (deftest wait-for-git-test
-  (testing "that is polls the git repository until a version that is different from the current one is found"
-    (let [create-output (create-test-repo)
+  (testing "that it returns immediately (since it has no last known revision), calls after that wait for the next commit independent of whether the commit occurred before or after starting to wait"
+    (let [config (create-config)
+          create-output (create-test-repo)
           git-src-dir (:dir create-output)
-          wait-channel (let [ch (async/go (wait-for-git (repo-uri-for git-src-dir) "master"))]
-                         (Thread/sleep 500) ;; dirty hack to make sure we started waiting before making the next commit
-                         ch)
-          new-commit-hash (commit-to git-src-dir)
-          wait-result  (get-value-or-timeout-from wait-channel)]
-      (is (= new-commit-hash (:current-revision wait-result)))
-      (is (= :success (:status wait-result))))))
+          original-head-commit (last (:commits create-output))
+          wait-for-original-commit-ch (execute-wait-for-async git-src-dir config)
+          wait-for-original-commit-result  (get-value-or-timeout-from wait-for-original-commit-ch)
+          commit-hash-with-nothing-waiting-for-it (commit-to git-src-dir)
+          wait-for-commit-that-happend-while-not-waiting-ch (execute-wait-for-async git-src-dir config)
+          wait-for-commit-that-happend-while-not-waiting-ch-result  (get-value-or-timeout-from wait-for-commit-that-happend-while-not-waiting-ch)
+          wait-started-while-not-having-a-new-commit-ch (execute-wait-for-async git-src-dir config)
+          commit-hash-after-waiting-started-already (commit-to git-src-dir)
+          wait-started-while-not-having-a-new-commit-result (get-value-or-timeout-from wait-started-while-not-having-a-new-commit-ch)
+          ]
+      (is (= original-head-commit (:current-revision wait-for-original-commit-result)))
+      (is (= :success (:status wait-for-original-commit-result)))
+      (is (= commit-hash-with-nothing-waiting-for-it (:current-revision wait-for-commit-that-happend-while-not-waiting-ch-result)))
+      (is (= :success (:status wait-for-commit-that-happend-while-not-waiting-ch-result)))
+      (is (= commit-hash-after-waiting-started-already (:current-revision wait-started-while-not-having-a-new-commit-result)))
+      (is (= :success (:status wait-started-while-not-having-a-new-commit-result)))
+      )))
 
 
 (deftest with-git-test
