@@ -1,2 +1,4 @@
+before_script:
+- ./scripts/travis_prebuild.sh
 language: clojure
 script: lein test :all
