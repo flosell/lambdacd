@@ -6,6 +6,9 @@ occur without warning between the alpha-releases. The official release will have
 
 ## 0.1.0-alpha6 [wip]
 
+* `wait-for-git` now receives the context as first parameter: `(wait-for-git ctx some-repo some-branch)`
+  The context must contain a configuration with the `:home-dir` set to a directory where the step can store a file with the last seen revisions
+
 ## 0.1.0-alpha5
 
 * just a bugfix for the git-handling 
