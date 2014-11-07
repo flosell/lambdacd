@@ -19,7 +19,8 @@
   "step that waits for the head of a branch to change"
   [repo-uri branch]
   (let [last-seen-revision (current-revision repo-uri branch)]
-    (execution/wait-for (revision-changed-from last-seen-revision repo-uri branch))))
+    (execution/wait-for (revision-changed-from last-seen-revision repo-uri branch))
+    {:status :success :current-revision (current-revision repo-uri branch)}))
 
 (defn- checkout [repo-uri revision]
   (let [cwd (util/create-temp-dir)]
