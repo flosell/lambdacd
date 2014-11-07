@@ -49,7 +49,9 @@
   (testing "that is polls the git repository until a version that is different from the current one is found"
     (let [create-output (create-test-repo)
           git-src-dir (:dir create-output)
-          wait-channel (async/go (wait-for-git (repo-uri-for git-src-dir) "master"))
+          wait-channel (let [ch (async/go (wait-for-git (repo-uri-for git-src-dir) "master"))]
+                         (Thread/sleep 500) ;; dirty hack to make sure we started waiting before making the next commit
+                         ch)
           new-commit-hash (commit-to git-src-dir)
           wait-result  (get-value-or-timeout-from wait-channel)]
       (is (= new-commit-hash (:current-revision wait-result)))
