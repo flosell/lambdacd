@@ -40,7 +40,7 @@
 
 (defn get-value-or-timeout-from [c]
   (async/go
-    (async/<! (async/timeout 10000))
+    (async/<! (async/timeout 60000))
     (async/>! c {:status :timeout :current-revision "timeout"}))
   (async/<!! c))
 
