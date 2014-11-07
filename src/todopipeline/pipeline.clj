@@ -21,6 +21,9 @@
     ;; the first step is usually a step that waits for some event to occur, e.g.
     ;; a manual trigger or some change in the repo
     lambdacd.manualtrigger/wait-for-manual-trigger
+    ;; you could also wait for a repository to change. to try, point the step to a repo you control,
+    ;; uncomment this, run and see the magic happen (the first build will immediately run since there is no known state)
+    ; wait-for-frontend-repo
     ;; this step executes his child-steps (the arguments after the in-parallel) in parallel and waits
     ;; until all of them are done. if one of them fails, the whole step fails.
     (in-parallel
