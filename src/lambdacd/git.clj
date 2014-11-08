@@ -8,14 +8,29 @@
             [clojure.tools.logging :as log]))
 
 (defn- current-revision [repo-uri branch]
-  (.trim (:out (util/bash "/" (str "git ls-remote --heads " repo-uri " " branch " | cut -f 1")))))
+  (util/bash "/"
+             "set -o pipefail"
+             (str "git ls-remote --heads " repo-uri " " branch " | cut -f 1")))
 
 
 (defn- revision-changed-from [last-seen-revision repo-uri branch]
-  (fn []
-    (let [revision-now (current-revision repo-uri branch)]
-      (log/debug "waiting for new revision. current revision" revision-now "last seen" last-seen-revision)
-      (not= last-seen-revision revision-now))))
+  (let [revision-output (current-revision repo-uri branch)
+        exit-code (:exit revision-output)
+        new-revision-output (.trim (:out revision-output))]
+    (if (not= 0 exit-code)
+      {:status :failure :out (:out revision-output)}
+      (do
+        (log/debug "waiting for new revision. current revision" revision-output "last seen" last-seen-revision)
+        (if (not= last-seen-revision new-revision-output)
+          {:status :success :current-revision new-revision-output}
+          nil)))))
+
+(defn- wait-for-revision-changed-from [last-seen-revision repo-uri branch]
+  (loop [result (revision-changed-from last-seen-revision repo-uri branch)]
+    (if (nil? result)
+      (do (Thread/sleep 1000)
+          (recur (revision-changed-from last-seen-revision repo-uri branch)))
+      result)))
 
 (defn- exists? [file]
   (.exists (File. file)))
@@ -42,8 +57,7 @@
 (defn- persist-last-seen-revision [ctx repo-uri branch last-seen-revision]
   (let [current-git-state (read-git-state ctx)
         new-git-state (merge current-git-state { "last-seen" { repo-uri { branch last-seen-revision }}} )]
-    (write-git-state ctx new-git-state))
-  )
+    (write-git-state ctx new-git-state)))
 
 (defn wait-for-git
   "step that waits for the head of a branch to change"
@@ -51,10 +65,10 @@
   (if (nil? (:home-dir (:config ctx)))
     {:status :failure :out "No :home-dir configured"}
     (let [last-seen-revision (last-seen-revision-for ctx repo-uri branch)
-          wait-for-result (execution/wait-for (revision-changed-from last-seen-revision repo-uri branch))
-          current-revision (current-revision repo-uri branch)]
+          wait-for-result (wait-for-revision-changed-from last-seen-revision repo-uri branch)
+          current-revision (:current-revision wait-for-result)]
       (persist-last-seen-revision ctx repo-uri branch current-revision)
-      {:status :success :current-revision current-revision})))
+      wait-for-result)))
 
 (defn- checkout [repo-uri revision]
   (let [cwd (util/create-temp-dir)]

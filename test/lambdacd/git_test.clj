@@ -74,7 +74,9 @@
       (is (= commit-hash-after-waiting-started-already (:current-revision wait-started-while-not-having-a-new-commit-result)))
       (is (= :success (:status wait-started-while-not-having-a-new-commit-result)))))
   (testing "that it fails if no :home-dir is configured"
-    (is (= {:status :failure :out "No :home-dir configured"} (wait-for-git {:config {}} "some-uri" "some-branch")))))
+    (is (= {:status :failure :out "No :home-dir configured"} (wait-for-git {:config {}} "some-uri" "some-branch"))))
+  (testing "that it fails if the repository cannot be reached"
+    (is (= :failure (:status (wait-for-git {:config (create-config)} "some-uri-that-doesnt-exist" "some-branch"))))))
 
 
 (deftest with-git-test
