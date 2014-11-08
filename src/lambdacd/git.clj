@@ -48,11 +48,13 @@
 (defn wait-for-git
   "step that waits for the head of a branch to change"
   [ctx repo-uri branch]
-  (let [last-seen-revision (last-seen-revision-for ctx repo-uri branch)
-        wait-for-result (execution/wait-for (revision-changed-from last-seen-revision repo-uri branch))
-        current-revision (current-revision repo-uri branch)]
-    (persist-last-seen-revision ctx repo-uri branch current-revision)
-    {:status :success :current-revision current-revision}))
+  (if (nil? (:home-dir (:config ctx)))
+    {:status :failure :out "No :home-dir configured"}
+    (let [last-seen-revision (last-seen-revision-for ctx repo-uri branch)
+          wait-for-result (execution/wait-for (revision-changed-from last-seen-revision repo-uri branch))
+          current-revision (current-revision repo-uri branch)]
+      (persist-last-seen-revision ctx repo-uri branch current-revision)
+      {:status :success :current-revision current-revision})))
 
 (defn- checkout [repo-uri revision]
   (let [cwd (util/create-temp-dir)]

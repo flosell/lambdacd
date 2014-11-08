@@ -8,8 +8,9 @@
 (defn- start-pipeline-thread [pipeline-def context]
   (async/thread (while true (execution/run pipeline-def context))))
 
-(defn mk-pipeline [pipeline-def]
+(defn mk-pipeline [pipeline-def config]
   (let [state (atom pipeline-state/initial-pipeline-state)
-        context {:_pipeline-state state}]
+        context {:_pipeline-state state
+                 :config config}]
     {:ring-handler (server/ui-for pipeline-def state)
      :init (partial start-pipeline-thread pipeline-def context)}))

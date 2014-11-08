@@ -13,18 +13,11 @@
 (def backend-repo "git@github.com:flosell/todo-backend-compojure.git")
 (def frontend-repo "git@github.com:flosell/todo-backend-client.git")
 
-; FIXME: a hacky way to make sure git has a place to pit its data until we implement a way to configure this globally
-(def home-dir (util/create-temp-dir))
-(defn amend-context-with-some-config [ctx]
-  (let [config-to-amend { :home-dir home-dir}]
-    (assoc ctx :config config-to-amend)))
-
 ;; This step does nothing more than to delegate to a library-function.
 ;; It's a function that just waits until something changes in the repo.
 ;; Once done, it returns and the build can go on
 (defn wait-for-frontend-repo [_ ctx]
-  (let [hacky-amended-context (amend-context-with-some-config ctx)]
-    (git/wait-for-git hacky-amended-context frontend-repo "master")))
+  (git/wait-for-git ctx frontend-repo "master"))
 
 ;; Define some nice syntactic sugar that lets us run arbitrary build-steps with a
 ;; repository checked out. The steps get executed with the folder where the repo

@@ -4,7 +4,8 @@
             [ring.server.standalone :as ring :only serve]
             [org.httpkit.client :as http]
             [clojure.test :refer :all]
-            [clojure.data.json :as json]))
+            [clojure.data.json :as json]
+            [lambdacd.util :as util]))
 
 
 (defn- test-server [handler options]
@@ -40,9 +41,17 @@
        ~@body
        (finally (.stop server#)))))
 
+(defn- create-test-repo-at [dir]
+  (util/bash dir
+             "git init"
+             "echo \"world\" > foo"
+             "git add -A"
+             "git commit -m \"some message\""))
+
 
 (deftest ^:smoke smoke-test
   (testing "that we can run a pipeline"
+    (create-test-repo-at steps/some-repo-location)
     (with-server (test-server smoketest.pipeline/app { :init smoketest.pipeline/start-pipeline-thread })
       (is (= 200 (server-status)))
       (is (= "waiting" (manual-trigger-state)))
@@ -50,4 +59,5 @@
       (wait-a-bit)
       (is (= "success" (manual-trigger-state)))
       (is (= 5 @steps/some-counter))
+      (is (= "world\n" @steps/some-value-read-from-git-repo))
       )))

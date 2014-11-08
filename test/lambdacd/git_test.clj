@@ -72,8 +72,9 @@
       (is (= commit-hash-with-nothing-waiting-for-it (:current-revision wait-for-commit-that-happend-while-not-waiting-ch-result)))
       (is (= :success (:status wait-for-commit-that-happend-while-not-waiting-ch-result)))
       (is (= commit-hash-after-waiting-started-already (:current-revision wait-started-while-not-having-a-new-commit-result)))
-      (is (= :success (:status wait-started-while-not-having-a-new-commit-result)))
-      )))
+      (is (= :success (:status wait-started-while-not-having-a-new-commit-result)))))
+  (testing "that it fails if no :home-dir is configured"
+    (is (= {:status :failure :out "No :home-dir configured"} (wait-for-git {:config {}} "some-uri" "some-branch")))))
 
 
 (deftest with-git-test
