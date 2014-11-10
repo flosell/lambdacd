@@ -21,3 +21,4 @@
            (result-channel->map (async/to-chan [[:out "hello"] [:out "hello world"] [:status :success] ]))))
     (is (= {:status :success :out "hello world"}
            (result-channel->map (async/to-chan [[:out "hello"] [:out "hello world"] [:status :success] [:foo :bar] ]))))))
+

@@ -30,7 +30,7 @@
 (defn- display-name [fun]
   (clear-namespace (str fun)))
 
-(declare display-representation) ; display-representatn and display-representation-for-seq are mutually recursive
+(declare display-representation) ; display-representation and display-representation-for-seq are mutually recursive
 
 (defn- display-representation-for-seq [part]
   (let [f (first part)

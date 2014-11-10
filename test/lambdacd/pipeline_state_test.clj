@@ -26,5 +26,5 @@
           step-result { :foo :bar }
           ctx { :build-number 10  :step-id [0] :config config :_pipeline-state (atom nil)}]
       (update ctx step-result)
-      (is (= {"10" {"[0]" {"foo" "bar"}}} (json/read-str (slurp (str home-dir "/" "history.json"))))))))
+      (is (= [{ "step-id" "0" "step-result" { "foo" "bar" }}] (json/read-str (slurp (str home-dir "/build-10/pipeline-state.json"))))))))
 
