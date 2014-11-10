@@ -1,4 +1,6 @@
 (ns lambdacd.util
+  (:import (java.nio.file Files)
+           (java.nio.file.attribute FileAttribute))
   (:require [clojure.core.async :as async]
             [clojure.java.io :as io]
             [clojure.string :as string]
@@ -12,7 +14,7 @@
   (satisfies? clojure.core.async.impl.protocols/Channel c))
 
 (defn create-temp-dir []
-  (str (java.nio.file.Files/createTempDirectory "foo" (into-array java.nio.file.attribute.FileAttribute []))))
+  (str (Files/createTempDirectory "foo" (into-array FileAttribute []))))
 
 (defn write-as-json [file data]
   (spit file (json/write-str data)))
