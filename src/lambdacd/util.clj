@@ -3,7 +3,8 @@
             [clojure.java.io :as io]
             [clojure.string :as string]
             [clojure.java.shell :as jsh]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [clojure.data.json :as json]))
 
 (defn range-from [from len] (range (inc from) (+ (inc from) len)))
 
@@ -13,6 +14,8 @@
 (defn create-temp-dir []
   (str (java.nio.file.Files/createTempDirectory "foo" (into-array java.nio.file.attribute.FileAttribute []))))
 
+(defn write-as-json [file data]
+  (spit file (json/write-str data)))
 
 (defn bash
   [cwd & commands]

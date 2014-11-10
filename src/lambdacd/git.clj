@@ -52,7 +52,7 @@
 
 (defn- write-git-state [ctx new-git-state]
   (let [out-file (git-state-file-from ctx)]
-    (spit out-file (json/write-str new-git-state))))
+    (util/write-as-json out-file new-git-state)))
 
 (defn- persist-last-seen-revision [ctx repo-uri branch last-seen-revision]
   (let [current-git-state (read-git-state ctx)

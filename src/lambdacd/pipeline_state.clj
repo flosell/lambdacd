@@ -13,13 +13,10 @@
 (defn- update-pipeline-state [build-number step-id step-result current-state]
   (assoc current-state build-number (update-current-run step-id step-result (get current-state build-number))))
 
-(defn- write-as-json [file data]
-  (spit file (json/write-str data)))
-
 (defn- write-state-to-disk [home-dir new-state]
   (if home-dir
   (let [path (str home-dir "/" "history.json")]
-    (write-as-json path new-state))))
+    (util/write-as-json path new-state))))
 
 (defn update [{step-id :step-id state :_pipeline-state build :build-number { home-dir :home-dir } :config } step-result]
   (if (not (nil? state)) ; convenience for tests: if no state exists we just do nothing
