@@ -11,7 +11,8 @@
   (:require [lambdacd.server :as server]
             [lambdacd.execution :as execution]
             [lambdacd.core :as core]
-            [lambdacd.util :as utils])
+            [lambdacd.util :as utils]
+            [clojure.tools.logging :as log])
   (:use [lambdacd.control-flow]
         [todopipeline.steps]))
 
@@ -54,7 +55,9 @@
 
 ;; For this demonstration, we don't care too much about persisting anything over a longer timeframe so we just use a
 ;; temp-directory
-(def config { :home-dir (utils/create-temp-dir)})
+(def home-dir (utils/create-temp-dir))
+(log/info "LambdaCD Home Directory is " home-dir)
+(def config { :home-dir home-dir})
 
 ;; # Some infrastructure
 ;; These definitions serve as the entry-points into lambdacd. we need an initialize-function
