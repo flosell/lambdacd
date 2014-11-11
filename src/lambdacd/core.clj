@@ -9,7 +9,7 @@
   (async/thread (while true (execution/run pipeline-def context))))
 
 (defn mk-pipeline [pipeline-def config]
-  (let [state (atom pipeline-state/initial-pipeline-state)
+  (let [state (atom (pipeline-state/initial-pipeline-state config))
         context {:_pipeline-state state
                  :config config}]
     {:ring-handler (server/ui-for pipeline-def state)

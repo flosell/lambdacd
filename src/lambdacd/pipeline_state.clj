@@ -8,7 +8,21 @@
             [clojure.data.json :as json]
             [clojure.java.io :as io]))
 
-(def initial-pipeline-state {})
+(def clean-pipeline-state {})
+
+(defn- read-state [filename]
+  (let [build-number (read-string (second (re-find #"build-(\d+)" filename)))
+        state (json-model/json-format->pipeline-state (json/read-str (slurp filename) :key-fn keyword))]
+    { build-number state }))
+
+(defn initial-pipeline-state [{ home-dir :home-dir }]
+  (let [dir (io/file home-dir)
+        home-contents (file-seq dir)
+        directories-in-home (filter #(.isDirectory %) home-contents)
+        build-dirs (filter #(.startsWith (.getName %) "build-") directories-in-home)
+        build-state-files (map #(str % "/pipeline-state.json") build-dirs)
+        states (map read-state build-state-files)]
+    (into {} states)))
 
 (defn- update-current-run [step-id step-result current-state]
   (assoc current-state step-id step-result))
