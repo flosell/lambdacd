@@ -112,10 +112,8 @@
     new-context))
 
 
-(def current-build-number (atom 0))
-
 (defn run [pipeline context]
-  (let [build-number (swap! current-build-number inc)]
+  (let [build-number (+ 1 (pipeline-state/current-build-number context))]
     (let [runnable-pipeline (map eval pipeline)]
       (execute-steps runnable-pipeline {} (merge context {:step-id [0]
                                                           :build-number build-number})))))

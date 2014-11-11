@@ -16,6 +16,9 @@
     @state))
 
 (deftest pipeline-state-test
+  (testing "that the current build-number is the highest build-number currently in the pipeline-state"
+    (is (= 4 (current-build-number {:_pipeline-state (atom { 3 {} 4 {} 1 {}})})))
+    (is (= 0 (current-build-number {:_pipeline-state (atom initial-pipeline-state)}))))
   (testing "that after notifying about running, the pipeline state will reflect this"
     (is (= { 42 { [0] { :status :running }}} (after-running 42 [0]))))
   (testing "that a new pipeline-state will be set on update"

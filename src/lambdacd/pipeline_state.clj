@@ -16,6 +16,11 @@
 (defn- update-pipeline-state [build-number step-id step-result current-state]
   (assoc current-state build-number (update-current-run step-id step-result (get current-state build-number))))
 
+(defn current-build-number [{pipeline-state :_pipeline-state }]
+  (if-let [current-build-number (last (sort (keys @pipeline-state)))]
+    current-build-number
+    0))
+
 (defn- write-state-to-disk [home-dir build-number new-state]
   (if home-dir
   (let [dir (str home-dir "/" "build-" build-number "/")
