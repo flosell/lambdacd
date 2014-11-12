@@ -71,9 +71,9 @@
       wait-for-result)))
 
 (defn- checkout [repo-uri revision]
-  (let [cwd (util/create-temp-dir)]
-    (util/bash cwd (str "git clone " repo-uri " .") (str "git checkout " revision))
-    cwd))
+  (let [cwd (util/create-temp-dir)
+        sh-result (util/bash cwd (str "git clone " repo-uri " .") (str "git checkout " revision))]
+    (assoc sh-result :cwd cwd)))
 
 
 (defn with-git
@@ -81,6 +81,10 @@
    the revision number is passed on as the :revision value in the arguments-map"
   [repo-uri steps]
   (fn [args ctx]
-    (let [repo-location (checkout repo-uri (:revision args))] ;; TODO: wouldn't it be better to pass in the revision?
-      (execution/execute-steps steps (assoc args :cwd repo-location) (execution/new-base-context-for ctx)))))
+    (let [checkout-result (checkout repo-uri (:revision args))  ;; TODO: wouldn't it be better to pass in the revision?
+          repo-location (:cwd checkout-result)
+          checkout-exit-code (:exit checkout-result)]
+      (if (= 0 checkout-exit-code)
+        (execution/execute-steps steps (assoc args :cwd repo-location) (execution/new-base-context-for ctx))
+        {:status :failure :out (:out checkout-result) :exit (:exit checkout-result)}))))
 
