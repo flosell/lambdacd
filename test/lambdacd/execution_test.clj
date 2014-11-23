@@ -106,9 +106,6 @@
     (is (= {:outputs { [1 0] {:status :success} [2 0] {:status :failure}} :status :failure} (execute-steps [some-successful-step some-failing-step some-other-step] {} { :step-id [0 0] })))))
 
 
-(deftest timing-test
-  (testing "that my-time more or less accurately measures the execution time of a step"
-    (is (close? 2 10 (my-time (some-step-taking-10ms {}))))))
 
 
 (defn counting-predicate [calls-until-true]
