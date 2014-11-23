@@ -17,14 +17,17 @@ var buildToDisplay = function(all) {
 var updateServerState = function() {
   $.ajax({url:"/api/pipeline-state"}).done(function(all) {
     // TODO: clear all status
-
-    var data = all[buildToDisplay(all)];
+    var buildtodisplay = buildToDisplay(all);
+    var data = all[buildtodisplay];
     
     Object.keys(data).forEach(function(stepid) {
       var stepResult = data[stepid]
       var stepElem = findByStepId(stepid);
       stepElem.data("status",stepResult.status);
       stepElem.data("output",stepResult.out);
+      stepElem.data("stepid",stepid);
+      stepElem.data("build",buildtodisplay);
+
       var triggerId = stepResult["trigger-id"];
       if (triggerId) {
         stepElem.off();

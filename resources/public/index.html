@@ -22,9 +22,12 @@
             <!-- inserted by js -->
         </div>
         <h2>Output (click on buildstep)</h2>
+        <button id="retrigger">Retrigger selected step</button>
         <div id="output">
         </div>
         <script>
+            var selectedStep,selectedBuild;
+
             var pipelineElem = document.getElementById("pipeline");
             var displayElem = document.getElementById("output");
             $.ajax({url:"/api/pipeline"}).done(function(data) {
@@ -33,10 +36,33 @@
 
                 $(pipelineElem).find("li").click(function(evt) {
                     var clickedElem = evt.target;
-                    var output = $(clickedElem).data("output");
+                    var $clickedElem = $(clickedElem)
+                    var output = $clickedElem.data("output");
+                    selectedStep = $clickedElem.data("stepid");
+                    selectedBuild = $clickedElem.data("build");
+
                     displayElem.innerHTML="<pre>"+output+"</pre>";
                 });
 
+                $("#retrigger").click(function() {
+                    var stepIdParts = selectedStep
+                                                .replace("(","")
+                                                .replace(")","")
+                                                .split(" ");
+
+                    if (stepIdParts.length>1) {
+                        alert("nested steps cant be retriggered yet");
+                    } else if (stepIdParts.length == 0) {
+                        alert("no step selected")
+                    } else if (selectedBuild === undefined) {
+                        alert("build not finished yet")
+                    } else {
+                        $.ajax({url:"/api/builds/"+selectedBuild+"/"+stepIdParts[0]+"/retrigger", type:"POST"}).done(function(data) {
+                            alert("retriggered");
+                          });
+                    }
+
+                });
             }).fail(function() {
                 pipelineElem.innerHTML="Something went wrong";
             })

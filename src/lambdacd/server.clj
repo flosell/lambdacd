@@ -27,7 +27,7 @@
   (GET  "/api/pipeline" [] (json (pipeline pipeline-def)))
   (GET  "/api/pipeline-state" [] (json @pipeline-state))
   (POST "/api/dynamic/:id" [id] (json (manualtrigger/post-id id)))
-  (POST "/api/pipeline/dummyretrigger" [] (json (execution/retrigger pipeline-def {:_pipeline-state pipeline-state} 1 [2])))
+  (POST "/api/builds/:buildnumber/:step-id/retrigger" [buildnumber step-id] (json (execution/retrigger pipeline-def {:_pipeline-state pipeline-state} (read-string buildnumber) [(read-string step-id)])))
   (GET "/" [] (resp/resource-response "index.html" {:root "public"}))
   (route/resources "/")
   (route/not-found "<h1>Page not found</h1>")))
