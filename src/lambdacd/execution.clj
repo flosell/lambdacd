@@ -112,8 +112,31 @@
     new-context))
 
 
+
 (defn run [pipeline context]
   (let [build-number (+ 1 (pipeline-state/current-build-number context))]
     (let [runnable-pipeline (map eval pipeline)]
       (execute-steps runnable-pipeline {} (merge context {:step-id [0]
                                                           :build-number build-number})))))
+
+(defn mock-for [step-id pipline-history]
+  (fn [& _]
+    (get pipline-history step-id)))
+
+(defn- mock-pipeline-until-step [pipeline build-number context [first-part-of-step-id]]
+  (let [pipeline-state (deref (:_pipeline-state context))
+        pipeline-history (get pipeline-state build-number)
+        indexed-pipeline (map-indexed (fn [idx step] [(inc idx) step]) pipeline)
+        indexed-pipeline-with-mocks (util/map-if
+                              (fn [[step-part step]] (< step-part first-part-of-step-id))
+                              (fn [[step-part step]] [step-part (mock-for [step-part] pipeline-history)])
+                              indexed-pipeline)
+        pipeline-with-mocks (map (fn [[step-part step]] step) indexed-pipeline-with-mocks)]
+    pipeline-with-mocks))
+
+
+(defn retrigger [pipeline context build-number step-id-to-run]
+  (let [pipeline-with-mocks (mock-pipeline-until-step pipeline build-number context step-id-to-run)
+        executable-pipeline (map eval pipeline-with-mocks)]
+    (execute-steps executable-pipeline {} (assoc context :step-id [0]
+                                                         :build-number build-number))))

@@ -16,3 +16,9 @@
     (is (= false (is-channel? :foo)))
     (is (= false (is-channel? "hello")))
     (is (= false (is-channel? some-function)))))
+
+(deftest map-if-test
+  (testing "that is applies a function to all elements that match a predicate"
+    (is (= [] (map-if (identity true) inc [])))
+    (is (= [4 3 5] (map-if #(< % 5) inc [3 2 4])))
+    (is (= [3 2 5] (map-if #(= 4 %) inc [3 2 4])))))

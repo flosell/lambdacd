@@ -25,3 +25,10 @@
         result (jsh/sh "bash" "-c" combined-command  :dir cwd)]
     (log/debug (str "executed " combined-command " in " cwd " with result " result))
     result))
+
+
+(defn map-if [pred f coll]
+  "applies f to all elements in coll where pred is true"
+  (map #(if (pred %)
+         (f %)
+         %) coll))

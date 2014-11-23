@@ -5,7 +5,8 @@
             [lambdacd.presentation :as presentation]
             [lambdacd.manualtrigger :as manualtrigger]
             [lambdacd.util :as util]
-            [ring.util.response :as resp]))
+            [ring.util.response :as resp]
+            [lambdacd.execution :as execution]))
 
 (defn- pipeline [pipeline-def]
   (presentation/display-representation pipeline-def))
@@ -26,6 +27,7 @@
   (GET  "/api/pipeline" [] (json (pipeline pipeline-def)))
   (GET  "/api/pipeline-state" [] (json @pipeline-state))
   (POST "/api/dynamic/:id" [id] (json (manualtrigger/post-id id)))
+  (POST "/api/pipeline/dummyretrigger" [] (json (execution/retrigger pipeline-def {:_pipeline-state pipeline-state} 1 [2])))
   (GET "/" [] (resp/resource-response "index.html" {:root "public"}))
   (route/resources "/")
   (route/not-found "<h1>Page not found</h1>")))

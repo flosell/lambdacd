@@ -105,7 +105,34 @@
   (testing "that a failing step prevents the succeeding steps from being executed"
     (is (= {:outputs { [1 0] {:status :success} [2 0] {:status :failure}} :status :failure} (execute-steps [some-successful-step some-failing-step some-other-step] {} { :step-id [0 0] })))))
 
+(deftest retrigger-test
+  (let [pipeline-state-atom (atom { 0 { [1] { :status :success } [2] { :status :failure }}})
+        pipeline [some-step some-successful-step]
+        context { :_pipeline-state pipeline-state-atom}]
+    (testing "that retriggering executes the second step without triggering the first step"
+      (retrigger pipeline context 0 [2])
+      (is (= { 0 {[1] { :status :success } [2] { :status :success }}} @pipeline-state-atom)))))
 
+(def some-pipeline
+  `(
+     lambdacd.manualtrigger/wait-for-manual-trigger
+     some-successful-step
+     (lambdacd.control-flow/in-parallel
+       some-step)
+     lambdacd.manualtrigger/wait-for-manual-trigger))
+
+(defn some-state-for-some-pipeline []
+  (atom {3 { [1] {:status :success }}
+             [2] { :some-value :from-output :status :failure}}))
+(defn mock-exec [f]
+  (f {} {}))
+
+(with-private-fns [lambdacd.execution [mock-pipeline-until-step]]
+  (deftest mock-pipeline-until-step-test
+    (testing "that it returns the original pipeline if we want to start from the beginning"
+      (is (= some-pipeline (mock-pipeline-until-step some-pipeline 3 {:_pipeline-state (some-state-for-some-pipeline)} [1]))))
+    (testing "that it returns a pipeline with a step that just returns the already recorded output if we run from the second step"
+      (is (= { :status :success } (mock-exec (first (mock-pipeline-until-step some-pipeline 3 {:_pipeline-state (some-state-for-some-pipeline)} [2]))))))))
 
 
 (defn counting-predicate [calls-until-true]
