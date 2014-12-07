@@ -1,53 +1,79 @@
 <html>
-    <head>
-        <title>LambdaCD - Pipeline</title>
-    </head>
-    <link rel="stylesheet" type="text/css" href="Semantic-UI-1.1.2/dist/semantic.css"/>
-    <link rel="stylesheet" type="text/css" href="css/main.css"/>
-    <body>
-        <h1 class="segment">LambdaCD</h1>
-        <div class="ui stackable grid segment">
-            <div class="ui five wide column">
-                <h2 class="">Build History</h2>
-                <ul class="ui relaxed divided items">
-                <!--<ol>-->
-                    <li class="item">
-                        <div class="ui mini image">
-                            <i class="teal notched circle loading icon"></i>
-                        </div>
-                        <div class="content">
-                            <div class="header">Build 6</div>
-                            <div class="meta">running</div>
-                        </div>
-                    </li>
-                    <li class="item">
-                        <div class="ui mini image">
-                            <i class="red remove circle icon"></i>
-                        </div>
-                        <div class="content">
-                            <div class="header">Build 5</div>
-                            <div class="meta">today, 14:55, took 5 min</div>
-                        </div>
-                    </li>
-                    <li class="item">
-                        <div class="ui mini image">
-                            <i class="green check circle icon"></i>
-                        </div>
-                        <div class="content">
-                            <div class="header">Build 4</div>
-                            <div class="meta">today, 14:00, took 6 min</div>
-                        </div>
-                    </li>
+<head>
+    <title>LambdaCD - Pipeline</title>
+</head>
+<link rel="stylesheet" type="text/css" href="Semantic-UI-1.1.2/dist/semantic.css"/>
+<link rel="stylesheet" type="text/css" href="css/main.css"/>
+<body>
+<h1 class="segment">LambdaCD</h1>
 
-                <!--</ol>-->
-            </ul>
-            </div>
-            <div class="ui eleven wide column">
-                <h2>Build 42</h2>
-            </div>
+<div class="ui stackable grid segment">
+    <div class="ui five wide column">
+        <h2 class="">Build History</h2>
+        <ul class="ui relaxed divided items">
+            <li class="item">
+                <div class="ui mini image">
+                    <i class="teal notched circle loading icon"></i>
+                </div>
+                <div class="content">
+                    <div class="header">Build 6</div>
+                    <div class="meta">running</div>
+                </div>
+            </li>
+            <li class="item">
+                <div class="ui mini image">
+                    <i class="red remove circle icon"></i>
+                </div>
+                <div class="content">
+                    <div class="header">Build 5</div>
+                    <div class="meta">today, 14:55, took 5 min</div>
+                </div>
+            </li>
+            <li class="item">
+                <div class="ui mini image">
+                    <i class="green check circle icon"></i>
+                </div>
+                <div class="content">
+                    <div class="header">Build 4</div>
+                    <div class="meta">today, 14:00, took 6 min</div>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div class="ui eleven wide column">
+        <h2>Build 42</h2>
+        <div>
+            <ol class="pipeline">
+                <li>wait-for-manual-trigger</li>
+                <li>in-parallel
+                    <ul>
+                        <li>with-frontend-git
+                            <ol>
+                                <li>client-package</li>
+                            </ol>
+                        </li>
+                        <li>with-backend-git
+                            <ol>
+                                <li>server-test</li>
+                                <li>server-package</li>
+                            </ol>
+                        </li>
+                    </ul>
+                </li>
+                <li>in-cwd
+                    <ol>
+                        <li>client-deploy-ci</li>
+                        <li>server-deploy-ci</li>
+                    </ol>
+                </li>
+                <li>some-failing-step</li>
+                <li>some-step-that-cant-be-reached</li>
+            </ol>
         </div>
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-        <script src="Semantic-UI-1.1.2/dist/semantic.js"></script>
+    </div>
+</div>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="Semantic-UI-1.1.2/dist/semantic.js"></script>
 
-    </body>
+</body>
 </html>
