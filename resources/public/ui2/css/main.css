@@ -1,0 +1,9 @@
+/* framework changes */
+.ui.items > .item > .image {
+    vertical-align: middle;
+}
+
+/* browser reset */
+ul.items {
+    padding:0;
+}

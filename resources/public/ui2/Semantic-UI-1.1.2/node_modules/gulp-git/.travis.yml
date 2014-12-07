@@ -1,0 +1,6 @@
+language: node_js
+node_js:
+  - 0.11
+before_install:
+  -  git config --global user.email "you@example.com"
+  -  git config --global user.name "Your Name"
