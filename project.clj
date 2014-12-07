@@ -13,7 +13,7 @@
                  [ch.qos.logback/logback-core "1.0.13"]
                  [ch.qos.logback/logback-classic "1.0.13"]
                  [ring-server "0.3.1"]
-
+                 [hiccup "1.0.5"]
                  ; test-only
                  [http-kit "2.1.16"]
                  ]
