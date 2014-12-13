@@ -30,7 +30,7 @@
 
             var pipelineElem = document.getElementById("pipeline");
             var displayElem = document.getElementById("output");
-            $.ajax({url:"/api/pipeline"}).done(function(data) {
+            $.ajax({url:"api/pipeline"}).done(function(data) {
                 pipelineElem.innerHTML=pipelineHtml(data);
                 setTimeout(updateServerState,500);
 
@@ -57,7 +57,7 @@
                     } else if (selectedBuild === undefined) {
                         alert("build not finished yet")
                     } else {
-                        $.ajax({url:"/api/builds/"+selectedBuild+"/"+stepIdParts[0]+"/retrigger", type:"POST"}).done(function(data) {
+                        $.ajax({url:"api/builds/"+selectedBuild+"/"+stepIdParts[0]+"/retrigger", type:"POST"}).done(function(data) {
                             alert("retriggered");
                           });
                     }

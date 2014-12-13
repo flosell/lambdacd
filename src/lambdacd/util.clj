@@ -32,3 +32,19 @@
   (map #(if (pred %)
          (f %)
          %) coll))
+
+
+(defn contains-value? [v coll]
+  (some #(= % v) coll))
+
+
+
+;; TODO: this shouldn't actually exist, we should preprocess this somewhere else
+(defn- serialize-channel [k v]
+  (if (is-channel? v)
+    :waiting
+    v))
+(defn json [data]
+  { :headers { "Content-Type" "application/json"}
+   :body (json/write-str data :value-fn serialize-channel)
+   :status 200 })

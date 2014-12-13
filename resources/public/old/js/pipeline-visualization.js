@@ -1,5 +1,5 @@
 var triggerManualStep = function(triggerId){
-  $.ajax({url:"/api/dynamic/"+triggerId, type:"POST"}).done(function(data) {
+  $.ajax({url:"api/dynamic/"+triggerId, type:"POST"}).done(function(data) {
     alert("triggered");
   });
 }
@@ -15,7 +15,7 @@ var buildToDisplay = function(all) {
 }
 
 var updateServerState = function() {
-  $.ajax({url:"/api/pipeline-state"}).done(function(all) {
+  $.ajax({url:"api/pipeline-state"}).done(function(all) {
     // TODO: clear all status
     var buildtodisplay = buildToDisplay(all);
     var data = all[buildtodisplay];

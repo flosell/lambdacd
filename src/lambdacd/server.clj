@@ -13,23 +13,11 @@
   (presentation/display-representation pipeline-def))
 
 
-;; TODO: this shouldn't actually exist, we should preprocess this somewhere else
-(defn- serialize-channel [k v]
-  (if (util/is-channel? v)
-    :waiting
-    v))
-
-(defn- json [data]
-  { :headers { "Content-Type" "application/json"}
-    :body (json/write-str data :value-fn serialize-channel)
-    :status 200 })
-
 (defn ui-for [pipeline-def pipeline-state] (routes
-  (GET  "/api/pipeline" [] (json (pipeline pipeline-def)))
-  (GET  "/api/pipeline-state" [] (json @pipeline-state))
-  (POST "/api/dynamic/:id" [id] (json (manualtrigger/post-id id)))
-  (POST "/api/builds/:buildnumber/:step-id/retrigger" [buildnumber step-id] (json (execution/retrigger pipeline-def {:_pipeline-state pipeline-state} (read-string buildnumber) [(read-string step-id)])))
-  (context "/ui2" [] (new-ui/new-ui-routes))
-  (GET "/" [] (resp/resource-response "index.html" {:root "public"}))
-  (route/resources "/")
-  (route/not-found "<h1>Page not found</h1>")))
+   (GET "/api/pipeline" [] (util/json (pipeline pipeline-def)))
+   (GET "/api/pipeline-state" [] (util/json @pipeline-state))
+   (POST "/api/builds/:buildnumber/:step-id/retrigger" [buildnumber step-id]
+         (util/json (execution/retrigger pipeline-def {:_pipeline-state pipeline-state} (read-string buildnumber) [(read-string step-id)])))
+   (POST "/api/dynamic/:id" [id] (util/json (manualtrigger/post-id id)))
+   (GET "/" [] (resp/resource-response "index.html" {:root "public/old"}))
+   ))

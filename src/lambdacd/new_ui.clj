@@ -2,24 +2,24 @@
   (:use compojure.core)
   (:require [compojure.route :as route]
             [hiccup.core :as hc]
-            [clojure.pprint :as pp]
             [clojure.data.json :as json :only [write-str]]
             [lambdacd.presentation :as presentation]
             [lambdacd.manualtrigger :as manualtrigger]
             [lambdacd.util :as util]
             [ring.util.response :as resp]
-            [lambdacd.execution :as execution]))
+            [lambdacd.execution :as execution]
+            [lambdacd.pipeline-state :as pipeline-state]))
 ;; FIXME: proper hiccup here:
 (def page-start "<html>
   <head>
   <title>LambdaCD - Pipeline</title>
   </head>
-  <link rel=\"stylesheet\" type=\"text/css\" href=\"Semantic-UI-1.1.2/dist/semantic.css\"/>
-<link rel=\"stylesheet\" type=\"text/css\" href=\"css/main.css\"/>
+  <link rel=\"stylesheet\" type=\"text/css\" href=\"/ui2/Semantic-UI-1.1.2/dist/semantic.css\"/>
+<link rel=\"stylesheet\" type=\"text/css\" href=\"/ui2/css/main.css\"/>
 <body>")
 
 (def page-end "<script src=\"//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js\"></script>
-<script src=\"Semantic-UI-1.1.2/dist/semantic.js\"></script>
+<script src=\"/ui2/Semantic-UI-1.1.2/dist/semantic.js\"></script>
 </body>
 </html>")
 
@@ -52,13 +52,17 @@
   (case status
     :running "teal notched circle loading icon"
     :ok "green check circle icon"
-    :failure "red remove circle icon"))
+    :failure "red remove circle icon"
+    :waiting "blue wait circle icon"
+    :unknown "yellow help circle icon"))
 
 (defn- status-label-for [{status :status}]
   (case status
     :running "running..."
     :ok "successful"
-    :failure "failure"))
+    :failure "failure"
+    :waiting "waiting..."
+    :unknown "unknown"))
 
 (defn history-item [item]
   [:li {:class "item"}
@@ -80,7 +84,6 @@
         result [:div.step
                  [:div.content
                   content]]]
-    (pp/pprint result)
     result))
 
 (defn- pipeline [p horizontal]
@@ -100,6 +103,6 @@
         body (hc/html (list header columns))]
     (str page-start page-end body page-end)))
 
-(defn new-ui-routes []
+(defn new-ui-routes [pipeline-def pipeline-state]
   (routes
-    (GET "/" [] (body (history fake-history) (pipeline fake-pipeline-representation true)))))
+    (GET "/" [] (body (history (pipeline-state/history-for @pipeline-state)) (pipeline fake-pipeline-representation true)))))

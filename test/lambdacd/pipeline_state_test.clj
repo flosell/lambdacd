@@ -51,3 +51,21 @@
       (is (= {1 { [0]   {:foo "bar"}}
               2 { [1 2] {:bar "baz"}}} (initial-pipeline-state config))))))
 
+
+(deftest history-test
+  (testing "that it converts the internal pipeline-state into a more readable history-representation"
+    (is (= [{ :build-number 5
+             :status :running}
+            { :build-number 6
+             :status :ok}
+            { :build-number 7
+             :status :failure}
+            { :build-number 8
+             :status :waiting}
+            { :build-number 9
+              :status :unknown}
+            ] (history-for { 5 { [0] { :status :ok } [1] { :status :running}}
+                             6 { [0] { :status :ok } }
+                             7 { [0 2] { :status :running} [0 1] { :status :failure}}
+                             8 { [0] { :status :waiting }}
+                             9 { [0] { :no :status }}})))))
