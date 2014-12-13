@@ -105,4 +105,4 @@
 
 (defn new-ui-routes [pipeline-def pipeline-state]
   (routes
-    (GET "/" [] (body (history (pipeline-state/history-for @pipeline-state)) (pipeline fake-pipeline-representation true)))))
+    (GET "/" [] (body (history (pipeline-state/history-for @pipeline-state)) (pipeline (presentation/display-representation pipeline-def) true)))))
