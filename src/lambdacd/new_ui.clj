@@ -97,8 +97,8 @@
 
 (defn body [history content]
   (let [header [:h1 {:class "segment" } "LambdaCD"]
-        history-column [:div {:class "ui five wide column"} history]
-        content-column [:div {:class "ui eleven wide column"} content]
+        history-column [:div {:class "ui three wide column"} history]
+        content-column [:div {:class "ui thirteen wide column"} content]
         columns [:div {:class "ui segment stackable grid"} history-column content-column]
         body (hc/html (list header columns))]
     (str page-start page-end body page-end)))
