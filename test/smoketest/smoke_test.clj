@@ -8,14 +8,15 @@
             [lambdacd.util :as util]))
 
 
+(def url-base "http://localhost:3000/old")
 (defn- test-server [handler options]
   (ring/serve handler (merge {:join? false, :open-browser? false} options)))
 
 (defn- server-status []
-  (:status (deref (http/get "http://localhost:3000/api/pipeline-state"))))
+  (:status (deref (http/get (str url-base "/api/pipeline-state")))))
 
 (defn- pipeline-state []
-  (json/read-str (:body (deref (http/get "http://localhost:3000/api/pipeline-state")))))
+  (json/read-str (:body (deref (http/get (str url-base "/api/pipeline-state"))))))
 
 (defn first-build []
   (get (pipeline-state) "1"))
@@ -30,7 +31,7 @@
   (get (manual-trigger) "trigger-id"))
 
 (defn- trigger-manual-trigger []
-  (:status (deref (http/post (str "http://localhost:3000/api/dynamic/" (manual-trigger-id))))))
+  (:status (deref (http/post (str (str url-base "/api/dynamic/") (manual-trigger-id))))))
 
 (defn wait-a-bit []
   (Thread/sleep 2000)) ; TODO: make more robust, wait for something specific
