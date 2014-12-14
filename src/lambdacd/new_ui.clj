@@ -14,12 +14,12 @@
   <head>
   <title>LambdaCD - Pipeline</title>
   </head>
-  <link rel=\"stylesheet\" type=\"text/css\" href=\"/ui2/Semantic-UI-1.1.2/dist/semantic.css\"/>
+  <link rel=\"stylesheet\" type=\"text/css\" href=\"/ui2/semantic-ui/semantic.css\"/>
 <link rel=\"stylesheet\" type=\"text/css\" href=\"/ui2/css/main.css\"/>
 <body>")
 
 (def page-end "<script src=\"//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js\"></script>
-<script src=\"/ui2/Semantic-UI-1.1.2/dist/semantic.js\"></script>
+<script src=\"/ui2/semantic-ui/semantic.js\"></script>
 </body>
 </html>")
 

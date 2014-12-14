@@ -10,3 +10,4 @@ pom.xml.asc
 .idea
 *.iml
 .vagrant
+/resources/public/ui2/semantic-ui/
