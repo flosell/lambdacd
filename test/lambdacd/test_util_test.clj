@@ -7,8 +7,8 @@
   (reset! a "hello")
   (reset! a "world"))
 
-(defn some-step-taking-10ms [arg & _]
-  (Thread/sleep 10)
+(defn some-step-taking-50ms [arg & _]
+  (Thread/sleep 50)
   {:foo :bar})
 
 
@@ -29,4 +29,4 @@
 
 (deftest timing-test
   (testing "that my-time more or less accurately measures the execution time of a step"
-    (is (close? 2 10 (my-time (some-step-taking-10ms {}))))))
+    (is (close? 10 50 (my-time (some-step-taking-50ms {}))))))
