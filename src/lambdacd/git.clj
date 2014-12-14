@@ -72,8 +72,12 @@
 
 (defn- checkout [repo-uri revision]
   (let [cwd (util/create-temp-dir)
-        sh-result (util/bash cwd (str "git clone " repo-uri " .") (str "git checkout " revision))]
-    (assoc sh-result :cwd cwd)))
+        sh-result (util/bash cwd
+                             (str "git clone " repo-uri )
+                             "cd $(ls)"
+                             (str "git checkout " revision))
+        content (first (.list (File. cwd)))]
+    (assoc sh-result :cwd (str cwd "/" content))))
 
 
 (defn with-git

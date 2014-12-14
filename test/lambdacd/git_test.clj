@@ -1,11 +1,13 @@
 (ns lambdacd.git-test
+  (:import (java.io File))
   (:require [clojure.test :refer :all]
             [lambdacd.git :refer :all]
             [clojure.core.async :as async]
             [clojure.string :as string]
             [lambdacd.shell :as sh]
             [lambdacd.util :as util]
-            [lambdacd.test-util :as test-util]))
+            [lambdacd.test-util :as test-util]
+            [lambdacd.reporters]))
 
 (defn- git-commits [cwd]
   (reverse (string/split-lines (:out (util/bash cwd "git log --pretty=format:%H")))))
@@ -23,7 +25,9 @@
                     "echo \"world\" > foo"
                     "git add -A"
                     "git commit -m \"some other message\"")
-    { :dir dir :commits (git-commits dir) }))
+    {:dir dir
+     :commits (git-commits dir)
+     :repo-name (.getName (File. dir))}))
 
 (defn- create-config []
   { :home-dir (util/create-temp-dir)})
@@ -80,15 +84,17 @@
 
 
 (deftest with-git-test
-  (testing "that it checks out a particular revision and then returns, indicating the location of the checked out repo as :cwd value"
+  (testing "that it checks out a particular revision and then returns, indicating the location of the checked out repo as :cwd value and that the cloned repo is in a directory named like the repo that was cloned"
     (let [create-output (create-test-repo)
           git-src-dir (:dir create-output)
           commits (:commits create-output)
+          repo-name (:repo-name create-output)
           first-commit (first commits)
           with-git-args { :revision first-commit }
           with-git-function (with-git (repo-uri-for git-src-dir) [step-that-returns-the-current-cwd-head])
           with-git-result (with-git-function with-git-args {:step-id [42]})]
-      (is (= first-commit (:current-head (get (:outputs with-git-result ) [1 42]))))))
+      (is (= first-commit (:current-head (get (:outputs with-git-result ) [1 42]))))
+      (is (.endsWith (:cwd with-git-result) repo-name))))
   (testing "that it fails when it couldn't check out a repository"
     (let [with-git-args { :revision "some-commit" }
           with-git-function (with-git "some-unknown-uri" [])
