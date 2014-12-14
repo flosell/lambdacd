@@ -13,6 +13,12 @@
 (defn some-other-step [arg & _]
   {:foo :baz :status :success})
 
+(defn some-step-returning-foobar-value [& _]
+  {:foobar 42 :status :success})
+
+(defn some-step-using-foobar-value [{foobar :foobar} & _]
+  {:foobar-times-ten (* 10 foobar) :status :success})
+
 (defn some-step-for-cwd [{cwd :cwd} & _]
   {:foo cwd :status :success})
 
@@ -101,9 +107,14 @@
 
 (deftest execute-steps-test
   (testing "that executing steps returns outputs of both steps with different step ids"
-    (is (= {:outputs { [1 0] {:foo :baz :status :success} [2 0] {:foo :baz :status :success}} :status :success} (execute-steps [some-other-step some-other-step] {} { :step-id [0 0] }))))
+    (is (= {:outputs { [1 0] {:foo :baz :status :success} [2 0] {:foo :baz :status :success}} :status :success}
+           (execute-steps [some-other-step some-other-step] {} { :step-id [0 0] }))))
   (testing "that a failing step prevents the succeeding steps from being executed"
-    (is (= {:outputs { [1 0] {:status :success} [2 0] {:status :failure}} :status :failure} (execute-steps [some-successful-step some-failing-step some-other-step] {} { :step-id [0 0] })))))
+    (is (= {:outputs { [1 0] {:status :success} [2 0] {:status :failure}} :status :failure}
+           (execute-steps [some-successful-step some-failing-step some-other-step] {} { :step-id [0 0] }))))
+  (testing "that the results of one step are the inputs to the other step"
+    (is (= {:outputs { [1 0] {:status :success :foobar 42} [2 0] {:status :success :foobar-times-ten 420}} :status :success}
+           (execute-steps [some-step-returning-foobar-value some-step-using-foobar-value] {} { :step-id [0 0] })))))
 
 (deftest retrigger-test
   (let [pipeline-state-atom (atom { 0 { [1] { :status :success } [2] { :status :failure }}})

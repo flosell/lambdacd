@@ -81,19 +81,22 @@
   (let [s-with-id (steps-with-ids steps (:step-id base-context))]
     (map (to-step-with-context base-context) s-with-id)))
 
-(defn- map-or-abort [f coll]
+(defn- map-or-abort [args coll]
   (loop [result ()
-         r coll]
+         r coll
+         cur-args args]
     (if (empty? r)
       result
-      (let [map-result (f (first r))
-            new-result (cons map-result result)]
+      (let [step (first r)
+            map-result (execute-step cur-args step)
+            new-result (cons map-result result)
+            step-output (first (vals (:outputs map-result)))]
         (if (not= :success (:status map-result))
           new-result
-          (recur (cons map-result result) (rest r)))))))
+          (recur (cons map-result result) (rest r) step-output))))))
 
 (defn- serial-step-result-producer [args s-with-id]
-  (map-or-abort (partial execute-step args) s-with-id))
+  (map-or-abort args s-with-id))
 
 (defn execute-steps
   ([steps args ctx]
