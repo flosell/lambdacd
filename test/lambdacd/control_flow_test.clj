@@ -18,7 +18,16 @@
 
 (defn some-step-taking-100ms [arg & _]
   (Thread/sleep 100)
-  {:foo :bar})
+  {:foo :bar :status :success})
+
+(defn some-step-taking-500ms [arg & _]
+  (Thread/sleep 500)
+  {:bar :baz})
+
+(defn some-step-being-successful-after-200ms [arg & _]
+  (Thread/sleep 200)
+  {:successful "after a while"
+   :status :success})
 
 (defn some-successful-step [arg & _]
   {:status :success})
@@ -39,10 +48,20 @@
   (testing "that one failing step fails the pipeline"
     (is (= {:outputs { [1 0 0] {:status :success} [2 0 0] {:status :failure}} :status :failure} ((in-parallel some-successful-step some-failing-step) {} {:step-id [0 0]}))))
   (testing "that it executes things faster than it would serially"
-    (is (close? 100 100 (my-time ((in-parallel some-step-taking-100ms some-step-taking-100ms some-step-taking-100ms) {} {:step-id [0 0]}))))))
+    (is (close? 50 100 (my-time ((in-parallel some-step-taking-100ms some-step-taking-100ms some-step-taking-100ms) {} {:step-id [0 0]}))))))
 
 (deftest in-cwd-test
   (testing "that it collects all the outputs together correctly and passes cwd to steps"
     ;; FIXME: the :cwd shouldn't be in output?!!?
     (is (= {:outputs { [1 0 0] {:foo "somecwd" :status :success} [2 0 0] {:foo :baz :status :success}} :cwd "somecwd" :status :success} ((in-cwd "somecwd" some-step-for-cwd some-other-step) {} {:step-id [0 0]})))))
 
+(deftest either-test
+  (testing "that it succeeds whenever one step finishes successfully"
+    (is (close? 50 100 (my-time ((either some-step-taking-100ms  some-step-taking-500ms) {} {:step-id [0 0]})))))
+  (testing "that it returns only the results of the first successful step"
+    (is (= {:outputs { [1 0 0] {:foo :bar :status :success} } :status :success}
+           ((either some-step-taking-100ms  some-step-taking-500ms) {} { :step-id [0 0] })))
+    (is (= {:outputs { [2 0 0] {:successful "after a while"
+                                            :status :success} } :status :success}
+           ((either some-failing-step some-step-being-successful-after-200ms) {} { :step-id [0 0] })))
+    ))
