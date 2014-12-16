@@ -63,5 +63,7 @@
            ((either some-step-taking-100ms  some-step-taking-500ms) {} { :step-id [0 0] })))
     (is (= {:outputs { [2 0 0] {:successful "after a while"
                                             :status :success} } :status :success}
-           ((either some-failing-step some-step-being-successful-after-200ms) {} { :step-id [0 0] })))
-    ))
+           ((either some-failing-step some-step-being-successful-after-200ms) {} { :step-id [0 0] }))))
+  (testing "that it fails once all children failed"
+    (is (= { :status :failure }
+           ((either some-failing-step some-failing-step) {} { :step-id [0 0] })))))

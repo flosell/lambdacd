@@ -22,7 +22,9 @@
 (defn- step-producer-returning-with-first-successful [args steps-and-ids]
   (let [step-result-channels (map #(async/go (execution/execute-step args %)) steps-and-ids)
         result (wait-for-success-on step-result-channels)]
-    [result])
+    (if (nil? result)
+      [{:status :failure}]
+      [result]))
   )
 
 (defn ^{:display-type :parallel} either [& steps]
