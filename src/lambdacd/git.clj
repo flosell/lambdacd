@@ -5,7 +5,9 @@
             [lambdacd.execution :as execution]
             [lambdacd.util :as util]
             [clojure.data.json :as json]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [lambdacd.shell :as shell]
+            [clojure.core.async :as async]))
 
 (defn- current-revision [repo-uri branch]
   (util/bash "/"
@@ -79,13 +81,38 @@
         content (first (.list (File. cwd)))]
     (assoc sh-result :cwd (str cwd "/" content))))
 
+(defn append-to [result-ch key value]
+  (let [additional-value-channel (async/chan 1)
+        merged-channels (async/merge [result-ch additional-value-channel])]
+    (do
+      (async/>!! additional-value-channel [key value])
+      merged-channels)))
+
+(defn- checkout-async [repo-uri revision & _]
+  (let [cwd (util/create-temp-dir)
+        sh-result (shell/bash cwd
+                             (str "git clone " repo-uri )
+                             "cd $(ls)"
+                             (str "git checkout " revision))]
+    (append-to sh-result :cwd cwd)))
+
+(defn- async-checkout [ctx repo-uri revision]
+  (let [step-id (:step-id ctx)
+        step (partial checkout-async repo-uri revision)
+        execute-step-output (execution/execute-step step {} ctx)
+        output (get (:outputs execute-step-output) step-id)
+        git-tmp-dir (:cwd output)
+        content-of-git-tmp-dir (first (.list (File. git-tmp-dir)))
+        checkout-folder-name (str git-tmp-dir "/" content-of-git-tmp-dir)]
+    (assoc output :cwd checkout-folder-name)))
+
 
 (defn with-git
   "creates a container-step that checks out a given revision from a repository.
    the revision number is passed on as the :revision value in the arguments-map"
   [repo-uri steps]
   (fn [args ctx]
-    (let [checkout-result (checkout repo-uri (:revision args))  ;; TODO: wouldn't it be better to pass in the revision?
+    (let [checkout-result (async-checkout ctx repo-uri (:revision args))  ;; TODO: wouldn't it be better to pass in the revision?
           repo-location (:cwd checkout-result)
           checkout-exit-code (:exit checkout-result)]
       (if (= 0 checkout-exit-code)
