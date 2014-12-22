@@ -1,0 +1,20 @@
+/*******************************
+         Site Overrides
+*******************************/
+
+
+.ui.steps .step.running {
+  background: @teal;
+}
+
+.ui.steps .step.success {
+  background: @green;
+}
+
+.ui.steps .step.failure {
+  background: @red;
+}
+
+.ui.steps .step.unknown {
+  background: @yellow;
+}

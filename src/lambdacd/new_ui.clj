@@ -23,31 +23,6 @@
 </body>
 </html>")
 
-(def fake-history
-  [{ :build-number 5
-     :status :running}
-   { :build-number 6
-    :status :ok}
-   { :build-number 7
-    :status :failure}])
-
-(def fake-pipeline-representation
-  [{:name "wait-for-frontend-git" :type :step}
-   {:name "in-parallel"
-   :type :parallel
-   :children
-         [{:name "with-frontend-git"
-           :type :container
-           :children [{:name "client-package" :type :step}]}
-          {:name "with-backend-git"
-           :type :container
-           :children [{:name "server-test" :type :step}
-                      {:name "server-package" :type :step}]}]}
-   {:name "in-cwd"
-    :type :container
-    :children [{:name "client-deploy" :type :step}
-               {:name "server-deploy" :type :step}]}])
-
 (defn- icon-style-for [{status :status}]
   (case status
     :running "teal notched circle loading icon"
