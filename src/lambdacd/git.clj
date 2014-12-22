@@ -72,12 +72,6 @@
       (persist-last-seen-revision ctx repo-uri branch current-revision)
       wait-for-result)))
 
-(defn append-to [result-ch key value]
-  (let [additional-value-channel (async/chan 1)
-        merged-channels (async/merge [result-ch additional-value-channel])]
-    (do
-      (async/>!! additional-value-channel [key value])
-      merged-channels)))
 
 (defn- checkout-step [repo-uri revision]
   (fn [& _ ]
@@ -86,7 +80,7 @@
                                (str "git clone " repo-uri )
                                "cd $(ls)"
                                (str "git checkout " revision))]
-      (append-to sh-result :cwd cwd))))
+      (util/append-tuple-to-ch sh-result :cwd cwd))))
 
 (defn- async-checkout [ctx repo-uri revision]
   (let [step-id (:step-id ctx)
