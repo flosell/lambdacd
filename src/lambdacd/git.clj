@@ -89,6 +89,7 @@
           repo-location (:cwd checkout-result)
           checkout-exit-code (:exit checkout-result)]
       (if (= 0 checkout-exit-code)
-        (execution/execute-steps steps (assoc args :cwd repo-location) (execution/new-base-context-for ctx))
+        (let [execute-steps-result (execution/execute-steps steps (assoc args :cwd repo-location) (execution/new-base-context-for ctx))]
+          (assoc execute-steps-result :out (:out checkout-result)))
         {:status :failure :out (:out checkout-result) :exit (:exit checkout-result)}))))
 
