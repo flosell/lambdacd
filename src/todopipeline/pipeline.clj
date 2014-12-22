@@ -22,6 +22,8 @@
   `(
     ;; the first step is usually a step that waits for some event to occur, e.g.
     ;; a manual trigger or some change in the repo
+    ;; the `either` control-flow element allows us to assemble a new trigger out of the two existing ones:
+    ;; wait for either a change in the repository or the manual trigger. 
     (either
       lambdacd.manualtrigger/wait-for-manual-trigger
       wait-for-frontend-repo)
