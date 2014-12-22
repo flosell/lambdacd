@@ -72,15 +72,6 @@
       (persist-last-seen-revision ctx repo-uri branch current-revision)
       wait-for-result)))
 
-(defn- checkout [repo-uri revision]
-  (let [cwd (util/create-temp-dir)
-        sh-result (util/bash cwd
-                             (str "git clone " repo-uri )
-                             "cd $(ls)"
-                             (str "git checkout " revision))
-        content (first (.list (File. cwd)))]
-    (assoc sh-result :cwd (str cwd "/" content))))
-
 (defn append-to [result-ch key value]
   (let [additional-value-channel (async/chan 1)
         merged-channels (async/merge [result-ch additional-value-channel])]
@@ -88,17 +79,18 @@
       (async/>!! additional-value-channel [key value])
       merged-channels)))
 
-(defn- checkout-async [repo-uri revision & _]
-  (let [cwd (util/create-temp-dir)
-        sh-result (shell/bash cwd
-                             (str "git clone " repo-uri )
-                             "cd $(ls)"
-                             (str "git checkout " revision))]
-    (append-to sh-result :cwd cwd)))
+(defn- checkout-step [repo-uri revision]
+  (fn [& _ ]
+    (let [cwd (util/create-temp-dir)
+          sh-result (shell/bash cwd
+                               (str "git clone " repo-uri )
+                               "cd $(ls)"
+                               (str "git checkout " revision))]
+      (append-to sh-result :cwd cwd))))
 
 (defn- async-checkout [ctx repo-uri revision]
   (let [step-id (:step-id ctx)
-        step (partial checkout-async repo-uri revision)
+        step (checkout-step repo-uri revision)
         execute-step-output (execution/execute-step step {} ctx)
         output (get (:outputs execute-step-output) step-id)
         git-tmp-dir (:cwd output)
