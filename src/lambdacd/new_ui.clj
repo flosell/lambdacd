@@ -50,21 +50,24 @@
 
 (declare pipeline) ;; mutual recursion...
 
-(defn- pipeline-step [{name :name type :type children :children}]
-  (let [child-pipeline (pipeline children (not= type :parallel))
+(defn- pipeline-step [build-state parent-step-id index {name :name type :type children :children}]
+  (let [step-id (conj parent-step-id (inc index))
+        step-state (get build-state step-id)
+        step-status (:status step-state)
+        child-pipeline (pipeline children (not= type :parallel) build-state step-id)
         title-div [:div.title name]
         content (if (empty? children)
                   title-div
                   (list title-div child-pipeline))
-        result [:div.step
+        result [:div.step {:data-step-id (str step-id) :data-status step-status}
                  [:div.content
                   content]]]
+    ;(println "bs" build-state "sid" step-id "stepstate" step-state)
     result))
 
-(defn- pipeline [p horizontal]
+(defn- pipeline [p horizontal build-state parent-step-id]
   [:div {:class (if horizontal "div ui steps" "ui steps vertical")}
-   (map pipeline-step p)]
-  )
+   (map-indexed (partial pipeline-step build-state parent-step-id) p)])
 
 (defn history [h]
   (list [:h1 "Build History"]
@@ -78,7 +81,14 @@
         body (hc/html (list header columns))]
     (str page-start page-end body page-end)))
 
+(defn- pipeline-view [pipeline-def pipeline-state build-number]
+  (let [build-history (pipeline-state/history-for pipeline-state)
+        pipeline-state-for-build (get pipeline-state (Integer/parseInt build-number))]
+    (println "build number" build-number)
+    (body (history build-history)
+          (pipeline (presentation/display-representation pipeline-def) true pipeline-state-for-build (list)))))
+
 (defn new-ui-routes [pipeline-def pipeline-state]
   (routes
-    (GET "/:build-number" [build-number] (body (history (pipeline-state/history-for @pipeline-state)) (pipeline (presentation/display-representation pipeline-def) true)))
+    (GET "/:build-number" [build-number] (pipeline-view pipeline-def @pipeline-state build-number))
     (GET "/" [] (resp/redirect (str "./" (pipeline-state/most-recent-build-number-in @pipeline-state))))))

@@ -3,18 +3,23 @@
 *******************************/
 
 
-.ui.steps .step.running {
-  background: @teal;
+.ui.steps .step[data-status=running] {
+  color: @teal;
 }
 
-.ui.steps .step.success {
-  background: @green;
+.ui.steps .step[data-status=success] {
+  color: @green;
 }
 
-.ui.steps .step.failure {
-  background: @red;
+.ui.steps .step[data-status=failure] {
+  color: @red;
 }
 
-.ui.steps .step.unknown {
-  background: @yellow;
+.ui.steps .step[data-status=unknown] {
+  color: @yellow;
+}
+
+.ui.steps .step[data-status=waiting] {
+  color: @blue;
+
 }
