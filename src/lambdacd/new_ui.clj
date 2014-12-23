@@ -80,4 +80,5 @@
 
 (defn new-ui-routes [pipeline-def pipeline-state]
   (routes
-    (GET "/" [] (body (history (pipeline-state/history-for @pipeline-state)) (pipeline (presentation/display-representation pipeline-def) true)))))
+    (GET "/:build-number" [build-number] (body (history (pipeline-state/history-for @pipeline-state)) (pipeline (presentation/display-representation pipeline-def) true)))
+    (GET "/" [] (resp/redirect (str "./" (pipeline-state/most-recent-build-number-in @pipeline-state))))))

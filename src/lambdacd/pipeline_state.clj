@@ -70,3 +70,6 @@
 
 (defn history-for [state]
   (map history-entry state))
+
+(defn most-recent-build-number-in [state]
+  (apply max (keys state)))

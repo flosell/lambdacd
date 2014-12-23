@@ -69,3 +69,9 @@
                              7 { [0 2] { :status :running} [0 1] { :status :failure}}
                              8 { [0] { :status :waiting }}
                              9 { [0] { :no :status }}})))))
+
+(deftest most-recent-build-test
+  (testing "that it returns the most recent build number in the pipeline-state"
+    (is (= 9 (most-recent-build-number-in { 5 { }
+                                            6 {  }
+                                            9 { }})))))
