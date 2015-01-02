@@ -17,17 +17,30 @@
 ;; It's a function that just waits until something changes in the repo.
 ;; Once done, it returns and the build can go on
 (defn wait-for-frontend-repo [_ ctx]
-  (git/wait-for-git ctx frontend-repo "master"))
+  (let [wait-result (git/wait-for-git ctx frontend-repo "master")
+        frontend-revision (:revision wait-result)]
+    {:frontend-revision frontend-revision
+     :backend-revision "HEAD"
+     :status :success}))
+
+(defn wait-for-backend-repo [_ ctx]
+  (let [wait-result (git/wait-for-git ctx backend-repo "master")
+        backend-revision (:revision wait-result)]
+    {:backend-revision backend-revision
+     :frontend-revision "HEAD"
+     :status :success}))
 
 ;; Define some nice syntactic sugar that lets us run arbitrary build-steps with a
 ;; repository checked out. The steps get executed with the folder where the repo
 ;; is checked out as :cwd argument.
 ;; The ```^{:display-type :container}``` is a hint for the UI to display the child-steps as well.
 (defn ^{:display-type :container} with-frontend-git [& steps]
-  (git/with-git frontend-repo steps))
+  (fn [args ctx]
+    (git/checkout-and-execute frontend-repo (:frontend-revision args) args ctx steps)))
 
 (defn ^{:display-type :container} with-backend-git [& steps]
-  (git/with-git backend-repo steps))
+  (fn [args ctx]
+    (git/checkout-and-execute backend-repo (:backend-revision args) args ctx steps)))
 
 ;; The steps that do the real work testing, packaging, publishing our code.
 ;; They get the :cwd argument from the ```with-*-git steps``` we defined above.
