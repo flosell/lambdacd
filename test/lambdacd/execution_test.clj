@@ -37,17 +37,6 @@
 (defn some-step-consuming-the-context [arg ctx]
   {:status :success :context-info (:the-info ctx)})
 
-(defn some-step-returning-status-channel [& _]
-  (let [c (async/chan 10)]
-    (async/>!! c :success)
-    {:status c}))
-
-(defn some-step-returning-a-failing-status-channel [& _]
-  (let [c (async/chan 10)]
-    (async/>!! c :waiting)
-    (async/>!! c :this-is-not-waiting)
-    {:status c}))
-
 (defn some-step-throwing-an-exception [& _]
   (throw (Throwable. "Something went wrong!")))
 

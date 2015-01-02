@@ -37,11 +37,6 @@
 (defn some-step-not-returning-status [arg & _]
   {})
 
-(defn some-step-returning-status-channel [& _]
-  (let [c (async/chan 10)]
-    (async/>!! c :success)
-    {:status c}))
-
 (deftest in-parallel-test
   (testing "that it collects all the outputs together correctly"
     (is (= {:outputs { [1 0 0] {:foo :baz :status :undefined} [2 0 0] {:foo :baz :status :undefined}} :status :undefined} ((in-parallel some-step some-step) {} { :step-id [0 0] }))))
