@@ -1,8 +1,10 @@
-(defproject lambdacd "0.1.0-alpha7"
+(defproject lambdacd "0.1.0-alpha8-SNAPSHOT"
   :description "a library to create a continous delivery pipeline in code"
   :url "http://github.com/flosell/lambdacd"
   :license {:name "Apache License, version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0.html"}
+  :min-lein-version "2.5.0"
+  :deploy-repositories [["releases" :clojars]]
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/data.json "0.2.5"]
                  [me.raynes/conch "0.8.0"]
