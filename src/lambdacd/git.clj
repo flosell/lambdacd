@@ -24,7 +24,7 @@
       (do
         (log/debug "waiting for new revision. current revision" revision-output "last seen" last-seen-revision)
         (if (not= last-seen-revision new-revision-output)
-          {:status :success :current-revision new-revision-output}
+          {:status :success :revision new-revision-output}
           nil)))))
 
 (defn- wait-for-revision-changed-from [last-seen-revision repo-uri branch]
@@ -68,7 +68,7 @@
     {:status :failure :out "No :home-dir configured"}
     (let [last-seen-revision (last-seen-revision-for ctx repo-uri branch)
           wait-for-result (wait-for-revision-changed-from last-seen-revision repo-uri branch)
-          current-revision (:current-revision wait-for-result)]
+          current-revision (:revision wait-for-result)]
       (persist-last-seen-revision ctx repo-uri branch current-revision)
       wait-for-result)))
 

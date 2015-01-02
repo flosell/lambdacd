@@ -71,11 +71,11 @@
           commit-hash-after-waiting-started-already (commit-to git-src-dir)
           wait-started-while-not-having-a-new-commit-result (get-value-or-timeout-from wait-started-while-not-having-a-new-commit-ch)
           ]
-      (is (= original-head-commit (:current-revision wait-for-original-commit-result)))
+      (is (= original-head-commit (:revision wait-for-original-commit-result)))
       (is (= :success (:status wait-for-original-commit-result)))
-      (is (= commit-hash-with-nothing-waiting-for-it (:current-revision wait-for-commit-that-happend-while-not-waiting-ch-result)))
+      (is (= commit-hash-with-nothing-waiting-for-it (:revision wait-for-commit-that-happend-while-not-waiting-ch-result)))
       (is (= :success (:status wait-for-commit-that-happend-while-not-waiting-ch-result)))
-      (is (= commit-hash-after-waiting-started-already (:current-revision wait-started-while-not-having-a-new-commit-result)))
+      (is (= commit-hash-after-waiting-started-already (:revision wait-started-while-not-having-a-new-commit-result)))
       (is (= :success (:status wait-started-while-not-having-a-new-commit-result)))))
   (testing "that it fails if no :home-dir is configured"
     (is (= {:status :failure :out "No :home-dir configured"} (wait-for-git {:config {}} "some-uri" "some-branch"))))
