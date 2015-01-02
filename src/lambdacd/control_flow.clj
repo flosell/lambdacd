@@ -29,10 +29,13 @@
 
 (defn ^{:display-type :parallel} either [& steps]
   (fn [args ctx]
-    (execution/execute-steps step-producer-returning-with-first-successful steps args (execution/new-base-context-for ctx))))
+    (let [execute-output (execution/execute-steps step-producer-returning-with-first-successful steps args (execution/new-base-context-for ctx))]
+      (if (= :success (:status execute-output))
+        (first (vals (:outputs execute-output)))
+        execute-output))))
 
 
 
-(defn ^{:display-type :container} in-cwd [cwd & steps]
+  (defn ^{:display-type :container} in-cwd [cwd & steps]
   (fn [args ctx]
     (execution/execute-steps steps (assoc args :cwd cwd) (execution/new-base-context-for ctx))))

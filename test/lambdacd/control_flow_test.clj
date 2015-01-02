@@ -59,10 +59,9 @@
   (testing "that it succeeds whenever one step finishes successfully"
     (is (close? 50 100 (my-time ((either some-step-taking-100ms  some-step-taking-500ms) {} {:step-id [0 0]})))))
   (testing "that it returns only the results of the first successful step"
-    (is (= {:outputs { [1 0 0] {:foo :bar :status :success} } :status :success}
+    (is (= {:status :success :foo :bar}
            ((either some-step-taking-100ms  some-step-taking-500ms) {} { :step-id [0 0] })))
-    (is (= {:outputs { [2 0 0] {:successful "after a while"
-                                            :status :success} } :status :success}
+    (is (= {:status :success :successful "after a while"}
            ((either some-failing-step some-step-being-successful-after-200ms) {} { :step-id [0 0] }))))
   (testing "that it fails once all children failed"
     (is (= { :status :failure }
