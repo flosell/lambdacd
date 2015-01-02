@@ -14,6 +14,7 @@
   <head>
   <title>LambdaCD - Pipeline</title>
   </head>
+   <meta http-equiv=\"refresh\" content=\"5\">
   <link rel=\"stylesheet\" type=\"text/css\" href=\"/ui2/semantic-ui/semantic.css\"/>
 <link rel=\"stylesheet\" type=\"text/css\" href=\"/ui2/css/main.css\"/>
 <body>")
