@@ -101,4 +101,4 @@
           with-git-function (with-git "some-unknown-uri" [])
           with-git-result (with-git-function with-git-args {:step-id [42]})]
       (is (=  :failure (:status with-git-result)))
-      (is (=  "fatal: repository 'some-unknown-uri' does not exist\n" (:out with-git-result))))))
+      (is (.endsWith (:out with-git-result) "fatal: repository 'some-unknown-uri' does not exist\n" )))))

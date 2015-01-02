@@ -77,6 +77,7 @@
   (fn [& _ ]
     (let [cwd (util/create-temp-dir)
           sh-result (shell/bash cwd
+                               (str "echo \"Cloning " revision " of " repo-uri "\"")
                                (str "git clone " repo-uri )
                                "cd $(ls)"
                                (str "git checkout " revision))]
