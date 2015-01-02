@@ -46,7 +46,6 @@
       (json/read-str (slurp git-state-file))
       {})))
 
-
 (defn- last-seen-revision-for [ctx repo-uri branch]
   (let [git-state-data (read-git-state ctx)
         last-seen-revision (get (get (get git-state-data "last-seen") repo-uri) branch)]
@@ -72,30 +71,23 @@
       (persist-last-seen-revision ctx repo-uri branch current-revision)
       wait-for-result)))
 
-
-(defn- checkout-step [ctx repo-uri revision]
-    (let [cwd (util/create-temp-dir)
-          sh-result (shell/bash ctx cwd
-                               (str "echo \"Cloning " revision " of " repo-uri "\"")
-                               (str "git clone " repo-uri )
-                               "cd $(ls)"
-                               (str "git checkout " revision))]
-      (assoc sh-result :cwd cwd)))
-
-(defn- async-checkout [ctx repo-uri revision]
-  (let [output (checkout-step ctx repo-uri revision)
-        git-tmp-dir (:cwd output)
-        content-of-git-tmp-dir (first (.list (File. git-tmp-dir)))
-        checkout-folder-name (str git-tmp-dir "/" content-of-git-tmp-dir)]
-    (assoc output :cwd checkout-folder-name)))
-
+(defn- checkout [ctx repo-uri revision]
+  (let [base-dir (util/create-temp-dir)
+        sh-result (shell/bash ctx base-dir
+                              (str "echo \"Cloning " revision " of " repo-uri "\"")
+                              (str "git clone " repo-uri )
+                              "cd $(ls)"
+                              (str "git checkout " revision))
+        content-of-git-tmp-dir (first (.list (File. base-dir)))
+        checkout-folder-name (str base-dir "/" content-of-git-tmp-dir)]
+    (assoc sh-result :cwd checkout-folder-name)))
 
 (defn with-git
   "creates a container-step that checks out a given revision from a repository.
    the revision number is passed on as the :revision value in the arguments-map"
   [repo-uri steps]
   (fn [args ctx]
-    (let [checkout-result (async-checkout ctx repo-uri (:revision args))  ;; TODO: wouldn't it be better to pass in the revision?
+    (let [checkout-result (checkout ctx repo-uri (:revision args))  ;; TODO: wouldn't it be better to pass in the revision?
           repo-location (:cwd checkout-result)
           checkout-exit-code (:exit checkout-result)]
       (if (= 0 checkout-exit-code)
