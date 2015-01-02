@@ -3,8 +3,17 @@
 This changelog indicates breaking changes to the API. As this is still an experimental library, breaking changes may
 occur without warning between the alpha-releases. The official release will have a defined and more stable API. 
 
+## 0.1.0-alpha8 [wip]
 
-## 0.1.0-alpha6 [wip]
+* steps now receive a `:result-channel` value through the context to send intermediate values.
+  use this channel instead of returning a result-channel from the step. the latter is now DEPRECATED and will be removed in the next release.
+
+
+## 0.1.0-alpha7
+
+no breaking API changes
+
+## 0.1.0-alpha6
 
 * `wait-for-git` now receives the context as first parameter: `(wait-for-git ctx some-repo some-branch)`
   The context must contain a configuration with the `:home-dir` set to a directory where the step can store a file with the last seen revisions (see below)
