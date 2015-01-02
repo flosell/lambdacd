@@ -1,8 +1,5 @@
 (ns smoketest.steps
-  (:require [lambdacd.shell :as shell]
-            [lambdacd.execution :as execution]
-            [lambdacd.git :as git]
-            [lambdacd.manualtrigger :as manualtrigger]
+  (:require [lambdacd.git :as git]
             [lambdacd.util :as utils]))
 
 (defn do-stuff [& _]

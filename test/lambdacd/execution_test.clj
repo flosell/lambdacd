@@ -22,10 +22,6 @@
 (defn some-step-for-cwd [{cwd :cwd} & _]
   {:foo cwd :status :success})
 
-(defn some-step-taking-10ms [arg & _]
-  (Thread/sleep 10)
-  {:foo :bar})
-
 (defn some-successful-step [arg & _]
   {:status :success})
 (defn some-failing-step [arg & _]

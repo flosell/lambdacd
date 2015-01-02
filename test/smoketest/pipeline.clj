@@ -1,9 +1,7 @@
 (ns smoketest.pipeline
   (:use [lambdacd.control-flow]
         [smoketest.steps])
-  (:require [lambdacd.server :as server]
-            [lambdacd.execution :as execution]
-            [lambdacd.core :as core]
+  (:require [lambdacd.core :as core]
             [lambdacd.util :as utils]))
 
 

@@ -1,6 +1,5 @@
 (ns smoketest.smoke-test
-  (:require [smoketest.pipeline :as pipeline]
-            [smoketest.steps :as steps]
+  (:require [smoketest.steps :as steps]
             [ring.server.standalone :as ring :only serve]
             [org.httpkit.client :as http]
             [clojure.test :refer :all]

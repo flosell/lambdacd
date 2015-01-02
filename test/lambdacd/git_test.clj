@@ -4,9 +4,7 @@
             [lambdacd.git :refer :all]
             [clojure.core.async :as async]
             [clojure.string :as string]
-            [lambdacd.shell :as sh]
             [lambdacd.util :as util]
-            [lambdacd.test-util :as test-util]
             [lambdacd.reporters]))
 
 (defn- git-commits [cwd]

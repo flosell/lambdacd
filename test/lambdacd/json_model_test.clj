@@ -1,9 +1,7 @@
 (ns lambdacd.json-model-test
   (:use [lambdacd.test-util])
   (:require [clojure.test :refer :all]
-            [lambdacd.json-model :refer :all]
-            [lambdacd.util :as utils]
-            [clojure.data.json :as json]))
+            [lambdacd.json-model :refer :all]))
 
 (deftest pipeline-state->json-format-test
   (testing "that it converts to a decent-json-compatible format"
