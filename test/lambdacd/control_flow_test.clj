@@ -44,7 +44,7 @@
 
 (deftest in-parallel-test
   (testing "that it collects all the outputs together correctly"
-    (is (= {:outputs { [1 0 0] {:foo :baz} [2 0 0] {:foo :baz}} :status :undefined} ((in-parallel some-step some-step) {} { :step-id [0 0] }))))
+    (is (= {:outputs { [1 0 0] {:foo :baz :status :undefined} [2 0 0] {:foo :baz :status :undefined}} :status :undefined} ((in-parallel some-step some-step) {} { :step-id [0 0] }))))
   (testing "that one failing step fails the pipeline"
     (is (= {:outputs { [1 0 0] {:status :success} [2 0 0] {:status :failure}} :status :failure} ((in-parallel some-successful-step some-failing-step) {} {:step-id [0 0]}))))
   (testing "that it executes things faster than it would serially"

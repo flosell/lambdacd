@@ -59,6 +59,11 @@
     (async/>!! c [:status :success])
     c))
 
+(defn some-step-writing-to-the-result-channel [_ ctx]
+  (let [result-ch (:result-channel ctx)]
+    (async/>!! result-ch [:out "hello world"])
+    {:status :success}))
+
 (with-private-fns [lambdacd.execution [merge-step-results]]
   (deftest step-result-merge-test
     (testing "merging without collisions"
@@ -77,11 +82,13 @@
   (testing "that executing returns the steps result-status as a special field and leaves it in the output as well"
     (is (= {:outputs { [0 0] {:status :success} } :status :success} (execute-step some-successful-step {} {:step-id [0 0]}))))
   (testing "that the result-status is :undefined if the step doesn't return any"
-    (is (= {:outputs { [0 0] {} } :status :undefined} (execute-step some-step-not-returning-status {} {:step-id [0 0]}))))
+    (is (= {:outputs { [0 0] {:status :undefined} } :status :undefined} (execute-step some-step-not-returning-status {} {:step-id [0 0]}))))
   (testing "that if an exception is thrown in the step, it will result in a failure and the exception output is logged"
     (let [output (execute-step some-step-throwing-an-exception {} {:step-id [0 0]})]
       (is (= :failure (get-in output [:outputs [0 0] :status])))
       (is (.contains (get-in output [:outputs [0 0] :out]) "Something went wrong"))))
+  (testing "that the context passed to the step contains an output-channel and that results passed into this channel are merged into the result"
+    (is (= {:outputs { [0 0] {:out "hello world" :status :success}} :status :success} (execute-step some-step-writing-to-the-result-channel {} {:step-id [0 0]}))))
   (testing "that the result can be a channel"
     (is (= {:outputs { [0 0] {:status :success :some-value 42 :out "hello world" } } :status :success}
            (execute-step some-step-returning-a-channel {} {:step-id [0 0]}))))

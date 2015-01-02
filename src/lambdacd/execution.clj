@@ -21,20 +21,27 @@
 (defn- is-finished [key value]
   (and (= key :status) (not= value :waiting)))
 
+(defn process-channel-result-async [c ctx]
+  (async/go
+    (loop [cur-result {:status :running}]
+      (let [[key value] (async/<! c)
+            new-result (assoc cur-result key value)]
+        (if (and (nil? key) (nil? value))
+          cur-result
+          (do
+            (pipeline-state/update ctx new-result)
+             (if (is-finished key value)
+               new-result
+               (recur new-result))))))))
+
 (defn- process-channel-result [c ctx]
   (async/<!!
-    (async/go
-      (loop [cur-result {:status :running}]
-        (let [[key value] (async/<! c)
-              new-result (assoc cur-result key value)]
-          (pipeline-state/update ctx new-result)
-          (if (is-finished key value)
-            new-result
-            (recur new-result)))))))
+    (process-channel-result-async c ctx)))
 
 (defn- process-static-result [step-result ctx]
-  (pipeline-state/update ctx step-result)
-  step-result)
+  (let [new-step-result (assoc step-result :status (get step-result :status :undefined))]
+    (pipeline-state/update ctx new-step-result)
+    new-step-result))
 
 (defn- process-step-result [immediate-step-result ctx]
   (if (util/is-channel? immediate-step-result)
@@ -51,18 +58,25 @@
 (defn- execute-or-catch [step args ctx]
   (try
     (step args ctx)
-     (catch Throwable e
-       {:status :failure :out (with-err-str (repl/pst e))})))
+    (catch Throwable e
+       {:status :failure :out (with-err-str (repl/pst e))})
+    (finally
+      (async/close! (:result-channel ctx)))))
 
 (defn execute-step
   ([args [ctx step]]
     (execute-step step args ctx))
   ([step args {:keys [step-id] :as ctx}]
    (pipeline-state/running ctx)
-   (let [immediate-step-result (execute-or-catch step args ctx)
-         final-step-result (process-step-result immediate-step-result ctx)]
-     (log/debug (str "executed step " step-id final-step-result))
-     (step-output step-id final-step-result))))
+   (let [result-ch (async/chan 10)
+         ctx-with-result-ch (assoc ctx :result-channel result-ch)
+         processed-result-ch (process-channel-result-async result-ch ctx)
+         immediate-step-result (execute-or-catch step args ctx-with-result-ch)
+         final-step-result (process-step-result immediate-step-result ctx)
+         processed-result (async/<!! processed-result-ch)
+         final-step-result-with-processed-result-ch (merge  processed-result final-step-result)]
+     (log/debug (str "executed step " step-id final-step-result-with-processed-result-ch))
+     (step-output step-id final-step-result-with-processed-result-ch))))
 
 (defn- merge-status [s1 s2]
   (if (= s1 :success)
@@ -118,6 +132,7 @@
     (execute-steps serial-step-result-producer steps args ctx))
   ([step-result-producer steps args ctx]
     (let [step-results (step-result-producer args (context-for-steps steps ctx))]
+      ;(log/debug "The step-results: {}" step-results)
       (reduce merge-step-results args step-results))))
 
 (defn- new-base-id-for [step-id]

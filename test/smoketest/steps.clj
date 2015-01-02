@@ -19,10 +19,12 @@
   (str "file://" some-repo-location))
 
 (defn increment-counter-by-two [& _]
-  (swap! some-counter #(+ 2 %1) ))
+  (swap! some-counter #(+ 2 %1))
+  {:status :success})
 
 (defn increment-counter-by-three [& _]
-  (swap! some-counter #(+ 3 %1)))
+  (swap! some-counter #(+ 3 %1))
+  {:status :success})
 
 (defn wait-for-some-repo [_ ctx]
   (git/wait-for-git ctx some-repo-uri "master"))
