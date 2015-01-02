@@ -73,21 +73,17 @@
       wait-for-result)))
 
 
-(defn- checkout-step [repo-uri revision]
-  (fn [& _ ]
+(defn- checkout-step [ctx repo-uri revision]
     (let [cwd (util/create-temp-dir)
-          sh-result (shell/bash cwd
+          sh-result (shell/bash ctx cwd
                                (str "echo \"Cloning " revision " of " repo-uri "\"")
                                (str "git clone " repo-uri )
                                "cd $(ls)"
                                (str "git checkout " revision))]
-      (util/append-tuple-to-ch sh-result :cwd cwd))))
+      (assoc sh-result :cwd cwd)))
 
 (defn- async-checkout [ctx repo-uri revision]
-  (let [step-id (:step-id ctx)
-        step (checkout-step repo-uri revision)
-        execute-step-output (execution/execute-step step {} ctx)
-        output (get (:outputs execute-step-output) step-id)
+  (let [output (checkout-step ctx repo-uri revision)
         git-tmp-dir (:cwd output)
         content-of-git-tmp-dir (first (.list (File. git-tmp-dir)))
         checkout-folder-name (str git-tmp-dir "/" content-of-git-tmp-dir)]

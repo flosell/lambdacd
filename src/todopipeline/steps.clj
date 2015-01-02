@@ -31,26 +31,26 @@
 
 ;; The steps that do the real work testing, packaging, publishing our code.
 ;; They get the :cwd argument from the ```with-*-git steps``` we defined above.
-(defn client-package [{cwd :cwd} & _]
-  (shell/bash cwd
+(defn client-package [{cwd :cwd} ctx]
+  (shell/bash ctx cwd
     "bower install"
     "./package.sh"
     "./publish.sh"))
 
-(defn server-test [{cwd :cwd} & _]
-  (shell/bash cwd
+(defn server-test [{cwd :cwd} ctx]
+  (shell/bash ctx cwd
     "lein test"))
 
-(defn server-package [{cwd :cwd} & _]
-  (shell/bash cwd
+(defn server-package [{cwd :cwd} ctx]
+  (shell/bash ctx cwd
     "lein uberjar"
     "./publish.sh"))
 
-(defn server-deploy-ci [{cwd :cwd} & _]
-  (shell/bash cwd "./deploy-server.sh backend_ci /tmp/mockrepo/server-snapshot.tar.gz"))
+(defn server-deploy-ci [{cwd :cwd} ctx]
+  (shell/bash ctx cwd "./deploy-server.sh backend_ci /tmp/mockrepo/server-snapshot.tar.gz"))
 
-(defn client-deploy-ci [{cwd :cwd} & _]
-  (shell/bash cwd "./deploy-frontend.sh frontend_ci /tmp/mockrepo/client-snapshot.tar.gz"))
+(defn client-deploy-ci [{cwd :cwd} ctx]
+  (shell/bash ctx cwd "./deploy-frontend.sh frontend_ci /tmp/mockrepo/client-snapshot.tar.gz"))
 
 ;; This is just a step that shows you what output steps actually have (since you have only used library functions up to
 ;; here). It's just a map with some information. :status has a special meaning in the sense that it needs to be there
@@ -65,5 +65,5 @@
 
 ;; Another step that just fails using bash.
 ;; We could have made a failing step easier as well by just returning ```{ :status :failure }```
-(defn some-failing-step [& _]
-  (shell/bash "/" "echo \"i am going to fail now...\"" "exit 1"))
+(defn some-failing-step [_ ctx]
+  (shell/bash ctx "/" "echo \"i am going to fail now...\"" "exit 1"))

@@ -92,13 +92,13 @@
           first-commit (first commits)
           with-git-args { :revision first-commit }
           with-git-function (with-git (repo-uri-for git-src-dir) [step-that-returns-the-current-cwd-head])
-          with-git-result (with-git-function with-git-args {:step-id [42]})]
+          with-git-result (with-git-function with-git-args {:step-id [42] :result-channel (async/chan 100)})]
       (is (= first-commit (:current-head (get (:outputs with-git-result ) [1 42]))))
       (is (.endsWith (:cwd with-git-result) repo-name))
       (is (.startsWith (:out with-git-result) "Cloning"))))
   (testing "that it fails when it couldn't check out a repository"
     (let [with-git-args { :revision "some-commit" }
           with-git-function (with-git "some-unknown-uri" [])
-          with-git-result (with-git-function with-git-args {:step-id [42]})]
+          with-git-result (with-git-function with-git-args {:step-id [42] :result-channel (async/chan 100)})]
       (is (=  :failure (:status with-git-result)))
       (is (.endsWith (:out with-git-result) "fatal: repository 'some-unknown-uri' does not exist\n" )))))
