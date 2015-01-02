@@ -2,6 +2,7 @@
   (:use compojure.core)
   (:require [compojure.route :as route]
             [hiccup.core :as hc]
+            [hiccup.page :as page]
             [clojure.data.json :as json :only [write-str]]
             [lambdacd.presentation :as presentation]
             [lambdacd.manualtrigger :as manualtrigger]
@@ -9,20 +10,21 @@
             [ring.util.response :as resp]
             [lambdacd.execution :as execution]
             [lambdacd.pipeline-state :as pipeline-state]))
-;; FIXME: proper hiccup here:
-(def page-start "<html>
-  <head>
-  <title>LambdaCD - Pipeline</title>
-  </head>
-   <meta http-equiv=\"refresh\" content=\"5\">
-  <link rel=\"stylesheet\" type=\"text/css\" href=\"/ui2/semantic-ui/semantic.css\"/>
-<link rel=\"stylesheet\" type=\"text/css\" href=\"/ui2/css/main.css\"/>
-<body>")
 
-(def page-end "<script src=\"//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js\"></script>
-<script src=\"/ui2/semantic-ui/semantic.js\"></script>
-</body>
-</html>")
+(defn- refresh-every [seconds]
+  [:meta {:http-equiv "refresh" :content (str seconds)}])
+
+(defn page [body]
+  (page/html5
+         [:head
+          [:title "LambdaCD - Pipeline"]
+          (refresh-every 5)
+          (page/include-css "/ui2/semantic-ui/semantic.css")
+          (page/include-css "/ui2/css/main.css")
+          (page/include-js "//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js")
+          (page/include-js "/ui2/semantic-ui/semantic.js")]
+          [:body
+           body]))
 
 (defn- icon-style-for [{status :status}]
   (case status
@@ -78,15 +80,15 @@
         history-column [:div {:class "ui three wide column"} history]
         content-column [:div {:class "ui thirteen wide column"} content]
         columns [:div {:class "ui segment stackable grid"} history-column content-column]
-        body (hc/html (list header columns))]
-    (str page-start page-end body page-end)))
+        body (list header columns)]
+    body))
 
 (defn- pipeline-view [pipeline-def pipeline-state build-number]
   (let [build-history (pipeline-state/history-for pipeline-state)
         pipeline-state-for-build (get pipeline-state (Integer/parseInt build-number))]
     (println "build number" build-number)
-    (body (history build-history)
-          (pipeline (presentation/display-representation pipeline-def) true pipeline-state-for-build))))
+    (hc/html (page (body (history build-history)
+          (pipeline (presentation/display-representation pipeline-def) true pipeline-state-for-build))))))
 
 (defn new-ui-routes [pipeline-def pipeline-state]
   (routes
