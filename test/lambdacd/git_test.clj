@@ -56,6 +56,8 @@
     (Thread/sleep 500) ;; dirty hack to make sure we started waiting before making the next commit
     ch))
 
+;; TODO: replace this test with checkout-and-execute tests, phase out with-git
+
 (deftest wait-for-git-test
   (testing "that it returns immediately (since it has no last known revision), calls after that wait for the next commit independent of whether the commit occurred before or after starting to wait"
     (let [config (create-config)

@@ -82,16 +82,18 @@
         checkout-folder-name (str base-dir "/" content-of-git-tmp-dir)]
     (assoc sh-result :cwd checkout-folder-name)))
 
+(defn checkout-and-execute [repo-uri revision args ctx steps]
+  (let [checkout-result (checkout ctx repo-uri revision)
+        repo-location (:cwd checkout-result)
+        checkout-exit-code (:exit checkout-result)]
+    (if (= 0 checkout-exit-code)
+      (let [execute-steps-result (execution/execute-steps steps (assoc args :cwd repo-location) (execution/new-base-context-for ctx))]
+        (assoc execute-steps-result :out (:out checkout-result)))
+      {:status :failure :out (:out checkout-result) :exit (:exit checkout-result)})))
+
 (defn with-git
   "creates a container-step that checks out a given revision from a repository.
    the revision number is passed on as the :revision value in the arguments-map"
   [repo-uri steps]
   (fn [args ctx]
-    (let [checkout-result (checkout ctx repo-uri (:revision args))  ;; TODO: wouldn't it be better to pass in the revision?
-          repo-location (:cwd checkout-result)
-          checkout-exit-code (:exit checkout-result)]
-      (if (= 0 checkout-exit-code)
-        (let [execute-steps-result (execution/execute-steps steps (assoc args :cwd repo-location) (execution/new-base-context-for ctx))]
-          (assoc execute-steps-result :out (:out checkout-result)))
-        {:status :failure :out (:out checkout-result) :exit (:exit checkout-result)}))))
-
+    (checkout-and-execute repo-uri (:revision args) args ctx steps)))
