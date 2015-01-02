@@ -50,11 +50,11 @@
 
 (declare pipeline) ;; mutual recursion...
 
-(defn- pipeline-step [build-state parent-step-id index {name :name type :type children :children}]
-  (let [step-id (conj parent-step-id (inc index))
+(defn- pipeline-step [build-state {name :name type :type children :children step-id :step-id}]
+  (let [
         step-state (get build-state step-id)
         step-status (:status step-state)
-        child-pipeline (pipeline children (not= type :parallel) build-state step-id)
+        child-pipeline (pipeline children (not= type :parallel) build-state)
         title-div [:div.title name]
         content (if (empty? children)
                   title-div
@@ -62,12 +62,11 @@
         result [:div.step {:data-step-id (str step-id) :data-status step-status}
                  [:div.content
                   content]]]
-    ;(println "bs" build-state "sid" step-id "stepstate" step-state)
     result))
 
-(defn- pipeline [p horizontal build-state parent-step-id]
+(defn- pipeline [p horizontal build-state]
   [:div {:class (if horizontal "div ui steps" "ui steps vertical")}
-   (map-indexed (partial pipeline-step build-state parent-step-id) p)])
+   (map (partial pipeline-step build-state) p)])
 
 (defn history [h]
   (list [:h1 "Build History"]
@@ -86,7 +85,7 @@
         pipeline-state-for-build (get pipeline-state (Integer/parseInt build-number))]
     (println "build number" build-number)
     (body (history build-history)
-          (pipeline (presentation/display-representation pipeline-def) true pipeline-state-for-build (list)))))
+          (pipeline (presentation/display-representation pipeline-def) true pipeline-state-for-build))))
 
 (defn new-ui-routes [pipeline-def pipeline-state]
   (routes

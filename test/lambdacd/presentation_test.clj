@@ -72,23 +72,27 @@
 
 (deftest display-representation-test
   (testing "that the display-representation of a step is the display-name and display-type"
-    (is (= {:name "do-even-more-stuff" :type :step } (display-representation (last (second pipeline)))))
+    (is (= {:name "do-even-more-stuff" :type :step :step-id '()} (display-representation (last (second pipeline)))))
   )
   (testing "that the display-representation of a step with children has name, type and children"
     (is (= {:name "in-cwd"
             :type :container
-            :children [{:name "do-even-more-stuff" :type :step}]} (display-representation (second pipeline))))
+            :step-id '()
+            :children [{:name "do-even-more-stuff" :type :step :step-id '(1)}]} (display-representation (second pipeline))))
   )
   (testing "that a display-representation of a sequence of only steps works"
-    (is (= [{:name "do-stuff" :type :step} {:name "do-other-stuff" :type :step}] (display-representation simple-pipeline))))
+    (is (= [{:name "do-stuff" :type :step :step-id '(1)} {:name "do-other-stuff" :type :step :step-id '(2)}] (display-representation simple-pipeline))))
   (testing "that foo-pipeline works"
     (is (= [{:name "in-parallel"
-            :type :parallel
-            :children
-              [{:name "in-cwd"
-               :type :container
-               :children [{:name "do-stuff" :type :step}]}
-              {:name "in-cwd"
-               :type :container
-               :children [{:name "do-other-stuff" :type :step}]}]}] (display-representation foo-pipeline))))
+             :type :parallel
+             :step-id '(1)
+             :children
+               [{:name "in-cwd"
+                 :type :container
+                 :step-id '(1 1)
+                 :children [{:name "do-stuff" :type :step :step-id '(1 1 1)}]}
+               {:name "in-cwd"
+                :type :container
+                :step-id '(2 1)
+                :children [{:name "do-other-stuff" :type :step :step-id '(1 2 1)}]}]}] (display-representation foo-pipeline))))
 )

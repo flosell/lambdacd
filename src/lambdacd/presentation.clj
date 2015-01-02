@@ -32,16 +32,25 @@
 
 (declare display-representation) ; display-representation and display-representation-for-seq are mutually recursive
 
-(defn- display-representation-for-seq [part]
+(defn- do-some-stuff [part id]
+  (map-indexed #(display-representation %2 (conj id (inc %1))) part))
+
+(defn- display-representation-for-seq [part id]
   (let [f (first part)
           r (filter is-step? (rest part))]
     (if (is-step? f)
-      (map display-representation part)
+      (do-some-stuff part id)
       {:name (display-name f)
        :type (display-type f)
-       :children (map display-representation r)})))
+       :step-id id
+       :children (do-some-stuff r id)})))
 
-(defn display-representation [part]
+(defn display-representation
+  ([part]
+   (display-representation part '()))
+  ([part id]
   (if (sequential? part)
-    (display-representation-for-seq part)
-    {:name (display-name part) :type (display-type part)}))
+    (display-representation-for-seq part id)
+    {:name (display-name part)
+     :type (display-type part)
+     :step-id id})))
