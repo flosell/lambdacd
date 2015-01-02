@@ -48,6 +48,9 @@
     (async/>!! c :this-is-not-waiting)
     {:status c}))
 
+(defn some-step-throwing-an-exception [& _]
+  (throw (Throwable. "Something went wrong!")))
+
 (defn some-step-returning-a-channel [& _]
   (let [c (async/chan 10)]
     (async/>!! c [:out "hello"])
@@ -75,6 +78,10 @@
     (is (= {:outputs { [0 0] {:status :success} } :status :success} (execute-step some-successful-step {} {:step-id [0 0]}))))
   (testing "that the result-status is :undefined if the step doesn't return any"
     (is (= {:outputs { [0 0] {} } :status :undefined} (execute-step some-step-not-returning-status {} {:step-id [0 0]}))))
+  (testing "that if an exception is thrown in the step, it will result in a failure and the exception output is logged"
+    (let [output (execute-step some-step-throwing-an-exception {} {:step-id [0 0]})]
+      (is (= :failure (get-in output [:outputs [0 0] :status])))
+      (is (.contains (get-in output [:outputs [0 0] :out]) "Something went wrong"))))
   (testing "that the result can be a channel"
     (is (= {:outputs { [0 0] {:status :success :some-value 42 :out "hello world" } } :status :success}
            (execute-step some-step-returning-a-channel {} {:step-id [0 0]}))))

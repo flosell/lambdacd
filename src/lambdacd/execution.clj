@@ -3,7 +3,9 @@
   (:require [clojure.core.async :as async]
             [lambdacd.util :as util]
             [lambdacd.pipeline-state :as pipeline-state]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [clojure.repl :as repl])
+  (:import (java.io StringWriter)))
 
 (defn wait-for [p]
   (while (not (p))
@@ -39,12 +41,25 @@
     (process-channel-result immediate-step-result ctx)
     (process-static-result immediate-step-result ctx)))
 
+(defmacro with-err-str
+  [& body]
+  `(let [s# (new StringWriter)]
+     (binding [*err* s#]
+       ~@body
+       (str s#))))
+
+(defn- execute-or-catch [step args ctx]
+  (try
+    (step args ctx)
+     (catch Throwable e
+       {:status :failure :out (with-err-str (repl/pst e))})))
+
 (defn execute-step
   ([args [ctx step]]
     (execute-step step args ctx))
   ([step args {:keys [step-id] :as ctx}]
    (pipeline-state/running ctx)
-   (let [immediate-step-result (step args ctx)
+   (let [immediate-step-result (execute-or-catch step args ctx)
          final-step-result (process-step-result immediate-step-result ctx)]
      (log/debug (str "executed step " step-id final-step-result))
      (step-output step-id final-step-result))))
