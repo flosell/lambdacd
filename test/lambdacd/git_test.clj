@@ -1,6 +1,7 @@
 (ns lambdacd.git-test
   (:import (java.io File))
   (:require [clojure.test :refer :all]
+            [lambdacd.matchers :refer :all]
             [lambdacd.git :refer :all]
             [clojure.core.async :as async]
             [clojure.string :as string]
@@ -54,7 +55,6 @@
     (Thread/sleep 500) ;; dirty hack to make sure we started waiting before making the next commit
     ch))
 
-;; TODO: replace this test with checkout-and-execute tests, phase out with-git
 
 (deftest wait-for-git-test
   (testing "that it returns immediately (since it has no last known revision), calls after that wait for the next commit independent of whether the commit occurred before or after starting to wait"
@@ -83,6 +83,10 @@
     (is (= :failure (:status (wait-for-git {:config (create-config)} "some-uri-that-doesnt-exist" "some-branch"))))))
 
 
+(defn some-context []
+  {:step-id [42] :result-channel (async/chan 100)})
+
+;; TODO: replace this test with checkout-and-execute tests, phase out with-git
 (deftest with-git-test
   (testing "that it checks out a particular revision and then returns, indicating the location of the checked out repo as :cwd value and that the cloned repo is in a directory named like the repo that was cloned"
     (let [create-output (create-test-repo)
@@ -102,3 +106,18 @@
           with-git-result (with-git-function with-git-args {:step-id [42] :result-channel (async/chan 100)})]
       (is (=  :failure (:status with-git-result)))
       (is (.endsWith (:out with-git-result) "fatal: repository 'some-unknown-uri' does not exist\n" )))))
+
+(defn some-step-that-returns-42 [args ctx]
+  {:status :success :the-number 42})
+(defn some-step-that-returns-21 [args ctx]
+  {:status :success :the-number 21})
+
+(deftest checkout-and-execute-test
+  (let [create-output (create-test-repo)
+        git-src-dir (:dir create-output)
+        repo-uri (repo-uri-for git-src-dir)
+        commits (:commits create-output)
+        repo-name (:repo-name create-output)
+        args {}]
+    (testing "that it returns the results of the last step it executed"
+      (is (map-containing {:the-number 42 } (checkout-and-execute repo-uri "HEAD" args (some-context) [some-step-that-returns-21 some-step-that-returns-42]))))))

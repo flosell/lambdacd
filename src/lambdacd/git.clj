@@ -82,13 +82,20 @@
         checkout-folder-name (str base-dir "/" content-of-git-tmp-dir)]
     (assoc sh-result :cwd checkout-folder-name)))
 
+(defn- last-step-id-of [step-ids]
+  (last (sort-by #(first %) step-ids)))
+
 (defn checkout-and-execute [repo-uri revision args ctx steps]
   (let [checkout-result (checkout ctx repo-uri revision)
         repo-location (:cwd checkout-result)
         checkout-exit-code (:exit checkout-result)]
     (if (= 0 checkout-exit-code)
-      (let [execute-steps-result (execution/execute-steps steps (assoc args :cwd repo-location) (execution/new-base-context-for ctx))]
-        (assoc execute-steps-result :out (:out checkout-result)))
+      (let [execute-steps-result (execution/execute-steps steps (assoc args :cwd repo-location) (execution/new-base-context-for ctx))
+            result-with-checkout-output (assoc execute-steps-result :out (:out checkout-result))
+            step-ids (keys (:outputs execute-steps-result))
+            last-step-id (last-step-id-of step-ids)
+            output-of-last-step (get-in execute-steps-result [:outputs last-step-id])]
+        (merge result-with-checkout-output output-of-last-step))
       {:status :failure :out (:out checkout-result) :exit (:exit checkout-result)})))
 
 (defn with-git
