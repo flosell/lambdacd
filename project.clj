@@ -4,7 +4,7 @@
   :license {:name "Apache License, version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0.html"}
   :min-lein-version "2.5.0"
-  :deploy-repositories [["releases" :clojars]]
+  :deploy-repositories [["clojars" {:creds :gpg}]]
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/data.json "0.2.5"]
                  [me.raynes/conch "0.8.0"]
