@@ -19,7 +19,7 @@
   (routes
     (context "/old" [] (server/ui-for pipline-def state))
     (context "/ui2" [] (new-ui/new-ui-routes pipline-def state))
-    (GET "/" [] (resp/redirect "/old/"))
+    (GET "/" [] (resp/redirect "old/"))
     (route/resources "/")
     (route/not-found "<h1>Page not found</h1>")))
 

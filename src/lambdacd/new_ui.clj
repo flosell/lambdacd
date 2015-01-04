@@ -19,10 +19,10 @@
          [:head
           [:title "LambdaCD - Pipeline"]
           (refresh-every 5)
-          (page/include-css "/ui2/semantic-ui/semantic.css")
-          (page/include-css "/ui2/css/main.css")
+          (page/include-css "semantic-ui/semantic.css")
+          (page/include-css "css/main.css")
           (page/include-js "//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js")
-          (page/include-js "/ui2/semantic-ui/semantic.js")]
+          (page/include-js "semantic-ui/semantic.js")]
           [:body
            body]))
 
