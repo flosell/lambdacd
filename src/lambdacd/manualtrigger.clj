@@ -30,3 +30,7 @@
     (async/>!! result-ch [:trigger-id id])
     (async/>!! result-ch [:status :waiting])
     (assoc (wait-for-trigger id) :status :success)))
+
+(defn parameterized-trigger [parameter-config ctx]
+  (async/>!! (:result-channel ctx) [:parameters parameter-config])
+  (wait-for-manual-trigger nil ctx))

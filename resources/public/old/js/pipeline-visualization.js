@@ -1,11 +1,11 @@
-var triggerManualStep = function(triggerId){
+var triggerManualStep = function(triggerId,parameters){
   $.ajax({
       url:"api/dynamic/"+triggerId,
       type:"POST",
       contentType: "application/json",
       dataType: "json",
       processData: false,
-      data: JSON.stringify({})
+      data: JSON.stringify(parameters)
     }).done(function(data) {
       alert("triggered");
     });
@@ -39,7 +39,14 @@ var updateServerState = function() {
       if (triggerId) {
         stepElem.off();
         stepElem.on("click",function() {
-          triggerManualStep(triggerId);
+          var parameters = stepResult["parameters"];
+          var parameterValues = {};
+          if (parameters !== undefined) {
+            $.each(parameters,function(parametername,config) {
+              parameterValues[parametername] = prompt("Pleaser enter a value for "+parametername+":"+config.desc)
+            });
+          }
+          triggerManualStep(triggerId,parameterValues);
         })
       }
     })

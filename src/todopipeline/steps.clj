@@ -42,10 +42,14 @@
   (fn [args ctx]
     (git/checkout-and-execute backend-repo (:backend-revision args) args ctx steps)))
 
+(defn wait-for-greeting [args ctx]
+  (manualtrigger/parameterized-trigger {:greeting { :desc "some greeting"}} ctx))
+
 ;; The steps that do the real work testing, packaging, publishing our code.
 ;; They get the :cwd argument from the ```with-*-git steps``` we defined above.
-(defn client-package [{cwd :cwd} ctx]
+(defn client-package [{cwd :cwd greeting :greeting} ctx]
   (shell/bash ctx cwd
+    (str "echo \"This is an optional greeting: " greeting "\"")
     "bower install"
     "./package.sh"
     "./publish.sh"))

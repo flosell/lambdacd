@@ -26,6 +26,7 @@
     ;; wait for either a change in the repository or the manual trigger.
      (either
        lambdacd.manualtrigger/wait-for-manual-trigger
+       wait-for-greeting
        ; wait-for-frontend-repo
        ; wait-for-backend-repo)
        )
