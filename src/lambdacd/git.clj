@@ -15,7 +15,6 @@
              "set -o pipefail"
              (str "git ls-remote --heads " repo-uri " " branch " | cut -f 1")))
 
-
 (defn- revision-changed-from [last-seen-revision repo-uri branch]
   (let [revision-output (current-revision repo-uri branch)
         exit-code (:exit revision-output)
@@ -40,20 +39,17 @@
         last-seen-revision (:_git-last-seen-revision last-step-result)]
     last-seen-revision))
 
-
 (defn- persist-last-seen-revision [ctx current-revision]
   (async/>!! (:result-channel ctx) [:_git-last-seen-revision current-revision ]))
 
   (defn wait-for-git
   "step that waits for the head of a branch to change"
   [ctx repo-uri branch]
-  (if (nil? (:home-dir (:config ctx)))
-    {:status :failure :out "No :home-dir configured"}
-    (let [last-seen-revision (last-seen-revision-for-this-step ctx)
-          wait-for-result (wait-for-revision-changed-from last-seen-revision repo-uri branch)
-          current-revision (:revision wait-for-result)]
-      (persist-last-seen-revision ctx current-revision)
-      wait-for-result)))
+  (let [last-seen-revision (last-seen-revision-for-this-step ctx)
+        wait-for-result (wait-for-revision-changed-from last-seen-revision repo-uri branch)
+        current-revision (:revision wait-for-result)]
+    (persist-last-seen-revision ctx current-revision)
+    wait-for-result))
 
 (defn- checkout [ctx repo-uri revision]
   (let [base-dir (util/create-temp-dir)
