@@ -25,7 +25,9 @@
     (into {} states)))
 
 (defn- update-current-run [step-id step-result current-state]
-  (assoc current-state step-id step-result))
+  (let [current-step-result (get current-state step-id)
+        new-step-result (merge current-step-result step-result)]
+    (assoc current-state step-id new-step-result)))
 
 (defn- update-pipeline-state [build-number step-id step-result current-state]
   (assoc current-state build-number (update-current-run step-id step-result (get current-state build-number))))
@@ -47,6 +49,15 @@
   (if (not (nil? state)) ; convenience for tests: if no state exists we just do nothing
     (let [new-state (swap! state (partial update-pipeline-state build-number step-id step-result))]
       (write-state-to-disk home-dir build-number new-state))))
+
+(defn last-step-result [ctx]
+  (let [cur-build-number (current-build-number ctx)
+        last-build-number (dec cur-build-number)
+        state (deref (:_pipeline-state ctx))
+        step-id (:step-id ctx)
+        last-build (get state last-build-number)
+        last-step-result (get last-build step-id)]
+    last-step-result))
 
 (defn running [ctx]
   (update ctx {:status :running}))

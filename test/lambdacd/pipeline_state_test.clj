@@ -24,6 +24,13 @@
     (is (= { 42 { [0] { :status :running }}} (after-running 42 [0]))))
   (testing "that a new pipeline-state will be set on update"
     (is (= { 10 { [0] { :foo :bar }}} (after-update 10 [0] {:foo :bar}))))
+  (testing "that that update will not loose keys that are not in the new map" ; e.g. to make sure values that are sent on the result-channel are not lost if they don't appear in the final result-map
+    (is (= { 10 { [0] { :foo :bar :bar :baz }}}
+           (let [state (atom clean-pipeline-state)]
+             (update { :build-number 10 :step-id [0] :_pipeline-state state} {:foo :bar})
+             (update { :build-number 10 :step-id [0] :_pipeline-state state} {:bar :baz})
+             @state
+             ))))
   (testing "that updating will save the current state to the file-system"
     (let [home-dir (utils/create-temp-dir)
           config { :home-dir home-dir }
@@ -75,3 +82,13 @@
     (is (= 9 (most-recent-build-number-in { 5 { }
                                             6 {  }
                                             9 { }})))))
+
+(deftest last-step-result-test
+  (testing "that we can access the last step result for a particular step"
+    (is (= {:status :success :foo :bar}
+           (last-step-result
+             {:step-id [0 2]
+              :_pipeline-state
+              (atom
+                {9 { [0 2] { :status :running} [0 1] { :status :failure}}
+                 8 { [0 2] {:status :success :foo :bar} [0 1] { :status :failure}}})})))))

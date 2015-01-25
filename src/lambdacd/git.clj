@@ -7,7 +7,8 @@
             [clojure.data.json :as json]
             [clojure.tools.logging :as log]
             [lambdacd.shell :as shell]
-            [clojure.core.async :as async]))
+            [clojure.core.async :as async]
+            [lambdacd.pipeline-state :as pipeline-state]))
 
 (defn- current-revision [repo-uri branch]
   (util/bash "/"
@@ -34,41 +35,24 @@
           (recur (revision-changed-from last-seen-revision repo-uri branch)))
       result)))
 
-(defn- exists? [file]
-  (.exists (File. file)))
-
-(defn- git-state-file-from [ctx]
-  (str (:home-dir (:config ctx)) "/git-state.json"))
-
-(defn- read-git-state [ctx]
-  (let [git-state-file (git-state-file-from ctx)]
-    (if (exists? git-state-file)
-      (json/read-str (slurp git-state-file))
-      {})))
-
-(defn- last-seen-revision-for [ctx repo-uri branch]
-  (let [git-state-data (read-git-state ctx)
-        last-seen-revision (get (get (get git-state-data "last-seen") repo-uri) branch)]
+(defn- last-seen-revision-for-this-step [ctx]
+  (let [last-step-result (pipeline-state/last-step-result ctx)
+        last-seen-revision (:_git-last-seen-revision last-step-result)]
     last-seen-revision))
 
-(defn- write-git-state [ctx new-git-state]
-  (let [out-file (git-state-file-from ctx)]
-    (util/write-as-json out-file new-git-state)))
 
-(defn- persist-last-seen-revision [ctx repo-uri branch last-seen-revision]
-  (let [current-git-state (read-git-state ctx)
-        new-git-state (merge current-git-state { "last-seen" { repo-uri { branch last-seen-revision }}} )]
-    (write-git-state ctx new-git-state)))
+(defn- persist-last-seen-revision [ctx current-revision]
+  (async/>!! (:result-channel ctx) [:_git-last-seen-revision current-revision ]))
 
-(defn wait-for-git
+  (defn wait-for-git
   "step that waits for the head of a branch to change"
   [ctx repo-uri branch]
   (if (nil? (:home-dir (:config ctx)))
     {:status :failure :out "No :home-dir configured"}
-    (let [last-seen-revision (last-seen-revision-for ctx repo-uri branch)
+    (let [last-seen-revision (last-seen-revision-for-this-step ctx)
           wait-for-result (wait-for-revision-changed-from last-seen-revision repo-uri branch)
           current-revision (:revision wait-for-result)]
-      (persist-last-seen-revision ctx repo-uri branch current-revision)
+      (persist-last-seen-revision ctx current-revision)
       wait-for-result)))
 
 (defn- checkout [ctx repo-uri revision]

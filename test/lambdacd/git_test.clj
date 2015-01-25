@@ -50,24 +50,33 @@
     (async/>! c {:status :timeout :current-revision "timeout"}))
   (async/<!! c))
 
-(defn- execute-wait-for-async [git-src-dir config]
-  (let [ch (async/go (wait-for-git { :config config } (repo-uri-for git-src-dir) "master"))]
+(defn- ctx-with [config last-seen-revision result-channel]
+  {:config config
+   :_pipeline-state (atom { 9 { [42] { :_git-last-seen-revision last-seen-revision }}
+                           10 {}})
+   :step-id [42]
+   :result-channel result-channel})
+
+(defn- execute-wait-for-async [git-src-dir config last-seen-revision result-channel]
+  (let [ctx (ctx-with config last-seen-revision result-channel)
+        ch (async/go (wait-for-git ctx (repo-uri-for git-src-dir) "master"))]
     (Thread/sleep 500) ;; dirty hack to make sure we started waiting before making the next commit
     ch))
 
 
 (deftest wait-for-git-test
   (testing "that it returns immediately (since it has no last known revision), calls after that wait for the next commit independent of whether the commit occurred before or after starting to wait"
-    (let [config (create-config)
+    (let [result-channel (async/chan 10)
+          config (create-config)
           create-output (create-test-repo)
           git-src-dir (:dir create-output)
           original-head-commit (last (:commits create-output))
-          wait-for-original-commit-ch (execute-wait-for-async git-src-dir config)
+          wait-for-original-commit-ch (execute-wait-for-async git-src-dir config nil result-channel)
           wait-for-original-commit-result  (get-value-or-timeout-from wait-for-original-commit-ch)
           commit-hash-with-nothing-waiting-for-it (commit-to git-src-dir)
-          wait-for-commit-that-happend-while-not-waiting-ch (execute-wait-for-async git-src-dir config)
+          wait-for-commit-that-happend-while-not-waiting-ch (execute-wait-for-async git-src-dir config original-head-commit result-channel)
           wait-for-commit-that-happend-while-not-waiting-ch-result  (get-value-or-timeout-from wait-for-commit-that-happend-while-not-waiting-ch)
-          wait-started-while-not-having-a-new-commit-ch (execute-wait-for-async git-src-dir config)
+          wait-started-while-not-having-a-new-commit-ch (execute-wait-for-async git-src-dir config commit-hash-with-nothing-waiting-for-it result-channel)
           commit-hash-after-waiting-started-already (commit-to git-src-dir)
           wait-started-while-not-having-a-new-commit-result (get-value-or-timeout-from wait-started-while-not-having-a-new-commit-ch)
           ]
@@ -80,7 +89,7 @@
   (testing "that it fails if no :home-dir is configured"
     (is (= {:status :failure :out "No :home-dir configured"} (wait-for-git {:config {}} "some-uri" "some-branch"))))
   (testing "that it fails if the repository cannot be reached"
-    (is (= :failure (:status (wait-for-git {:config (create-config)} "some-uri-that-doesnt-exist" "some-branch"))))))
+    (is (= :failure (:status (wait-for-git (ctx-with (create-config) nil (async/chan 10)) "some-uri-that-doesnt-exist" "some-branch"))))))
 
 
 (defn some-context []

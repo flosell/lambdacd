@@ -27,10 +27,9 @@
      (either
        lambdacd.manualtrigger/wait-for-manual-trigger
        wait-for-greeting
-       ; wait-for-frontend-repo
-       ; wait-for-backend-repo)
-       )
-    ;; you could also wait for a repository to change. to try, point the step to a repo you control,
+       wait-for-frontend-repo
+       wait-for-backend-repo)
+     ;; you could also wait for a repository to change. to try, point the step to a repo you control,
     ;; uncomment this, run and see the magic happen (the first build will immediately run since there is no known state)
     ; wait-for-frontend-repo
     ;; this step executes his child-steps (the arguments after the in-parallel) in parallel and waits
