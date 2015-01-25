@@ -1,7 +1,14 @@
 var triggerManualStep = function(triggerId){
-  $.ajax({url:"api/dynamic/"+triggerId, type:"POST"}).done(function(data) {
-    alert("triggered");
-  });
+  $.ajax({
+      url:"api/dynamic/"+triggerId,
+      type:"POST",
+      contentType: "application/json",
+      dataType: "json",
+      processData: false,
+      data: JSON.stringify({})
+    }).done(function(data) {
+      alert("triggered");
+    });
 }
 
 var buildToDisplay = function(all) {

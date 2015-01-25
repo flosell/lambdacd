@@ -30,7 +30,7 @@
   (get (manual-trigger) "trigger-id"))
 
 (defn- trigger-manual-trigger []
-  (:status (deref (http/post (str (str url-base "/api/dynamic/") (manual-trigger-id))))))
+  (:status (deref (http/post (str (str url-base "/api/dynamic/") (manual-trigger-id)) {:body "{}" :headers { "Content-Type" "application/json"}}))))
 
 (defn wait-a-bit []
   (Thread/sleep 2000)) ; TODO: make more robust, wait for something specific
