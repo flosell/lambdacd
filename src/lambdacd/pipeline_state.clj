@@ -32,10 +32,42 @@
 (defn- update-pipeline-state [build-number step-id step-result current-state]
   (assoc current-state build-number (update-current-run step-id step-result (get current-state build-number))))
 
-(defn current-build-number [{pipeline-state :_pipeline-state }]
-  (if-let [current-build-number (last (sort (keys @pipeline-state)))]
+
+(defn- current-build-number-in-state [pipeline-state]
+  (if-let [current-build-number (last (sort (keys pipeline-state)))]
     current-build-number
     0))
+
+(defn current-build-number [{pipeline-state :_pipeline-state }]
+  (current-build-number-in-state @pipeline-state))
+
+(defn finished-step? [step-result]
+  (let [status (:status step-result)
+        is-waiting (= :waiting status)
+        is-running (= :running status)]
+  (not (or is-waiting is-running))))
+
+(defn- finished-step-count-in [build]
+  (let [results (vals build)
+        finished-steps (filter finished-step? results)
+        finished-step-count (count finished-steps)]
+    finished-step-count))
+
+(defn- call-callback-when-most-recent-build-running [callback key reference old new]
+  (let [cur-build-number (current-build-number-in-state new)
+        cur-build (get new cur-build-number)
+        old-cur-build (get old cur-build-number)
+        finished-step-count-new (finished-step-count-in cur-build)
+        finished-step-count-old (finished-step-count-in old-cur-build)]
+    (if (and (= 1 finished-step-count-new) (not= 1 finished-step-count-old))
+      (do
+        (println new)
+        (println old)
+        (println "==============")
+        (callback)))))
+
+(defn notify-when-most-recent-build-running [{pipeline-state :_pipeline-state} callback]
+  (add-watch pipeline-state :notify-most-recent-build-running (partial call-callback-when-most-recent-build-running callback)))
 
 (defn- write-state-to-disk [home-dir build-number new-state]
   (if home-dir

@@ -11,8 +11,18 @@
             [lambdacd.util :as util]))
 
 
-(defn- start-pipeline-thread [pipeline-def context]
+(defn- start-one-run-after-another [pipeline-def context]
   (async/thread (while true (execution/run pipeline-def context))))
+
+(defn- start-pipeline-thread-after-first-step-finished [pipeline-def context]
+  (let [pipeline-run-fn (fn [] (async/thread (execution/run pipeline-def context)))]
+    (pipeline-state/notify-when-most-recent-build-running context pipeline-run-fn)
+    (pipeline-run-fn)))
+
+(defn- start-pipeline-thread [pipeline-def context start-next-run-after-first-step-finished]
+  (if start-next-run-after-first-step-finished
+    (start-pipeline-thread-after-first-step-finished pipeline-def context)
+    (start-one-run-after-another pipeline-def context)))
 
 
 (defn- mk-complete-route [pipline-def state]
@@ -26,7 +36,8 @@
 
 (defn mk-pipeline [pipeline-def config]
   (let [state (atom (pipeline-state/initial-pipeline-state config))
+        start-next-run-after-first-step-finished (get config :dont-wait-for-completion false)
         context {:_pipeline-state state
                  :config config}]
     {:ring-handler (mk-complete-route pipeline-def state)
-     :init (partial start-pipeline-thread pipeline-def context)}))
+     :init (partial start-pipeline-thread pipeline-def context start-next-run-after-first-step-finished)}))

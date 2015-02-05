@@ -92,3 +92,24 @@
               (atom
                 {9 { [0 2] { :status :running} [0 1] { :status :failure}}
                  8 { [0 2] {:status :success :foo :bar} [0 1] { :status :failure}}})})))))
+
+(deftest notify-when-most-recent-build-running-test
+  (testing "that we are being notified when the first step of the pipeline-is-finished"
+    (let [pipeline-state (atom {0 {}})
+          call-counter (atom 0)
+          callback (fn [& _] (swap! call-counter inc))]
+      (notify-when-most-recent-build-running { :_pipeline-state pipeline-state} callback)
+      (is (= 0 @call-counter))
+      (update {:step-id [0] :_pipeline-state pipeline-state  :build-number 0 } {:status :success})
+      (is (= 1 @call-counter))
+      (update {:step-id [1] :_pipeline-state pipeline-state  :build-number 0 } {:status :success})
+      (is (= 1 @call-counter))
+      (update {:step-id [0] :_pipeline-state pipeline-state  :build-number 1 } {:status :waiting})
+      (is (= 1 @call-counter))
+      (update {:step-id [0] :_pipeline-state pipeline-state  :build-number 1 } {:status :running})
+      (is (= 1 @call-counter))
+      (update {:step-id [0] :_pipeline-state pipeline-state  :build-number 1 } {:status :failure})
+      (is (= 2 @call-counter))
+      (update {:step-id [0] :_pipeline-state pipeline-state  :build-number 1 } {:status :failure})
+      (is (= 2 @call-counter))
+      )))
