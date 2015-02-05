@@ -60,11 +60,7 @@
         finished-step-count-new (finished-step-count-in cur-build)
         finished-step-count-old (finished-step-count-in old-cur-build)]
     (if (and (= 1 finished-step-count-new) (not= 1 finished-step-count-old))
-      (do
-        (println new)
-        (println old)
-        (println "==============")
-        (callback)))))
+      (callback))))
 
 (defn notify-when-most-recent-build-running [{pipeline-state :_pipeline-state} callback]
   (add-watch pipeline-state :notify-most-recent-build-running (partial call-callback-when-most-recent-build-running callback)))
