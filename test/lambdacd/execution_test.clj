@@ -147,16 +147,3 @@
       (is (= some-pipeline (mock-pipeline-until-step some-pipeline 3 {:_pipeline-state (some-state-for-some-pipeline)} [1]))))
     (testing "that it returns a pipeline with a step that just returns the already recorded output if we run from the second step"
       (is (= { :status :success } (mock-exec (first (mock-pipeline-until-step some-pipeline 3 {:_pipeline-state (some-state-for-some-pipeline)} [2]))))))))
-
-
-(defn counting-predicate [calls-until-true]
-  (let [counter (atom 0)]
-    (fn []
-      (swap! counter inc)
-      (>= @counter calls-until-true))))
-
-(deftest wait-for-test
-  (testing "that wait for waits until a certain predicate becomes true and waits 1000ms between"
-    (is (close? 100 1000 (my-time (wait-for (counting-predicate 2))))))
-  (testing "that it returns success after waiting"
-    (is (= {:status :success} (wait-for (constantly true))))))

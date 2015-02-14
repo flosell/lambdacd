@@ -7,12 +7,6 @@
             [clojure.repl :as repl])
   (:import (java.io StringWriter)))
 
-(defn wait-for [p]
-  (while (not (p))
-    (Thread/sleep 1000))
-  {:status :success})
-
-
 (defn- step-output [step-id step-result]
   {:outputs { step-id step-result}
    :status (get step-result :status :undefined)
@@ -138,7 +132,6 @@
     (execute-steps serial-step-result-producer steps args ctx))
   ([step-result-producer steps args ctx]
     (let [step-results (step-result-producer args (context-for-steps steps ctx))]
-      ;(log/debug "The step-results: {}" step-results)
       (reduce merge-step-results args step-results))))
 
 (defn- new-base-id-for [step-id]
@@ -149,8 +142,6 @@
         new-step-id (new-base-id-for old-step-id)
         new-context (assoc ctx :step-id new-step-id)]
     new-context))
-
-
 
 (defn run [pipeline context]
   (let [build-number (+ 1 (pipeline-state/current-build-number context))]
@@ -167,10 +158,10 @@
         pipeline-history (get pipeline-state build-number)
         indexed-pipeline (map-indexed (fn [idx step] [(inc idx) step]) pipeline)
         indexed-pipeline-with-mocks (util/map-if
-                              (fn [[step-part step]] (< step-part first-part-of-step-id))
-                              (fn [[step-part step]] [step-part (mock-for [step-part] pipeline-history)])
+                              (fn [[step-part _]] (< step-part first-part-of-step-id))
+                              (fn [[step-part _]] [step-part (mock-for [step-part] pipeline-history)])
                               indexed-pipeline)
-        pipeline-with-mocks (map (fn [[step-part step]] step) indexed-pipeline-with-mocks)]
+        pipeline-with-mocks (map (fn [[_ step]] step) indexed-pipeline-with-mocks)]
     pipeline-with-mocks))
 
 
