@@ -16,7 +16,13 @@
 (defn some-step-returning-foobar-value [& _]
   {:foobar 42 :status :success})
 
+(defn some-step-returning-global-foobar-value [& _]
+  {:global {:foobar 42} :status :success})
+
 (defn some-step-using-foobar-value [{foobar :foobar} & _]
+  {:foobar-times-ten (* 10 foobar) :status :success})
+
+(defn some-step-using-global-foobar-value [{{foobar :foobar} :global} & _]
   {:foobar-times-ten (* 10 foobar) :status :success})
 
 (defn some-step-for-cwd [{cwd :cwd} & _]
@@ -113,7 +119,13 @@
            (execute-steps [some-successful-step some-failing-step some-other-step] {} { :step-id [0 0] }))))
   (testing "that the results of one step are the inputs to the other step"
     (is (= {:outputs { [1 0] {:status :success :foobar 42} [2 0] {:status :success :foobar-times-ten 420}} :status :success}
-           (execute-steps [some-step-returning-foobar-value some-step-using-foobar-value] {} { :step-id [0 0] })))))
+           (execute-steps [some-step-returning-foobar-value some-step-using-foobar-value] {} { :step-id [0 0] }))))
+  (testing "that a steps :global results will be passed on to all subsequent steps"
+    (is (= {:outputs {[1 0] {:status :success :global { :foobar 42}}
+                      [2 0] {:status :success :foobar-times-ten 420}
+                      [3 0] {:status :success :foobar-times-ten 420}}
+            :status :success}
+           (execute-steps [some-step-returning-global-foobar-value some-step-using-global-foobar-value some-step-using-global-foobar-value] {} { :step-id [0 0] })))))
 
 (deftest retrigger-test
   (let [pipeline-state-atom (atom { 0 { [1] { :status :success } [2] { :status :failure }}})

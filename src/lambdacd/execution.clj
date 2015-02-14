@@ -110,6 +110,13 @@
   (let [s-with-id (steps-with-ids steps (:step-id base-context))]
     (map (to-step-with-context base-context) s-with-id)))
 
+(defn- keep-globals [old-args step-result]
+  (let [existing-globals (:global old-args)
+        new-globals (:global step-result)
+        merged-globals (merge existing-globals new-globals)
+        args-with-old-and-new-globals (assoc step-result :global merged-globals)]
+    args-with-old-and-new-globals))
+
 (defn- map-or-abort [args coll]
   (loop [result ()
          r coll
@@ -119,10 +126,11 @@
       (let [step (first r)
             map-result (execute-step cur-args step)
             new-result (cons map-result result)
-            step-output (first (vals (:outputs map-result)))]
+            step-output (first (vals (:outputs map-result)))
+            new-args (keep-globals cur-args step-output)]
         (if (not= :success (:status map-result))
           new-result
-          (recur (cons map-result result) (rest r) step-output))))))
+          (recur (cons map-result result) (rest r) new-args))))))
 
 (defn- serial-step-result-producer [args s-with-id]
   (map-or-abort args s-with-id))
