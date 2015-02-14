@@ -60,4 +60,5 @@
       (is (= "success" (manual-trigger-state)))
       (is (= 5 @steps/some-counter))
       (is (= "world\n" @steps/some-value-read-from-git-repo))
+      (is (= "hello world\n" @steps/the-global-value))
       )))

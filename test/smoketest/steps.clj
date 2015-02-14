@@ -10,6 +10,8 @@
 (def some-value-read-from-git-repo
   (atom nil))
 
+(def the-global-value (atom nil))
+
 (def some-repo-location
   (utils/create-temp-dir))
 (def some-repo-uri
@@ -30,5 +32,10 @@
   (git/with-git some-repo-uri steps))
 
 (defn read-some-value-from-repo [{cwd :cwd} & _]
-  (swap! some-value-read-from-git-repo (fn [_] (slurp (str cwd "/foo"))))
-  {:status :success})
+  (let [the-value (swap! some-value-read-from-git-repo (fn [_] (slurp (str cwd "/foo"))))]
+    {:status :success :global {:value-from-repo the-value}}))
+
+(defn use-global-value [{{v :value-from-repo} :global} & _]
+  (let [hello-global (str "hello " v)]
+  (swap! the-global-value (constantly hello-global))
+  {:status :success}))

@@ -14,7 +14,8 @@
        read-some-value-from-repo)
      (in-parallel
        increment-counter-by-three
-       increment-counter-by-two)
+       increment-counter-by-two
+       use-global-value)
      lambdacd.manualtrigger/wait-for-manual-trigger
   ))
 
