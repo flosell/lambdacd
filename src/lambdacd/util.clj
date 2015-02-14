@@ -10,9 +10,6 @@
 
 (defn range-from [from len] (range (inc from) (+ (inc from) len)))
 
-(defn is-channel? [c]
-  (satisfies? clojure.core.async.impl.protocols/Channel c))
-
 (defn create-temp-dir []
   (str (Files/createTempDirectory "foo" (into-array FileAttribute []))))
 
@@ -38,24 +35,8 @@
   (some #(= % v) coll))
 
 
-(defn append-to-ch [result-ch v]
-  (let [additional-value-channel (async/chan 1)
-        merged-channels (async/merge [result-ch additional-value-channel])]
-    (do
-      (async/>!! additional-value-channel v)
-      merged-channels)))
-
-(defn append-tuple-to-ch [ch key value]
-  (append-to-ch ch [key value]))
-
-
-;; TODO: this shouldn't actually exist, we should preprocess this somewhere else
-(defn- serialize-channel [k v]
-  (if (is-channel? v)
-    :waiting
-    v))
 (defn json [data]
   { :headers { "Content-Type" "application/json"}
-   :body (json/write-str data :value-fn serialize-channel)
+   :body (json/write-str data)
    :status 200 })
 

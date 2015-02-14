@@ -10,12 +10,6 @@
 
 (defn some-function [] {})
 
-(deftest is-channel-test
-  (testing "that it can detect if something is a channel"
-    (is (= true (is-channel? (async/chan))))
-    (is (= false (is-channel? :foo)))
-    (is (= false (is-channel? "hello")))
-    (is (= false (is-channel? some-function)))))
 
 (deftest map-if-test
   (testing "that is applies a function to all elements that match a predicate"

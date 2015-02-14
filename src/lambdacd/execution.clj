@@ -44,9 +44,7 @@
     new-step-result))
 
 (defn- process-step-result [immediate-step-result ctx]
-  (if (util/is-channel? immediate-step-result)
-    (process-channel-result immediate-step-result ctx)
-    (process-static-result immediate-step-result ctx)))
+  (process-static-result immediate-step-result ctx))
 
 (defmacro with-err-str
   [& body]

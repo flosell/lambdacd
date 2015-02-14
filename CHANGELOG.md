@@ -5,6 +5,8 @@ occur without warning between the alpha-releases. The official release will have
 
 ## 0.1.0-alpha11 [wip]
 
+* Removed support for steps returning channels (deprecated since alpha8)
+
 ## 0.1.0-alpha10
 
 ## 0.1.0-alpha9
