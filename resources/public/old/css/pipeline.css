@@ -4,6 +4,7 @@ ol {
 
 li {
   display:flex;
+  flex-shrink:0;
   margin-left:10px;
   border: thin black solid;
 }
