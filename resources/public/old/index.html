@@ -39,31 +39,9 @@
                 $(pipelineElem).find("li").click(function(evt) {
                     var clickedElem = evt.target;
                     var $clickedElem = $(clickedElem)
-                    var output = $clickedElem.data("output");
-                    selectedStep = $clickedElem.data("stepid");
-                    selectedBuild = $clickedElem.data("build");
+                    var output = $clickedElem.closest("[data-output]").data("output");
 
                     displayElem.innerHTML="<pre>"+output+"</pre>";
-                });
-
-                $("#retrigger").click(function() {
-                    var stepIdParts = selectedStep
-                                                .replace("(","")
-                                                .replace(")","")
-                                                .split(" ");
-
-                    if (stepIdParts.length>1) {
-                        alert("nested steps cant be retriggered yet");
-                    } else if (stepIdParts.length == 0) {
-                        alert("no step selected")
-                    } else if (selectedBuild === undefined) {
-                        alert("build not finished yet")
-                    } else {
-                        $.ajax({url:"api/builds/"+selectedBuild+"/"+stepIdParts[0]+"/retrigger", type:"POST"}).done(function(data) {
-                            alert("retriggered");
-                          });
-                    }
-
                 });
             }).fail(function() {
                 pipelineElem.innerHTML="Something went wrong";

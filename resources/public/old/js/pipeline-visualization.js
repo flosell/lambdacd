@@ -50,6 +50,27 @@ var updateServerState = function() {
           triggerManualStep(triggerId,parameterValues);
         })
       }
+
+      var retriggerElem = stepElem.find(".retrigger");
+      retriggerElem.off();
+      retriggerElem.on("click",function() {
+        var stepIdParts = stepid
+                            .replace("(","")
+                            .replace(")","")
+                            .split(" ");
+
+        if (stepIdParts.length>1) {
+          alert("nested steps cant be retriggered yet");
+        } else if (stepIdParts.length == 0) {
+          alert("no step selected")
+        } else if (buildtodisplay === undefined) {
+          alert("build not finished yet")
+        } else {
+          $.ajax({url:"api/builds/"+buildtodisplay+"/"+stepIdParts[0]+"/retrigger", type:"POST"}).done(function(data) {
+              alert("retriggered");
+          });
+        }
+      });
     })
     var builds = $("#builds ul");
     builds.children().remove();
@@ -85,7 +106,7 @@ var pipelineHtml = (function(){
     } else if (step.type === "container") {
       stepResult = step.name+"<ol>"+step.children.map(renderStep).join("")+"</ol>";
     } else {
-      stepResult = '<span>'+step.name+'</span><i class="fa fa-play trigger"></i>'
+      stepResult = '<span>'+step.name+'</span><i class="fa fa-play trigger"></i><i class="fa fa-repeat retrigger"></i>'
     }
 
     return "<li>"+stepResult+"</li>";
