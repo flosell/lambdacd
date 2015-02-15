@@ -37,8 +37,9 @@ var updateServerState = function() {
 
       var triggerId = stepResult["trigger-id"];
       if (triggerId) {
-        stepElem.off();
-        stepElem.on("click",function() {
+        var triggerElem = stepElem.find(".trigger");
+        triggerElem.off();
+        triggerElem.on("click",function() {
           var parameters = stepResult["parameters"];
           var parameterValues = {};
           if (parameters !== undefined) {
@@ -84,7 +85,7 @@ var pipelineHtml = (function(){
     } else if (step.type === "container") {
       stepResult = step.name+"<ol>"+step.children.map(renderStep).join("")+"</ol>";
     } else {
-      stepResult = step.name
+      stepResult = '<span>'+step.name+'</span><i class="fa fa-play trigger"></i>'
     }
 
     return "<li>"+stepResult+"</li>";

@@ -19,8 +19,14 @@ li[data-status=waiting] {
   background:lightyellow;
 }
 
-li[data-status=waiting]:after {
-  content: "click to trigger";
+.trigger {
+  visibility:hidden;
+  margin-left:5px;
+  cursor:pointer;
+}
+
+li[data-status=waiting] .trigger {
+  visibility:visible;
 }
 
 li[data-status=running] {
