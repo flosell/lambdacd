@@ -3,6 +3,39 @@
 * it's a continuous delivery pipeline, in code
 * it's Jenkins/Go/TeamCity/..., in clojure
 
+## Example
+
+```clojure
+;; buildsteps
+(def some-repo "git@github.com:flosell/somerepo")
+
+(defn wait-for-repo [_ ctx]
+  (git/wait-for-git ctx some-repo "master"))
+
+(defn ^{:display-type :container} with-repo [& steps]
+  (git/with-git some-repo steps))
+
+(defn run-tests [{cwd :cwd} ctx]
+  (shell/bash ctx cwd
+    "lein test"))
+
+(defn compile-and-deploy [{cwd :cws} ctx]
+  (shell/bash ctx cwd
+    "./buildscripts/compile-and-deploy.sh"))
+
+;; the pipeline
+(def pipeline
+  `(
+     (either
+       wait-for-manual-trigger
+       wait-for-repo)
+     (with-repo
+       run-tests
+       compile-and-deploy)
+   ))
+
+```
+
 ## Status
 
 [![Build Status](https://travis-ci.org/flosell/lambdacd.svg)](https://travis-ci.org/flosell/lambdacd)
