@@ -17,7 +17,9 @@ var buildToDisplay = function(all) {
     if (offset > -1) {
         return queryString.substr(offset+"build=".length);
     } else {
-        return Object.keys(all).sort().reverse()[0];
+        var mostRecentBuild = Object.keys(all).sort().reverse()[0]
+        window.location.search="build="+mostRecentBuild;
+        return mostRecentBuild;
     }
 }
 
