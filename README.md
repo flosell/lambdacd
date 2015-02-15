@@ -16,7 +16,6 @@ Nevertheless, give it a try, send in bug reports, feature requests or just give 
 * `lein new lambdacd <NAME>` will create a new pipeline-project
 * `lein ring server` from the project folder starts the server and opens the the UI for your pipeline
 * your pipeline is defined in `src/<NAME>/`. Have a look around, change some steps or add some steps on your own.
-* for details, check out the [walkthrough](doc/walkthrough.md) or dive straight into the [documented sample code](http://flosell.github.io/lambdacd/marginalia/uberdoc.html).
 
 
 ## Example
@@ -51,6 +50,12 @@ Nevertheless, give it a try, send in bug reports, feature requests or just give 
    ))
 
 ```
+
+## Resources
+
+* Detailed Tutorial: [doc/walkthrough.md](doc/walkthrough.md)
+* A complete LambdaCD infrastructure in code: https://github.com/flosell/devops-101-lambdacd
+* Documented Sample-Code: http://flosell.github.io/lambdacd/marginalia/uberdoc.html
 
 
 ## Development
