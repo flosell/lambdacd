@@ -24,12 +24,9 @@
             <!-- inserted by js -->
         </div>
         <h2>Output (click on buildstep)</h2>
-        <button id="retrigger">Retrigger selected step</button>
         <div id="output">
         </div>
         <script>
-            var selectedStep,selectedBuild;
-
             var pipelineElem = document.getElementById("pipeline");
             var displayElem = document.getElementById("output");
             $.ajax({url:"api/pipeline"}).done(function(data) {
