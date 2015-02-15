@@ -1,4 +1,24 @@
-ol {
+
+#main {
+  display:flex;
+  border-top: thin black solid;
+  height:100%;
+  width:100%;
+}
+
+#builds {
+  margin-right:10px;
+  padding-right:10px;
+
+  flex-shrink:0;
+  border-right: thin black solid
+}
+
+.title {
+  margin-bottom:10px;
+}
+
+#currentBuild ol {
   display:flex;
 }
 
@@ -7,7 +27,7 @@ ul,ol {
   padding-left:0;
 }
 
-li {
+#currentBuild li {
   display:flex;
   flex-shrink:0;
   margin-left:10px;

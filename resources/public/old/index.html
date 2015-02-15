@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Pipelines</title>
+        <title>LambdaCD</title>
     </head>
     <script src="js/third-party/zepto.js"></script>
     <script src="js/third-party/callbacks.js"></script>
@@ -9,23 +9,25 @@
     <link rel="stylesheet" type="text/css" href="css/pipeline.css"/>
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
     <body>
-        <h1>Your build pipeline</h1>
-        <!--<h2><a href="/ui2/">Shiny, new, unfinished UI</a></h2>-->
-        <div id="builds">
-            <h2>Other Builds</h2>
-            <ul>
-                <!-- inserted by js -->
-            </ul>
+        <h1 class="title">LambdaCD</h1>
+        <div id="main">
+            <div id="builds">
+                <h2>Builds</h2>
+                <ul>
+                    <!-- inserted by js -->
+                </ul>
+            </div>
+            <div id="currentBuild">
+                <h2>Current Build</h2>
+                <div id="pipeline">
+                    Please wait...
+                    <!-- inserted by js -->
+                </div>
+                <h2>Output (click on buildstep)</h2>
+                <div id="output"></div>
+            </div>
+        </div>
 
-        </div>
-        <h2>Current Build</h2>
-        <div id="pipeline">
-            Please wait...
-            <!-- inserted by js -->
-        </div>
-        <h2>Output (click on buildstep)</h2>
-        <div id="output">
-        </div>
         <script>
             var pipelineElem = document.getElementById("pipeline");
             var displayElem = document.getElementById("output");
