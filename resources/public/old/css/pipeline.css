@@ -2,6 +2,11 @@ ol {
   display:flex;
 }
 
+ul,ol {
+  /* reset browser default */
+  padding-left:0;
+}
+
 li {
   display:flex;
   flex-shrink:0;
