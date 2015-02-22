@@ -24,6 +24,13 @@
     (is (= { 42 { [0] { :status :running }}} (after-running 42 [0]))))
   (testing "that a new pipeline-state will be set on update"
     (is (= { 10 { [0] { :foo :bar }}} (after-update 10 [0] {:foo :bar}))))
+  (testing "that we can update single key-value pairs" ; e.g. to make sure values that are sent on the result-channel are not lost if they don't appear in the final result-map
+    (is (= { 10 { [0] { :foo :bar :bar :baz }}}
+           (let [state (atom clean-pipeline-state)]
+             (update-key-value { :build-number 10 :step-id [0] :_pipeline-state state} :foo :bar)
+             (update-key-value { :build-number 10 :step-id [0] :_pipeline-state state} :bar :baz)
+             @state
+             ))))
   (testing "that that update will not loose keys that are not in the new map" ; e.g. to make sure values that are sent on the result-channel are not lost if they don't appear in the final result-map
     (is (= { 10 { [0] { :foo :bar :bar :baz }}}
            (let [state (atom clean-pipeline-state)]

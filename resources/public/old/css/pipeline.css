@@ -69,3 +69,7 @@ li[data-status=failure]  {
 li[data-status=undefined] {
   background:yellow;
 }
+
+li[data-status=killed] {
+  background:lightgrey;
+}

@@ -15,10 +15,12 @@
 
 (defn- wait-for-trigger [id ctx]
   (loop []
-    (async/>!! (:result-channel ctx) [:out (str "Waiting for trigger, timestamp:" (System/currentTimeMillis))])
+    (execution/send-output ctx :out (str "Waiting for trigger, timestamp:" (System/currentTimeMillis)))
     (let [trigger-parameters (was-posted? id)]
       (if @(:is-killed ctx)
-        {:status :killed}
+        (do
+          (execution/send-output ctx :status :killed)
+          {:status :killed})
         (if trigger-parameters
           trigger-parameters
           (do (Thread/sleep 1000)

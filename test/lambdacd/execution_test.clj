@@ -2,6 +2,7 @@
   (:use [lambdacd.test-util])
   (:require [clojure.test :refer :all]
             [lambdacd.execution :refer :all]
+            [lambdacd.test-util :as test-util]
             [clojure.core.async :as async]))
 
 (defn some-step-processing-input [arg & _]
@@ -127,7 +128,32 @@
 
   )
 
+(deftest process-global-output-channel-test
+  (testing "that we can output stuff and the pipeline-state is updated accordingly"
+    (let [pipeline-state (atom {})
+          pipeline-state-history (test-util/history-for-atom pipeline-state)
+          output-channel (async/chan 100)
+          ctx-build-5-step-1 { :step-id [1] :_pipeline-state pipeline-state :build-number 5 :_global-output-channel output-channel}
+          ctx-build-3-step-2 { :step-id [2] :_pipeline-state pipeline-state :build-number 3 :_global-output-channel output-channel}]
+      (send-output ctx-build-3-step-2 :out "Hello")
+      (send-output ctx-build-5-step-1 :out "Oh hai")
+      (send-output ctx-build-5-step-1 :status :waiting)
+      (send-output ctx-build-5-step-1 :status :success)
+      (async/close! output-channel)
+      (async/<!! (process-global-output-channel output-channel))
+      (is (= [{3 {[2] {:out "Hello"}}}
 
+              {3 {[2] {:out "Hello"}}
+               5 {[1] {:out "Oh hai"}}}
+
+              {3 {[2] {:out "Hello"}}
+               5 {[1] {:out "Oh hai"
+                       :status :waiting}}}
+
+              {3 {[2] {:out "Hello"}}
+               5 {[1] {:out "Oh hai"
+                       :status :success}}}] @pipeline-state-history))
+      )))
 
 (deftest context-for-steps-test
   (testing "that we can generate proper contexts for steps and keep other context info as it is"
