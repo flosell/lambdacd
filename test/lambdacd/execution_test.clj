@@ -15,6 +15,8 @@
 
 (defn some-step-returning-foobar-value [& _]
   {:foobar 42 :status :success})
+(defn some-step-returning-ten-as-foobar-value [& _]
+  {:foobar 10 :status :success})
 
 (defn some-step-returning-global-foobar-value [& _]
   {:global {:foobar 42} :status :success})
@@ -113,8 +115,12 @@
     (is (= {:outputs { [1 0] {:status :success :foobar 42} [2 0] {:status :success :foobar-times-ten 420}} :status :success}
            (execute-steps [some-step-returning-foobar-value some-step-using-foobar-value] {} { :step-id [0 0] }))))
   (testing "that the original input is passed into all steps"
-    (is (= {:outputs { [1 0] {:status :success :foobar-times-ten 420} [2 0] {:status :success :foobar-times-ten 420}} :status :success}
-           (execute-steps [some-step-using-foobar-value some-step-using-foobar-value] {:foobar 42} { :step-id [0 0] }))))
+    (testing "the normal case"
+      (is (= {:outputs { [1 0] {:status :success :foobar-times-ten 420} [2 0] {:status :success :foobar-times-ten 420}} :status :success}
+             (execute-steps [some-step-using-foobar-value some-step-using-foobar-value] {:foobar 42} { :step-id [0 0] }))))
+    (testing "step result overlays the original input"
+      (is (= {:outputs { [1 0] {:status :success :foobar 10} [2 0] {:status :success :foobar-times-ten 100}} :status :success}
+             (execute-steps [some-step-returning-ten-as-foobar-value some-step-using-foobar-value] {:foobar 42} { :step-id [0 0] })))))
   (testing "that a steps :global results will be passed on to all subsequent steps"
     (is (= {:outputs {[1 0] {:status :success :global { :foobar 42}}
                       [2 0] {:status :success :foobar-times-ten 420}
