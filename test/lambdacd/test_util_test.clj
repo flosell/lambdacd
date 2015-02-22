@@ -21,7 +21,7 @@
 (deftest history-for-test
   (testing "that we can record the history of an atom"
     (let [some-atom (atom "")
-          history-atom (history-for some-atom)]
+          history-atom (history-for-atom some-atom)]
       (some-function-changing-an-atom some-atom)
       (is (= ["hello" "world"]
              @history-atom)))))
