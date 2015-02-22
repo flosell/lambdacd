@@ -78,14 +78,13 @@
     (let [new-state (swap! state (partial update-pipeline-state build-number step-id step-result))]
       (write-state-to-disk home-dir build-number new-state))))
 
-(defn last-step-result [ctx]
-  (let [cur-build-number (current-build-number ctx)
-        last-build-number (dec cur-build-number)
-        state (deref (:_pipeline-state ctx))
+(defn last-step-result-with [key ctx]
+  (let [state (deref (:_pipeline-state ctx))
         step-id (:step-id ctx)
-        last-build (get state last-build-number)
-        last-step-result (get last-build step-id)]
-    last-step-result))
+        step-results (map second (sort-by key state))
+        step-results-for-id (map #(get % step-id) step-results)
+        step-results-with-key (filter key step-results-for-id)]
+    (first (reverse step-results-with-key))))
 
 (defn running [ctx]
   (update ctx {:status :running}))

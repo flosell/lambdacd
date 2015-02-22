@@ -37,8 +37,10 @@
             (recur (revision-changed-from last-seen-revision repo-uri branch)))))))
 
 (defn- last-seen-revision-for-this-step [ctx]
-  (let [last-step-result (pipeline-state/last-step-result ctx)
+  (let [last-step-result (pipeline-state/last-step-result-with :_git-last-seen-revision ctx)
         last-seen-revision (:_git-last-seen-revision last-step-result)]
+    (println "last-seen-revision" last-seen-revision)
+    (println "last-seen-result" last-step-result)
     last-seen-revision))
 
 (defn- persist-last-seen-revision [wait-for-result ctx]
