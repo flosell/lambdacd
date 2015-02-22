@@ -13,13 +13,16 @@
 (defn- was-posted? [id]
   (get @ids-posted-to id))
 
-(defn- wait-for-trigger [id]
+(defn- wait-for-trigger [id ctx]
   (loop []
+    (async/>!! (:result-channel ctx) [:out (str "Waiting for trigger, timestamp:" (System/currentTimeMillis))])
     (let [trigger-parameters (was-posted? id)]
-      (if trigger-parameters
-        trigger-parameters
-        (do (Thread/sleep 1000)
-            (recur))))))
+      (if @(:is-killed ctx)
+        {:status :killed}
+        (if trigger-parameters
+          trigger-parameters
+          (do (Thread/sleep 1000)
+              (recur)))))))
 
 (defn wait-for-manual-trigger
   "build step that waits for someone to trigger the build by POSTing to the url indicated by a random trigger id.
@@ -29,7 +32,7 @@
         result-ch (:result-channel ctx)]
     (async/>!! result-ch [:trigger-id id])
     (async/>!! result-ch [:status :waiting])
-    (assoc (wait-for-trigger id) :status :success)))
+    (assoc (wait-for-trigger id ctx) :status :success)))
 
 (defn parameterized-trigger [parameter-config ctx]
   (async/>!! (:result-channel ctx) [:parameters parameter-config])
