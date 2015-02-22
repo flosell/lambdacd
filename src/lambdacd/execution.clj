@@ -94,7 +94,7 @@
   (fn [[id step]]
     [(assoc ctx :step-id id) step]))
 
-(defn context-for-steps
+(defn contexts-for-steps
   "creates contexts for steps"
   [steps base-context]
   (let [s-with-id (steps-with-ids steps (:step-id base-context))]
@@ -127,11 +127,17 @@
           new-result
           (recur (cons step-result result) (rest remaining-steps-with-id) new-args))))))
 
+(defn kill-steps [ctx]
+  (swap! (:is-killed ctx) (constantly true)))
+
 (defn execute-steps
   ([steps args ctx]
     (execute-steps serial-step-result-producer steps args ctx))
   ([step-result-producer steps args ctx]
-    (let [step-results (step-result-producer args (context-for-steps steps ctx))]
+    (let [is-killed (atom false)
+          base-ctx-with-kill-switch (assoc ctx :is-killed is-killed)
+          step-results (step-result-producer args (contexts-for-steps steps base-ctx-with-kill-switch))]
+      (kill-steps base-ctx-with-kill-switch)
       (reduce merge-step-results step-results))))
 
 (defn- new-base-id-for [step-id]

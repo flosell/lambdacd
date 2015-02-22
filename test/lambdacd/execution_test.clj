@@ -30,6 +30,15 @@
 (defn some-step-for-cwd [{cwd :cwd} & _]
   {:foo cwd :status :success})
 
+(defn some-async-check-waiting-to-be-killed [was-killed-atom]
+  (fn [_ {is-killed :is-killed}]
+    (async/thread
+      (loop []
+        (if @is-killed
+          (swap! was-killed-atom (constantly true))
+          (recur))))
+    {:status :success}))
+
 (defn some-successful-step [arg & _]
   {:status :success})
 (defn some-failing-step [arg & _]
@@ -122,7 +131,7 @@
 
 (deftest context-for-steps-test
   (testing "that we can generate proper contexts for steps and keep other context info as it is"
-    (is (= [[{:some-value 42 :step-id [1 0]} some-step] [{:some-value 42 :step-id [2 0]} some-step]] (context-for-steps [some-step some-step] {:some-value 42 :step-id [0 0]})))))
+    (is (= [[{:some-value 42 :step-id [1 0]} some-step] [{:some-value 42 :step-id [2 0]} some-step]] (contexts-for-steps [some-step some-step] {:some-value 42 :step-id [0 0]})))))
 
 
 (deftest execute-steps-test
@@ -147,7 +156,13 @@
                       [2 0] {:status :success :foobar-times-ten 420}
                       [3 0] {:status :success :foobar-times-ten 420}}
             :status :success}
-           (execute-steps [some-step-returning-global-foobar-value some-step-using-global-foobar-value some-step-using-global-foobar-value] {} { :step-id [0 0] })))))
+           (execute-steps [some-step-returning-global-foobar-value some-step-using-global-foobar-value some-step-using-global-foobar-value] {} { :step-id [0 0] }))))
+  (testing "that the kill-switch urges all children to stop when execute-steps completes"
+    (let [killed-yet (atom false)
+          step-to-kill (some-async-check-waiting-to-be-killed killed-yet)]
+    (is (= {:outputs { [1 0] {:status :success} [2 0] {:status :success}} :status :success}
+           (execute-steps [some-successful-step step-to-kill] {} { :step-id [0 0] })))
+    (is (= true @killed-yet)))))
 
 (deftest retrigger-test
   (let [pipeline-state-atom (atom { 0 { [1] { :status :success } [2] { :status :failure }}})
