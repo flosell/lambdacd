@@ -30,10 +30,11 @@
 (defn- wait-for-revision-changed-from [last-seen-revision repo-uri branch ctx]
   (async/>!! (:result-channel ctx) [:status :waiting])
   (loop [result (revision-changed-from last-seen-revision repo-uri branch)]
-    (if (nil? result)
-      (do (Thread/sleep 1000)
-          (recur (revision-changed-from last-seen-revision repo-uri branch)))
-      result)))
+    (execution/if-not-killed ctx
+      (if (= :success (:status result))
+        result
+        (do (Thread/sleep 1000)
+            (recur (revision-changed-from last-seen-revision repo-uri branch)))))))
 
 (defn- last-seen-revision-for-this-step [ctx]
   (let [last-step-result (pipeline-state/last-step-result ctx)
