@@ -52,6 +52,10 @@
   (Thread/sleep 10) ; wait for a bit so that the success doesn't screw up the order of events tested
   {:status :success})
 
+(defn some-step-that-sends-failure-on-ch-returns-success [_ {c :result-channel}]
+  (async/>!! c [:status :failure])
+  {:status :success})
+
 (defn some-step-writing-to-the-result-channel [_ ctx]
   (let [result-ch (:result-channel ctx)]
     (async/>!! result-ch [:out "hello world"])
@@ -89,15 +93,32 @@
       (is (= { 5 { [0 0] {:status :success } } }
              (do (execute-step some-successful-step {} {:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state-atom})
                  @pipeline-state-atom)))))
-  (testing "that the pipeline-state is updated over time"
+  (testing "that the final pipeline-state is properly set for a step returning a static and an async result"
     (let [pipeline-state-atom (atom {})]
+      (is (= { 5 { [0 0] {:status :success } } }
+             (do (execute-step some-step-that-sends-failure-on-ch-returns-success {} {:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state-atom})
+                 @pipeline-state-atom)))))
+  (testing "that the pipeline-state is updated over time"
+    (let [pipeline-state (atom {})]
       (is (= [{ 5 { [0 0] {:status :running } } }
               { 5 { [0 0] {:status :running :out "hello"} } }
               { 5 { [0 0] {:status :running :out "hello world"} } }
               { 5 { [0 0] {:status :running :some-value 42 :out "hello world"} } }
               { 5 { [0 0] {:status :success :some-value 42 :out "hello world"} } }]
-             (atom-history-for pipeline-state-atom
-               (execute-step some-step-building-up-result-state-incrementally {} {:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state-atom})))))))
+             (atom-history-for pipeline-state
+               (execute-step some-step-building-up-result-state-incrementally {} {:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state}))))))
+  (testing "that the step result contains the static and the async output"
+    (let [pipeline-state (atom {})]
+      (is (= {:outputs {[0 0] {:status :success :some-value 42 :out "hello world"} } :status :success }
+             (execute-step some-step-building-up-result-state-incrementally {} {:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state})))))
+  (testing "that in doubt, the static output overlays the async output"
+    (let [pipeline-state (atom {})]
+      (is (= {:outputs {[0 0] {:status :success } } :status :success }
+             (execute-step some-step-that-sends-failure-on-ch-returns-success {} {:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state})))))
+
+  )
+
+
 
 (deftest context-for-steps-test
   (testing "that we can generate proper contexts for steps and keep other context info as it is"

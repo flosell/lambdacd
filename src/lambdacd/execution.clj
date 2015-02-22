@@ -17,7 +17,7 @@
 
 (defn process-channel-result-async [c ctx]
   (async/go
-    (loop [cur-result {:status :running}]
+    (loop [cur-result {}]
       (let [[key value] (async/<! c)
             new-result (assoc cur-result key value)]
         (if (and (nil? key) (nil? value))
@@ -32,13 +32,10 @@
   (async/<!!
     (process-channel-result-async c ctx)))
 
-(defn- process-static-result [step-result ctx]
+(defn- process-final-result [step-result ctx]
   (let [new-step-result (assoc step-result :status (get step-result :status :undefined))]
     (pipeline-state/update ctx new-step-result)
     new-step-result))
-
-(defn- process-step-result [immediate-step-result ctx]
-  (process-static-result immediate-step-result ctx))
 
 (defmacro with-err-str
   [& body]
@@ -62,13 +59,14 @@
    (pipeline-state/running ctx)
    (let [result-ch (async/chan 10)
          ctx-with-result-ch (assoc ctx :result-channel result-ch)
-         processed-result-ch (process-channel-result-async result-ch ctx)
+         processed-async-result-ch (process-channel-result-async result-ch ctx)
          immediate-step-result (execute-or-catch step args ctx-with-result-ch)
-         final-step-result (process-step-result immediate-step-result ctx)
-         processed-result (async/<!! processed-result-ch)
-         final-step-result-with-processed-result-ch (merge  processed-result final-step-result)]
-     (log/debug (str "executed step " step-id final-step-result-with-processed-result-ch))
-     (step-output step-id final-step-result-with-processed-result-ch))))
+         processed-async-result (async/<!! processed-async-result-ch)
+         complete-step-result (merge  processed-async-result immediate-step-result)
+         processed-final-result (process-final-result complete-step-result ctx)
+         ]
+     (log/debug (str "executed step " step-id processed-final-result))
+     (step-output step-id processed-final-result))))
 
 (defn- merge-status [s1 s2]
   (if (= s1 :success)

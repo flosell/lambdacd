@@ -39,17 +39,16 @@
         last-seen-revision (:_git-last-seen-revision last-step-result)]
     last-seen-revision))
 
-(defn- persist-last-seen-revision [ctx current-revision]
-  (async/>!! (:result-channel ctx) [:_git-last-seen-revision current-revision ]))
+(defn- persist-last-seen-revision [wait-for-result]
+  (let [current-revision (:revision wait-for-result)]
+    (assoc wait-for-result :_git-last-seen-revision current-revision)))
 
-  (defn wait-for-git
+(defn wait-for-git
   "step that waits for the head of a branch to change"
   [ctx repo-uri branch]
   (let [last-seen-revision (last-seen-revision-for-this-step ctx)
-        wait-for-result (wait-for-revision-changed-from last-seen-revision repo-uri branch)
-        current-revision (:revision wait-for-result)]
-    (persist-last-seen-revision ctx current-revision)
-    wait-for-result))
+        wait-for-result (wait-for-revision-changed-from last-seen-revision repo-uri branch)]
+    (persist-last-seen-revision wait-for-result)))
 
 (defn- checkout [ctx repo-uri revision]
   (let [base-dir (util/create-temp-dir)
