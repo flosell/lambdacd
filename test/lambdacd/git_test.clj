@@ -118,8 +118,6 @@
   (let [create-output (create-test-repo)
         git-src-dir (:dir create-output)
         repo-uri (repo-uri-for git-src-dir)
-        commits (:commits create-output)
-        repo-name (:repo-name create-output)
         args {}]
     (testing "that it returns the results of the last step it executed"
       (is (map-containing {:the-number 42 } (checkout-and-execute repo-uri "HEAD" args (some-context) [some-step-that-returns-21 some-step-that-returns-42]))))))
