@@ -27,8 +27,8 @@
      (either
        lambdacd.manualtrigger/wait-for-manual-trigger
        wait-for-greeting
-       ;wait-for-frontend-repo
-       ;wait-for-backend-repo
+       wait-for-frontend-repo
+       wait-for-backend-repo
        )
      ;; you could also wait for a repository to change. to try, point the step to a repo you control,
     ;; uncomment this, run and see the magic happen (the first build will immediately run since there is no known state)
