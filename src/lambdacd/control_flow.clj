@@ -36,6 +36,6 @@
 
 
 
-  (defn ^{:display-type :container} in-cwd [cwd & steps]
+(defn ^{:display-type :container} in-cwd [cwd & steps]
   (fn [args ctx]
     (execution/execute-steps steps (assoc args :cwd cwd) (execution/new-base-context-for ctx))))
