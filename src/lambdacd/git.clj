@@ -27,7 +27,8 @@
           {:status :success :revision new-revision-output}
           nil)))))
 
-(defn- wait-for-revision-changed-from [last-seen-revision repo-uri branch]
+(defn- wait-for-revision-changed-from [last-seen-revision repo-uri branch ctx]
+  (async/>!! (:result-channel ctx) [:status :waiting])
   (loop [result (revision-changed-from last-seen-revision repo-uri branch)]
     (if (nil? result)
       (do (Thread/sleep 1000)
@@ -47,7 +48,7 @@
   "step that waits for the head of a branch to change"
   [ctx repo-uri branch]
   (let [last-seen-revision (last-seen-revision-for-this-step ctx)
-        wait-for-result (wait-for-revision-changed-from last-seen-revision repo-uri branch)]
+        wait-for-result (wait-for-revision-changed-from last-seen-revision repo-uri branch ctx)]
     (persist-last-seen-revision wait-for-result)))
 
 (defn- checkout [ctx repo-uri revision]
