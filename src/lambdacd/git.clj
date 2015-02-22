@@ -1,13 +1,10 @@
 (ns lambdacd.git
   "build-steps that let you work with git repositories"
   (:import (java.io File))
-  (:require [lambdacd.shell :as sh]
-            [lambdacd.execution :as execution]
+  (:require [lambdacd.execution :as execution]
             [lambdacd.util :as util]
-            [clojure.data.json :as json]
             [clojure.tools.logging :as log]
             [lambdacd.shell :as shell]
-            [clojure.core.async :as async]
             [lambdacd.pipeline-state :as pipeline-state]))
 
 (defn- current-revision [repo-uri branch]
@@ -28,7 +25,7 @@
           nil)))))
 
 (defn- wait-for-revision-changed-from [last-seen-revision repo-uri branch ctx]
-  (async/>!! (:result-channel ctx) [:status :waiting])
+  (execution/send-output ctx :status :waiting)
   (loop [result (revision-changed-from last-seen-revision repo-uri branch)]
     (if (nil? result)
       (do (Thread/sleep 1000)

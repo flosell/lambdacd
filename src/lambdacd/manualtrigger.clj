@@ -1,6 +1,5 @@
 (ns lambdacd.manualtrigger
   (:require [lambdacd.execution :as execution]
-            [clojure.core.async :as async]
             [clojure.tools.logging :as log]
             ))
 
@@ -30,12 +29,11 @@
   "build step that waits for someone to trigger the build by POSTing to the url indicated by a random trigger id.
   the trigger-id is returned as the :trigger-id result value. see UI implementation for details"
   [_ ctx & _]
-  (let [id (str (java.util.UUID/randomUUID))
-        result-ch (:result-channel ctx)]
-    (async/>!! result-ch [:trigger-id id])
-    (async/>!! result-ch [:status :waiting])
+  (let [id (str (java.util.UUID/randomUUID))]
+    (execution/send-output ctx :trigger-id id)
+    (execution/send-output ctx :status :waiting)
     (assoc (wait-for-trigger id ctx) :status :success)))
 
 (defn parameterized-trigger [parameter-config ctx]
-  (async/>!! (:result-channel ctx) [:parameters parameter-config])
+  (execution/send-output ctx :parameters parameter-config)
   (wait-for-manual-trigger nil ctx))
