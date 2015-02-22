@@ -6,8 +6,6 @@ occur without warning between the alpha-releases. The official release will have
 ## 0.1.0-alpha11 [wip]
 
 * Removed support for steps returning channels (deprecated since alpha8)
-* added `execution/send-output <ctx> <key> <value>` as an improved way to send asynchronous intermediate values.
-  consequently, `:result-channel` is now DEPRECATED
 
 ## 0.1.0-alpha10
 

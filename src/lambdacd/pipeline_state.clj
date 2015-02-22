@@ -24,6 +24,15 @@
         states (map read-state build-state-files)]
     (into {} states)))
 
+(defn- update-current-run [step-id step-result current-state]
+  (let [current-step-result (get current-state step-id)
+        new-step-result (merge current-step-result step-result)]
+    (assoc current-state step-id new-step-result)))
+
+(defn- update-pipeline-state [build-number step-id step-result current-state]
+  (assoc current-state build-number (update-current-run step-id step-result (get current-state build-number))))
+
+
 (defn- current-build-number-in-state [pipeline-state]
   (if-let [current-build-number (last (sort (keys pipeline-state)))]
     current-build-number
@@ -64,28 +73,10 @@
     (.mkdirs (io/file dir))
     (util/write-as-json path state-as-json))))
 
-(defn- update-current-run [step-id step-result current-state]
-  (let [current-step-result (get current-state step-id)
-        new-step-result (merge current-step-result step-result)]
-    (assoc current-state step-id new-step-result)))
-
-(defn- update-pipeline-state [build-number step-id step-result current-state]
-  (assoc current-state build-number (update-current-run step-id step-result (get current-state build-number))))
-
-(defn- update-pipeline-state-key-value [build-number step-id k v current-state]
-  (let [current-build (get current-state build-number)
-        current-step (get step-id current-build)
-        step-result (assoc current-step k v)]
-    (assoc current-state build-number (update-current-run step-id step-result current-build))))
-
 (defn update [{step-id :step-id state :_pipeline-state build-number :build-number { home-dir :home-dir } :config } step-result]
   (if (not (nil? state)) ; convenience for tests: if no state exists we just do nothing
     (let [new-state (swap! state (partial update-pipeline-state build-number step-id step-result))]
       (write-state-to-disk home-dir build-number new-state))))
-
-(defn update-key-value [{step-id :step-id state :_pipeline-state build-number :build-number { home-dir :home-dir } :config } key value]
-  (let [new-state (swap! state (partial update-pipeline-state-key-value build-number step-id key value))]
-    (write-state-to-disk home-dir build-number new-state)))
 
 (defn last-step-result [ctx]
   (let [cur-build-number (current-build-number ctx)

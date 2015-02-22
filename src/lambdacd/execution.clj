@@ -149,27 +149,11 @@
         new-context (assoc ctx :step-id new-step-id)]
     new-context))
 
-(defn send-output [ctx k v]
-  (async/>!! (:_global-output-channel ctx) { :ctx ctx :key k :value v}))
-
-(defn process-global-output-channel [ch]
-  (async/go-loop []
-    (if-let [{ ctx :ctx k :key v :value} (async/<! ch)]
-      (do
-        (pipeline-state/update-key-value ctx k v)
-        (recur)))))
-
 (defn run [pipeline context]
-  (let [build-number (+ 1 (pipeline-state/current-build-number context))
-        output-channel (async/chan 100)]
-    (try
-      (let [runnable-pipeline (map eval pipeline)]
-        (process-global-output-channel output-channel)
-        (execute-steps runnable-pipeline {} (merge context {:step-id [0]
-                                                            :build-number build-number
-                                                            :_global-output-channel output-channel})))
-      (finally
-        (async/close! output-channel)))))
+  (let [build-number (+ 1 (pipeline-state/current-build-number context))]
+    (let [runnable-pipeline (map eval pipeline)]
+      (execute-steps runnable-pipeline {} (merge context {:step-id [0]
+                                                          :build-number build-number})))))
 
 (defn mock-for [step-id pipline-history]
   (fn [& _]

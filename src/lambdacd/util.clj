@@ -16,7 +16,6 @@
 (defn write-as-json [file data]
   (spit file (json/write-str data)))
 
-;; FIXME why not use the bash-command?
 (defn bash
   [cwd & commands]
   (let [combined-command (str "bash -c '" (string/join " && " commands) "' 2>&1") ;; very hacky but it does the job of redirecting stderr to stdout

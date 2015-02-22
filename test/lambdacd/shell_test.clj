@@ -5,7 +5,7 @@
             [lambdacd.shell :refer :all]))
 
 (defn- some-ctx []
-  { :_global-output-channel (async/chan 100)} )
+  { :result-channel (async/chan 100)} )
 
 (deftest shell-return-code-test
   (testing "that bash returns the right return code for a single successful command"
@@ -16,9 +16,6 @@
     (is  (= 1 (:exit (bash (some-ctx) "/" "echo foo" "echo bar" "exit 1" "echo baz")))))
   )
 
-(defn clean-output [result-msgs]
-  (map (fn [msg] [(:key msg) (:value msg)]) result-msgs))
-
 (deftest shell-output-test
     (testing "that bash returns the right output for a single command"
       (is (= "foo\n" (:out (bash (some-ctx) "/" "echo foo")))))
@@ -28,15 +25,14 @@
       (is (= "foo\nerror\nbaz\n" (:out (bash (some-ctx)"/" "echo foo" ">&2 echo error" "echo baz")))))
     (testing "that the output channel is updated with every line"
       (let [some-ctx (some-ctx)
-            result-channel (:_global-output-channel some-ctx)]
+            result-channel (:result-channel some-ctx)]
         (bash some-ctx "/" "echo foo" "echo bar")
-        (async/close! result-channel)
         (is (= [[:out "foo\n"]
                 [:out "foo\nbar\n"]]
-               (clean-output (async/<!! (async/into [] result-channel)))))))
+               (async/<!! (async/into [] result-channel))))))
     )
 
 (deftest shell-cwd-test
-  (let [some-ctx { :_global-output-channel (async/chan 100)}]
+  (let [some-ctx { :result-channel (async/chan 100)}]
     (testing "that the comand gets executed in the correct directory"
-      (is (= "/\n" (:out (bash some-ctx "/" "pwd")))))))
+    (is (= "/\n" (:out (bash some-ctx "/" "pwd")))))))
