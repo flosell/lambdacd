@@ -20,7 +20,7 @@
       (if @(:is-killed ctx)
         {:status :killed}
         (if trigger-parameters
-          trigger-parameters
+          (assoc trigger-parameters :status :success)
           (do (Thread/sleep 1000)
               (recur)))))))
 
@@ -32,7 +32,7 @@
         result-ch (:result-channel ctx)]
     (async/>!! result-ch [:trigger-id id])
     (async/>!! result-ch [:status :waiting])
-    (assoc (wait-for-trigger id ctx) :status :success)))
+    (wait-for-trigger id ctx)))
 
 (defn parameterized-trigger [parameter-config ctx]
   (async/>!! (:result-channel ctx) [:parameters parameter-config])
