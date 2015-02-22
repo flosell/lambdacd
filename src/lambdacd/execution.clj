@@ -109,9 +109,9 @@
         args-with-old-and-new-globals (assoc step-result :global merged-globals)]
     args-with-old-and-new-globals))
 
-(defn- map-or-abort [args coll]
+(defn- serial-step-result-producer [args s-with-id]
   (loop [result ()
-         r coll
+         r s-with-id
          cur-args args]
     (if (empty? r)
       result
@@ -123,9 +123,6 @@
         (if (not= :success (:status map-result))
           new-result
           (recur (cons map-result result) (rest r) new-args))))))
-
-(defn- serial-step-result-producer [args s-with-id]
-  (map-or-abort args s-with-id))
 
 (defn execute-steps
   ([steps args ctx]
