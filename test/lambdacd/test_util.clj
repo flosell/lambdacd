@@ -23,11 +23,15 @@
      ~@tests))
 
 
+(defn history-for-atom [value-atom]
+  (let [history-atom (atom [])]
+    (add-watch value-atom :foo (fn [_ _ old new]
+                                (if (not= old new)
+                                  (swap! history-atom conj new))))
+    history-atom))
+
 (defmacro atom-history-for [value-atom body]
-  `(let [history-atom# (atom [])]
-     (add-watch ~value-atom :foo (fn [key# ref# old# new#]
-                                         (if (not= old# new#)
-                                           (swap! history-atom# conj new#))))
+  `(let [history-atom# (history-for-atom ~value-atom)]
      ~body
      @history-atom#))
 

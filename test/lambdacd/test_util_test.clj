@@ -18,6 +18,15 @@
       (is (= ["hello" "world"]
              (atom-history-for some-atom (some-function-changing-an-atom some-atom)))))))
 
+(deftest history-for-test
+  (testing "that we can record the history of an atom"
+    (let [some-atom (atom "")
+          history-atom (history-for some-atom)]
+      (some-function-changing-an-atom some-atom)
+      (is (= ["hello" "world"]
+             @history-atom)))))
+
+
 (deftest result-channel->map-test
   (testing "that it converts the channel-data to a map"
     (is (= {} (result-channel->map (async/to-chan []))))
