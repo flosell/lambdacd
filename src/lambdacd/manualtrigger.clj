@@ -13,8 +13,8 @@
   (get @ids-posted-to id))
 
 (defn- wait-for-trigger [id ctx]
+  (execution/send-output ctx :out (str "Waiting for manual trigger... nothing to see here"))
   (loop []
-    (execution/send-output ctx :out (str "Waiting for trigger, timestamp:" (System/currentTimeMillis)))
     (let [trigger-parameters (was-posted? id)]
       (if @(:is-killed ctx)
         (do
