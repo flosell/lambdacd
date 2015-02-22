@@ -46,8 +46,7 @@
 
 (deftest in-cwd-test
   (testing "that it collects all the outputs together correctly and passes cwd to steps"
-    ;; FIXME: the :cwd shouldn't be in output?!!?
-    (is (= {:outputs { [1 0 0] {:foo "somecwd" :status :success} [2 0 0] {:foo :baz :status :success}} :cwd "somecwd" :status :success} ((in-cwd "somecwd" some-step-for-cwd some-other-step) {} {:step-id [0 0]})))))
+    (is (= {:outputs { [1 0 0] {:foo "somecwd" :status :success} [2 0 0] {:foo :baz :status :success}} :status :success} ((in-cwd "somecwd" some-step-for-cwd some-other-step) {} {:step-id [0 0]})))))
 
 (deftest either-test
   (testing "that it succeeds whenever one step finishes successfully"

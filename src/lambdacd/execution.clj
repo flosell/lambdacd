@@ -102,34 +102,39 @@
   (let [s-with-id (steps-with-ids steps (:step-id base-context))]
     (map (to-step-with-context base-context) s-with-id)))
 
-(defn- keep-globals [old-args step-result]
+(defn- keep-globals [step-result old-args]
   (let [existing-globals (:global old-args)
         new-globals (:global step-result)
         merged-globals (merge existing-globals new-globals)
         args-with-old-and-new-globals (assoc step-result :global merged-globals)]
     args-with-old-and-new-globals))
 
+(defn- keep-original-args [step-result old-args]
+  (merge old-args step-result))
+
 (defn- serial-step-result-producer [args s-with-id]
   (loop [result ()
-         r s-with-id
+         remaining-steps-with-id s-with-id
          cur-args args]
-    (if (empty? r)
+    (if (empty? remaining-steps-with-id)
       result
-      (let [step (first r)
-            map-result (execute-step cur-args step)
-            new-result (cons map-result result)
-            step-output (first (vals (:outputs map-result)))
-            new-args (keep-globals cur-args step-output)]
-        (if (not= :success (:status map-result))
+      (let [step (first remaining-steps-with-id)
+            step-result (execute-step cur-args step)
+            step-output (first (vals (:outputs step-result)))
+            new-result (cons step-result result)
+            new-args (-> step-output
+                       (keep-globals cur-args)
+                       (keep-original-args args))]
+        (if (not= :success (:status step-result))
           new-result
-          (recur (cons map-result result) (rest r) new-args))))))
+          (recur (cons step-result result) (rest remaining-steps-with-id) new-args))))))
 
 (defn execute-steps
   ([steps args ctx]
     (execute-steps serial-step-result-producer steps args ctx))
   ([step-result-producer steps args ctx]
     (let [step-results (step-result-producer args (context-for-steps steps ctx))]
-      (reduce merge-step-results args step-results))))
+      (reduce merge-step-results step-results))))
 
 (defn- new-base-id-for [step-id]
   (cons 0 step-id))

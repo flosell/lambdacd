@@ -75,8 +75,11 @@
             step-ids (keys (:outputs execute-steps-result))
             last-step-id (last-step-id-of step-ids)
             output-of-last-step (get-in execute-steps-result [:outputs last-step-id])]
-        (merge result-with-checkout-output output-of-last-step))
-      {:status :failure :out (:out checkout-result) :exit (:exit checkout-result)})))
+        (assoc (merge result-with-checkout-output output-of-last-step) :cwd repo-location))
+      {:status :failure
+       :out (:out checkout-result)
+       :exit (:exit checkout-result)
+       :cwd repo-location})))
 
 (defn with-git
   "creates a container-step that checks out a given revision from a repository.

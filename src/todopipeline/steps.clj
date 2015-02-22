@@ -55,10 +55,12 @@
     "./publish.sh"))
 
 (defn server-test [{cwd :cwd} ctx]
+  (println "server test cwd: " cwd)
   (shell/bash ctx cwd
     "lein test"))
 
 (defn server-package [{cwd :cwd} ctx]
+  (println "server package cwd: " cwd)
   (shell/bash ctx cwd
     "lein uberjar"
     "./publish.sh"))

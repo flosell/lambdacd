@@ -112,6 +112,9 @@
   (testing "that the results of one step are the inputs to the other step"
     (is (= {:outputs { [1 0] {:status :success :foobar 42} [2 0] {:status :success :foobar-times-ten 420}} :status :success}
            (execute-steps [some-step-returning-foobar-value some-step-using-foobar-value] {} { :step-id [0 0] }))))
+  (testing "that the original input is passed into all steps"
+    (is (= {:outputs { [1 0] {:status :success :foobar-times-ten 420} [2 0] {:status :success :foobar-times-ten 420}} :status :success}
+           (execute-steps [some-step-using-foobar-value some-step-using-foobar-value] {:foobar 42} { :step-id [0 0] }))))
   (testing "that a steps :global results will be passed on to all subsequent steps"
     (is (= {:outputs {[1 0] {:status :success :global { :foobar 42}}
                       [2 0] {:status :success :foobar-times-ten 420}
