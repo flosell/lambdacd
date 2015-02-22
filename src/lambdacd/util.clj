@@ -1,9 +1,7 @@
 (ns lambdacd.util
   (:import (java.nio.file Files)
            (java.nio.file.attribute FileAttribute))
-  (:require [clojure.core.async :as async]
-            [clojure.java.io :as io]
-            [clojure.string :as string]
+  (:require [clojure.string :as string]
             [clojure.java.shell :as jsh]
             [clojure.tools.logging :as log]
             [clojure.data.json :as json]))
@@ -39,4 +37,3 @@
   { :headers { "Content-Type" "application/json"}
    :body (json/write-str data)
    :status 200 })
-

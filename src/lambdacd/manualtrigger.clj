@@ -14,11 +14,10 @@
   (get @ids-posted-to id))
 
 (defn- wait-for-trigger [id ctx]
+  (async/>!! (:result-channel ctx) [:out (str "Waiting for trigger..." )])
   (loop []
-    (async/>!! (:result-channel ctx) [:out (str "Waiting for trigger, timestamp:" (System/currentTimeMillis))])
     (let [trigger-parameters (was-posted? id)]
-      (if @(:is-killed ctx)
-        {:status :killed}
+      (execution/if-not-killed ctx
         (if trigger-parameters
           (assoc trigger-parameters :status :success)
           (do (Thread/sleep 1000)

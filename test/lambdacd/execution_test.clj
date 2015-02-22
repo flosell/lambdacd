@@ -192,3 +192,19 @@
       (is (= some-pipeline (mock-pipeline-until-step some-pipeline 3 {:_pipeline-state (some-state-for-some-pipeline)} [1]))))
     (testing "that it returns a pipeline with a step that just returns the already recorded output if we run from the second step"
       (is (= { :status :success } (mock-exec (first (mock-pipeline-until-step some-pipeline 3 {:_pipeline-state (some-state-for-some-pipeline)} [2]))))))))
+
+
+
+(deftest if-not-killed-test
+  (testing "that the body will only be executed if step is still alive"
+    (let [output (async/chan 10)
+          killed-ctx {:is-killed (atom true) :result-channel output}
+          alive-ctx {:is-killed (atom false)}]
+      (is (= {:status :success} (if-not-killed alive-ctx  {:status :success})))
+      (is (= {:status :success} (if-not-killed alive-ctx  (assoc {} :status :success))))
+      (is (= {:status :killed}  (if-not-killed killed-ctx   {:status :success})))))
+  (testing "that the status is updated when the step was killed"
+    (let [output (async/chan 10)
+          killed-ctx {:is-killed (atom true) :result-channel output}]
+      (if-not-killed killed-ctx  {:status :success})
+      (is (= [:status :killed] (async/<!! output))))))

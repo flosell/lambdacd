@@ -176,3 +176,11 @@
         executable-pipeline (map eval pipeline-with-mocks)]
     (execute-steps executable-pipeline {} (assoc context :step-id [0]
                                                          :build-number build-number))))
+
+
+(defmacro if-not-killed [ctx & body]
+  `(if @(:is-killed ~ctx)
+     (do
+       (async/>!! (:result-channel ~ctx) [:status :killed])
+       {:status :killed})
+     ~@body))
