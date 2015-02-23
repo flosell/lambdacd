@@ -64,7 +64,7 @@
 (deftest wait-for-git-test
   (testing "that it returns immediately (since it has no last known revision), calls after that wait for the next commit independent of whether the commit occurred before or after starting to wait"
     (let [is-not-killed (atom false)
-          result-channel (async/chan 10)
+          result-channel (async/chan 100)
           create-output (create-test-repo)
           git-src-dir (:dir create-output)
           original-head-commit (last (:commits create-output))

@@ -28,13 +28,17 @@
           nil)))))
 
 (defn- wait-for-revision-changed-from [last-seen-revision repo-uri branch ctx]
-  (async/>!! (:result-channel ctx) [:status :waiting])
-  (loop [result (revision-changed-from last-seen-revision repo-uri branch)]
-    (execution/if-not-killed ctx
-      (if (= :success (:status result))
-        result
-        (do (Thread/sleep 1000)
-            (recur (revision-changed-from last-seen-revision repo-uri branch)))))))
+  (let [initial-output (str "Last seen revision: " (or last-seen-revision "None") ". Waiting for new commit...")]
+    (async/>!! (:result-channel ctx) [:status :waiting])
+    (async/>!! (:result-channel ctx) [:out initial-output])
+    (loop [result (revision-changed-from last-seen-revision repo-uri branch)]
+      (execution/if-not-killed ctx
+        (if (= :success (:status result))
+          (do
+            (async/>!! (:result-channel ctx) [:out (str initial-output "\nFound new commit: " (:revision result) ".")])
+            result)
+          (do (Thread/sleep 1000)
+              (recur (revision-changed-from last-seen-revision repo-uri branch))))))))
 
 (defn- last-seen-revision-for-this-step [ctx]
   (let [last-step-result (pipeline-state/last-step-result-with :_git-last-seen-revision ctx)
