@@ -78,7 +78,7 @@
     (let [new-state (swap! state (partial update-pipeline-state build-number step-id step-result))]
       (write-state-to-disk home-dir build-number new-state))))
 
-(defn last-step-result-with [key ctx]
+(defn most-recent-step-result-with [key ctx]
   (let [state (deref (:_pipeline-state ctx))
         step-id (:step-id ctx)
         step-results (map second (sort-by key state))

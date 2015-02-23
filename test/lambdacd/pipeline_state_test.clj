@@ -86,11 +86,12 @@
 (deftest last-step-result-with-test
   (testing "that we can access the last step result for a particular step that has a value with a particular key"
     (is (= {:status :success :foo :bar}
-           (last-step-result-with :foo
+           (most-recent-step-result-with :foo
              {:step-id [0 2]
               :_pipeline-state
                        (atom
-                         {9 { [0 2] {:status :running} [0 1] { :status :failure}}
+                         {5 { [0 2] {:status :success :foo :baz} [0 1] { :status :failure}}
+                          9 { [0 2] {:status :running} [0 1] { :status :failure}}
                           8 { [0 2] {:status :success :foo nil} [0 1] { :status :failure}}
                           7 { [0 2] {:status :success :foo :bar} [0 1] { :status :failure}}
                           6 { [0 2] {:status :success :foo :baz} [0 1] { :status :failure}}})})))))
