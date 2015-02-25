@@ -25,6 +25,7 @@
                    :all (constantly true)}
   :ring {:handler todopipeline.pipeline/app
          :init todopipeline.pipeline/start-pipeline-thread }
+  :main todopipeline.pipeline
   :profiles {:uberjar {:aot [todopipeline.pipeline.main]}}
   :plugins [[lein-ring "0.8.13"]
             [lein-kibit "0.0.8"]

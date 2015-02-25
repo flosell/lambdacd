@@ -12,6 +12,7 @@
             [lambdacd.execution :as execution]
             [lambdacd.core :as core]
             [lambdacd.util :as utils]
+            [ring.server.standalone :as ring-server]
             [clojure.tools.logging :as log])
   (:use [lambdacd.control-flow]
         [todopipeline.steps]))
@@ -80,3 +81,8 @@
 (def app (:ring-handler pipeline))
 ;; and the function that starts a thread that runs the actual pipeline. 
 (def start-pipeline-thread (:init pipeline))
+
+(defn -main [& args]
+  (start-pipeline-thread)
+  (ring-server/serve app {:open-browser? false
+                          :port 8080}))
