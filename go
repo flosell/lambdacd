@@ -30,6 +30,9 @@ push() {
   testall && git push
 }
 
+serve() {
+  lein ring server
+}
 if [ "$1" == "setup" ]; then
     setup
 elif [ "$1" == "testall" ]; then
@@ -40,6 +43,8 @@ elif [ "$1" == "release" ]; then
     release
 elif [ "$1" == "push" ]; then
     push
+elif [ "$1" == "serve" ]; then
+    serve
 else
     echo "usage: $0 <goal>
 
@@ -47,6 +52,7 @@ goal:
     setup    -- to set up your environment
     test     -- run unit tests
     testall  -- run all tests
+    serve    -- start a server with a demo-pipeline
     push     -- run all tests and push current state
     release  -- release current version"
     exit 1
