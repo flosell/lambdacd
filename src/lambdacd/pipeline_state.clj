@@ -81,10 +81,10 @@
 (defn most-recent-step-result-with [key ctx]
   (let [state (deref (:_pipeline-state ctx))
         step-id (:step-id ctx)
-        step-results (map second (sort-by key state))
+        step-results (map second (reverse (sort-by first (seq state))))
         step-results-for-id (map #(get % step-id) step-results)
         step-results-with-key (filter key step-results-for-id)]
-    (first (reverse step-results-with-key))))
+    (first step-results-with-key)))
 
 (defn running [ctx]
   (update ctx {:status :running}))
