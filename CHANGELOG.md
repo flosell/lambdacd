@@ -3,7 +3,7 @@
 This changelog indicates breaking changes to the API. As this is still an experimental library, breaking changes may
 occur without warning between the alpha-releases. The official release will have a defined and more stable API. 
 
-## 0.1.0-alpha11 [wip]
+## 0.1.0-alpha11
 
 * Removed support for steps returning channels (deprecated since alpha8)
 
