@@ -23,7 +23,7 @@ testunit() {
 }
 
 release() {
-  lein publish clojars
+  lein deploy clojars
 }
 
 push() {
