@@ -4,12 +4,16 @@
   (:require [clojure.string :as string]
             [clojure.java.shell :as jsh]
             [clojure.tools.logging :as log]
-            [clojure.data.json :as json]))
+            [clojure.data.json :as json]
+            [clojure.java.io :as io]))
 
 (defn range-from [from len] (range (inc from) (+ (inc from) len)))
 
-(defn create-temp-dir []
-  (str (Files/createTempDirectory "foo" (into-array FileAttribute []))))
+(defn create-temp-dir
+  ([]
+    (str (Files/createTempDirectory "foo" (into-array FileAttribute []))))
+  ([parent]
+    (str (Files/createTempDirectory (.toPath (io/file parent)) "foo" (into-array FileAttribute [])))))
 
 (defn write-as-json [file data]
   (spit file (json/write-str data)))

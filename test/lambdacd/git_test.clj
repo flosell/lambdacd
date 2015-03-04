@@ -6,7 +6,9 @@
             [clojure.core.async :as async]
             [clojure.string :as string]
             [lambdacd.util :as util]
-            [lambdacd.reporters]))
+            [lambdacd.reporters]
+            [lambdacd.util :as utils]
+            [clojure.java.io :as io]))
 
 (defn- git-commits [cwd]
   (reverse (string/split-lines (:out (util/bash cwd "git log --pretty=format:%H")))))
@@ -90,8 +92,13 @@
       (is (= :killed (:status (async/<!! result-ch)))))))
 
 
-(defn some-context []
-  {:step-id [42] :result-channel (async/chan 100)})
+(defn some-context
+  ([]
+    (some-context (utils/create-temp-dir)))
+  ([parent]
+    {:config { :home-dir parent}
+     :step-id [42]
+     :result-channel (async/chan 100)}))
 
 ;; TODO: replace this test with checkout-and-execute tests, phase out with-git
 (deftest with-git-test
@@ -103,14 +110,14 @@
           first-commit (first commits)
           with-git-args { :revision first-commit }
           with-git-function (with-git (repo-uri-for git-src-dir) [step-that-returns-the-current-cwd-head])
-          with-git-result (with-git-function with-git-args {:step-id [42] :result-channel (async/chan 100)})]
+          with-git-result (with-git-function with-git-args (some-context))]
       (is (= first-commit (:current-head (get (:outputs with-git-result ) [1 42]))))
       (is (.endsWith (:cwd with-git-result) repo-name))
       (is (.startsWith (:out with-git-result) "Cloning"))))
   (testing "that it fails when it couldn't check out a repository"
     (let [with-git-args { :revision "some-commit" }
           with-git-function (with-git "some-unknown-uri" [])
-          with-git-result (with-git-function with-git-args {:step-id [42] :result-channel (async/chan 100)})]
+          with-git-result (with-git-function with-git-args (some-context))]
       (is (=  :failure (:status with-git-result)))
       (is (.endsWith (:out with-git-result) "fatal: repository 'some-unknown-uri' does not exist\n" )))))
 
@@ -118,11 +125,16 @@
   {:status :success :the-number 42})
 (defn some-step-that-returns-21 [args ctx]
   {:status :success :the-number 21})
+(defn some-step-that-returns-the-cwd [{cwd :cwd} _]
+  {:status :success :thecwd cwd})
 
 (deftest checkout-and-execute-test
-  (let [create-output (create-test-repo)
+  (let [some-parent-folder (util/create-temp-dir)
+        create-output (create-test-repo)
         git-src-dir (:dir create-output)
         repo-uri (repo-uri-for git-src-dir)
         args {}]
     (testing "that it returns the results of the last step it executed"
-      (is (map-containing {:the-number 42 } (checkout-and-execute repo-uri "HEAD" args (some-context) [some-step-that-returns-21 some-step-that-returns-42]))))))
+      (is (map-containing {:the-number 42 } (checkout-and-execute repo-uri "HEAD" args (some-context) [some-step-that-returns-21 some-step-that-returns-42]))))
+    (testing "that it returns the results of the last step it executed"
+      (is (= some-parent-folder (.getParent (.getParentFile (io/file (:thecwd (checkout-and-execute repo-uri "HEAD" args (some-context some-parent-folder) [some-step-that-returns-the-cwd]))))))))))

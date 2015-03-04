@@ -58,7 +58,8 @@
     (persist-last-seen-revision wait-for-result ctx)))
 
 (defn- checkout [ctx repo-uri revision]
-  (let [base-dir (util/create-temp-dir)
+  (let [home-dir (:home-dir (:config ctx))
+        base-dir (util/create-temp-dir home-dir)
         sh-result (shell/bash ctx base-dir
                               (str "echo \"Cloning " revision " of " repo-uri "\"")
                               (str "git clone " repo-uri )
