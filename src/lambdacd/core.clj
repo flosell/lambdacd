@@ -40,4 +40,5 @@
         context {:_pipeline-state state
                  :config config}]
     {:ring-handler (mk-complete-route pipeline-def state)
-     :init (partial start-pipeline-thread pipeline-def context start-next-run-after-first-step-finished)}))
+     :init (partial start-pipeline-thread pipeline-def context start-next-run-after-first-step-finished)
+     :state state}))
