@@ -1,7 +1,7 @@
-(ns lambdacd.pipeline-state-test
+(ns lambdacd.internal.pipeline-state-test
   (:use [lambdacd.test-util])
   (:require [clojure.test :refer :all]
-            [lambdacd.pipeline-state :refer :all]
+            [lambdacd.internal.pipeline-state :refer :all]
             [lambdacd.util :as utils]
             [clojure.data.json :as json]
             [clojure.java.io :as io]))

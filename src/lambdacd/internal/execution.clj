@@ -2,7 +2,7 @@
   "low level functions for job-execution"
   (:require [clojure.core.async :as async]
             [lambdacd.util :as util]
-            [lambdacd.pipeline-state :as pipeline-state]
+            [lambdacd.internal.pipeline-state :as pipeline-state]
             [clojure.tools.logging :as log]
             [clojure.repl :as repl])
   (:import (java.io StringWriter)))

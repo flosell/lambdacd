@@ -1,7 +1,7 @@
-(ns lambdacd.pipeline-state
+(ns lambdacd.internal.pipeline-state
   "responsible to manage the current state of the pipeline
   i.e. what's currently running, what are the results of each step, ..."
-  (:require [lambdacd.pipeline-state-persistence :as persistence]))
+  (:require [lambdacd.internal.pipeline-state-persistence :as persistence]))
 
 (def clean-pipeline-state {})
 
