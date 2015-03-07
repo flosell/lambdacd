@@ -1,7 +1,6 @@
 (ns lambdacd.new-ui
   (:use compojure.core)
-  (:require [compojure.route :as route]
-            [hiccup.core :as hc]
+  (:require [hiccup.core :as hc]
             [hiccup.page :as page]
             [clojure.data.json :as json :only [write-str]]
             [lambdacd.presentation.pipeline-structure :as presentation]
@@ -9,7 +8,6 @@
             [lambdacd.util :as util]
             [ring.util.response :as resp]
             [lambdacd.execution :as execution]
-            [lambdacd.pipeline-state :as pipeline-state]
             [lambdacd.presentation.pipeline-state :as pipeline-state-presentation]))
 
 (defn- refresh-every [seconds]
@@ -94,4 +92,4 @@
 (defn new-ui-routes [pipeline-def pipeline-state]
   (routes
     (GET "/:build-number" [build-number] (pipeline-view pipeline-def @pipeline-state build-number))
-    (GET "/" [] (resp/redirect (str "./" (pipeline-state/most-recent-build-number-in @pipeline-state))))))
+    (GET "/" [] (resp/redirect (str "./" (pipeline-state-presentation/most-recent-build-number-in @pipeline-state))))))

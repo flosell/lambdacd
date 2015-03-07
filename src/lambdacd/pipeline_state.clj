@@ -1,8 +1,7 @@
 (ns lambdacd.pipeline-state
   "responsible to manage the current state of the pipeline
   i.e. what's currently running, what are the results of each step, ..."
-  (:require [lambdacd.util :as util]
-            [lambdacd.pipeline-state-persistence :as persistence]))
+  (:require [lambdacd.pipeline-state-persistence :as persistence]))
 
 (def clean-pipeline-state {})
 
@@ -55,16 +54,7 @@
     (let [new-state (swap! state (partial update-pipeline-state build-number step-id step-result))]
       (persistence/write-build-history home-dir build-number new-state))))
 
-(defn most-recent-step-result-with [key ctx]
-  (let [state (deref (:_pipeline-state ctx))
-        step-id (:step-id ctx)
-        step-results (map second (reverse (sort-by first (seq state))))
-        step-results-for-id (map #(get % step-id) step-results)
-        step-results-with-key (filter key step-results-for-id)]
-    (first step-results-with-key)))
-
 (defn running [ctx]
   (update ctx {:status :running}))
 
-(defn most-recent-build-number-in [state]
-  (apply max (keys state)))
+

@@ -1,14 +1,7 @@
 (ns lambdacd.pipeline-state-test
   (:use [lambdacd.test-util])
   (:require [clojure.test :refer :all]
-            [lambdacd.presentation.pipeline-state :refer :all]
-            [lambdacd.pipeline-state :refer :all]
-            [lambdacd.util :as utils]
-            [clojure.data.json :as json]
-            [clojure.java.io :as io]))
-
-
-
+            [lambdacd.presentation.pipeline-state :refer :all]))
 
 (deftest history-test
   (testing "that it converts the internal pipeline-state into a more readable history-representation"

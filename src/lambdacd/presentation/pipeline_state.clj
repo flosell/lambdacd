@@ -21,3 +21,15 @@
 
 (defn history-for [state]
   (map history-entry state))
+
+(defn most-recent-build-number-in [state]
+  (apply max (keys state)))
+
+
+(defn most-recent-step-result-with [key ctx]
+  (let [state (deref (:_pipeline-state ctx))
+        step-id (:step-id ctx)
+        step-results (map second (reverse (sort-by first (seq state))))
+        step-results-for-id (map #(get % step-id) step-results)
+        step-results-with-key (filter key step-results-for-id)]
+    (first step-results-with-key)))

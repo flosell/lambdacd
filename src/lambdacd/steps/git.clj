@@ -8,7 +8,7 @@
             [clojure.tools.logging :as log]
             [lambdacd.steps.shell :as shell]
             [clojure.core.async :as async]
-            [lambdacd.pipeline-state :as pipeline-state]))
+            [lambdacd.presentation.pipeline-state :as pipeline-state]))
 
 (defn- current-revision [repo-uri branch]
   (util/bash "/"

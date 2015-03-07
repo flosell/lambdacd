@@ -6,9 +6,7 @@
             [lambdacd.pipeline-state :as pipeline-state]
             [lambdacd.new-ui :as new-ui]
             [compojure.route :as route]
-            [ring.util.response :as resp]
-            [lambdacd.steps.manualtrigger :as manualtrigger]
-            [lambdacd.util :as util]))
+            [ring.util.response :as resp]))
 
 
 (defn- start-one-run-after-another [pipeline-def context]
