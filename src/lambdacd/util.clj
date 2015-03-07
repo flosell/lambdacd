@@ -1,6 +1,7 @@
 (ns lambdacd.util
   (:import (java.nio.file Files)
-           (java.nio.file.attribute FileAttribute))
+           (java.nio.file.attribute FileAttribute)
+           (clojure.lang Named))
   (:require [clojure.string :as string]
             [clojure.java.shell :as jsh]
             [clojure.tools.logging :as log]
@@ -36,8 +37,16 @@
 (defn contains-value? [v coll]
   (some #(= % v) coll))
 
+; TODO: this is only necessary because we were lazy when we initially built the ui and just dump the internal datastructure into json
+; get rid of this once we build a proper api for the ui
+(defn- handle-unorthodox-keys
+  [x]
+  (cond (instance? Named x) (name x)
+        (nil? x) (throw (Exception. "JSON object properties may not be nil"))
+        (seq? x) (str (seq (vec x)))
+        :else (str x)))
 
 (defn json [data]
   { :headers { "Content-Type" "application/json"}
-   :body (json/write-str data)
+   :body (json/write-str data :key-fn handle-unorthodox-keys)
    :status 200 })

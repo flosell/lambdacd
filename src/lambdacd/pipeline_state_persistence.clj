@@ -13,7 +13,7 @@
   (str/join "-" step-id ))
 
 (defn unformat-step-id [formatted-step-id]
-  (seq (vec (map read-string (str/split formatted-step-id (Pattern/compile "-")))))) ; TODO: seq-vec: dirty hack because json-formatting for UI can't handle lazy-seq
+  (map read-string (str/split formatted-step-id (Pattern/compile "-"))))
 
 (defn- step-result->json-format [[k v]]
   {:step-id (formatted-step-id k) :step-result v})
@@ -26,7 +26,6 @@
 
 (defn json-format->pipeline-state [json-map]
   (into {} (map step-json->step json-map)))
-
 
 (defn write-state-to-disk [home-dir build-number new-state]
   (if home-dir

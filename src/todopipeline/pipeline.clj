@@ -13,7 +13,8 @@
             [lambdacd.core :as core]
             [lambdacd.util :as utils]
             [ring.server.standalone :as ring-server]
-            [clojure.tools.logging :as log])
+            [clojure.tools.logging :as log]
+            [clojure.java.io :as io])
   (:use [lambdacd.steps.control-flow]
         [todopipeline.steps]))
 
@@ -63,7 +64,7 @@
 
 ;; For this demonstration, we don't care too much about persisting anything over a longer timeframe so we just use a
 ;; temp-directory
-(def home-dir (utils/create-temp-dir))
+(def home-dir (io/file "/tmp/helloworld"))
 (log/info "LambdaCD Home Directory is " home-dir)
 (def config { :home-dir home-dir :dont-wait-for-completion true})
 

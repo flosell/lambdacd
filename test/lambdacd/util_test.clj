@@ -28,3 +28,14 @@
     (testing "that it is a child of the parent directory"
       (let [parent (create-temp-dir)]
         (is (= parent (.getParent (io/file (create-temp-dir parent)))))))))
+
+
+(deftest json-test
+  (testing "that a proper ring-json-response is returned"
+    (is (= {:body    "{\"hello\":\"world\"}"
+            :headers {"Content-Type" "application/json"}
+            :status  200} (json { :hello :world }))))
+  (testing "that it can handle lazy sequences as json-keys (as they happen when we deserialize step-ids from history json and have them in the state)"
+    (is (= {:body    "{\"(0 1)\":\"hello\"}"
+            :headers {"Content-Type" "application/json"}
+            :status  200} (json { (range 2) "hello" })))))
