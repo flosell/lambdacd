@@ -1,10 +1,10 @@
 (ns lambdacd.core
   (:use compojure.core)
-  (:require [lambdacd.server :as server]
+  (:require [lambdacd.ui.ui-server :as server]
             [clojure.core.async :as async]
             [lambdacd.internal.execution :as execution]
             [lambdacd.internal.pipeline-state :as pipeline-state]
-            [lambdacd.new-ui :as new-ui]
+            [lambdacd.ui.new_ui :as new-ui]
             [compojure.route :as route]
             [ring.util.response :as resp]))
 

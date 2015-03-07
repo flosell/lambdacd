@@ -1,4 +1,4 @@
-(ns lambdacd.server
+(ns lambdacd.ui.ui-server
   (:use compojure.core)
   (:require [clojure.walk :as w]
             [ring.middleware.json :as ring-json]

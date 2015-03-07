@@ -1,4 +1,4 @@
-(ns lambdacd.new-ui
+(ns lambdacd.ui.new_ui
   (:use compojure.core)
   (:require [hiccup.core :as hc]
             [hiccup.page :as page]

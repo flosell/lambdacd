@@ -16,3 +16,6 @@ replaceInClj 'lambdacd\.presentation([^.])' 'lambdacd\.presentation\.pipeline-st
 replaceInClj 'lambdacd\.execution' 'lambdacd\.internal\.execution'
 
 replaceInClj 'lambdacd.pipeline-state' 'lambdacd.internal.pipeline-state'
+
+replaceInClj 'lambdacd.new-ui' 'lambdacd.ui.new_ui'
+replaceInClj 'lambdacd.server' 'lambdacd.ui.ui-server'
