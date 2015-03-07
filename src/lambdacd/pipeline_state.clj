@@ -1,22 +1,14 @@
 (ns lambdacd.pipeline-state
   "responsible to manage the current state of the pipeline
   i.e. what's currently running, what are the results of each step, ..."
-  (:require [clojure.core.async :as async]
-            [lambdacd.util :as util]
+  (:require [lambdacd.util :as util]
             [lambdacd.pipeline-state-persistence :as persistence]
-            [clojure.data.json :as json]
             [clojure.java.io :as io]))
 
 (def clean-pipeline-state {})
 
 (defn initial-pipeline-state [{ home-dir :home-dir }]
-  (let [dir (io/file home-dir)
-        home-contents (file-seq dir)
-        directories-in-home (filter #(.isDirectory %) home-contents)
-        build-dirs (filter #(.startsWith (.getName %) "build-") directories-in-home)
-        build-state-files (map #(str % "/pipeline-state.json") build-dirs)
-        states (map persistence/read-state build-state-files)]
-    (into {} states)))
+  (persistence/read-build-history-from home-dir))
 
 (defn- update-current-run [step-id step-result current-state]
   (let [current-step-result (get current-state step-id)
@@ -63,7 +55,7 @@
 (defn update [{step-id :step-id state :_pipeline-state build-number :build-number { home-dir :home-dir } :config } step-result]
   (if (not (nil? state)) ; convenience for tests: if no state exists we just do nothing
     (let [new-state (swap! state (partial update-pipeline-state build-number step-id step-result))]
-      (persistence/write-state-to-disk home-dir build-number new-state))))
+      (persistence/write-build-history home-dir build-number new-state))))
 
 (defn most-recent-step-result-with [key ctx]
   (let [state (deref (:_pipeline-state ctx))

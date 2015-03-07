@@ -1,8 +1,7 @@
 (ns lambdacd.presentation
   "this namespace is responsible for converting the pipeline
   into a nice, map-format that we can use to display the pipeline
-  in a UI"
-  (:require [lambdacd.execution :as execution]))
+  in a UI")
 
 
 (defn- is-fn? [fun]
