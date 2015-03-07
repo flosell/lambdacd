@@ -1,4 +1,4 @@
-(ns lambdacd.execution
+(ns lambdacd.internal.execution
   "low level functions for job-execution"
   (:require [clojure.core.async :as async]
             [lambdacd.util :as util]

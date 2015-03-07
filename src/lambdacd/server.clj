@@ -7,7 +7,7 @@
             [lambdacd.steps.manualtrigger :as manualtrigger]
             [lambdacd.util :as util]
             [ring.util.response :as resp]
-            [lambdacd.execution :as execution]))
+            [lambdacd.internal.execution :as execution]))
 
 (defn- pipeline [pipeline-def]
   (presentation/display-representation pipeline-def))

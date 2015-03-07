@@ -1,6 +1,6 @@
 (ns lambdacd.test-util
   (:require [clojure.test :refer :all]
-            [lambdacd.execution :as execution]
+            [lambdacd.internal.execution :as execution]
             [clojure.core.async :as async]))
 
 (defmacro my-time

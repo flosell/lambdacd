@@ -2,7 +2,7 @@
   (:use compojure.core)
   (:require [lambdacd.server :as server]
             [clojure.core.async :as async]
-            [lambdacd.execution :as execution]
+            [lambdacd.internal.execution :as execution]
             [lambdacd.pipeline-state :as pipeline-state]
             [lambdacd.new-ui :as new-ui]
             [compojure.route :as route]

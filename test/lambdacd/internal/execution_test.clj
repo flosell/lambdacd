@@ -1,7 +1,7 @@
-(ns lambdacd.execution-test
+(ns lambdacd.internal.execution-test
   (:use [lambdacd.test-util])
   (:require [clojure.test :refer :all]
-            [lambdacd.execution :refer :all]
+            [lambdacd.internal.execution :refer :all]
             [clojure.core.async :as async]))
 
 (defn some-step-processing-input [arg & _]
@@ -70,7 +70,7 @@
     (async/>!! result-ch [:out "hello world"])
     {:status :success}))
 
-(with-private-fns [lambdacd.execution [merge-step-results]]
+(with-private-fns [lambdacd.internal.execution [merge-step-results]]
   (deftest step-result-merge-test
     (testing "merging without collisions"
       (is (= {:foo "hello" :bar "world"} (merge-step-results {:foo "hello"} {:bar "world"}))))
@@ -186,7 +186,7 @@
 (defn mock-exec [f]
   (f {} {}))
 
-(with-private-fns [lambdacd.execution [mock-pipeline-until-step]]
+(with-private-fns [lambdacd.internal.execution [mock-pipeline-until-step]]
   (deftest mock-pipeline-until-step-test
     (testing "that it returns the original pipeline if we want to start from the beginning"
       (is (= some-pipeline (mock-pipeline-until-step some-pipeline 3 {:_pipeline-state (some-state-for-some-pipeline)} [1]))))

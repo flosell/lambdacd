@@ -11,4 +11,6 @@ replaceInClj 'lambdacd\.shell' 'lambdacd\.steps\.shell'
 
 replaceInClj 'lambdacd\.json-model' 'lambdacd\.pipeline-state-persistence'
 
-replaceInClj 'lambdacd\.presentation' 'lambdacd\.presentation.pipeline-structure'
+replaceInClj 'lambdacd\.presentation([^.])' 'lambdacd\.presentation\.pipeline-structure$1'
+
+replaceInClj 'lambdacd\.execution' 'lambdacd\.internal\.execution'

@@ -2,7 +2,7 @@
   "build-steps that let you work with git repositories"
   (:import (java.io File))
   (:require [lambdacd.steps.shell :as sh]
-            [lambdacd.execution :as execution]
+            [lambdacd.internal.execution :as execution]
             [lambdacd.util :as util]
             [clojure.data.json :as json]
             [clojure.tools.logging :as log]

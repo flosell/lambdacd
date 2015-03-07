@@ -1,5 +1,5 @@
 (ns lambdacd.presentation.pipeline-structure-test
-  (:use [lambdacd.execution]
+  (:use [lambdacd.internal.execution]
         [lambdacd.steps.control-flow]
         [lambdacd.test-util])
   (:require [clojure.test :refer :all]
