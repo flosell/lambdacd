@@ -1,9 +1,7 @@
 (ns lambdacd.server
   (:use compojure.core)
-  (:require [compojure.route :as route]
-            [clojure.walk :as w]
+  (:require [clojure.walk :as w]
             [ring.middleware.json :as rj]
-            [lambdacd.new-ui :as new-ui]
             [clojure.data.json :as json :only [write-str]]
             [lambdacd.presentation.pipeline-structure :as presentation]
             [lambdacd.steps.manualtrigger :as manualtrigger]
