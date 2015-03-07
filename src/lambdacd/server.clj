@@ -1,7 +1,7 @@
 (ns lambdacd.server
   (:use compojure.core)
   (:require [clojure.walk :as w]
-            [ring.middleware.json :as rj]
+            [ring.middleware.json :as ring-json]
             [clojure.data.json :as json :only [write-str]]
             [lambdacd.presentation.pipeline-structure :as presentation]
             [lambdacd.steps.manualtrigger :as manualtrigger]
@@ -14,7 +14,7 @@
 
 
 (defn ui-for [pipeline-def pipeline-state]
-  (rj/wrap-json-params
+  (ring-json/wrap-json-params
     (routes
       (GET "/api/pipeline" [] (util/json (pipeline pipeline-def)))
       (GET "/api/pipeline-state" [] (util/json @pipeline-state))

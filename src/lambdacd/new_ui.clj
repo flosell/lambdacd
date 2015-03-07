@@ -7,7 +7,6 @@
             [lambdacd.steps.manualtrigger :as manualtrigger]
             [lambdacd.util :as util]
             [ring.util.response :as resp]
-            [lambdacd.execution :as execution]
             [lambdacd.presentation.pipeline-state :as pipeline-state-presentation]))
 
 (defn- refresh-every [seconds]
