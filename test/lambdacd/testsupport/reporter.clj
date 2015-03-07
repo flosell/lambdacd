@@ -1,4 +1,4 @@
-(ns lambdacd.reporters
+(ns lambdacd.testsupport.reporter
   "A few reporters to improve test-failure reporting"
   (require [clojure.test :as t]))
 

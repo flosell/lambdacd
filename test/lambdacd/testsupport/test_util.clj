@@ -1,4 +1,4 @@
-(ns lambdacd.test-util
+(ns lambdacd.testsupport.test-util
   (:require [clojure.test :refer :all]
             [lambdacd.internal.execution :as execution]
             [clojure.core.async :as async]))

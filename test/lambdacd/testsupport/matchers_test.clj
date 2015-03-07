@@ -1,6 +1,6 @@
-(ns lambdacd.matchers-test
+(ns lambdacd.testsupport.matchers-test
   (:require [clojure.test :refer :all]
-            [lambdacd.matchers :refer :all]))
+            [lambdacd.testsupport.matchers :refer :all]))
 
 
 (deftest map-containing?-test

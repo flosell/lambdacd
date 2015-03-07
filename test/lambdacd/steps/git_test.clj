@@ -1,12 +1,12 @@
 (ns lambdacd.steps.git-test
   (:import (java.io File))
   (:require [clojure.test :refer :all]
-            [lambdacd.matchers :refer :all]
+            [lambdacd.testsupport.matchers :refer :all]
             [lambdacd.steps.git :refer :all]
             [clojure.core.async :as async]
             [clojure.string :as string]
             [lambdacd.util :as util]
-            [lambdacd.reporters]
+            [lambdacd.testsupport.reporter]
             [lambdacd.util :as utils]
             [clojure.java.io :as io]))
 

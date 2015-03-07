@@ -1,6 +1,6 @@
-(ns lambdacd.test-util-test
+(ns lambdacd.testsupport.test-util-test
   (:require [clojure.test :refer :all]
-            [lambdacd.test-util :refer :all]
+            [lambdacd.testsupport.test-util :refer :all]
             [clojure.core.async :as async]))
 
 (defn some-function-changing-an-atom [a]
