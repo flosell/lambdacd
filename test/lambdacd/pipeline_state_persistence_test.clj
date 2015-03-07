@@ -1,7 +1,7 @@
-(ns lambdacd.json-model-test
+(ns lambdacd.pipeline-state-persistence-test
   (:use [lambdacd.test-util])
   (:require [clojure.test :refer :all]
-            [lambdacd.json-model :refer :all]))
+            [lambdacd.pipeline-state-persistence :refer :all]))
 
 (deftest pipeline-state->json-format-test
   (testing "that it converts to a decent-json-compatible format"

@@ -8,3 +8,5 @@ replaceInClj 'lambdacd\.manualtrigger' 'lambdacd\.steps\.manualtrigger'
 replaceInClj 'lambdacd\.control-flow' 'lambdacd\.steps\.control-flow'
 replaceInClj 'lambdacd\.git' 'lambdacd\.steps\.git'
 replaceInClj 'lambdacd\.shell' 'lambdacd\.steps\.shell'
+
+replaceInClj 'lambdacd\.json-model' 'lambdacd\.pipeline-state-persistence'

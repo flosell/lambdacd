@@ -1,19 +1,13 @@
 (ns lambdacd.pipeline-state
   "responsible to manage the current state of the pipeline
   i.e. what's currently running, what are the results of each step, ..."
-  (:import (java.io File))
   (:require [clojure.core.async :as async]
             [lambdacd.util :as util]
-            [lambdacd.json-model :as json-model]
+            [lambdacd.pipeline-state-persistence :as persistence]
             [clojure.data.json :as json]
             [clojure.java.io :as io]))
 
 (def clean-pipeline-state {})
-
-(defn- read-state [filename]
-  (let [build-number (read-string (second (re-find #"build-(\d+)" filename)))
-        state (json-model/json-format->pipeline-state (json/read-str (slurp filename) :key-fn keyword))]
-    { build-number state }))
 
 (defn initial-pipeline-state [{ home-dir :home-dir }]
   (let [dir (io/file home-dir)
@@ -21,7 +15,7 @@
         directories-in-home (filter #(.isDirectory %) home-contents)
         build-dirs (filter #(.startsWith (.getName %) "build-") directories-in-home)
         build-state-files (map #(str % "/pipeline-state.json") build-dirs)
-        states (map read-state build-state-files)]
+        states (map persistence/read-state build-state-files)]
     (into {} states)))
 
 (defn- update-current-run [step-id step-result current-state]
@@ -65,18 +59,11 @@
 (defn notify-when-most-recent-build-running [{pipeline-state :_pipeline-state} callback]
   (add-watch pipeline-state :notify-most-recent-build-running (partial call-callback-when-most-recent-build-running callback)))
 
-(defn- write-state-to-disk [home-dir build-number new-state]
-  (if home-dir
-  (let [dir (str home-dir "/" "build-" build-number "/")
-        path (str dir "pipeline-state.json")
-        state-as-json (json-model/pipeline-state->json-format (get new-state build-number))]
-    (.mkdirs (io/file dir))
-    (util/write-as-json path state-as-json))))
 
 (defn update [{step-id :step-id state :_pipeline-state build-number :build-number { home-dir :home-dir } :config } step-result]
   (if (not (nil? state)) ; convenience for tests: if no state exists we just do nothing
     (let [new-state (swap! state (partial update-pipeline-state build-number step-id step-result))]
-      (write-state-to-disk home-dir build-number new-state))))
+      (persistence/write-state-to-disk home-dir build-number new-state))))
 
 (defn most-recent-step-result-with [key ctx]
   (let [state (deref (:_pipeline-state ctx))
