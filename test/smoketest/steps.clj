@@ -1,5 +1,5 @@
 (ns smoketest.steps
-  (:require [lambdacd.git :as git]
+  (:require [lambdacd.steps.git :as git]
             [lambdacd.util :as utils]))
 
 (defn do-stuff [& _]

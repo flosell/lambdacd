@@ -1,8 +1,8 @@
-(ns lambdacd.shell-test
+(ns lambdacd.steps.shell-test
   (:require [clojure.test :refer :all]
             [clojure.core.async :as async]
             [lambdacd.test-util :refer [result-channel->map]]
-            [lambdacd.shell :refer :all]))
+            [lambdacd.steps.shell :refer :all]))
 
 (defn- some-ctx []
   { :result-channel (async/chan 100)} )

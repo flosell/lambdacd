@@ -1,4 +1,4 @@
-(ns lambdacd.control-flow
+(ns lambdacd.steps.control-flow
   "control flow elements for a pipeline: steps that control the way their child-steps are being run"
   (:require [lambdacd.execution :as execution]
             [clojure.core.async :as async]))

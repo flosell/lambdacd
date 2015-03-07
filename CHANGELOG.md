@@ -5,6 +5,9 @@ occur without warning between the alpha-releases. The official release will have
 
 ## 0.1.0-alpha13
 
+* Major restructuring: (`scripts/migrate-to-new-package-structure.sh` can help rewrite your code to new structure)
+  * `control-flow`, `git`, `manualtrigger` and `shell` are now in `steps`-namespace
+
 ## 0.1.0-alpha12
 
 ## 0.1.0-alpha11

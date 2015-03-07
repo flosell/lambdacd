@@ -14,7 +14,7 @@
             [lambdacd.util :as utils]
             [ring.server.standalone :as ring-server]
             [clojure.tools.logging :as log])
-  (:use [lambdacd.control-flow]
+  (:use [lambdacd.steps.control-flow]
         [todopipeline.steps]))
 
 
@@ -26,7 +26,7 @@
     ;; the `either` control-flow element allows us to assemble a new trigger out of the two existing ones:
     ;; wait for either a change in the repository or the manual trigger.
      (either
-       lambdacd.manualtrigger/wait-for-manual-trigger
+       lambdacd.steps.manualtrigger/wait-for-manual-trigger
        wait-for-greeting
        wait-for-frontend-repo
        wait-for-backend-repo

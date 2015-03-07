@@ -3,10 +3,10 @@
 ;; They are used in the pipeline-definition you saw in todopipeline.pipeline
 
 (ns todopipeline.steps
-  (:require [lambdacd.shell :as shell]
+  (:require [lambdacd.steps.shell :as shell]
             [lambdacd.execution :as execution]
-            [lambdacd.git :as git]
-            [lambdacd.manualtrigger :as manualtrigger]
+            [lambdacd.steps.git :as git]
+            [lambdacd.steps.manualtrigger :as manualtrigger]
             [lambdacd.util :as util]))
 
 ;; Let's define some constants

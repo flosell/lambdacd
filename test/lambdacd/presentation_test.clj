@@ -1,6 +1,6 @@
 (ns lambdacd.presentation-test
   (:use [lambdacd.execution]
-        [lambdacd.control-flow]
+        [lambdacd.steps.control-flow]
         [lambdacd.test-util])
   (:require [clojure.test :refer :all]
             [lambdacd.presentation :refer :all]))

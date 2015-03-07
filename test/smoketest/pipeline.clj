@@ -1,5 +1,5 @@
 (ns smoketest.pipeline
-  (:use [lambdacd.control-flow]
+  (:use [lambdacd.steps.control-flow]
         [smoketest.steps])
   (:require [lambdacd.core :as core]
             [lambdacd.util :as utils]))
@@ -8,7 +8,7 @@
 
 (def pipeline-def
   `(
-     lambdacd.manualtrigger/wait-for-manual-trigger
+     lambdacd.steps.manualtrigger/wait-for-manual-trigger
      wait-for-some-repo
      (with-some-repo
        read-some-value-from-repo)
@@ -16,7 +16,7 @@
        increment-counter-by-three
        increment-counter-by-two
        use-global-value)
-     lambdacd.manualtrigger/wait-for-manual-trigger
+     lambdacd.steps.manualtrigger/wait-for-manual-trigger
   ))
 
 (def config

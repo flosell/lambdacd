@@ -1,7 +1,7 @@
-(ns lambdacd.control-flow-test
+(ns lambdacd.steps.control-flow-test
   (:use [lambdacd.test-util])
   (:require [clojure.test :refer :all]
-            [lambdacd.control-flow :refer :all]))
+            [lambdacd.steps.control-flow :refer :all]))
 
 (defn some-step-processing-input [arg & _]
   (assoc arg :foo :baz :status :success))

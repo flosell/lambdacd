@@ -174,11 +174,11 @@
 
 (def some-pipeline
   `(
-     lambdacd.manualtrigger/wait-for-manual-trigger
+     lambdacd.steps.manualtrigger/wait-for-manual-trigger
      some-successful-step
-     (lambdacd.control-flow/in-parallel
+     (lambdacd.steps.control-flow/in-parallel
        some-step)
-     lambdacd.manualtrigger/wait-for-manual-trigger))
+     lambdacd.steps.manualtrigger/wait-for-manual-trigger))
 
 (defn some-state-for-some-pipeline []
   (atom {3 { [1] {:status :success }}

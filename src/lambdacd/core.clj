@@ -7,7 +7,7 @@
             [lambdacd.new-ui :as new-ui]
             [compojure.route :as route]
             [ring.util.response :as resp]
-            [lambdacd.manualtrigger :as manualtrigger]
+            [lambdacd.steps.manualtrigger :as manualtrigger]
             [lambdacd.util :as util]))
 
 

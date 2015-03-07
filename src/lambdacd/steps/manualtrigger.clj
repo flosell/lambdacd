@@ -1,4 +1,4 @@
-(ns lambdacd.manualtrigger
+(ns lambdacd.steps.manualtrigger
   (:require [lambdacd.execution :as execution]
             [clojure.core.async :as async]
             [clojure.tools.logging :as log]

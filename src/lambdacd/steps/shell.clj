@@ -1,4 +1,4 @@
-(ns lambdacd.shell
+(ns lambdacd.steps.shell
   (:require [lambdacd.util :as utils]
             [clojure.java.io :as io]
             [clojure.string :as string]
