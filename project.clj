@@ -16,17 +16,15 @@
                  [ch.qos.logback/logback-classic "1.0.13"]
                  [ring-server "0.3.1"]
                  [ring/ring-json "0.3.1"]
-                 [hiccup "1.0.5"]
-                 ; test-only
-                 [http-kit "2.1.16"]
-                 ]
+                 [hiccup "1.0.5"]]
   :test-selectors {:default (complement :smoke)
                    :smoke :smoke
                    :all (constantly true)}
   :ring {:handler todopipeline.pipeline/app
          :init todopipeline.pipeline/start-pipeline-thread }
   :main todopipeline.pipeline
-  :profiles {:uberjar {:aot [todopipeline.pipeline.main]}}
+  :profiles {:uberjar {:aot [todopipeline.pipeline.main]}
+             :dev {:dependencies [[http-kit "2.1.16"]]}}
   :plugins [[lein-ring "0.8.13"]
             [lein-kibit "0.0.8"]
             [lein-marginalia "0.8.0"]
