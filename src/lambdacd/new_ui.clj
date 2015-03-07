@@ -9,7 +9,8 @@
             [lambdacd.util :as util]
             [ring.util.response :as resp]
             [lambdacd.execution :as execution]
-            [lambdacd.pipeline-state :as pipeline-state]))
+            [lambdacd.pipeline-state :as pipeline-state]
+            [lambdacd.presentation.pipeline-state :as pipeline-state-presentation]))
 
 (defn- refresh-every [seconds]
   [:meta {:http-equiv "refresh" :content (str seconds)}])
@@ -84,7 +85,7 @@
     body))
 
 (defn- pipeline-view [pipeline-def pipeline-state build-number]
-  (let [build-history (pipeline-state/history-for pipeline-state)
+  (let [build-history (pipeline-state-presentation/history-for pipeline-state)
         pipeline-state-for-build (get pipeline-state (Integer/parseInt build-number))]
     (println "build number" build-number)
     (hc/html (page (body (history build-history)

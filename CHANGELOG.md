@@ -7,6 +7,8 @@ occur without warning between the alpha-releases. The official release will have
 
 * Major restructuring: (`scripts/migrate-to-new-package-structure.sh` can help rewrite your code to new structure)
   * `control-flow`, `git`, `manualtrigger` and `shell` are now in `steps`-namespace
+  * `lambdacd.presentation` is now `lambdacd.presentation.pipeline-structure`
+  * some functions more concerned with presentation than actual management of the pipeline state are moved from `lambdacd.pipeline-state` to `lambdacd.presentation.pipeline-state`
 
 ## 0.1.0-alpha12
 
