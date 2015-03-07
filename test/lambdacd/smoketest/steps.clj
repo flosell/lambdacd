@@ -1,4 +1,4 @@
-(ns smoketest.steps
+(ns lambdacd.smoketest.steps
   (:require [lambdacd.steps.git :as git]
             [lambdacd.util :as utils]))
 

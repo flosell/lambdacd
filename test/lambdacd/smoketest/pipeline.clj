@@ -1,6 +1,6 @@
-(ns smoketest.pipeline
+(ns lambdacd.smoketest.pipeline
   (:use [lambdacd.steps.control-flow]
-        [smoketest.steps])
+        [lambdacd.smoketest.steps])
   (:require [lambdacd.core :as core]
             [lambdacd.util :as utils]))
 
