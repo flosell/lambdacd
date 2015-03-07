@@ -1,4 +1,4 @@
-(ns lambdacd.presentation
+(ns lambdacd.presentation.pipeline-structure
   "this namespace is responsible for converting the pipeline
   into a nice, map-format that we can use to display the pipeline
   in a UI")

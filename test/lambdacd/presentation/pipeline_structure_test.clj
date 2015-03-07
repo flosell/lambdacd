@@ -1,9 +1,9 @@
-(ns lambdacd.presentation-test
+(ns lambdacd.presentation.pipeline-structure-test
   (:use [lambdacd.execution]
         [lambdacd.steps.control-flow]
         [lambdacd.test-util])
   (:require [clojure.test :refer :all]
-            [lambdacd.presentation :refer :all]))
+            [lambdacd.presentation.pipeline-structure :refer :all]))
 
 (defn do-stuff [] {})
 (defn do-other-stuff [] {})
@@ -35,7 +35,7 @@
        do-stuff)
      (in-cwd "bar"
         do-other-stuff))))
-(with-private-fns [lambdacd.presentation [display-type display-name]]
+(with-private-fns [lambdacd.presentation.pipeline-structure [display-type display-name]]
   (deftest display-type-test
     (testing "that in-parallel gets detected"
       (is (= :parallel (display-type `in-parallel)))

@@ -4,7 +4,7 @@
             [hiccup.core :as hc]
             [hiccup.page :as page]
             [clojure.data.json :as json :only [write-str]]
-            [lambdacd.presentation :as presentation]
+            [lambdacd.presentation.pipeline-structure :as presentation]
             [lambdacd.steps.manualtrigger :as manualtrigger]
             [lambdacd.util :as util]
             [ring.util.response :as resp]
