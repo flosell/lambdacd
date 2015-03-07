@@ -27,6 +27,11 @@
 (defn json-format->pipeline-state [json-map]
   (into {} (map step-json->step json-map)))
 
+(defn- read-state [filename]
+  (let [build-number (read-string (second (re-find #"build-(\d+)" filename)))
+        state (json-format->pipeline-state (json/read-str (slurp filename) :key-fn keyword))]
+    { build-number state }))
+
 (defn write-build-history [home-dir build-number new-state]
   (if home-dir
     (let [dir (str home-dir "/" "build-" build-number "/")
@@ -34,11 +39,6 @@
           state-as-json (pipeline-state->json-format (get new-state build-number))]
       (.mkdirs (io/file dir))
       (util/write-as-json path state-as-json))))
-
-(defn- read-state [filename]
-  (let [build-number (read-string (second (re-find #"build-(\d+)" filename)))
-        state (json-format->pipeline-state (json/read-str (slurp filename) :key-fn keyword))]
-    { build-number state }))
 
 (defn read-build-history-from [home-dir]
   (let [dir (io/file home-dir)

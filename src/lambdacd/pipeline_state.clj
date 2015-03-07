@@ -2,8 +2,7 @@
   "responsible to manage the current state of the pipeline
   i.e. what's currently running, what are the results of each step, ..."
   (:require [lambdacd.util :as util]
-            [lambdacd.pipeline-state-persistence :as persistence]
-            [clojure.java.io :as io]))
+            [lambdacd.pipeline-state-persistence :as persistence]))
 
 (def clean-pipeline-state {})
 
@@ -17,7 +16,6 @@
 
 (defn- update-pipeline-state [build-number step-id step-result current-state]
   (assoc current-state build-number (update-current-run step-id step-result (get current-state build-number))))
-
 
 (defn- current-build-number-in-state [pipeline-state]
   (if-let [current-build-number (last (sort (keys pipeline-state)))]
