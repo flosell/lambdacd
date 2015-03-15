@@ -11,3 +11,5 @@ pom.xml.asc
 *.iml
 .vagrant
 /resources/public/ui2/semantic-ui/
+js-gen
+figwheel_server.log
