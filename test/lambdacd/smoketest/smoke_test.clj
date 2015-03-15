@@ -29,8 +29,17 @@
 (defn- manual-trigger-id []
   (get (manual-trigger) "trigger-id"))
 
+(defn- post-empty-json-to [url]
+  (:status (deref (http/post
+                    url
+                    {:body "{}" :headers { "Content-Type" "application/json"}}))))
+
 (defn- trigger-manual-trigger []
-  (:status (deref (http/post (str (str url-base "/api/dynamic/") (manual-trigger-id)) {:body "{}" :headers { "Content-Type" "application/json"}}))))
+  (post-empty-json-to (str (str url-base "/api/dynamic/") (manual-trigger-id))))
+
+
+(defn- retrigger-increment-counter-by-three []
+  (post-empty-json-to (str url-base "/api/builds/1/4/retrigger")))
 
 (defn wait-a-bit []
   (Thread/sleep 2000)) ; TODO: make more robust, wait for something specific
@@ -61,4 +70,7 @@
       (is (= 5 @steps/some-counter))
       (is (= "world\n" @steps/some-value-read-from-git-repo))
       (is (= "hello world\n" @steps/the-global-value))
+      (is (= 200 (retrigger-increment-counter-by-three)))
+      (wait-a-bit)
+      (is (= 10 @steps/some-counter))
       )))

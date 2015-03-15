@@ -47,6 +47,11 @@
         :else (str x)))
 
 (defn json [data]
-  { :headers { "Content-Type" "application/json"}
+  {:headers { "Content-Type" "application/json"}
    :body (json/write-str data :key-fn handle-unorthodox-keys)
+   :status 200 })
+
+(defn ok []
+  {:headers { "Content-Type" "application/json"}
+   :body "{}"
    :status 200 })

@@ -23,9 +23,9 @@
     (start-one-run-after-another pipeline-def context)))
 
 
-(defn- mk-complete-route [pipline-def state]
+(defn- mk-complete-route [pipline-def state ctx]
   (routes
-    (context "/old" [] (server/ui-for pipline-def state))
+    (context "/old" [] (server/ui-for pipline-def state ctx))
     (context "/ui2" [] (new-ui/new-ui-routes pipline-def state))
     (GET "/" [] (resp/redirect "old/"))
     (route/resources "/")
@@ -37,6 +37,6 @@
         start-next-run-after-first-step-finished (get config :dont-wait-for-completion false)
         context {:_pipeline-state state
                  :config config}]
-    {:ring-handler (mk-complete-route pipeline-def state)
+    {:ring-handler (mk-complete-route pipeline-def state context)
      :init (partial start-pipeline-thread pipeline-def context start-next-run-after-first-step-finished)
      :state state}))
