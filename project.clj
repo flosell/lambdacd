@@ -6,6 +6,8 @@
   :min-lein-version "2.5.0"
   :deploy-repositories [["clojars" {:creds :gpg}]
                         ["releases" :clojars]]
+  :source-paths ["src/clj" "src/cljs"]
+  :test-paths ["test/clj"]
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/data.json "0.2.5"]
                  [me.raynes/conch "0.8.0"]
