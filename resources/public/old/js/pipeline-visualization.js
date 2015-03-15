@@ -74,11 +74,6 @@ var updateServerState = function() {
         }
       });
     })
-    var builds = $("#builds ul");
-    builds.children().remove();
-    Object.keys(all).forEach(function(buildNumber) {
-        builds.append("<li><a href=\"?build="+buildNumber+"\">Build #"+buildNumber+"</a></li>")
-    })
     setTimeout(updateServerState,500);
   })
 }

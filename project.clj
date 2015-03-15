@@ -22,6 +22,7 @@
                  [hiccup "1.0.5"]
 
                  [cljsjs/react "0.12.2-5"]
+                 [cljs-ajax "0.3.10"]
                  [reagent "0.5.0-alpha3"]
                  [reagent-utils "0.1.2"]
                  [secretary "1.2.1"]

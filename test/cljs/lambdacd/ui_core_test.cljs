@@ -34,6 +34,8 @@
 
 
 (deftest test-home
-         (with-mounted-component core/build-history
+         (with-mounted-component (core/build-history-component (atom [{:build-number 1} {:build-number 3}]))
                                  (fn [c div]
-                                   (is (found-in #"Builds" div)))))
+                                   (is (found-in #"Builds" div))
+                                   (is (found-in #"Build 1" div))
+                                   (is (found-in #"Build 3" div)))))

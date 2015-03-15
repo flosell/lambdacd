@@ -4,11 +4,13 @@
             [ring.middleware.json :as ring-json]
             [clojure.data.json :as json :only [write-str]]
             [lambdacd.presentation.pipeline-structure :as presentation]
+            [lambdacd.presentation.pipeline-state :as state-presentation]
             [lambdacd.steps.manualtrigger :as manualtrigger]
             [lambdacd.util :as util]
             [ring.util.response :as resp]
             [lambdacd.internal.execution :as execution]
-            [clojure.core.async :as async]))
+            [clojure.core.async :as async]
+            [lambdacd.util :as util]))
 
 (defn- pipeline [pipeline-def]
   (presentation/display-representation pipeline-def))
@@ -17,6 +19,7 @@
 (defn ui-for [pipeline-def pipeline-state ctx]
   (ring-json/wrap-json-params
     (routes
+      (GET "/api/builds/" [] (util/json (state-presentation/history-for @pipeline-state)))
       (GET "/api/pipeline" [] (util/json (pipeline pipeline-def)))
       (GET "/api/pipeline-state" [] (util/json @pipeline-state))
       (POST "/api/builds/:buildnumber/:step-id/retrigger" [buildnumber step-id]
