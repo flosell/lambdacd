@@ -11,8 +11,11 @@
 (enable-console-print!)
 
 (defn build-history []
-  [:div
-  [:h1 "Builds"]])
+  [:h1 "Builds"])
+
+(defn root []
+  [:div [build-history]])
 
 (defn init! []
-  (reagent/render-component [build-history] (.getElementById js/document "buildtitle")))
+  ; #' is necessary so that fighweel can update: https://github.com/reagent-project/reagent/issues/94
+  (reagent/render-component [#'build-history] (.getElementById js/document "buildtitle")))

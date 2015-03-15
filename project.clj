@@ -19,19 +19,17 @@
                  [ch.qos.logback/logback-classic "1.0.13"]
                  [ring-server "0.3.1"]
                  [ring/ring-json "0.3.1"]
+                 [hiccup "1.0.5"]
 
                  [cljsjs/react "0.12.2-5"]
                  [reagent "0.5.0-alpha3"]
                  [reagent-utils "0.1.2"]
                  [secretary "1.2.1"]
-
                  [prone "0.8.0"]
                  [selmer "0.8.0"]
                  [environ "1.0.0"]
-
                  [org.clojure/clojurescript "0.0-2850" :scope "provided"]
-
-                 [hiccup "1.0.5"]]
+                 ]
   :test-selectors {:default (complement :smoke)
                    :smoke :smoke
                    :all (constantly true)}
