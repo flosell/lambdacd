@@ -47,14 +47,15 @@
             [quickie "0.3.6"]]
   :clean-targets ^{:protect false} ["resources/public/old/js-gen"]
 
-  :cljsbuild {:builds {:app {:source-paths ["src/cljs"]
+  :cljsbuild {:builds {:app {:source-paths ["src/cljs" "env/prod/cljs"]
                              :compiler {:output-to     "resources/public/old/js-gen/app.js"
                                         :output-dir    "resources/public/old/js-gen/out"
-                                        ;;:externs       ["react/externs/react.js"]
+                                        :main "lambdacd.prod"
                                         :asset-path   "js-gen/out"
-                                        :optimizations :none
-                                        :pretty-print  true}}}}
-
+                                        :jar true
+                                        :optimizations :advanced
+                                        :pretty-print  false}}}}
+  :hooks [leiningen.cljsbuild]
   :profiles {:dev {:repl-options {:init-ns lambdacd.handler
                                   :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
@@ -81,7 +82,8 @@
                    :env {:dev? true}
 
                    :cljsbuild {:builds {:app {:source-paths ["env/dev/cljs"]
-                                              :compiler {   :main "lambdacd.dev"
+                                              :compiler {:main "lambdacd.dev"
+                                                         :optimizations :none
                                                          :source-map true}}
                                         :test {:source-paths ["src/cljs"  "test/cljs"]
                                                :compiler {:output-to "target/test.js"
@@ -92,20 +94,4 @@
                                                        "test/vendor/es5-shim.js"
                                                        "test/vendor/es5-sham.js"
                                                        "test/vendor/console-polyfill.js"
-                                                       "target/test.js"]}}}
-
-             :uberjar {:env {:production true}
-                       :aot :all
-                       :omit-source true
-                       :cljsbuild {:jar true
-                                   :builds {:app
-                                            {:source-paths ["env/prod/cljs"]
-                                             :compiler
-                                                           {:optimizations :advanced
-                                                            :pretty-print false}}}}}
-
-             :production {:ring {:open-browser? false
-                                 :stacktraces?  false
-                                 :auto-reload?  false}
-                          :cljsbuild {:builds {:app {:compiler {:main "lambdacd.prod"}}}}
-                          }})
+                                                       "target/test.js"]}}}})
