@@ -10,9 +10,9 @@
 
 (enable-console-print!)
 
-(defn current-page []
+(defn build-history []
   [:div
   [:h1 "Builds"]])
 
 (defn init! []
-  (reagent/render-component [current-page] (.getElementById js/document "buildtitle")))
+  (reagent/render-component [build-history] (.getElementById js/document "buildtitle")))

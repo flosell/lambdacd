@@ -14,8 +14,17 @@ setup() {
   echo "[SUCCESS] You are good to go"
 }
 
-testall() {
+testallClojure() {
   lein test :all
+}
+
+testallClojureScript() {
+  lein cljsbuild test
+}
+
+testall() {
+    testallClojure
+    testallClojureScript
 }
 
 testunit() {
@@ -23,6 +32,8 @@ testunit() {
 }
 
 release() {
+  testall
+  lein clear
   lein deploy clojars
 }
 
@@ -33,27 +44,38 @@ push() {
 serve() {
   lein ring server
 }
+
+serveClojureScript() {
+  lein figwheel
+}
+
 if [ "$1" == "setup" ]; then
     setup
 elif [ "$1" == "testall" ]; then
     testall
 elif [ "$1" == "test" ]; then
     testunit
+elif [ "$1" == "testcljs" ]; then
+    testallClojureScript
 elif [ "$1" == "release" ]; then
     release
 elif [ "$1" == "push" ]; then
     push
 elif [ "$1" == "serve" ]; then
     serve
+elif [ "$1" == "servecljs" ]; then
+    serveClojureScript
 else
     echo "usage: $0 <goal>
 
 goal:
-    setup    -- to set up your environment
-    test     -- run unit tests
-    testall  -- run all tests
-    serve    -- start a server with a demo-pipeline
-    push     -- run all tests and push current state
-    release  -- release current version"
+    setup      -- to set up your environment
+    test       -- run unit tests
+    testall    -- run all tests
+    testcljs   -- run all ClojureScript tests (i.e. unit tests for frontend)
+    serve      -- start a server with a demo-pipeline
+    servecljs  -- compile clojurescript and watch for changes
+    push       -- run all tests and push current state
+    release    -- release current version"
     exit 1
 fi
