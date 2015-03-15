@@ -41,16 +41,11 @@
   :plugins [
             [lein-cljsbuild "1.0.5"]
             [lein-environ "1.0.0"]
-            [lein-asset-minifier "0.2.2"]
             [lein-ring "0.8.13"]
             [lein-kibit "0.0.8"]
             [lein-marginalia "0.8.0"]
             [quickie "0.3.6"]]
   :clean-targets ^{:protect false} ["resources/public/old/js-gen"]
-
-  :minify-assets
-  {:assets
-   {"resources/public/old/css/site.min.css" "resources/public/old/css/site.css"}}
 
   :cljsbuild {:builds {:app {:source-paths ["src/cljs"]
                              :compiler {:output-to     "resources/public/old/js-gen/app.js"
@@ -99,8 +94,7 @@
                                                        "test/vendor/console-polyfill.js"
                                                        "target/test.js"]}}}
 
-             :uberjar {:hooks [leiningen.cljsbuild minify-assets.plugin/hooks]
-                       :env {:production true}
+             :uberjar {:env {:production true}
                        :aot :all
                        :omit-source true
                        :cljsbuild {:jar true
