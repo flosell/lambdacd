@@ -9,17 +9,23 @@
             [lambdacd.util :as util]
             [ring.util.response :as resp]
             [lambdacd.internal.execution :as execution]
+            [lambdacd.presentation.unified :as unified]
             [clojure.core.async :as async]
             [lambdacd.util :as util]))
 
 (defn- pipeline [pipeline-def]
   (presentation/display-representation pipeline-def))
 
+(defn- build-infos [pipeline-def pipeline-state buildnumber]
+  (let [build-number-as-int (read-string buildnumber)
+        build-state (get pipeline-state build-number-as-int)]
+    (util/json (unified/unified-presentation pipeline-def build-state))))
 
 (defn ui-for [pipeline-def pipeline-state ctx]
   (ring-json/wrap-json-params
     (routes
       (GET "/api/builds/" [] (util/json (state-presentation/history-for @pipeline-state)))
+      (GET "/api/builds/:buildnumber/" [buildnumber] (build-infos pipeline-def @pipeline-state buildnumber))
       (GET "/api/pipeline" [] (util/json (pipeline pipeline-def)))
       (GET "/api/pipeline-state" [] (util/json @pipeline-state))
       (POST "/api/builds/:buildnumber/:step-id/retrigger" [buildnumber step-id]
