@@ -34,6 +34,13 @@ ul,ol {
   border: thin black solid;
 }
 
+div {
+  display:flex;
+}
+
+div.blocked {
+  display:block;
+}
 
 li[data-status=waiting] {
   background:lightyellow;

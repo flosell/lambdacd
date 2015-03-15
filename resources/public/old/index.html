@@ -11,21 +11,22 @@
     <body>
         <h1 class="title">LambdaCD</h1>
         <div id="main">
-            <div id="builds">
+            <div id="dynamic">
                 <!-- inserted by js -->
             </div>
-            <div id="currentBuild">
-                <h2>Current Build</h2>
-                <div id="pipeline">
-                    Please wait...
-                    <!-- inserted by js -->
-                </div>
-                <h2>Output (click on buildstep)</h2>
-                <div id="output"></div>
-            </div>
+            <!--<div id="currentBuild">-->
+                <!--<h2>Current Build</h2>-->
+                <!--<div id="pipeline">-->
+                    <!--Please wait...-->
+                    <!--&lt;!&ndash; inserted by js &ndash;&gt;-->
+                <!--</div>-->
+                <!--<h2>Output (click on buildstep)</h2>-->
+                <!--<div id="output"></div>-->
+            <!--</div>-->
         </div>
 
         <script>
+            /*
             var pipelineElem = document.getElementById("pipeline");
             var displayElem = document.getElementById("output");
             $.ajax({url:"api/pipeline"}).done(function(data) {
@@ -42,6 +43,7 @@
             }).fail(function() {
                 pipelineElem.innerHTML="Something went wrong";
             })
+            */
         </script>
         <script src="js-gen/app.js"></script>
     </body>
