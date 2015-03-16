@@ -1,16 +1,27 @@
 (ns lambdacd.ui-core
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [reagent.core :as reagent :refer [atom]]
+            [secretary.core :as secretary :refer-macros [defroute]]
+            [goog.events :as events]
+            [goog.history.EventType :as EventType]
+            [reagent.session :as session]
             [cljs.core.async :as async]
             [lambdacd.utils :as utils]
             [lambdacd.api :as api]
             )
   (:import goog.History))
 
+
+(secretary/set-config! :prefix "#")
+
+(defroute build-route "/builds/:buildnumber" [buildnumber] (session/put! :build-number buildnumber))
+(defroute default-route "/" []
+          (.setToken (History.) "/builds/1"))
+
+
 (enable-console-print!)
 
 (def history-poll-frequency 5000)
-
 
 (defn poll [atom fn]
   (go-loop []
@@ -22,11 +33,11 @@
 (defn poll-history [history-atom]
   (poll history-atom api/get-build-history))
 
-(defn poll-state [history-atom build-number-atom]
-  (poll history-atom #(api/get-build-state @build-number-atom)))
+(defn poll-state [history-atom build-number]
+  (poll history-atom #(api/get-build-state build-number)))
 
 (defn history-item-component [{build-number :build-number status :status}]
-  [:li {:key build-number} [:a {:href (str "?build=" build-number)} (str "Build " build-number)]])
+  [:li {:key build-number} [:a {:href (build-route {:buildnumber build-number})} (str "Build " build-number)]])
 
 (defn build-history-component [history]
   (let [history-to-display (sort-by :build-number @history)]
@@ -50,7 +61,7 @@
 
 (defn current-build-component [build-state-atom build-number output-atom]
   [:div {:key build-number :class "blocked"}
-   [:h2 (str "Current Build " @build-number)]
+   [:h2 (str "Current Build " build-number)]
    [:div {:id "pipeline" }
     [:ol
      (map #(build-step-component % output-atom) @build-state-atom)]]
@@ -61,15 +72,32 @@
 (defn root []
   (let [history (atom [])
         state (atom [])
-        build-number (atom 1)
+        build-number (session/get :build-number)
         output-atom (atom "")]
-    (poll-history history)
-    (poll-state state build-number)
-    [:div
-     [:div {:id "builds"} [build-history-component history]]
-      [:div {:id "currentBuild"} [current-build-component state build-number output-atom]]]))
+    (if build-number
+      (do
+        (poll-history history)
+        (poll-state state build-number)
+        [:div
+         [:div {:id "builds"} [build-history-component history]]
+          [:div {:id "currentBuild"} [current-build-component state build-number output-atom]]])
+      [:div {:id "loading"}
+       :h1 "Loading..."]
+    )))
+
+;; -------------------------
+;; History
+;; must be called after routes have been defined
+(defn hook-browser-navigation! []
+  (doto (History.)
+    (events/listen
+      EventType/NAVIGATE
+      (fn [event]
+        (secretary/dispatch! (.-token event))))
+    (.setEnabled true)))
 
 (defn init! []
+  (hook-browser-navigation!)
   ; #' is necessary so that fighweel can update: https://github.com/reagent-project/reagent/issues/94
   (reagent/render-component [#'root] (.getElementById js/document "dynamic")))
 
