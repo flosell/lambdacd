@@ -62,13 +62,13 @@
                                   [http-kit "2.1.16"]
                                   [ring/ring-devel "1.3.2"]
                                   [leiningen "2.5.1"]
-                                  [figwheel "0.2.5-SNAPSHOT"]
+                                  [figwheel "0.2.5"]
                                   [weasel "0.6.0-SNAPSHOT"]
                                   [com.cemerick/piggieback "0.1.6-SNAPSHOT"]
                                   [pjstadig/humane-test-output "0.6.0"]]
 
                    :source-paths ["env/dev/clj"]
-                   :plugins [[lein-figwheel "0.2.3-SNAPSHOT"]
+                   :plugins [[lein-figwheel "0.2.5"]
                              [com.cemerick/clojurescript.test "0.3.3"]]
 
                    :injections [(require 'pjstadig.humane-test-output)
