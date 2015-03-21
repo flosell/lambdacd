@@ -45,14 +45,24 @@
      [:h2 "Builds"]
      [:ul (map history-item-component history-to-display)]]))
 
+(declare build-step-component)
+
+
+(defn container-build-step-component [step-id status children name output-atom ul-or-ol]
+  [:li {:key step-id :data-status status }
+   [:span name]
+   [ul-or-ol (map #(build-step-component  % output-atom) children)]])
+
 (defn build-step-component [build-step output-atom]
   (let [step-id (str (:step-id build-step))
-        status (:status (:result build-step))]
+        status (:status (:result build-step))
+        name (:name build-step)
+        children (:children build-step)]
     (case (:type build-step)
-      "parallel"  [:li {:key step-id :data-status status } [:ul (map #(build-step-component  % output-atom)(:children build-step))]]
-      "container" [:li {:key step-id :data-status status} [:ol (map #(build-step-component % output-atom) (:children build-step))]]
+      "parallel"  (container-build-step-component step-id status children name output-atom :ul)
+      "container" (container-build-step-component step-id status children name output-atom :ol)
        [:li { :key step-id :data-status status :on-click #(reset! output-atom (:out (:result build-step)))}
-             [:span (:name build-step)]
+             [:span name]
              [:i {:class "fa fa-play trigger"}]
              [:i {:class "fa fa-repeat retrigger"}]])))
 
