@@ -1,7 +1,7 @@
 # LambdaCD
 
 * it's a continuous delivery pipeline, in code
-* it's Jenkins/Go/TeamCity/..., in clojure
+* it's your own custom built Jenkins/Go/TeamCity/..., in clojure
 
 ## Status
 
