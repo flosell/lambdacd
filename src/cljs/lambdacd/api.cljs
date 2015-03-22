@@ -9,8 +9,11 @@
   (let [result (ajax/GET (str "api/builds/" build-number "/"))]
     result))
 
+(defn- confirm-triggered [response]
+  (js/alert "triggered"))
+
 (defn trigger [trigger-id data]
-  (ajax/POST (str "api/dynamic/" trigger-id) data))
+  (ajax/POST (str "api/dynamic/" trigger-id) data confirm-triggered))
 
 (defn retrigger [build-number first-part-of-step-id]
-  (ajax/POST (str "api/builds/" build-number "/" first-part-of-step-id "/retrigger") {}))
+  (ajax/POST (str "api/builds/" build-number "/" first-part-of-step-id "/retrigger") {} confirm-triggered))

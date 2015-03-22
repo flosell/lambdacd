@@ -12,6 +12,7 @@
                    :response-format :json})
     ch))
 
-(defn POST [url data]
+(defn POST [url data handler]
   (ac/POST url {:format :json
-                :params data}))
+                :params data
+                :handler handler}))
