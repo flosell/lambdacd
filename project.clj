@@ -85,12 +85,17 @@
                                                          :optimizations :none
                                                          :source-map true}}
                                         :test {:source-paths ["src/cljs"  "test/cljs"]
-                                               :compiler {:output-to "target/test.js"
-                                                          :optimizations :whitespace
-                                                          :pretty-print true
-                                                          :preamble ["react/react.js"]}}}
-                               :test-commands {"unit" ["phantomjs" :runner
+                                               :compiler       {:output-to     "target/cljs-tests/test.js"
+                                                                :source-map    "target/cljs-tests/test.js.map"
+                                                                :output-dir    "target/cljs-tests/test"
+                                                                :optimizations :none
+                                                                :pretty-print  true}
+                                               ;; if you want auto testing uncomment below
+                                               :notify-command ["phantomjs" "test/bin/runner-none.js" "target/cljs-tests/test" "target/cljs-tests/test.js"
+                                                                "test/vendor/es5-shim.js"
+                                                                "test/vendor/es5-sham.js"
+                                                                "test/vendor/console-polyfill.js"]}}
+                               :test-commands {"unit" ["phantomjs" "test/bin/runner-none.js" "target/cljs-tests/test" "target/cljs-tests/test.js"
                                                        "test/vendor/es5-shim.js"
                                                        "test/vendor/es5-sham.js"
-                                                       "test/vendor/console-polyfill.js"
-                                                       "target/test.js"]}}}})
+                                                       "test/vendor/console-polyfill.js"]}}}})
