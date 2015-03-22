@@ -51,6 +51,10 @@ li[data-status=waiting] {
   cursor:pointer;
 }
 
+.build-step {
+  cursor: pointer;
+}
+
 li[data-status=running] {
   background:lightblue;
 }

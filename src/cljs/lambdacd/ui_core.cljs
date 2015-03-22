@@ -50,7 +50,7 @@
 
 (defn container-build-step-component [step-id status children name output-atom ul-or-ol on-click-fn retrigger-elem build-number]
   [:li {:key step-id :data-status status :on-click on-click-fn}
-   [:span name]
+   [:span {:class "build-step"} name ]
    retrigger-elem
    [ul-or-ol (map #(build-step-component  % output-atom build-number) children)]])
 
@@ -106,7 +106,7 @@
       "parallel"  (container-build-step-component step-id status children name output-atom :ul display-output retrigger-elem build-number)
       "container" (container-build-step-component step-id status children name output-atom :ol display-output retrigger-elem build-number)
        [:li { :key step-id :data-status status :on-click display-output }
-        [:span name]
+        [:span {:class "build-step"} name]
         (manualtrigger-component build-step)
         (retrigger-component build-number build-step)])))
 
