@@ -20,12 +20,11 @@
                  [ring-server "0.3.1"]
                  [ring/ring-json "0.3.1"]
                  [hiccup "1.0.5"]
-
+                 [bidi "1.18.7"]
                  [cljsjs/react "0.12.2-5"]
                  [cljs-ajax "0.3.10"]
                  [reagent "0.5.0-alpha3"]
                  [reagent-utils "0.1.2"]
-                 [secretary "1.2.1"]
                  [prone "0.8.0"]
                  [selmer "0.8.0"]
                  [environ "1.0.0"]

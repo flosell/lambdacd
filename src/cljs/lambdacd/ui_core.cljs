@@ -1,24 +1,14 @@
 (ns lambdacd.ui-core
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [reagent.core :as reagent :refer [atom]]
-            [secretary.core :as secretary :refer-macros [defroute]]
             [goog.events :as events]
             [goog.history.EventType :as EventType]
-            [reagent.session :as session]
             [cljs.core.async :as async]
             [lambdacd.utils :as utils]
             [lambdacd.api :as api]
             [lambdacd.pipeline :as pipeline]
-            )
+            [lambdacd.route :as route])
   (:import goog.History))
-
-
-(secretary/set-config! :prefix "#")
-
-(defroute build-route "/builds/:buildnumber" [buildnumber] (session/put! :build-number buildnumber))
-(defroute default-route "/" []
-          (.setToken (History.) "/builds/1"))
-
 
 (enable-console-print!)
 
@@ -38,7 +28,7 @@
   (poll history-atom #(api/get-build-state build-number)))
 
 (defn history-item-component [{build-number :build-number status :status}]
-  [:li {:key build-number} [:a {:href (build-route {:buildnumber build-number})} (str "Build " build-number)]])
+  [:li {:key build-number} [:a {:href (route/for-build-number build-number)} (str "Build " build-number)]])
 
 (defn build-history-component [history]
   (let [history-to-display (sort-by :build-number @history)]
@@ -60,10 +50,10 @@
    [output-component output-atom]])
 
 
-(defn root []
+(defn root [build-number-atom]
   (let [history (atom [])
         state (atom [])
-        build-number (session/get :build-number)
+        build-number @build-number-atom
         output-atom (atom "")]
     (if build-number
       (do
@@ -76,20 +66,25 @@
        :h1 "Loading..."]
     )))
 
-;; -------------------------
-;; History
-;; must be called after routes have been defined
-(defn hook-browser-navigation! []
+
+(defn- navigate [build-number-atom token]
+  (let [nav-result (route/dispatch-route build-number-atom token)]
+    (if (not (= :ok (:routing nav-result)))
+      (.setToken (History.) (:redirect-to nav-result))
+      )))
+
+(defn hook-browser-navigation! [build-number-atom]
   (doto (History.)
     (events/listen
       EventType/NAVIGATE
       (fn [event]
-        (secretary/dispatch! (.-token event))))
+        (navigate build-number-atom (.-token event))))
     (.setEnabled true)))
 
 (defn init! []
-  (hook-browser-navigation!)
-  ; #' is necessary so that fighweel can update: https://github.com/reagent-project/reagent/issues/94
-  (reagent/render-component [#'root] (.getElementById js/document "app")))
+  (let [build-number-atom (atom nil)]
+    (hook-browser-navigation! build-number-atom)
+    ; #' is necessary so that fighweel can update: https://github.com/reagent-project/reagent/issues/94
+    (reagent/render-component [#'root build-number-atom] (.getElementById js/document "app"))))
 
 
