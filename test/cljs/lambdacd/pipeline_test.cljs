@@ -48,34 +48,34 @@
 
 
 (deftest pipeline-view-test
-         (testing "rendering of a single build-step"
-                  (let [output-atom (atom "")]
-                    (tu/with-mounted-component
-                      (pipeline/build-step-component some-build-step output-atom 1)
-                      (fn [c div]
-                        (is (dom/found-in div #"some-step"))
-                        (is (dom/having-class "build-step" (step-label (first (steps div)))))
-                        (is (dom/having-data "status" "success" (first (steps div))))
-                        (is (= "hello world" (dom/after-click output-atom (step-label (first (steps div))))))))))
-         (testing "rendering of a container build-step"
-                  (let [output-atom (atom "")]
-                    (tu/with-mounted-component
-                      (pipeline/build-step-component some-container-build-step output-atom 1)
-                      (fn [c div]
-                        (is (dom/found-in div #"some-container"))
-                        (is (dom/found-in (first (steps div)) #"some-step"))
-                        (is (dom/having-class "build-step" (step-label (first (steps div)))))
-                        (is (dom/having-data "status" "success" (first (steps div))))
-                        (is (dom/containing-ordered-list (first (steps div))))
-                        (is (= "hello from container" (dom/after-click output-atom (step-label (first (steps div))))))))))
-         (testing "rendering of a parallel build-step"
-                  (let [output-atom (atom "")]
-                    (tu/with-mounted-component
-                      (pipeline/build-step-component some-parallel-build-step output-atom 1)
-                      (fn [c div]
-                        (is (dom/found-in div #"some-parallel-step"))
-                        (is (dom/found-in (first (steps div)) #"some-step"))
-                        (is (dom/having-class "build-step" (step-label (first (steps div)))))
-                        (is (dom/having-data "status" "success" (first (steps div))))
-                        (is (dom/containing-unordered-list (first (steps div))))
-                        (is (= "hello from p" (dom/after-click output-atom (step-label (first (steps div)))))))))))
+  (testing "rendering of a single build-step"
+    (let [output-atom (atom "")]
+      (tu/with-mounted-component
+        (pipeline/build-step-component some-build-step output-atom 1)
+        (fn [c div]
+          (is (dom/found-in div #"some-step"))
+          (is (dom/having-class "build-step" (step-label (first (steps div)))))
+          (is (dom/having-data "status" "success" (first (steps div))))
+          (is (= "hello world" (dom/after-click output-atom (step-label (first (steps div))))))))))
+  (testing "rendering of a container build-step"
+    (let [output-atom (atom "")]
+      (tu/with-mounted-component
+        (pipeline/build-step-component some-container-build-step output-atom 1)
+        (fn [c div]
+          (is (dom/found-in div #"some-container"))
+          (is (dom/found-in (first (steps div)) #"some-step"))
+          (is (dom/having-class "build-step" (step-label (first (steps div)))))
+          (is (dom/having-data "status" "success" (first (steps div))))
+          (is (dom/containing-ordered-list (first (steps div))))
+          (is (= "hello from container" (dom/after-click output-atom (step-label (first (steps div))))))))))
+  (testing "rendering of a parallel build-step"
+    (let [output-atom (atom "")]
+      (tu/with-mounted-component
+        (pipeline/build-step-component some-parallel-build-step output-atom 1)
+        (fn [c div]
+          (is (dom/found-in div #"some-parallel-step"))
+          (is (dom/found-in (first (steps div)) #"some-step"))
+          (is (dom/having-class "build-step" (step-label (first (steps div)))))
+          (is (dom/having-data "status" "success" (first (steps div))))
+          (is (dom/containing-unordered-list (first (steps div))))
+          (is (= "hello from p" (dom/after-click output-atom (step-label (first (steps div)))))))))))
