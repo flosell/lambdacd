@@ -7,11 +7,14 @@
 
 (declare build-step-component) ;; mutual recursion
 
+(defn step-component-with [step-id status display-output name children]
+  (append-components [:li { :key (str step-id) :data-status status :on-click display-output }
+                      [:span {:class "build-step"} name]] children))
+
 (defn container-build-step-component [{step-id :step-id {status :status} :result children :children name :name } output-atom ul-or-ol on-click-fn retrigger-elem build-number]
-  [:li {:key step-id :data-status status :on-click on-click-fn}
-   [:span {:class "build-step"} name ]
-   retrigger-elem
-   [ul-or-ol (map #(build-step-component  % output-atom build-number) children)]])
+  (step-component-with step-id status on-click-fn name [
+                                                   retrigger-elem
+                                                   [ul-or-ol (map #(build-step-component  % output-atom build-number) children)]]))
 
 (defn ask-for [parameters]
   (into {} (doall (map (fn [[param-name param-config]]
@@ -46,9 +49,6 @@
     (if (and trigger-id (not (is-finished build-step)))
       [:i {:class "fa fa-play trigger" :on-click (click-handler #(manual-trigger result))}])))
 
-(defn step-component-with [step-id status display-output children]
-  (append-components [:li { :key (str step-id) :data-status status :on-click display-output }] children))
-
 (defn build-step-component [build-step output-atom build-number]
   (let [result (:result build-step)
         step-id (:step-id build-step)
@@ -59,7 +59,7 @@
     (case (:type build-step)
       "parallel"  (container-build-step-component build-step output-atom :ul display-output retrigger-elem build-number)
       "container" (container-build-step-component build-step output-atom :ol display-output retrigger-elem build-number)
-      (step-component-with step-id status display-output [[:span {:class "build-step"} name]
-                                                          (manualtrigger-component build-step)
-                                                          retrigger-elem] ))))
+      (step-component-with step-id status display-output name
+                           [(manualtrigger-component build-step)
+                            retrigger-elem] ))))
 
