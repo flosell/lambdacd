@@ -2,49 +2,13 @@
     <head>
         <title>LambdaCD</title>
     </head>
-    <script src="js/third-party/zepto.js"></script>
-    <script src="js/third-party/callbacks.js"></script>
-    <script src="js/third-party/deferred.js"></script>
-    <script src="js/pipeline-visualization.js"></script>
     <link rel="stylesheet" type="text/css" href="css/pipeline.css"/>
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
     <body>
         <h1 class="title">LambdaCD</h1>
-        <div id="main">
-            <div id="dynamic">
-                <!-- inserted by js -->
-            </div>
-            <!--<div id="currentBuild">-->
-                <!--<h2>Current Build</h2>-->
-                <!--<div id="pipeline">-->
-                    <!--Please wait...-->
-                    <!--&lt;!&ndash; inserted by js &ndash;&gt;-->
-                <!--</div>-->
-                <!--<h2>Output (click on buildstep)</h2>-->
-                <!--<div id="output"></div>-->
-            <!--</div>-->
+        <div id="app">
+            <!-- inserted by cljs -->
         </div>
-
-        <script>
-            /*
-            var pipelineElem = document.getElementById("pipeline");
-            var displayElem = document.getElementById("output");
-            $.ajax({url:"api/pipeline"}).done(function(data) {
-                pipelineElem.innerHTML=pipelineHtml(data);
-                setTimeout(updateServerState,500);
-
-                $(pipelineElem).find("li").click(function(evt) {
-                    var clickedElem = evt.target;
-                    var $clickedElem = $(clickedElem)
-                    var output = $clickedElem.closest("[data-output]").data("output");
-
-                    displayElem.innerHTML="<pre>"+output+"</pre>";
-                });
-            }).fail(function() {
-                pipelineElem.innerHTML="Something went wrong";
-            })
-            */
-        </script>
         <script src="js-gen/app.js"></script>
     </body>
 </html>

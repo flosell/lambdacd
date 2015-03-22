@@ -153,6 +153,6 @@
 (defn init! []
   (hook-browser-navigation!)
   ; #' is necessary so that fighweel can update: https://github.com/reagent-project/reagent/issues/94
-  (reagent/render-component [#'root] (.getElementById js/document "dynamic")))
+  (reagent/render-component [#'root] (.getElementById js/document "app")))
 
 
