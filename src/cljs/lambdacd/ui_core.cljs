@@ -69,11 +69,15 @@
     (api/trigger trigger-id (ask-for parameters))
     (api/trigger trigger-id {})))
 
-(defn can-be-retriggered? [step]
+(defn is-finished [step]
   (let [status (:status (:result step))
-        step-id (:step-id step)
+        is-finished (or (= "success" status) (= "failure" status) (= "killed" status))]
+    is-finished))
+
+(defn can-be-retriggered? [step]
+  (let [step-id (:step-id step)
         is-not-nested (= (count step-id) 1) ;; this is an implementation detail, retriggering of nested steps not properly implemented yet
-        is-finished (or (= "success" status) (= "failure" status))]
+        is-finished (is-finished step)]
     (and is-finished is-not-nested)))
 
 (defn retrigger [build-number build-step]
@@ -82,6 +86,12 @@
 (defn retrigger-component [build-number build-step]
   (if (can-be-retriggered? build-step)
     [:i {:class "fa fa-repeat retrigger" :on-click (click-handler #(retrigger build-number build-step))}]))
+
+(defn manualtrigger-component [build-step]
+  (let [result (:result build-step)
+        trigger-id (:trigger-id result)]
+    (if (and trigger-id (not (is-finished build-step)))
+      [:i {:class "fa fa-play trigger" :on-click (click-handler #(manual-trigger result))}])))
 
 (defn build-step-component [build-step output-atom build-number]
   (let [result (:result build-step)
@@ -97,8 +107,7 @@
       "container" (container-build-step-component step-id status children name output-atom :ol display-output retrigger-elem build-number)
        [:li { :key step-id :data-status status :on-click display-output }
         [:span name]
-        (if trigger-id
-          [:i {:class "fa fa-play trigger" :on-click (click-handler #(manual-trigger result))}])
+        (manualtrigger-component build-step)
         (retrigger-component build-number build-step)])))
 
 (defn output-component [output-atom]

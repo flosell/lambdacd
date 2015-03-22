@@ -47,18 +47,8 @@ li[data-status=waiting] {
 }
 
 .trigger,.retrigger {
-  visibility:hidden;
   margin-left:5px;
   cursor:pointer;
-}
-
-li[data-status=waiting] .trigger {
-  visibility:visible;
-}
-
-li[data-status=success] .retrigger,
-li[data-status=failure] .retrigger{
-  visibility:visible;
 }
 
 li[data-status=running] {
