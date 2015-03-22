@@ -25,8 +25,8 @@
 (defn poll-history [history-atom]
   (poll history-atom api/get-build-history))
 
-(defn poll-state [history-atom build-number]
-  (poll history-atom #(api/get-build-state build-number)))
+(defn poll-state [state-atom build-number-atom]
+  (poll state-atom #(api/get-build-state @build-number-atom)))
 
 (defn history-item-component [{build-number :build-number status :status}]
   [:li {:key build-number} [:a {:href (route/for-build-number build-number)} (str "Build " build-number)]])
@@ -53,14 +53,10 @@
    [output-component build-state-atom step-id-to-display-atom]])
 
 
-(defn root [build-number-atom step-id-to-display-atom]
-  (let [history (atom [])
-        state (atom [])
-        build-number @build-number-atom]
+(defn root [build-number-atom step-id-to-display-atom history state]
+  (let [build-number @build-number-atom]
     (if build-number
       (do
-        (poll-history history)
-        (poll-state state build-number)
         [:div
          [:div {:id "builds"} [build-history-component history]]
           [:div {:id "currentBuild"} [current-build-component state build-number step-id-to-display-atom]]])
@@ -85,9 +81,13 @@
 
 (defn init! []
   (let [build-number-atom (atom nil)
-        step-id-to-display-atom (atom nil)]
+        step-id-to-display-atom (atom nil)
+        history-atom (atom [])
+        state-atom (atom [])]
+    (poll-history history-atom)
+    (poll-state state-atom build-number-atom)
     (hook-browser-navigation! build-number-atom step-id-to-display-atom)
     ; #' is necessary so that fighweel can update: https://github.com/reagent-project/reagent/issues/94
-    (reagent/render-component [#'root build-number-atom step-id-to-display-atom] (.getElementById js/document "app"))))
+    (reagent/render-component [#'root build-number-atom step-id-to-display-atom history-atom state-atom] (.getElementById js/document "app"))))
 
 
