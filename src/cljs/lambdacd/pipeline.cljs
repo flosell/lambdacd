@@ -1,32 +1,21 @@
 (ns lambdacd.pipeline
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [reagent.core :as reagent :refer [atom]]
-            [secretary.core :as secretary :refer-macros [defroute]]
-            [goog.events :as events]
-            [goog.history.EventType :as EventType]
-            [reagent.session :as session]
-            [cljs.core.async :as async]
-            [lambdacd.utils :as utils]
+            [lambdacd.utils :refer [click-handler]]
+            [lambdacd.utils :refer [append-components]]
             [lambdacd.api :as api]))
 
-(declare build-step-component)
+(declare build-step-component) ;; mutual recursion
 
-
-(defn container-build-step-component [step-id status children name output-atom ul-or-ol on-click-fn retrigger-elem build-number]
+(defn container-build-step-component [{step-id :step-id {status :status} :result children :children name :name } output-atom ul-or-ol on-click-fn retrigger-elem build-number]
   [:li {:key step-id :data-status status :on-click on-click-fn}
    [:span {:class "build-step"} name ]
    retrigger-elem
    [ul-or-ol (map #(build-step-component  % output-atom build-number) children)]])
 
-(defn click-handler [handler]
-  (fn [evt]
-    (handler)
-    (.stopPropagation evt)))
-
 (defn ask-for [parameters]
   (into {} (doall (map (fn [[param-name param-config]]
                          [param-name (js/prompt (str "Please enter a value for " (name param-name) ": " (:desc param-config)))]) parameters))))
-
 
 (defn manual-trigger [{ trigger-id :trigger-id parameters :parameters}]
   (if parameters
@@ -57,19 +46,20 @@
     (if (and trigger-id (not (is-finished build-step)))
       [:i {:class "fa fa-play trigger" :on-click (click-handler #(manual-trigger result))}])))
 
+(defn step-component-with [step-id status display-output children]
+  (append-components [:li { :key (str step-id) :data-status status :on-click display-output }] children))
+
 (defn build-step-component [build-step output-atom build-number]
   (let [result (:result build-step)
-        step-id (str (:step-id build-step))
+        step-id (:step-id build-step)
         status (:status result)
         name (:name build-step)
-        children (:children build-step)
-        trigger-id (:trigger-id result)
         display-output (click-handler #(reset! output-atom (:out result)))
         retrigger-elem (retrigger-component build-number build-step)]
     (case (:type build-step)
-      "parallel"  (container-build-step-component step-id status children name output-atom :ul display-output retrigger-elem build-number)
-      "container" (container-build-step-component step-id status children name output-atom :ol display-output retrigger-elem build-number)
-      [:li { :key step-id :data-status status :on-click display-output }
-       [:span {:class "build-step"} name]
-       (manualtrigger-component build-step)
-       (retrigger-component build-number build-step)])))
+      "parallel"  (container-build-step-component build-step output-atom :ul display-output retrigger-elem build-number)
+      "container" (container-build-step-component build-step output-atom :ol display-output retrigger-elem build-number)
+      (step-component-with step-id status display-output [[:span {:class "build-step"} name]
+                                                          (manualtrigger-component build-step)
+                                                          retrigger-elem] ))))
+
