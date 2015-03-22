@@ -17,7 +17,7 @@
   (presentation/display-representation pipeline-def))
 
 (defn- build-infos [pipeline-def pipeline-state buildnumber]
-  (let [build-number-as-int (read-string buildnumber)
+  (let [build-number-as-int (util/parse-int buildnumber)
         build-state (get pipeline-state build-number-as-int)]
     (util/json (unified/unified-presentation pipeline-def build-state))))
 
@@ -30,7 +30,7 @@
       (GET "/api/pipeline-state" [] (util/json @pipeline-state))
       (POST "/api/builds/:buildnumber/:step-id/retrigger" [buildnumber step-id]
             (do
-              (async/thread (execution/retrigger pipeline-def ctx (read-string buildnumber) [(read-string step-id)]))
+              (async/thread (execution/retrigger pipeline-def ctx (util/parse-int buildnumber) [(util/parse-int step-id)]))
               (util/ok)))
       (POST "/api/dynamic/:id" {{id :id } :params data :json-params} (do
                                                    (util/json (manualtrigger/post-id id (w/keywordize-keys data)))))

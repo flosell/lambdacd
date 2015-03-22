@@ -33,6 +33,8 @@
          (f %)
          %) coll))
 
+(defn parse-int [int-str]
+  (Integer/parseInt int-str))
 
 (defn contains-value? [v coll]
   (some #(= % v) coll))

@@ -13,7 +13,7 @@
   (str/join "-" step-id ))
 
 (defn unformat-step-id [formatted-step-id]
-  (map read-string (str/split formatted-step-id (Pattern/compile "-"))))
+  (map util/parse-int (str/split formatted-step-id (Pattern/compile "-"))))
 
 (defn- step-result->json-format [[k v]]
   {:step-id (formatted-step-id k) :step-result v})
@@ -28,7 +28,7 @@
   (into {} (map step-json->step json-map)))
 
 (defn- read-state [filename]
-  (let [build-number (read-string (second (re-find #"build-(\d+)" filename)))
+  (let [build-number (util/parse-int (second (re-find #"build-(\d+)" filename)))
         state (json-format->pipeline-state (json/read-str (slurp filename) :key-fn keyword))]
     { build-number state }))
 

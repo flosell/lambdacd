@@ -39,3 +39,9 @@
     (is (= {:body    "{\"(0 1)\":\"hello\"}"
             :headers {"Content-Type" "application/json"}
             :status  200} (json { (range 2) "hello" })))))
+
+(deftest parse-int-test
+  (testing "that we can parse integers"
+    (is (= 42 (parse-int "42")))
+    (is (= -1 (parse-int "-1")))
+    (is (thrown? NumberFormatException (parse-int "foo")))))
