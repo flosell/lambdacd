@@ -11,3 +11,7 @@
                    :keywords? true
                    :response-format :json})
     ch))
+
+(defn POST [url data]
+  (ac/POST url {:format :json
+                :params data}))

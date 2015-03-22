@@ -8,3 +8,6 @@
 (defn get-build-state [build-number]
   (let [result (ajax/GET (str "api/builds/" build-number "/"))]
     result))
+
+(defn trigger [trigger-id data]
+  (ajax/POST (str "api/dynamic/" trigger-id) data))

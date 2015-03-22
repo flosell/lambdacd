@@ -53,21 +53,26 @@
    [:span name]
    [ul-or-ol (map #(build-step-component  % output-atom) children)]])
 
+(defn click-handler [handler]
+  (fn [evt]
+    (handler)
+    (.stopPropagation evt)))
+
 (defn build-step-component [build-step output-atom]
-  (let [step-id (str (:step-id build-step))
-        status (:status (:result build-step))
+  (let [result (:result build-step)
+        step-id (str (:step-id build-step))
+        status (:status result)
         name (:name build-step)
         children (:children build-step)
-        on-click-fn (fn [evt]
-                      (.stopPropagation evt)
-                      (reset! output-atom (:out (:result build-step))))]
+        trigger-id (:trigger-id result)
+        display-output (click-handler #(reset! output-atom (:out result)))]
     (case (:type build-step)
-      "parallel"  (container-build-step-component step-id status children name output-atom :ul on-click-fn)
-      "container" (container-build-step-component step-id status children name output-atom :ol on-click-fn)
-       [:li { :key step-id :data-status status :on-click on-click-fn }
+      "parallel"  (container-build-step-component step-id status children name output-atom :ul display-output)
+      "container" (container-build-step-component step-id status children name output-atom :ol display-output)
+       [:li { :key step-id :data-status status :on-click display-output }
         [:span name]
-        [:i {:class "fa fa-play trigger"}]
-             [:i {:class "fa fa-repeat retrigger"}]])))
+        (if trigger-id [:i {:class "fa fa-play trigger" :on-click (click-handler #(api/trigger trigger-id {}))}])
+        [:i {:class "fa fa-repeat retrigger"}]])))
 
 (defn output-component [output-atom]
   [:pre @output-atom])
