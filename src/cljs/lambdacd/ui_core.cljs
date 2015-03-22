@@ -13,13 +13,13 @@
 
 (enable-console-print!)
 
-(def history-poll-frequency 5000)
+(def poll-frequency 1000)
 
 (defn poll [atom fn]
   (go-loop []
     (let [history (async/<! (fn))]
       (reset! atom history))
-    (async/<! (utils/timeout history-poll-frequency))
+    (async/<! (utils/timeout poll-frequency))
     (recur)))
 
 (defn poll-history [history-atom]
