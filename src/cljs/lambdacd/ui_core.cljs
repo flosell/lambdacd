@@ -48,10 +48,11 @@
 (declare build-step-component)
 
 
-(defn container-build-step-component [step-id status children name output-atom ul-or-ol on-click-fn]
+(defn container-build-step-component [step-id status children name output-atom ul-or-ol on-click-fn retrigger-elem build-number]
   [:li {:key step-id :data-status status :on-click on-click-fn}
    [:span name]
-   [ul-or-ol (map #(build-step-component  % output-atom) children)]])
+   retrigger-elem
+   [ul-or-ol (map #(build-step-component  % output-atom build-number) children)]])
 
 (defn click-handler [handler]
   (fn [evt]
@@ -68,21 +69,37 @@
     (api/trigger trigger-id (ask-for parameters))
     (api/trigger trigger-id {})))
 
-(defn build-step-component [build-step output-atom]
+(defn can-be-retriggered? [step]
+  (let [status (:status (:result step))
+        step-id (:step-id step)
+        is-not-nested (= (count step-id) 1) ;; this is an implementation detail, retriggering of nested steps not properly implemented yet
+        is-finished (or (= "success" status) (= "failure" status))]
+    (and is-finished is-not-nested)))
+
+(defn retrigger [build-number build-step]
+  (api/retrigger build-number (first (:step-id build-step))))
+
+(defn retrigger-component [build-number build-step]
+  (if (can-be-retriggered? build-step)
+    [:i {:class "fa fa-repeat retrigger" :on-click (click-handler #(retrigger build-number build-step))}]))
+
+(defn build-step-component [build-step output-atom build-number]
   (let [result (:result build-step)
         step-id (str (:step-id build-step))
         status (:status result)
         name (:name build-step)
         children (:children build-step)
         trigger-id (:trigger-id result)
-        display-output (click-handler #(reset! output-atom (:out result)))]
+        display-output (click-handler #(reset! output-atom (:out result)))
+        retrigger-elem (retrigger-component build-number build-step)]
     (case (:type build-step)
-      "parallel"  (container-build-step-component step-id status children name output-atom :ul display-output)
-      "container" (container-build-step-component step-id status children name output-atom :ol display-output)
+      "parallel"  (container-build-step-component step-id status children name output-atom :ul display-output retrigger-elem build-number)
+      "container" (container-build-step-component step-id status children name output-atom :ol display-output retrigger-elem build-number)
        [:li { :key step-id :data-status status :on-click display-output }
         [:span name]
-        (if trigger-id [:i {:class "fa fa-play trigger" :on-click (click-handler #(manual-trigger result))}])
-        [:i {:class "fa fa-repeat retrigger"}]])))
+        (if trigger-id
+          [:i {:class "fa fa-play trigger" :on-click (click-handler #(manual-trigger result))}])
+        (retrigger-component build-number build-step)])))
 
 (defn output-component [output-atom]
   [:pre @output-atom])
@@ -92,7 +109,7 @@
    [:h2 (str "Current Build " build-number)]
    [:div {:id "pipeline" }
     [:ol
-     (map #(build-step-component % output-atom) @build-state-atom)]]
+     (map #(build-step-component % output-atom build-number) @build-state-atom)]]
    [:h2 "Output"]
    [output-component output-atom]])
 
