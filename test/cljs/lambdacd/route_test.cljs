@@ -19,4 +19,4 @@
 
 (deftest build-route
   (testing "that we can create a decent route to a build"
-    (is (= "/builds/42" (route/for-build-number 42)))))
+    (is (= "#/builds/42" (route/for-build-number 42)))))

@@ -13,4 +13,4 @@
           {:routing :failed :redirect-to (bidi/path-for route :build :buildnumber 1)})))
 
 (defn for-build-number [build-number]
-  (bidi/path-for route :build :buildnumber build-number))
+  (str "#" (bidi/path-for route :build :buildnumber build-number)))
