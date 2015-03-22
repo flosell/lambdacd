@@ -51,8 +51,9 @@ li[data-status=waiting] {
   cursor:pointer;
 }
 
-.build-step {
-  cursor: pointer;
+.step-link {
+  color: inherit;
+  text-decoration: none;
 }
 
 li[data-status=running] {

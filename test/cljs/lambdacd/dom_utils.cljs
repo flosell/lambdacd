@@ -1,7 +1,7 @@
 (ns lambdacd.dom-utils
   (:require
     [dommy.core :as dommy]
-    [dommy.core :refer-macros [sel sel1]]))
+    [dommy.core :refer-macros [sel sel1 by-tag]]))
 
 (defn- fire!
   "Creates an event of type `event-type`, optionally having
@@ -31,6 +31,9 @@
     true
     (do (println "expected " elem " to have class " classname)
         false)))
+
+(defn containing-link-to [div href]
+  (= href (first (map #(dommy/attr % :href) (by-tag div :a)))))
 
 (defn containing-ordered-list [elem]
   (not (empty? (sel elem :ol))))

@@ -3,18 +3,19 @@
   (:require [reagent.core :as reagent :refer [atom]]
             [lambdacd.utils :refer [click-handler]]
             [lambdacd.utils :refer [append-components]]
-            [lambdacd.api :as api]))
+            [lambdacd.api :as api]
+            [lambdacd.route :as route]))
 
 (declare build-step-component) ;; mutual recursion
 
-(defn step-component-with [{step-id :step-id {status :status out :out} :result name :name } output-atom children]
-  (let [display-output (click-handler #(reset! output-atom out))]
-    (append-components [:li { :key (str step-id) :data-status status :on-click display-output }
-                      [:span {:class "build-step"} name]] children)))
+(defn step-component-with [{step-id :step-id {status :status} :result name :name } build-number children]
+  (append-components [:li { :key (str step-id) :data-status status }
+                      [:a {:class "step-link" :href (route/for-build-and-step-id build-number step-id)}
+                        [:span {:class "build-step"} name]]] children))
 
-(defn container-build-step-component [{children :children :as build-step } output-atom ul-or-ol retrigger-elem build-number]
-  (step-component-with build-step output-atom [retrigger-elem
-                                               [ul-or-ol (map #(build-step-component % output-atom build-number) children)]]))
+(defn container-build-step-component [{children :children :as build-step } ul-or-ol retrigger-elem build-number]
+  (step-component-with build-step build-number [retrigger-elem
+                                               [ul-or-ol (map #(build-step-component % build-number) children)]]))
 
 (defn ask-for [parameters]
   (into {} (doall (map (fn [[param-name param-config]]
@@ -49,12 +50,12 @@
     (if (and trigger-id (not (is-finished build-step)))
       [:i {:class "fa fa-play trigger" :on-click (click-handler #(manual-trigger result))}])))
 
-(defn build-step-component [build-step output-atom build-number]
+(defn build-step-component [build-step build-number]
   (let [retrigger-elem (retrigger-component build-number build-step)]
     (case (:type build-step)
-      "parallel"  (container-build-step-component build-step output-atom :ul retrigger-elem build-number)
-      "container" (container-build-step-component build-step output-atom :ol retrigger-elem build-number)
-      (step-component-with build-step output-atom
+      "parallel"  (container-build-step-component build-step :ul retrigger-elem build-number)
+      "container" (container-build-step-component build-step :ol retrigger-elem build-number)
+      (step-component-with build-step build-number
                            [(manualtrigger-component build-step)
                             retrigger-elem] ))))
 

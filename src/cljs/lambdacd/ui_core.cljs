@@ -7,7 +7,8 @@
             [lambdacd.utils :as utils]
             [lambdacd.api :as api]
             [lambdacd.pipeline :as pipeline]
-            [lambdacd.route :as route])
+            [lambdacd.route :as route]
+            [lambdacd.state :as state])
   (:import goog.History))
 
 (enable-console-print!)
@@ -37,54 +38,56 @@
      [:ul (map history-item-component history-to-display)]]))
 
 
-(defn output-component [output-atom]
-  [:pre @output-atom])
+(defn output-component [build-state-atom step-id-to-display-atom]
+  (let [step (state/find-by-step-id @build-state-atom @step-id-to-display-atom)
+        output (:out (:result step ))]
+    [:pre output]))
 
-(defn current-build-component [build-state-atom build-number output-atom]
+(defn current-build-component [build-state-atom build-number step-id-to-display-atom]
   [:div {:key build-number :class "blocked"}
    [:h2 (str "Current Build " build-number)]
    [:div {:id "pipeline" }
     [:ol
-     (map #(pipeline/build-step-component % output-atom build-number) @build-state-atom)]]
+     (map #(pipeline/build-step-component % build-number) @build-state-atom)]]
    [:h2 "Output"]
-   [output-component output-atom]])
+   [output-component build-state-atom step-id-to-display-atom]])
 
 
-(defn root [build-number-atom]
+(defn root [build-number-atom step-id-to-display-atom]
   (let [history (atom [])
         state (atom [])
-        build-number @build-number-atom
-        output-atom (atom "")]
+        build-number @build-number-atom]
     (if build-number
       (do
         (poll-history history)
         (poll-state state build-number)
         [:div
          [:div {:id "builds"} [build-history-component history]]
-          [:div {:id "currentBuild"} [current-build-component state build-number output-atom]]])
+          [:div {:id "currentBuild"} [current-build-component state build-number step-id-to-display-atom]]])
       [:div {:id "loading"}
        :h1 "Loading..."]
     )))
 
 
-(defn- navigate [build-number-atom token]
-  (let [nav-result (route/dispatch-route build-number-atom token)]
+(defn- navigate [build-number-atom step-id-to-display-atom token]
+  (let [nav-result (route/dispatch-route build-number-atom step-id-to-display-atom token)]
     (if (not (= :ok (:routing nav-result)))
       (.setToken (History.) (:redirect-to nav-result))
       )))
 
-(defn hook-browser-navigation! [build-number-atom]
+(defn hook-browser-navigation! [build-number-atom step-id-to-display-atom]
   (doto (History.)
     (events/listen
       EventType/NAVIGATE
       (fn [event]
-        (navigate build-number-atom (.-token event))))
+        (navigate build-number-atom step-id-to-display-atom (.-token event))))
     (.setEnabled true)))
 
 (defn init! []
-  (let [build-number-atom (atom nil)]
-    (hook-browser-navigation! build-number-atom)
+  (let [build-number-atom (atom nil)
+        step-id-to-display-atom (atom nil)]
+    (hook-browser-navigation! build-number-atom step-id-to-display-atom)
     ; #' is necessary so that fighweel can update: https://github.com/reagent-project/reagent/issues/94
-    (reagent/render-component [#'root build-number-atom] (.getElementById js/document "app"))))
+    (reagent/render-component [#'root build-number-atom step-id-to-display-atom] (.getElementById js/document "app"))))
 
 
