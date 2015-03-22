@@ -3,7 +3,7 @@
             [dommy.core :as dommy]
             [dommy.core :refer-macros [sel sel1]]
             [lambdacd.ui-core :as core]
-            [lambdacd.reagent-testutils :as r]))
+            [lambdacd.testutils :as tu]))
 
 (defn found-in [div re]
   (let [res (.-innerHTML div)]
@@ -14,7 +14,7 @@
 
 
 (deftest history-test
-  (r/with-mounted-component
+  (tu/with-mounted-component
     (core/build-history-component
       (atom [{:build-number 1} {:build-number 3}]))
     (testing "that the history contains all the builds"
@@ -31,6 +31,32 @@
    :result {:status "success"
             :out "hello world"}})
 
+(defn with-name [step name]
+  (assoc step :name name))
+
+(defn with-type [step name]
+  (assoc step :type name))
+
+(defn with-output [step output]
+  (assoc step :result {:status "success" :out output}))
+
+(defn with-children [step children]
+  (assoc step :children children))
+
+(def some-container-build-step
+  (-> some-build-step
+      (with-name "some-container")
+      (with-type "container")
+      (with-children [some-build-step])
+      (with-output "hello from container")))
+
+(def some-parallel-build-step
+  (-> some-container-build-step
+      (with-name "some-parallel-step")
+      (with-type "parallel")
+      (with-children [some-build-step])
+      (with-output "hello from p")))
+
 (defn steps [root]
   (sel root :li))
 
@@ -43,36 +69,48 @@
     (do (println "expected " elem " to have class " classname)
         false)))
 
+(defn containing-ordered-list [elem]
+  (not (empty? (sel elem :ol))))
+(defn containing-unordered-list [elem]
+  (not (empty? (sel elem :ul))))
+
 (defn having-data [name value elem]
   (= value (dommy/attr elem (str "data-" name))))
 
-(defn fire!
-  "Creates an event of type `event-type`, optionally having
-   `update-event!` mutate and return an updated event object,
-   and fires it on `node`.
-   Only works when `node` is in the DOM"
-  [node event-type & [update-event!]]
-  (let [update-event! (or update-event! identity)]
-    (if (.-createEvent js/document)
-      (let [event (.createEvent js/document "Event")]
-        (.initEvent event (name event-type) true true)
-        (.dispatchEvent node (update-event! event)))
-      (.fireEvent node (str "on" (name event-type))
-                  (update-event! (.createEventObject js/document))))))
-
 (defn after-click [atom elem]
-  (fire! elem :click)
+  (tu/fire! elem :click)
   @atom)
 
 
 (deftest pipeline-view-test
   (testing "rendering of a single build-step"
     (let [output-atom (atom "")]
-      (r/with-mounted-component
+      (tu/with-mounted-component
         (core/build-step-component some-build-step output-atom 1)
         (fn [c div]
           (is (found-in div #"some-step"))
-          (is (= 1 (count (steps div))))
           (is (having-class "build-step" (step-label (first (steps div)))))
           (is (having-data "status" "success" (first (steps div))))
-          (is (= "hello world" (after-click output-atom (step-label (first (steps div)))))))))))
+          (is (= "hello world" (after-click output-atom (step-label (first (steps div))))))))))
+  (testing "rendering of a container build-step"
+    (let [output-atom (atom "")]
+      (tu/with-mounted-component
+        (core/build-step-component some-container-build-step output-atom 1)
+        (fn [c div]
+          (is (found-in div #"some-container"))
+          (is (found-in (first (steps div)) #"some-step"))
+          (is (having-class "build-step" (step-label (first (steps div)))))
+          (is (having-data "status" "success" (first (steps div))))
+          (is (containing-ordered-list (first (steps div))))
+          (is (= "hello from container" (after-click output-atom (step-label (first (steps div))))))))))
+  (testing "rendering of a parallel build-step"
+    (let [output-atom (atom "")]
+      (tu/with-mounted-component
+        (core/build-step-component some-parallel-build-step output-atom 1)
+        (fn [c div]
+          (is (found-in div #"some-parallel-step"))
+          (is (found-in (first (steps div)) #"some-step"))
+          (is (having-class "build-step" (step-label (first (steps div)))))
+          (is (having-data "status" "success" (first (steps div))))
+          (is (containing-unordered-list (first (steps div))))
+          (is (= "hello from p" (after-click output-atom (step-label (first (steps div)))))))))))
