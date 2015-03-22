@@ -51,7 +51,7 @@ serve() {
 }
 
 serveClojureScript() {
-  lein figwheel
+  lein figwheel app
 }
 
 if [ "$1" == "setup" ]; then
