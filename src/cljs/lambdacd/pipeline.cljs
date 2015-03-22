@@ -7,14 +7,14 @@
 
 (declare build-step-component) ;; mutual recursion
 
-(defn step-component-with [step-id status display-output name children]
-  (append-components [:li { :key (str step-id) :data-status status :on-click display-output }
-                      [:span {:class "build-step"} name]] children))
+(defn step-component-with [{step-id :step-id {status :status out :out} :result name :name } output-atom children]
+  (let [display-output (click-handler #(reset! output-atom out))]
+    (append-components [:li { :key (str step-id) :data-status status :on-click display-output }
+                      [:span {:class "build-step"} name]] children)))
 
-(defn container-build-step-component [{step-id :step-id {status :status} :result children :children name :name } output-atom ul-or-ol on-click-fn retrigger-elem build-number]
-  (step-component-with step-id status on-click-fn name [
-                                                   retrigger-elem
-                                                   [ul-or-ol (map #(build-step-component  % output-atom build-number) children)]]))
+(defn container-build-step-component [{children :children :as build-step } output-atom ul-or-ol retrigger-elem build-number]
+  (step-component-with build-step output-atom [retrigger-elem
+                                               [ul-or-ol (map #(build-step-component % output-atom build-number) children)]]))
 
 (defn ask-for [parameters]
   (into {} (doall (map (fn [[param-name param-config]]
@@ -50,16 +50,11 @@
       [:i {:class "fa fa-play trigger" :on-click (click-handler #(manual-trigger result))}])))
 
 (defn build-step-component [build-step output-atom build-number]
-  (let [result (:result build-step)
-        step-id (:step-id build-step)
-        status (:status result)
-        name (:name build-step)
-        display-output (click-handler #(reset! output-atom (:out result)))
-        retrigger-elem (retrigger-component build-number build-step)]
+  (let [retrigger-elem (retrigger-component build-number build-step)]
     (case (:type build-step)
-      "parallel"  (container-build-step-component build-step output-atom :ul display-output retrigger-elem build-number)
-      "container" (container-build-step-component build-step output-atom :ol display-output retrigger-elem build-number)
-      (step-component-with step-id status display-output name
+      "parallel"  (container-build-step-component build-step output-atom :ul retrigger-elem build-number)
+      "container" (container-build-step-component build-step output-atom :ol retrigger-elem build-number)
+      (step-component-with build-step output-atom
                            [(manualtrigger-component build-step)
                             retrigger-elem] ))))
 
