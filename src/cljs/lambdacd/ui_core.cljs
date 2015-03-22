@@ -58,6 +58,16 @@
     (handler)
     (.stopPropagation evt)))
 
+(defn ask-for [parameters]
+  (into {} (doall (map (fn [[param-name param-config]]
+                [param-name (js/prompt (str "Please enter a value for " (name param-name) ": " (:desc param-config)))]) parameters))))
+
+
+(defn manual-trigger [{ trigger-id :trigger-id parameters :parameters}]
+  (if parameters
+    (api/trigger trigger-id (ask-for parameters))
+    (api/trigger trigger-id {})))
+
 (defn build-step-component [build-step output-atom]
   (let [result (:result build-step)
         step-id (str (:step-id build-step))
@@ -71,7 +81,7 @@
       "container" (container-build-step-component step-id status children name output-atom :ol display-output)
        [:li { :key step-id :data-status status :on-click display-output }
         [:span name]
-        (if trigger-id [:i {:class "fa fa-play trigger" :on-click (click-handler #(api/trigger trigger-id {}))}])
+        (if trigger-id [:i {:class "fa fa-play trigger" :on-click (click-handler #(manual-trigger result))}])
         [:i {:class "fa fa-repeat retrigger"}]])))
 
 (defn output-component [output-atom]
