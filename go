@@ -22,6 +22,11 @@ testallClojureScript() {
   lein cljsbuild test
 }
 
+autotestClojureScript() {
+  lein cljsbuild auto test
+}
+
+
 testall() {
     testallClojure
     testallClojureScript
@@ -57,6 +62,8 @@ elif [ "$1" == "test" ]; then
     testunit
 elif [ "$1" == "testcljs" ]; then
     testallClojureScript
+elif [ "$1" == "autoTestCljs" ]; then
+    autotestClojureScript
 elif [ "$1" == "release" ]; then
     release
 elif [ "$1" == "push" ]; then
@@ -69,13 +76,14 @@ else
     echo "usage: $0 <goal>
 
 goal:
-    setup      -- to set up your environment
-    test       -- run unit tests
-    testall    -- run all tests
-    testcljs   -- run all ClojureScript tests (i.e. unit tests for frontend)
-    serve      -- start a server with a demo-pipeline
-    servecljs  -- compile clojurescript and watch for changes
-    push       -- run all tests and push current state
-    release    -- release current version"
+    setup        -- to set up your environment
+    test         -- run unit tests
+    testall      -- run all tests
+    testcljs     -- run all ClojureScript tests (i.e. unit tests for frontend)
+    autotestCljs -- starts autotest-session for frontend
+    serve        -- start a server with a demo-pipeline
+    servecljs    -- compile clojurescript and watch for changes
+    push         -- run all tests and push current state
+    release      -- release current version"
     exit 1
 fi
