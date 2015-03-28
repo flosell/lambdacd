@@ -34,7 +34,7 @@ Nevertheless, give it a try, send in bug reports, feature requests or just give 
   (shell/bash ctx cwd
     "lein test"))
 
-(defn compile-and-deploy [{cwd :cws} ctx]
+(defn compile-and-deploy [{cwd :cwd} ctx]
   (shell/bash ctx cwd
     "./buildscripts/compile-and-deploy.sh"))
 
