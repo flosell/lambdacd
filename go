@@ -39,7 +39,7 @@ testunit() {
 release() {
   testall
   lein clear
-  lein deploy clojars
+  lein release $1
 }
 
 push() {
@@ -65,7 +65,7 @@ elif [ "$1" == "testcljs" ]; then
 elif [ "$1" == "autoTestCljs" ]; then
     autotestClojureScript
 elif [ "$1" == "release" ]; then
-    release
+    release $2
 elif [ "$1" == "push" ]; then
     push
 elif [ "$1" == "serve" ]; then
