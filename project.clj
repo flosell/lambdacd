@@ -7,7 +7,7 @@
   :deploy-repositories [["clojars" {:creds :gpg}]
                         ["releases" :clojars]]
   :source-paths ["src/clj" "src/cljs"]
-  :test-paths ["test/clj"]
+  :test-paths ["test/clj" "example/clj"]
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/data.json "0.2.5"]
                  [me.raynes/conch "0.8.0"]
@@ -33,7 +33,6 @@
   :test-selectors {:default (complement :smoke)
                    :smoke :smoke
                    :all (constantly true)}
-  :main todopipeline.pipeline
   :plugins [
             [lein-cljsbuild "1.0.5"]
             [lein-environ "1.0.0"]
@@ -51,7 +50,8 @@
                                         :optimizations :advanced
                                         :pretty-print  false}}}}
   :hooks [leiningen.cljsbuild]
-  :profiles {:dev {:repl-options {:init-ns lambdacd.handler
+  :profiles {:dev {:main todopipeline.pipeline
+                   :repl-options {:init-ns lambdacd.handler
                                   :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
                    :dependencies [[ring-mock "0.1.5"]
