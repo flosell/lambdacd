@@ -52,35 +52,21 @@
     some-step-that-cant-be-reached
   ))
 
-
-;; # The Configuration.
-;; This is where you define the run-time configuration of LambdaCD. This configuration is passed on to the
-;; individual build-steps in the `:config`-value of the context and will be used by the infrastructure and
-;; build-steps. :home-dir is the directory where LambdaCD will store all it's internal data that should be persisted
-;; over time, such as the last seen revisions of various git-repositories, the build history and so on.
-
-;; For this demonstration, we don't care too much about persisting anything over a longer timeframe so we just use a
-;; temp-directory
-(def home-dir (utils/create-temp-dir))
-(log/info "LambdaCD Home Directory is " home-dir)
-(def config { :home-dir home-dir :dont-wait-for-completion true})
-
-;; # Some infrastructure
-;; These definitions serve as the entry-points into lambdacd. we need an initialize-function
-;; that keeps the pipeline running in background and a ring-handler to be able to access
-;; the LambdaCD REST-API and the UI.
-
-;; This function does the work of wiring together everything that's necessary for lambdacd to run
-(def pipeline (core/mk-pipeline pipeline-def config))
-
-;; Definitions that are used by the lein-ring plugin to run the application
-
-;; the ring handler
-(def app (:ring-handler pipeline))
-;; and the function that starts a thread that runs the actual pipeline. 
-(def start-pipeline-thread (:init pipeline))
-
 (defn -main [& args]
-  (start-pipeline-thread)
-  (ring-server/serve app {:open-browser? false
-                          :port 8080}))
+  (let [home-dir (utils/create-temp-dir)
+        ;; # The Configuration.
+        ;; This is where you define the run-time configuration of LambdaCD. This configuration is passed on to the
+        ;; individual build-steps in the `:config`-value of the context and will be used by the infrastructure and
+        ;; build-steps. :home-dir is the directory where LambdaCD will store all it's internal data that should be persisted
+        ;; over time, such as the last seen revisions of various git-repositories, the build history and so on.
+        config { :home-dir home-dir :dont-wait-for-completion true}
+        ;; wiring everything together everything that's necessary for lambdacd to run
+        pipeline (core/mk-pipeline pipeline-def config)
+        ;; the ring handler
+        app (:ring-handler pipeline)
+        ;; and the function that starts a thread that runs the actual pipeline.
+        start-pipeline-thread (:init pipeline)]
+    (log/info "LambdaCD Home Directory is " home-dir)
+    (start-pipeline-thread)
+    (ring-server/serve app {:open-browser? false
+                            :port 8080})))

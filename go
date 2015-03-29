@@ -47,7 +47,7 @@ push() {
 }
 
 serve() {
-  lein ring server
+  lein run
 }
 
 serveClojureScript() {
