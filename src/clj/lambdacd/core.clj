@@ -4,7 +4,6 @@
             [clojure.core.async :as async]
             [lambdacd.internal.execution :as execution]
             [lambdacd.internal.pipeline-state :as pipeline-state]
-            [lambdacd.ui.new_ui :as new-ui]
             [compojure.route :as route]
             [ring.util.response :as resp]))
 
@@ -26,7 +25,6 @@
 (defn- mk-complete-route [pipline-def state ctx]
   (routes
     (context "/old" [] (server/ui-for pipline-def state ctx))
-    (context "/ui2" [] (new-ui/new-ui-routes pipline-def state))
     (GET "/" [] (resp/redirect "old/"))
     (route/resources "/")
     (route/not-found "<h1>Page not found</h1>")))
