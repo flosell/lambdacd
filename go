@@ -38,7 +38,7 @@ testunit() {
 
 release() {
   testall
-  lein clear
+  lein clean
   lein release $1
 }
 
