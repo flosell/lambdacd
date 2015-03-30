@@ -10,10 +10,8 @@
             [lambdacd.route :as route]
             [lambdacd.state :as state]))
 
-
 (defn history-item-component [{build-number :build-number status :status}]
   [:li {:key build-number} [:a {:href (route/for-build-number build-number)} (str "Build " build-number)]])
-
 
 (defn build-history-component [history]
   [:div {:class "blocked"}
