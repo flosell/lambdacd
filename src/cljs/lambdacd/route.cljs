@@ -14,10 +14,11 @@
 (defn- parse-step-id [step-id-string]
   (into [] (map js/parseInt (string/split step-id-string #"-"))))
 
-(defn dispatch-route [build-number-atom step-id-to-display-atom path]
+(defn dispatch-route [build-number-atom step-id-to-display-atom state-atom path]
   (let [{handler :handler params :route-params } (bidi/match-route route path)]
     (case handler
           :build             (do
+                               (reset! state-atom nil)
                                (set-state build-number-atom step-id-to-display-atom (js/parseInt (:buildnumber params)) nil)
                                {:routing :ok})
           :build-and-step-id (do

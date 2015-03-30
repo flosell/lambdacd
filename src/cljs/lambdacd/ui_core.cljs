@@ -57,18 +57,18 @@
     )))
 
 
-(defn- navigate [build-number-atom step-id-to-display-atom token]
-  (let [nav-result (route/dispatch-route build-number-atom step-id-to-display-atom token)]
+(defn- navigate [build-number-atom step-id-to-display-atom state-atom token]
+  (let [nav-result (route/dispatch-route build-number-atom step-id-to-display-atom state-atom token)]
     (if (not (= :ok (:routing nav-result)))
       (.setToken (History.) (:redirect-to nav-result))
       )))
 
-(defn hook-browser-navigation! [build-number-atom step-id-to-display-atom]
+(defn hook-browser-navigation! [build-number-atom step-id-to-display-atom state-atom]
   (doto (History.)
     (events/listen
       EventType/NAVIGATE
       (fn [event]
-        (navigate build-number-atom step-id-to-display-atom (.-token event))))
+        (navigate build-number-atom step-id-to-display-atom state-atom (.-token event))))
     (.setEnabled true)))
 
 (defn init! []
@@ -78,7 +78,7 @@
         state-atom (atom nil)]
     (poll-history history-atom)
     (poll-state state-atom build-number-atom)
-    (hook-browser-navigation! build-number-atom step-id-to-display-atom)
+    (hook-browser-navigation! build-number-atom step-id-to-display-atom state-atom)
     ; #' is necessary so that fighweel can update: https://github.com/reagent-project/reagent/issues/94
     (reagent/render-component [#'root build-number-atom step-id-to-display-atom history-atom state-atom] (.getElementById js/document "app"))))
 
