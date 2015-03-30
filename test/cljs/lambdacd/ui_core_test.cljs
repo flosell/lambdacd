@@ -16,4 +16,11 @@
       (fn [c div]
         (is (dom/found-in div #"Builds"))
         (is (dom/found-in div #"Build 1"))
-        (is (dom/found-in div #"Build 3"))))))
+        (is (dom/found-in div #"Build 3")))))
+  (tu/with-mounted-component
+    (core/build-history-component
+      nil)
+    (testing "that we render a loading-screen if no history is definde"
+             (fn [c div]
+               (is (dom/found-in div #"Builds"))
+               (is (dom/found-in div #"Loading"))))))

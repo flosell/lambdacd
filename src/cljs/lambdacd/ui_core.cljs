@@ -31,11 +31,17 @@
 (defn history-item-component [{build-number :build-number status :status}]
   [:li {:key build-number} [:a {:href (route/for-build-number build-number)} (str "Build " build-number)]])
 
+(defn loading-screen []
+  [:div
+   [:span "Loading..."]])
+
 (defn build-history-component [history]
-  (let [history-to-display (sort-by :build-number history)]
-    [:div {:class "blocked"}
-     [:h2 "Builds"]
-     [:ul (map history-item-component history-to-display)]]))
+  [:div {:class "blocked"}
+   [:h2 "Builds"]
+    (if (not (nil? history))
+      (let [history-to-display (sort-by :build-number history)]
+         [:ul (map history-item-component history-to-display)])
+      [loading-screen])])
 
 
 (defn output-component [build-state-atom step-id-to-display-atom]
@@ -82,8 +88,8 @@
 (defn init! []
   (let [build-number-atom (atom nil)
         step-id-to-display-atom (atom nil)
-        history-atom (atom [])
-        state-atom (atom [])]
+        history-atom (atom nil)
+        state-atom (atom nil)]
     (poll-history history-atom)
     (poll-state state-atom build-number-atom)
     (hook-browser-navigation! build-number-atom step-id-to-display-atom)
