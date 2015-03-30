@@ -8,8 +8,10 @@
     (ac/GET url {:handler (fn [response]
                               (async/put! ch response)
                               (async/close! ch))
-                   :keywords? true
-                   :response-format :json})
+                 :error-handler (fn [response]
+                                  (async/close! ch))
+                 :keywords? true
+                 :response-format :json})
     ch))
 
 (defn POST [url data handler]
