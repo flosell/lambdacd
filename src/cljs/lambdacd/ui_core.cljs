@@ -37,9 +37,7 @@
 (defn current-build-component [build-state-atom build-number step-id-to-display-atom]
   [:div {:key build-number :class "blocked"}
    [:h2 (str "Current Build " build-number)]
-   [:div {:id "pipeline" }
-    [:ol
-     (map #(pipeline/build-step-component % build-number) @build-state-atom)]]
+   [pipeline/pipeline-component build-number build-state-atom]
    [:h2 "Output"]
    [output-component build-state-atom step-id-to-display-atom]])
 

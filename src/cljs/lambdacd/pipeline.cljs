@@ -59,3 +59,8 @@
                            [(manualtrigger-component build-step)
                             retrigger-elem] ))))
 
+
+(defn pipeline-component [build-number build-state-atom]
+  [:div {:id "pipeline" }
+   [:ol
+    (map #(build-step-component % build-number) @build-state-atom)]])

@@ -27,6 +27,10 @@
 (defn with-children [step children]
   (assoc step :children children))
 
+(def some-other-step
+  (-> some-build-step
+      (with-name "some-other-step")))
+
 (def some-container-build-step
   (-> some-build-step
       (with-name "some-container")
@@ -38,7 +42,7 @@
   (-> some-container-build-step
       (with-name "some-parallel-step")
       (with-type "parallel")
-      (with-children [some-build-step])
+      (with-children [some-other-step])
       (with-output "hello from p")))
 
 (defn steps [root]
@@ -48,7 +52,7 @@
   (sel1 step :span))
 
 
-(deftest pipeline-view-test
+(deftest build-step-test
   (testing "rendering of a single build-step"
     (tu/with-mounted-component
       (pipeline/build-step-component some-build-step  1)
@@ -71,7 +75,16 @@
       (pipeline/build-step-component some-parallel-build-step  1)
       (fn [c div]
         (is (dom/found-in div #"some-parallel-step"))
-        (is (dom/found-in (first (steps div)) #"some-step"))
+        (is (dom/found-in (first (steps div)) #"some-other-step"))
         (is (dom/having-class "build-step" (step-label (first (steps div)))))
         (is (dom/having-data "status" "success" (first (steps div))))
         (is (dom/containing-unordered-list (first (steps div))))))))
+
+
+(deftest pipeline-test
+  (testing "rendering of a complete pipeline"
+    (tu/with-mounted-component
+      (pipeline/pipeline-component 1 (atom [some-parallel-build-step]))
+      (fn [c div]
+        (is (dom/found-in div #"some-parallel-step"))
+        (is (dom/found-in div #"some-other-step"))))))
