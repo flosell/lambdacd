@@ -8,6 +8,7 @@
             [lambdacd.api :as api]
             [lambdacd.pipeline :as pipeline]
             [lambdacd.route :as route]
+            [lambdacd.history :as history]
             [lambdacd.state :as state])
   (:import goog.History))
 
@@ -27,22 +28,6 @@
 
 (defn poll-state [state-atom build-number-atom]
   (poll state-atom #(api/get-build-state @build-number-atom)))
-
-(defn history-item-component [{build-number :build-number status :status}]
-  [:li {:key build-number} [:a {:href (route/for-build-number build-number)} (str "Build " build-number)]])
-
-(defn loading-screen []
-  [:div
-   [:span "Loading..."]])
-
-(defn build-history-component [history]
-  [:div {:class "blocked"}
-   [:h2 "Builds"]
-    (if (not (nil? history))
-      (let [history-to-display (sort-by :build-number history)]
-         [:ul (map history-item-component history-to-display)])
-      [loading-screen])])
-
 
 (defn output-component [build-state-atom step-id-to-display-atom]
   (let [step (state/find-by-step-id @build-state-atom @step-id-to-display-atom)
@@ -64,7 +49,7 @@
     (if build-number
       (do
         [:div
-         [:div {:id "builds"} [build-history-component @history]]
+         [:div {:id "builds"} [history/build-history-component @history]]
           [:div {:id "currentBuild"} [current-build-component state build-number step-id-to-display-atom]]])
       [:div {:id "loading"}
        :h1 "Loading..."]
