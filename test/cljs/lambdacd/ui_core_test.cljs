@@ -11,7 +11,7 @@
 (deftest history-test
   (tu/with-mounted-component
     (core/build-history-component
-      (atom [{:build-number 1} {:build-number 3}]))
+      [{:build-number 1} {:build-number 3}])
     (testing "that the history contains all the builds"
       (fn [c div]
         (is (dom/found-in div #"Builds"))

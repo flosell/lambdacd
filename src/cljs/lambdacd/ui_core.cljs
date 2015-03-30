@@ -32,7 +32,7 @@
   [:li {:key build-number} [:a {:href (route/for-build-number build-number)} (str "Build " build-number)]])
 
 (defn build-history-component [history]
-  (let [history-to-display (sort-by :build-number @history)]
+  (let [history-to-display (sort-by :build-number history)]
     [:div {:class "blocked"}
      [:h2 "Builds"]
      [:ul (map history-item-component history-to-display)]]))
@@ -58,7 +58,7 @@
     (if build-number
       (do
         [:div
-         [:div {:id "builds"} [build-history-component history]]
+         [:div {:id "builds"} [build-history-component @history]]
           [:div {:id "currentBuild"} [current-build-component state build-number step-id-to-display-atom]]])
       [:div {:id "loading"}
        :h1 "Loading..."]
