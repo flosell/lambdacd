@@ -80,7 +80,7 @@ goal:
     test         -- run unit tests
     testall      -- run all tests
     testcljs     -- run all ClojureScript tests (i.e. unit tests for frontend)
-    autotestCljs -- starts autotest-session for frontend
+    autoTestCljs -- starts autotest-session for frontend
     serve        -- start a server with a demo-pipeline
     servecljs    -- compile clojurescript and watch for changes
     push         -- run all tests and push current state
