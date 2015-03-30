@@ -6,6 +6,7 @@
             [lambdacd.utils :as utils]
             [lambdacd.api :as api]
             [lambdacd.pipeline :as pipeline]
+            [lambdacd.commons :as commons]
             [lambdacd.route :as route]
             [lambdacd.state :as state]))
 
@@ -13,9 +14,6 @@
 (defn history-item-component [{build-number :build-number status :status}]
   [:li {:key build-number} [:a {:href (route/for-build-number build-number)} (str "Build " build-number)]])
 
-(defn loading-screen []
-  [:div
-   [:span "Loading..."]])
 
 (defn build-history-component [history]
   [:div {:class "blocked"}
@@ -23,4 +21,4 @@
    (if (not (nil? history))
      (let [history-to-display (sort-by :build-number history)]
        [:ul (map history-item-component history-to-display)])
-     [loading-screen])])
+     [commons/loading-screen])])

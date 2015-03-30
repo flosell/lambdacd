@@ -9,6 +9,7 @@
             [lambdacd.pipeline :as pipeline]
             [lambdacd.route :as route]
             [lambdacd.history :as history]
+            [lambdacd.commons :as commons]
             [lambdacd.state :as state])
   (:import goog.History))
 
@@ -35,11 +36,13 @@
     [:pre output]))
 
 (defn current-build-component [build-state-atom build-number step-id-to-display-atom]
-  [:div {:key build-number :class "blocked"}
-   [:h2 (str "Current Build " build-number)]
-   [pipeline/pipeline-component build-number build-state-atom]
-   [:h2 "Output"]
-   [output-component build-state-atom step-id-to-display-atom]])
+  (if (not (nil? @build-state-atom))
+    [:div {:key build-number :class "blocked"}
+     [:h2 (str "Current Build " build-number)]
+     [pipeline/pipeline-component build-number build-state-atom]
+     [:h2 "Output"]
+     [output-component build-state-atom step-id-to-display-atom]]
+    [commons/loading-screen]))
 
 
 (defn root [build-number-atom step-id-to-display-atom history state]
