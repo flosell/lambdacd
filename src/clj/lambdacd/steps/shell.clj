@@ -26,7 +26,7 @@
                                                     (if new
                                                       (do
                                                         (reset! was-killed true)
-                                                        (.destroyForcibly proc)))))
+                                                        (.destroy proc)))))
         out (loop [acc ""]
               (let [v (.readLine out-reader)
                       new-acc (str acc v "\n")]

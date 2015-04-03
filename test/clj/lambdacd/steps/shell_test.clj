@@ -49,7 +49,7 @@
     (let [is-killed (atom false)
           ]
       (kill-after-one-sec is-killed)
-      (is (= {:exit   137
+      (is (= {:exit   143
               :out    "foo\nbar\n"
               :status :killed}
              (bash (some-ctx is-killed) "/"
