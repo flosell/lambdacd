@@ -75,3 +75,7 @@ li[data-status=undefined] {
 li[data-status=killed] {
   background:lightgrey;
 }
+
+li:not([data-status]) {
+  background:white;
+}
