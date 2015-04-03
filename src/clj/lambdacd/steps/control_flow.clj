@@ -29,7 +29,9 @@
 
 (defn ^{:display-type :parallel} either [& steps]
   (fn [args ctx]
-    (let [execute-output (execution/execute-steps step-producer-returning-with-first-successful steps args (execution/new-base-context-for ctx))]
+    (let [kill-switch (atom false)
+          execute-output (execution/execute-steps step-producer-returning-with-first-successful steps args (execution/new-base-context-for ctx) kill-switch)]
+      (reset! kill-switch true)
       (if (= :success (:status execute-output))
         (first (vals (:outputs execute-output)))
         execute-output))))

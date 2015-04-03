@@ -134,10 +134,10 @@
   ([steps args ctx]
     (execute-steps serial-step-result-producer steps args ctx))
   ([step-result-producer steps args ctx]
-    (let [is-killed (atom false)
-          base-ctx-with-kill-switch (assoc ctx :is-killed is-killed)
+   (execute-steps step-result-producer steps args ctx (atom false)))
+   ([step-result-producer steps args ctx is-killed]
+    (let [base-ctx-with-kill-switch (assoc ctx :is-killed is-killed)
           step-results (step-result-producer args (contexts-for-steps steps base-ctx-with-kill-switch))]
-      (kill-steps base-ctx-with-kill-switch)
       (reduce merge-step-results step-results))))
 
 (defn- new-base-id-for [step-id]

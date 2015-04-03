@@ -31,14 +31,8 @@
 (defn some-step-for-cwd [{cwd :cwd} & _]
   {:foo cwd :status :success})
 
-(defn some-async-check-waiting-to-be-killed [was-killed-atom]
-  (fn [_ {is-killed :is-killed}]
-    (async/thread
-      (loop []
-        (if @is-killed
-          (swap! was-killed-atom (constantly true))
-          (recur))))
-    {:status :success}))
+(defn step-that-expects-a-kill-switch [_ {is-killed :is-killed}]
+  {:status (if (nil? is-killed) :is-killed-not-there :success)})
 
 (defn some-successful-step [arg & _]
   {:status :success})
@@ -157,12 +151,9 @@
                       [3 0] {:status :success :foobar-times-ten 420}}
             :status :success}
            (execute-steps [some-step-returning-global-foobar-value some-step-using-global-foobar-value some-step-using-global-foobar-value] {} { :step-id [0 0] }))))
-  (testing "that the kill-switch urges all children to stop when execute-steps completes"
-    (let [killed-yet (atom false)
-          step-to-kill (some-async-check-waiting-to-be-killed killed-yet)]
+  (testing "that execute steps injects a kill-switch by default"
     (is (= {:outputs { [1 0] {:status :success} [2 0] {:status :success}} :status :success}
-           (execute-steps [some-successful-step step-to-kill] {} { :step-id [0 0] })))
-    (is (eventually (= true @killed-yet))))))
+           (execute-steps [some-successful-step step-that-expects-a-kill-switch] {} { :step-id [0 0] })))))
 
 (deftest retrigger-test
   (let [pipeline-state-atom (atom { 0 { [1] { :status :success } [2] { :status :failure }}})
