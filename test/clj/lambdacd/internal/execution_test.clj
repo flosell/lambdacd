@@ -155,14 +155,23 @@
     (is (= {:outputs { [1 0] {:status :success} [2 0] {:status :success}} :status :success}
            (execute-steps [some-successful-step step-that-expects-a-kill-switch] {} { :step-id [0 0] })))))
 
+(defn some-control-flow [&] ; just a mock, we don't actually execute this
+  )
+
 (deftest retrigger-test
   (testing "that retriggering results in a completely new pipeline-run where not all the steps are executed"
-    (let [pipeline-state-atom (atom { 0 { [1] { :status :success } [2] { :status :failure }}})
-          pipeline [some-step some-successful-step]
+    (let [pipeline-state-atom (atom { 0 {[1] { :status :success }
+                                         [1 1] {:status :success :out "I am nested"}
+                                         [2] { :status :failure }}})
+          pipeline `((some-control-flow some-step) some-successful-step)
           context { :_pipeline-state pipeline-state-atom}]
       (retrigger pipeline context 0 [2])
-      (is (= {0 {[1] { :status :success } [2] { :status :failure }}
-              1 {[1] { :status :success :retrigger-mock-for-build-number 0 } [2] { :status :success }}} @pipeline-state-atom)))))
+      (is (= {0 {[1] { :status :success }
+                 [1 1] {:status :success :out "I am nested"}
+                 [2] { :status :failure }}
+              1 {[1] { :status :success :retrigger-mock-for-build-number 0 }
+                 ;[1 1] {:status :success :out "I am nested"} ; [nested results wip]
+                 [2] { :status :success }}} @pipeline-state-atom)))))
 
 (def some-pipeline
   `(

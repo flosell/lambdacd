@@ -147,20 +147,23 @@
       (execute-steps runnable-pipeline {} (merge context {:step-id [0]
                                                           :build-number build-number})))))
 
-(defn mock-for [step-id pipline-history build-number]
+(defn- mock-for [step-id pipline-history build-number step ctx]
   (fn [& _]
     (assoc (get pipline-history step-id) :retrigger-mock-for-build-number build-number)))
 
-(defn- mock-pipeline-until-step [pipeline build-number context [first-part-of-step-id]]
-  (let [pipeline-state (deref (:_pipeline-state context))
-        pipeline-history (get pipeline-state build-number)
-        indexed-pipeline (map-indexed (fn [idx step] [(inc idx) step]) pipeline)
+(defn- mocks-for-steps [steps first-part-of-step-id pipeline-history build-number ctx]
+  (let [indexed-pipeline (map-indexed (fn [idx step] [(inc idx) step]) steps)
         indexed-pipeline-with-mocks (util/map-if
-                              (fn [[step-part _]] (< step-part first-part-of-step-id))
-                              (fn [[step-part _]] [step-part (mock-for [step-part] pipeline-history build-number)])
-                              indexed-pipeline)
+                                      (fn [[step-part _]] (< step-part first-part-of-step-id))
+                                      (fn [[step-part step]] [step-part (mock-for [step-part] pipeline-history build-number step ctx)])
+                                      indexed-pipeline)
         pipeline-with-mocks (map (fn [[_ step]] step) indexed-pipeline-with-mocks)]
     pipeline-with-mocks))
+
+(defn- mock-pipeline-until-step [pipeline build-number context [first-part-of-step-id]]
+  (let [pipeline-state (deref (:_pipeline-state context))
+        pipeline-history (get pipeline-state build-number)]
+    (mocks-for-steps pipeline first-part-of-step-id pipeline-history build-number context)))
 
 
 (defn retrigger [pipeline context build-number step-id-to-run]

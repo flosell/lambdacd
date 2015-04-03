@@ -32,7 +32,7 @@
 
 (defn mk-pipeline [pipeline-def config]
   (let [state (atom (pipeline-state/initial-pipeline-state config))
-        start-next-run-after-first-step-finished (get config :dont-wait-for-completion false)
+          start-next-run-after-first-step-finished (get config :dont-wait-for-completion false)
         context {:_pipeline-state state
                  :config config}]
     {:ring-handler (mk-complete-route pipeline-def state context)
