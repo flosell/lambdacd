@@ -4,6 +4,7 @@
             [org.httpkit.client :as http]
             [clojure.test :refer :all]
             [clojure.data.json :as json]
+            [lambdacd.smoketest.pipeline :as pipeline]
             [lambdacd.util :as util]))
 
 
@@ -61,7 +62,7 @@
 (deftest ^:smoke smoke-test
   (testing "that we can run a pipeline"
     (create-test-repo-at steps/some-repo-location)
-    (with-server (test-server lambdacd.smoketest.pipeline/app { :init lambdacd.smoketest.pipeline/start-pipeline-thread })
+    (with-server (test-server pipeline  /app { :init pipeline/start-pipeline-thread })
       (is (= 200 (server-status)))
       (is (= "waiting" (manual-trigger-state)))
       (is (= 200 (trigger-manual-trigger)))
