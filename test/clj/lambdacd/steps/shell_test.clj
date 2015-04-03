@@ -46,8 +46,7 @@
 
 (deftest kill-test
   (testing "that we are able to kill a running shell-step"
-    (let [is-killed (atom false)
-          ]
+    (let [is-killed (atom false)]
       (kill-after-one-sec is-killed)
       (is (= {:exit   143
               :out    "foo\nbar\n"
@@ -57,4 +56,15 @@
                 "sleep .5"
                 "echo bar"
                 "sleep 5"
-                "echo this-is-after-more-than-five-seconds-and-shouldnt-appear-in-output"))))))
+                "echo this-is-after-more-than-five-seconds-and-shouldnt-appear-in-output")))))
+  (testing "that we are able to handle jobs that are already killed from the start"
+    (let [is-killed (atom true)]
+      (is (= {:exit   143
+              :out    ""
+              :status :killed}
+             (bash (some-ctx is-killed) "/"
+                   "echo foo"
+                   "sleep .5"
+                   "echo bar"
+                   "sleep 5"
+                   "echo this-is-after-more-than-five-seconds-and-shouldnt-appear-in-output"))))))

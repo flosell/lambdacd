@@ -5,7 +5,8 @@
             [me.raynes.conch.low-level :as sh]
             [clojure.core.async :as async]
             [lambdacd.internal.execution :as execution])
-  (:import (java.util UUID)))
+  (:import (java.util UUID)
+           (java.io IOException)))
 
 
 (defn- exit-code->status [exit-code was-killed]
@@ -14,21 +15,35 @@
     (zero? exit-code) :success
     :default :failure))
 
+(defn kill [was-killed-indicator proc]
+  (reset! was-killed-indicator true)
+  (.destroy proc))
+
+(defn- add-kill-handling [ctx proc was-killed watch-ref]
+  (let [is-killed (:is-killed ctx)]
+    (dosync
+      (if @is-killed
+        (kill was-killed proc)
+        (add-watch is-killed watch-ref (fn [_ _ _ new]
+                                           (if new
+                                             (kill was-killed proc))))))))
+
+(defn- safe-read-line [reader]
+  (try
+    (.readLine reader)
+    (catch IOException e nil)))
+
 (defn- mysh [cwd cmd  ctx]
   (let [result-ch (:result-channel ctx)
         x (sh/proc "bash" "-c" cmd :dir cwd)
         proc (:process x)
         out-reader (io/reader (:out x))
-        watch-ref (UUID/randomUUID)
         was-killed (atom false)
         kill-switch (:is-killed ctx)
-        _ (add-watch kill-switch watch-ref (fn [_ _ _ new]
-                                                    (if new
-                                                      (do
-                                                        (reset! was-killed true)
-                                                        (.destroy proc)))))
+        watch-ref (UUID/randomUUID)
+        _ (add-kill-handling ctx proc was-killed watch-ref)
         out (loop [acc ""]
-              (let [v (.readLine out-reader)
+              (let [v (safe-read-line out-reader)
                       new-acc (str acc v "\n")]
                   (if v
                     (do
