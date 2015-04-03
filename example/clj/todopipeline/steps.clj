@@ -4,10 +4,8 @@
 
 (ns todopipeline.steps
   (:require [lambdacd.steps.shell :as shell]
-            [lambdacd.internal.execution :as execution]
             [lambdacd.steps.git :as git]
-            [lambdacd.steps.manualtrigger :as manualtrigger]
-            [lambdacd.util :as util]))
+            [lambdacd.steps.manualtrigger :as manualtrigger]))
 
 ;; Let's define some constants
 (def backend-repo "git@github.com:flosell/todo-backend-compojure.git")
@@ -19,16 +17,14 @@
 (defn wait-for-frontend-repo [_ ctx]
   (let [wait-result (git/wait-for-git ctx frontend-repo "master")
         frontend-revision (:revision wait-result)]
-    {:frontend-revision frontend-revision
-     :backend-revision "HEAD"
-     :status :success}))
+    (assoc wait-result :frontend-revision frontend-revision
+                       :backend-revision "HEAD")))
 
 (defn wait-for-backend-repo [_ ctx]
   (let [wait-result (git/wait-for-git ctx backend-repo "master")
         backend-revision (:revision wait-result)]
-    {:backend-revision backend-revision
-     :frontend-revision "HEAD"
-     :status :success}))
+    (assoc wait-result :frontend-revision "HEAD"
+                       :backend-revision backend-revision)))
 
 ;; Define some nice syntactic sugar that lets us run arbitrary build-steps with a
 ;; repository checked out. The steps get executed with the folder where the repo
