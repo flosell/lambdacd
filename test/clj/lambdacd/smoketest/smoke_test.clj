@@ -62,7 +62,7 @@
 (deftest ^:smoke smoke-test
   (testing "that we can run a pipeline"
     (create-test-repo-at steps/some-repo-location)
-    (with-server (test-server pipeline  /app { :init pipeline/start-pipeline-thread })
+    (with-server (test-server pipeline/app { :init pipeline/start-pipeline-thread })
       (is (= 200 (server-status)))
       (is (= "waiting" (manual-trigger-state)))
       (is (= 200 (trigger-manual-trigger)))
