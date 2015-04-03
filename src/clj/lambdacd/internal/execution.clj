@@ -127,9 +127,6 @@
           new-result
           (recur (cons step-result result) (rest remaining-steps-with-id) new-args))))))
 
-(defn kill-steps [ctx]
-  (swap! (:is-killed ctx) (constantly true)))
-
 (defn execute-steps
   ([steps args ctx]
     (execute-steps serial-step-result-producer steps args ctx))
