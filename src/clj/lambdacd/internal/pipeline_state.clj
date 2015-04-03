@@ -16,13 +16,13 @@
 (defn- update-pipeline-state [build-number step-id step-result current-state]
   (assoc current-state build-number (update-current-run step-id step-result (get current-state build-number))))
 
-(defn- current-build-number-in-state [pipeline-state]
+(defn- most-recent-build-number-in-state [pipeline-state]
   (if-let [current-build-number (last (sort (keys pipeline-state)))]
     current-build-number
     0))
 
-(defn current-build-number [{pipeline-state :_pipeline-state }]
-  (current-build-number-in-state @pipeline-state))
+(defn next-build-number [{pipeline-state :_pipeline-state }]
+  (inc (most-recent-build-number-in-state @pipeline-state)))
 
 (defn finished-step? [step-result]
   (let [status (:status step-result)
@@ -37,7 +37,7 @@
     finished-step-count))
 
 (defn- call-callback-when-most-recent-build-running [callback key reference old new]
-  (let [cur-build-number (current-build-number-in-state new)
+  (let [cur-build-number (most-recent-build-number-in-state new)
         cur-build (get new cur-build-number)
         old-cur-build (get old cur-build-number)
         finished-step-count-new (finished-step-count-in cur-build)
