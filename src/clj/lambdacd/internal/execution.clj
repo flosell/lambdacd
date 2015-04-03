@@ -177,9 +177,11 @@
     (execute-steps executable-pipeline {} (assoc context :step-id [0]
                                                          :build-number build-number))))
 
+(defn killed? [ctx]
+  @(:is-killed ctx))
 
 (defmacro if-not-killed [ctx & body]
-  `(if @(:is-killed ~ctx)
+  `(if (killed? ~ctx)
      (do
        (async/>!! (:result-channel ~ctx) [:status :killed])
        {:status :killed})

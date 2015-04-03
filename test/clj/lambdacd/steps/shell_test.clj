@@ -4,8 +4,16 @@
             [lambdacd.testsupport.test-util :refer [result-channel->map]]
             [lambdacd.steps.shell :refer :all]))
 
-(defn- some-ctx []
-  { :result-channel (async/chan 100)} )
+(defn- some-ctx
+  ([] (some-ctx (atom false)))
+  ([is-killed]
+  { :result-channel (async/chan 100)
+    :is-killed is-killed} ))
+
+(defn- kill-after-one-sec [is-killed]
+  (async/thread
+    (Thread/sleep 1000)
+    (reset! is-killed true)))
 
 (deftest shell-return-code-test
   (testing "that bash returns the right return code for a single successful command"
@@ -29,10 +37,24 @@
         (bash some-ctx "/" "echo foo" "echo bar")
         (is (= [[:out "foo\n"]
                 [:out "foo\nbar\n"]]
-               (async/<!! (async/into [] result-channel))))))
-    )
+               (async/<!! (async/into [] result-channel)))))))
 
 (deftest shell-cwd-test
-  (let [some-ctx { :result-channel (async/chan 100)}]
-    (testing "that the comand gets executed in the correct directory"
-    (is (= "/\n" (:out (bash some-ctx "/" "pwd")))))))
+  (testing "that the comand gets executed in the correct directory"
+    (is (= "/\n" (:out (bash (some-ctx) "/" "pwd"))))))
+
+
+(deftest kill-test
+  (testing "that we are able to kill a running shell-step"
+    (let [is-killed (atom false)
+          ]
+      (kill-after-one-sec is-killed)
+      (is (= {:exit   137
+              :out    "foo\nbar\n"
+              :status :killed}
+             (bash (some-ctx is-killed) "/"
+                "echo foo"
+                "sleep .5"
+                "echo bar"
+                "sleep 5"
+                "echo this-is-after-more-than-five-seconds-and-shouldnt-appear-in-output"))))))

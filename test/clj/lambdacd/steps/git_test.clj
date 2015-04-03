@@ -98,7 +98,8 @@
   ([parent]
     {:config { :home-dir parent}
      :step-id [42]
-     :result-channel (async/chan 100)}))
+     :result-channel (async/chan 100)
+     :is-killed (atom false)}))
 
 ;; TODO: replace this test with checkout-and-execute tests, phase out with-git
 (deftest with-git-test
