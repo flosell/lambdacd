@@ -172,7 +172,7 @@
   (let [pipeline-with-mocks (mock-pipeline-until-step pipeline build-number context step-id-to-run)
         executable-pipeline (map eval pipeline-with-mocks)]
     (execute-steps executable-pipeline {} (assoc context :step-id [0]
-                                                         :build-number build-number))))
+                                                         :build-number (pipeline-state/next-build-number context)))))
 
 (defn killed? [ctx]
   @(:is-killed ctx))

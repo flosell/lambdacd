@@ -156,12 +156,13 @@
            (execute-steps [some-successful-step step-that-expects-a-kill-switch] {} { :step-id [0 0] })))))
 
 (deftest retrigger-test
-  (let [pipeline-state-atom (atom { 0 { [1] { :status :success } [2] { :status :failure }}})
-        pipeline [some-step some-successful-step]
-        context { :_pipeline-state pipeline-state-atom}]
-    (testing "that retriggering executes the second step without triggering the first step"
+  (testing "that retriggering results in a completely new pipeline-run where not all the steps are executed"
+    (let [pipeline-state-atom (atom { 0 { [1] { :status :success } [2] { :status :failure }}})
+          pipeline [some-step some-successful-step]
+          context { :_pipeline-state pipeline-state-atom}]
       (retrigger pipeline context 0 [2])
-      (is (= { 0 {[1] { :status :success } [2] { :status :success }}} @pipeline-state-atom)))))
+      (is (= {0 {[1] { :status :success } [2] { :status :failure }}
+              1 {[1] { :status :success } [2] { :status :success }}} @pipeline-state-atom)))))
 
 (def some-pipeline
   `(
