@@ -77,4 +77,6 @@
       (is (= 2 @call-counter))
       (update {:step-id [0] :_pipeline-state pipeline-state  :build-number 1 } {:status :failure})
       (is (= 2 @call-counter))
+      (update {:step-id [1] :_pipeline-state pipeline-state  :build-number 2 } {:status :ok :retrigger-mock-for-build-number 1 })
+      (is (= 2 @call-counter))
       )))

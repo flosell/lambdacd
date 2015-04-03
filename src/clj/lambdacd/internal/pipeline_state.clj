@@ -41,8 +41,10 @@
         cur-build (get new cur-build-number)
         old-cur-build (get old cur-build-number)
         finished-step-count-new (finished-step-count-in cur-build)
-        finished-step-count-old (finished-step-count-in old-cur-build)]
-    (if (and (= 1 finished-step-count-new) (not= 1 finished-step-count-old))
+        finished-step-count-old (finished-step-count-in old-cur-build)
+        first-step-in-current-build (get cur-build `(1))
+        is-retrigger-mock (contains? first-step-in-current-build :retrigger-mock-for-build-number)]
+    (if (and (= 1 finished-step-count-new) (not= 1 finished-step-count-old) (not is-retrigger-mock))
       (callback))))
 
 (defn notify-when-most-recent-build-running [{pipeline-state :_pipeline-state} callback]

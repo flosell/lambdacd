@@ -162,7 +162,7 @@
           context { :_pipeline-state pipeline-state-atom}]
       (retrigger pipeline context 0 [2])
       (is (= {0 {[1] { :status :success } [2] { :status :failure }}
-              1 {[1] { :status :success } [2] { :status :success }}} @pipeline-state-atom)))))
+              1 {[1] { :status :success :retrigger-mock-for-build-number 0 } [2] { :status :success }}} @pipeline-state-atom)))))
 
 (def some-pipeline
   `(
@@ -183,7 +183,7 @@
     (testing "that it returns the original pipeline if we want to start from the beginning"
       (is (= some-pipeline (mock-pipeline-until-step some-pipeline 3 {:_pipeline-state (some-state-for-some-pipeline)} [1]))))
     (testing "that it returns a pipeline with a step that just returns the already recorded output if we run from the second step"
-      (is (= { :status :success } (mock-exec (first (mock-pipeline-until-step some-pipeline 3 {:_pipeline-state (some-state-for-some-pipeline)} [2]))))))))
+      (is (= { :status :success :retrigger-mock-for-build-number 3} (mock-exec (first (mock-pipeline-until-step some-pipeline 3 {:_pipeline-state (some-state-for-some-pipeline)} [2]))))))))
 
 
 

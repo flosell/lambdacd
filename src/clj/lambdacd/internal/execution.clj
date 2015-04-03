@@ -9,8 +9,7 @@
 
 (defn- step-output [step-id step-result]
   {:outputs { step-id step-result}
-   :status (get step-result :status :undefined)
-  })
+   :status (get step-result :status :undefined)})
 
 (defn- is-finished [key value]
   (and (= key :status) (not= value :waiting)))
@@ -148,9 +147,9 @@
       (execute-steps runnable-pipeline {} (merge context {:step-id [0]
                                                           :build-number build-number})))))
 
-(defn mock-for [step-id pipline-history]
+(defn mock-for [step-id pipline-history build-number]
   (fn [& _]
-    (get pipline-history step-id)))
+    (assoc (get pipline-history step-id) :retrigger-mock-for-build-number build-number)))
 
 (defn- mock-pipeline-until-step [pipeline build-number context [first-part-of-step-id]]
   (let [pipeline-state (deref (:_pipeline-state context))
@@ -158,7 +157,7 @@
         indexed-pipeline (map-indexed (fn [idx step] [(inc idx) step]) pipeline)
         indexed-pipeline-with-mocks (util/map-if
                               (fn [[step-part _]] (< step-part first-part-of-step-id))
-                              (fn [[step-part _]] [step-part (mock-for [step-part] pipeline-history)])
+                              (fn [[step-part _]] [step-part (mock-for [step-part] pipeline-history build-number)])
                               indexed-pipeline)
         pipeline-with-mocks (map (fn [[_ step]] step) indexed-pipeline-with-mocks)]
     pipeline-with-mocks))
