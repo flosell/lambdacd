@@ -63,8 +63,4 @@
               :out    ""
               :status :killed}
              (bash (some-ctx is-killed) "/"
-                   "echo foo"
-                   "sleep .5"
-                   "echo bar"
-                   "sleep 5"
-                   "echo this-is-after-more-than-five-seconds-and-shouldnt-appear-in-output"))))))
+                   "echo foo"))))))
