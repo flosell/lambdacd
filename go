@@ -28,8 +28,7 @@ autotestClojureScript() {
 
 
 testall() {
-    testallClojure
-    testallClojureScript
+    testallClojure && testallClojureScript
 }
 
 testunit() {
@@ -37,9 +36,7 @@ testunit() {
 }
 
 release() {
-  testall
-  lein clean
-  lein release $1
+  testall && lein clean && lein release $1
 }
 
 push() {
