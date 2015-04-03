@@ -28,10 +28,6 @@
                new-result
                (recur new-result))))))))
 
-(defn- process-channel-result [c ctx]
-  (async/<!!
-    (process-channel-result-async c ctx)))
-
 (defn- process-final-result [step-result ctx]
   (let [new-step-result (assoc step-result :status (get step-result :status :undefined))]
     (pipeline-state/update ctx new-step-result)
