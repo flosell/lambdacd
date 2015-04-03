@@ -2,6 +2,7 @@
   (:use [lambdacd.testsupport.test-util])
   (:require [clojure.test :refer :all]
             [lambdacd.internal.execution :refer :all]
+            [lambdacd.testsupport.test-util :refer [eventually]]
             [clojure.core.async :as async]))
 
 (defn some-step-processing-input [arg & _]
@@ -133,7 +134,6 @@
   (testing "that we can generate proper contexts for steps and keep other context info as it is"
     (is (= [[{:some-value 42 :step-id [1 0]} some-step] [{:some-value 42 :step-id [2 0]} some-step]] (contexts-for-steps [some-step some-step] {:some-value 42 :step-id [0 0]})))))
 
-
 (deftest execute-steps-test
   (testing "that executing steps returns outputs of both steps with different step ids"
     (is (= {:outputs { [1 0] {:foo :baz :status :success} [2 0] {:foo :baz :status :success}} :status :success}
@@ -162,7 +162,7 @@
           step-to-kill (some-async-check-waiting-to-be-killed killed-yet)]
     (is (= {:outputs { [1 0] {:status :success} [2 0] {:status :success}} :status :success}
            (execute-steps [some-successful-step step-to-kill] {} { :step-id [0 0] })))
-    (is (= true @killed-yet)))))
+    (is (eventually (= true @killed-yet))))))
 
 (deftest retrigger-test
   (let [pipeline-state-atom (atom { 0 { [1] { :status :success } [2] { :status :failure }}})

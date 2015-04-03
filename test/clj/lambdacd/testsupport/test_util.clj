@@ -44,3 +44,13 @@
             new
             (recur new)))
         last))))
+
+
+(defmacro eventually [pred]
+  `(loop [count# 0]
+     (let [result# ~pred]
+        (if (or (not result#) (< count# 10))
+          (do
+            (Thread/sleep 100)
+            (recur (inc count#)))
+          result#))))
