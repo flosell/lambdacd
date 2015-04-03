@@ -8,12 +8,12 @@
 (deftest current-build-component-test
          (testing "a normally rendered pipeline"
                   (tu/with-mounted-component
-                    (core/current-build-component (atom []) 3 (atom [0 1 2]))
+                    (core/current-build-component (atom []) 3 (atom [0 1 2]) (atom false))
                     (fn [c div]
                       (is (dom/found-in div #"Current Build 3"))
                       (is (dom/found-in div #"Output")))))
          (testing "a pipeline view without data"
          (tu/with-mounted-component
-           (core/current-build-component (atom nil) 3 (atom [0 1 2]))
+           (core/current-build-component (atom nil) 3 (atom [0 1 2]) (atom false))
            (fn [c div]
              (is (dom/found-in div #"Loading..."))))))

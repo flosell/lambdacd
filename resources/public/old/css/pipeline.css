@@ -79,3 +79,7 @@ li[data-status=killed] {
 li:not([data-status]) {
   background:white;
 }
+
+.results {
+  display:inline-block;
+}

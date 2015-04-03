@@ -3,7 +3,7 @@
     [dommy.core :as dommy]
     [dommy.core :refer-macros [sel sel1 by-tag]]))
 
-(defn- fire!
+(defn fire!
   "Creates an event of type `event-type`, optionally having
    `update-event!` mutate and return an updated event object,
    and fires it on `node`.
@@ -24,6 +24,12 @@
     (if (re-find re res)
       true
       (do (println "Not found: " res)
+          false))))
+(defn not-found-in [div re]
+  (let [res (.-innerHTML div)]
+    (if (not (re-find re res))
+      true
+      (do (println "found: " res)
           false))))
 
 (defn having-class [classname elem]
