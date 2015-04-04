@@ -44,7 +44,6 @@
         finished-step-count-old (finished-step-count-in old-cur-build)
         first-step-in-current-build (get cur-build `(1))
         is-retrigger-mock (contains? first-step-in-current-build :retrigger-mock-for-build-number)]
-    (println "is-retrigger-mock?" first-step-in-current-build is-retrigger-mock)
     (if (and
           (not (nil? first-step-in-current-build))
           (= 1 finished-step-count-new)
