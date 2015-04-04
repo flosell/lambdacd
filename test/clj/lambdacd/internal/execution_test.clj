@@ -170,7 +170,7 @@
                  [1 1] {:status :success :out "I am nested"}
                  [2] { :status :failure }}
               1 {[1] { :status :success :retrigger-mock-for-build-number 0 }
-                 ;[1 1] {:status :success :out "I am nested"} ; [nested results wip]
+                 [1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0}
                  [2] { :status :success }}} @pipeline-state-atom)))))
 
 (def some-pipeline
@@ -180,20 +180,6 @@
      (lambdacd.steps.control-flow/in-parallel
        some-step)
      lambdacd.steps.manualtrigger/wait-for-manual-trigger))
-
-(defn some-state-for-some-pipeline []
-  (atom {3 { [1] {:status :success }}
-             [2] { :some-value :from-output :status :failure}}))
-(defn mock-exec [f]
-  (f {} {}))
-
-(with-private-fns [lambdacd.internal.execution [mock-pipeline-until-step]]
-  (deftest mock-pipeline-until-step-test
-    (testing "that it returns the original pipeline if we want to start from the beginning"
-      (is (= some-pipeline (mock-pipeline-until-step some-pipeline 3 {:_pipeline-state (some-state-for-some-pipeline)} [1]))))
-    (testing "that it returns a pipeline with a step that just returns the already recorded output if we run from the second step"
-      (is (= { :status :success :retrigger-mock-for-build-number 3} (mock-exec (first (mock-pipeline-until-step some-pipeline 3 {:_pipeline-state (some-state-for-some-pipeline)} [2]))))))))
-
 
 
 (deftest if-not-killed-test

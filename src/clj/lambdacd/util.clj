@@ -57,3 +57,7 @@
   {:headers { "Content-Type" "application/json"}
    :body "{}"
    :status 200 })
+
+(defn fill [coll length filler]
+  (let [missing (- length (count coll))]
+  (concat coll (replicate missing filler))))

@@ -4,6 +4,7 @@
             [lambdacd.util :as util]
             [lambdacd.internal.pipeline-state :as pipeline-state]
             [clojure.tools.logging :as log]
+            [lambdacd.internal.step-id :as step-id]
             [clojure.repl :as repl])
   (:import (java.io StringWriter)))
 
@@ -160,17 +161,32 @@
         pipeline-with-mocks (map (fn [[_ step]] step) indexed-pipeline-with-mocks)]
     pipeline-with-mocks))
 
-(defn- mock-pipeline-until-step [pipeline build-number context [first-part-of-step-id]]
-  (let [pipeline-state (deref (:_pipeline-state context))
-        pipeline-history (get pipeline-state build-number)]
-    (mocks-for-steps pipeline first-part-of-step-id pipeline-history build-number context)))
+(defn- mock-pipeline-until-step [pipeline build-number context [first-part-of-step-id] pipeline-history]
+  (mocks-for-steps pipeline first-part-of-step-id pipeline-history build-number context))
 
+(defn add-result [new-build-number retriggered-build-number initial-ctx [step-id result]]
+  (let [ctx (assoc initial-ctx :build-number new-build-number :step-id step-id)
+        result-with-annotation (assoc result :retrigger-mock-for-build-number retriggered-build-number)]
+    (pipeline-state/update ctx result-with-annotation)))
+
+(defn to-be-duplicated? [step-id-retriggered [cur-step-id _]]
+  (let [result (step-id/before? cur-step-id step-id-retriggered)]
+    result))
+
+(defn duplicate-step-results-not-running-again [new-build-number retriggered-build-number pipeline-history context step-id-to-run]
+  (let [do-add-result (partial add-result new-build-number retriggered-build-number context)
+        history-to-duplicate (filter (partial to-be-duplicated? step-id-to-run) pipeline-history)]
+    (doall (map do-add-result history-to-duplicate))))
 
 (defn retrigger [pipeline context build-number step-id-to-run]
-  (let [pipeline-with-mocks (mock-pipeline-until-step pipeline build-number context step-id-to-run)
-        executable-pipeline (map eval pipeline-with-mocks)]
+  (let [pipeline-state (deref (:_pipeline-state context))
+        pipeline-history (get pipeline-state build-number)
+        pipeline-with-mocks (mock-pipeline-until-step pipeline build-number context step-id-to-run pipeline-history)
+        executable-pipeline (map eval pipeline-with-mocks)
+        new-build-number (pipeline-state/next-build-number context)]
+    (duplicate-step-results-not-running-again new-build-number build-number pipeline-history context step-id-to-run)
     (execute-steps executable-pipeline {} (assoc context :step-id [0]
-                                                         :build-number (pipeline-state/next-build-number context)))))
+                                                         :build-number new-build-number))))
 
 (defn killed? [ctx]
   @(:is-killed ctx))
