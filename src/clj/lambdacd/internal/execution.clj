@@ -160,7 +160,7 @@
 (defn duplicate-step-results-not-running-again [new-build-number retriggered-build-number pipeline-history context step-id-to-run]
   (let [do-add-result (partial add-result new-build-number retriggered-build-number context)
         history-to-duplicate (filter (partial to-be-duplicated? step-id-to-run) pipeline-history)]
-    (doall (map do-add-result history-to-duplicate))))
+    (dorun (map do-add-result history-to-duplicate))))
 
 (defn retrigger [pipeline context build-number step-id-to-run]
   (if (> (count step-id-to-run) 1)
