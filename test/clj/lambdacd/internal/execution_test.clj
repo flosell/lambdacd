@@ -118,11 +118,7 @@
   (testing "that in doubt, the static output overlays the async output"
     (let [pipeline-state (atom {})]
       (is (= {:outputs {[0 0] {:status :success } } :status :success }
-             (execute-step some-step-that-sends-failure-on-ch-returns-success {} {:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state})))))
-
-  )
-
-
+             (execute-step some-step-that-sends-failure-on-ch-returns-success {} {:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state}))))))
 
 (deftest context-for-steps-test
   (testing "that we can generate proper contexts for steps and keep other context info as it is"
@@ -172,20 +168,20 @@
               1 {[1] { :status :success :retrigger-mock-for-build-number 0 }
                  [1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0}
                  [2] { :status :success }}} @pipeline-state-atom))))
+  (testing "that we can retrigger a pipeline from the initial step as well"
+    (let [pipeline-state-atom (atom { 0 {}})
+          pipeline `(some-successful-step some-other-step some-failing-step)
+          context { :_pipeline-state pipeline-state-atom}]
+      (retrigger pipeline context 0 [1])
+      (is (= {0 {}
+              1 {[1] { :status :success}
+                 [2] {:status :success :foo :baz}
+                 [3] { :status :failure }}} @pipeline-state-atom))))
   (testing "that retriggering anything but a root-level step is prevented at this time"
     (let [pipeline-state-atom (atom {})
           pipeline `((some-control-flow some-step) some-successful-step)
           context { :_pipeline-state pipeline-state-atom}]
       (is (thrown? IllegalArgumentException (retrigger pipeline context 0 [2 1]))))))
-
-(def some-pipeline
-  `(
-     lambdacd.steps.manualtrigger/wait-for-manual-trigger
-     some-successful-step
-     (lambdacd.steps.control-flow/in-parallel
-       some-step)
-     lambdacd.steps.manualtrigger/wait-for-manual-trigger))
-
 
 (deftest if-not-killed-test
   (testing "that the body will only be executed if step is still alive"

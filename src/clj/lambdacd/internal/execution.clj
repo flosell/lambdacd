@@ -148,22 +148,6 @@
       (execute-steps runnable-pipeline {} (merge context {:step-id [0]
                                                           :build-number build-number})))))
 
-(defn- mock-for [step-id pipline-history build-number step ctx]
-  (fn [& _]
-    (assoc (get pipline-history step-id) :retrigger-mock-for-build-number build-number)))
-
-(defn- mocks-for-steps [steps first-part-of-step-id pipeline-history build-number ctx]
-  (let [indexed-pipeline (map-indexed (fn [idx step] [(inc idx) step]) steps)
-        indexed-pipeline-with-mocks (util/map-if
-                                      (fn [[step-part _]] (< step-part first-part-of-step-id))
-                                      (fn [[step-part step]] [step-part (mock-for [step-part] pipeline-history build-number step ctx)])
-                                      indexed-pipeline)
-        pipeline-with-mocks (map (fn [[_ step]] step) indexed-pipeline-with-mocks)]
-    pipeline-with-mocks))
-
-(defn- mock-pipeline-until-step [pipeline build-number context [first-part-of-step-id] pipeline-history]
-  (mocks-for-steps pipeline first-part-of-step-id pipeline-history build-number context))
-
 (defn add-result [new-build-number retriggered-build-number initial-ctx [step-id result]]
   (let [ctx (assoc initial-ctx :build-number new-build-number :step-id step-id)
         result-with-annotation (assoc result :retrigger-mock-for-build-number retriggered-build-number)]
@@ -183,11 +167,12 @@
     (throw (IllegalArgumentException. "retriggering nested steps is not supported at this point"))
     (let [pipeline-state (deref (:_pipeline-state context))
           pipeline-history (get pipeline-state build-number)
-          pipeline-with-mocks (mock-pipeline-until-step pipeline build-number context step-id-to-run pipeline-history)
-          executable-pipeline (map eval pipeline-with-mocks)
+          root-step-number (first step-id-to-run)
+          pipeline-fragment-to-run (nthrest pipeline (dec root-step-number))
+          executable-pipeline (map eval pipeline-fragment-to-run)
           new-build-number (pipeline-state/next-build-number context)]
       (duplicate-step-results-not-running-again new-build-number build-number pipeline-history context step-id-to-run)
-      (execute-steps executable-pipeline {} (assoc context :step-id [0]
+      (execute-steps executable-pipeline {} (assoc context :step-id [(dec root-step-number)]
                                                            :build-number new-build-number)))))
 
 (defn killed? [ctx]
