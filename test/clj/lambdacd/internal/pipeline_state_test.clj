@@ -59,7 +59,7 @@
               2 { [1 2] {:bar "baz"}}} (initial-pipeline-state config))))))
 
 (deftest notify-when-most-recent-build-running-test
-  (testing "that we are being notified when the first step of the pipeline-is-finished"
+  (testing "that we are being notified when the first step of the pipeline is finished"
     (let [pipeline-state (atom {0 {}})
           call-counter (atom 0)
           callback (fn [& _] (swap! call-counter inc))]
