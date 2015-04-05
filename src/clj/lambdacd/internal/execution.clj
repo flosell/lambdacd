@@ -179,14 +179,16 @@
     (doall (map do-add-result history-to-duplicate))))
 
 (defn retrigger [pipeline context build-number step-id-to-run]
-  (let [pipeline-state (deref (:_pipeline-state context))
-        pipeline-history (get pipeline-state build-number)
-        pipeline-with-mocks (mock-pipeline-until-step pipeline build-number context step-id-to-run pipeline-history)
-        executable-pipeline (map eval pipeline-with-mocks)
-        new-build-number (pipeline-state/next-build-number context)]
-    (duplicate-step-results-not-running-again new-build-number build-number pipeline-history context step-id-to-run)
-    (execute-steps executable-pipeline {} (assoc context :step-id [0]
-                                                         :build-number new-build-number))))
+  (if (> (count step-id-to-run) 1)
+    (throw (IllegalArgumentException. "retriggering nested steps is not supported at this point"))
+    (let [pipeline-state (deref (:_pipeline-state context))
+          pipeline-history (get pipeline-state build-number)
+          pipeline-with-mocks (mock-pipeline-until-step pipeline build-number context step-id-to-run pipeline-history)
+          executable-pipeline (map eval pipeline-with-mocks)
+          new-build-number (pipeline-state/next-build-number context)]
+      (duplicate-step-results-not-running-again new-build-number build-number pipeline-history context step-id-to-run)
+      (execute-steps executable-pipeline {} (assoc context :step-id [0]
+                                                           :build-number new-build-number)))))
 
 (defn killed? [ctx]
   @(:is-killed ctx))

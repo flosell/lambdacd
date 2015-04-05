@@ -171,7 +171,12 @@
                  [2] { :status :failure }}
               1 {[1] { :status :success :retrigger-mock-for-build-number 0 }
                  [1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0}
-                 [2] { :status :success }}} @pipeline-state-atom)))))
+                 [2] { :status :success }}} @pipeline-state-atom))))
+  (testing "that retriggering anything but a root-level step is prevented at this time"
+    (let [pipeline-state-atom (atom {})
+          pipeline `((some-control-flow some-step) some-successful-step)
+          context { :_pipeline-state pipeline-state-atom}]
+      (is (thrown? IllegalArgumentException (retrigger pipeline context 0 [2 1]))))))
 
 (def some-pipeline
   `(
