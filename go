@@ -36,7 +36,11 @@ testunit() {
 }
 
 release() {
-  testall && lein clean && lein release $1
+  testall && lein clean && lein with-profile +release release $1
+}
+
+releaseLocal() {
+  lein with-profile +release install
 }
 
 push() {
@@ -57,30 +61,33 @@ elif [ "$1" == "testall" ]; then
     testall
 elif [ "$1" == "test" ]; then
     testunit
-elif [ "$1" == "testcljs" ]; then
+elif [ "$1" == "test-cljs" ]; then
     testallClojureScript
-elif [ "$1" == "autoTestCljs" ]; then
+elif [ "$1" == "autotest-cljs" ]; then
     autotestClojureScript
 elif [ "$1" == "release" ]; then
     release $2
+elif [ "$1" == "release-local" ]; then
+    releaseLocal
 elif [ "$1" == "push" ]; then
     push
 elif [ "$1" == "serve" ]; then
     serve
-elif [ "$1" == "servecljs" ]; then
+elif [ "$1" == "serve-cljs" ]; then
     serveClojureScript
 else
     echo "usage: $0 <goal>
 
 goal:
-    setup        -- to set up your environment
-    test         -- run unit tests
-    testall      -- run all tests
-    testcljs     -- run all ClojureScript tests (i.e. unit tests for frontend)
-    autoTestCljs -- starts autotest-session for frontend
-    serve        -- start a server with a demo-pipeline
-    servecljs    -- compile clojurescript and watch for changes
-    push         -- run all tests and push current state
-    release      -- release current version"
+    setup         -- to set up your environment
+    test          -- run unit tests
+    testall       -- run all tests
+    testcljs      -- run all ClojureScript tests (i.e. unit tests for frontend)
+    autotest-cljs -- starts autotest-session for frontend
+    serve         -- start a server with a demo-pipeline
+    serve-cljs    -- compile clojurescript and watch for changes
+    push          -- run all tests and push current state
+    release       -- release current version
+    release-local -- install current version in local repository"
     exit 1
 fi

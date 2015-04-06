@@ -51,8 +51,8 @@
                                         :jar true
                                         :optimizations :advanced
                                         :pretty-print  false}}}}
-  :hooks [leiningen.cljsbuild]
-  :profiles {:dev {:main todopipeline.pipeline
+  :profiles {:release {:hooks [leiningen.cljsbuild]}
+             :dev {:main todopipeline.pipeline
                    :repl-options {:init-ns lambdacd.handler
                                   :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
