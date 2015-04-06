@@ -1,10 +1,7 @@
 (ns lambdacd.smoketest.pipeline
   (:use [lambdacd.steps.control-flow]
         [lambdacd.smoketest.steps])
-  (:require [lambdacd.core :as core]
-            [lambdacd.util :as utils]))
-
-
+  (:require [lambdacd.util :as utils]))
 
 (def pipeline-def
   `(
@@ -21,8 +18,3 @@
 
 (def config
   {:home-dir (utils/create-temp-dir)})
-
-(def pipeline (core/mk-pipeline pipeline-def config))
-
-(def app (:ring-handler pipeline))
-(def start-pipeline-thread (:init pipeline))
