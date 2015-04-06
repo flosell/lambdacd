@@ -8,11 +8,11 @@
             [lambdacd.steps.manualtrigger :as manualtrigger]
             [lambdacd.util :as util]
             [ring.util.response :as resp]
-            [lambdacd.internal.execution :as execution]
             [lambdacd.presentation.unified :as unified]
             [clojure.core.async :as async]
             [lambdacd.util :as util]
-            [compojure.route :as route]))
+            [compojure.route :as route]
+            [lambdacd.core :as core]))
 
 (defn- pipeline [pipeline-def]
   (presentation/display-representation pipeline-def))
@@ -29,7 +29,7 @@
       (GET "/builds/:buildnumber/" [buildnumber] (build-infos pipeline-def @pipeline-state buildnumber))
       (POST "/builds/:buildnumber/:step-id/retrigger" [buildnumber step-id]
             (do
-              (async/thread (execution/retrigger pipeline-def ctx (util/parse-int buildnumber) [(util/parse-int step-id)]))
+              (async/thread (core/retrigger pipeline-def ctx (util/parse-int buildnumber) [(util/parse-int step-id)]))
               (util/ok)))
       (POST "/dynamic/:id" {{id :id } :params data :json-params} (do
                                                                        (manualtrigger/post-id id (w/keywordize-keys data))
