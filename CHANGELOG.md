@@ -1,9 +1,22 @@
 # Changelog
 
-This changelog indicates breaking changes to the API. As this is still an experimental library, breaking changes may
-occur without warning between 0.X.Y releases. The official release will have a defined and more stable API.
+This changelog contains a loose collection of changes in every release. I will also try and document all breaking changes to the API.
+However, as this is still an experimental library, breaking changes may occur without warning between 0.X.Y releases.
 
-## 0.1.0-alpha14
+The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
+
+## 0.1.2 [wip]
+
+* Recording start and update timestamps for every build step
+* Cleanup old endpoints: `/api/pipeline` and `/api/pipeline-state`
+* Improve retriggering: Create a new pipeline-run instead of overwriting existing builds
+* Make bash-step killable
+
+## 0.1.1
+
+* Improvements in UI
+
+## 0.1.0
 
 * LambdaCD now requires Clojure 1.6.0
 
