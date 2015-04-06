@@ -76,7 +76,9 @@
     (let [pipeline-state (atom {0 {}})
           call-counter (atom 0)
           callback (fn [& _] (swap! call-counter inc))]
-      (notify-when-most-recent-build-running { :_pipeline-state pipeline-state} callback)
+      (notify-when-no-first-step-is-active { :_pipeline-state pipeline-state} callback)
+      (is (= 0 @call-counter))
+      (update {:step-id [1] :_pipeline-state pipeline-state  :build-number 0 } {:status :running})
       (is (= 0 @call-counter))
       (update {:step-id [1] :_pipeline-state pipeline-state  :build-number 0 } {:status :success})
       (is (= 1 @call-counter))
@@ -93,4 +95,13 @@
       (update {:step-id [2] :_pipeline-state pipeline-state  :build-number 2 } {:status :ok :retrigger-mock-for-build-number 1 })
       (is (= 2 @call-counter))
       (update {:step-id [2] :_pipeline-state pipeline-state  :build-number 3 } {:status :ok })
-      (is (= 2 @call-counter)))))
+      (is (= 2 @call-counter))))
+  (testing "that we are not notified if there is already a build waiting"
+    (let [pipeline-state (atom {0 { [1] {:status :waiting}}
+                                1 { [1] {:status :waiting}}})
+          call-counter (atom 0)
+          callback (fn [& _] (swap! call-counter inc))]
+      (notify-when-no-first-step-is-active { :_pipeline-state pipeline-state} callback)
+      (is (= 0 @call-counter))
+      (update {:step-id [1] :_pipeline-state pipeline-state  :build-number 1 } {:status :success})
+      (is (= 0 @call-counter)))))

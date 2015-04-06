@@ -33,36 +33,23 @@
 (defn next-build-number [{pipeline-state :_pipeline-state }]
   (inc (most-recent-build-number-in-state @pipeline-state)))
 
-(defn finished-step? [step-result]
-  (let [status (:status step-result)
-        is-waiting (= :waiting status)
-        is-running (= :running status)]
-  (not (or is-waiting is-running))))
+(defn- is-active? [step-result]
+  (let [status (:status step-result)]
+    (or (= status :running) (= status :waiting))))
 
-(defn- finished-step-count-in [build]
-  (let [results (vals build)
-        finished-steps (filter finished-step? results)
-        finished-step-count (count finished-steps)]
-    finished-step-count))
+(defn- active-first-steps [state]
+  (let [first-steps (map #(get % [1]) (vals state))
+        active-first-steps (filter is-active? first-steps)]
+    active-first-steps))
 
-(defn- call-callback-when-most-recent-build-running [callback key reference old new]
-  (let [cur-build-number (most-recent-build-number-in-state new)
-        cur-build (get new cur-build-number)
-        old-cur-build (get old cur-build-number)
-        finished-step-count-new (finished-step-count-in cur-build)
-        finished-step-count-old (finished-step-count-in old-cur-build)
-        first-step-in-current-build (get cur-build `(1))
-        is-retrigger-mock (contains? first-step-in-current-build :retrigger-mock-for-build-number)]
-    (if (and
-          (not (nil? first-step-in-current-build))
-          (= 1 finished-step-count-new)
-          (not= 1 finished-step-count-old)
-          (not is-retrigger-mock))
+(defn- call-callback-when-no-first-step-is-active [callback key reference old new]
+  (let [active-first-steps-new (active-first-steps new)
+        active-first-steps-old (active-first-steps old)]
+    (if (and (empty? active-first-steps-new) (not (empty? active-first-steps-old)))
       (callback))))
 
-(defn notify-when-most-recent-build-running [{pipeline-state :_pipeline-state} callback]
-  (add-watch pipeline-state :notify-most-recent-build-running (partial call-callback-when-most-recent-build-running callback)))
-
+(defn notify-when-no-first-step-is-active [{pipeline-state :_pipeline-state} callback]
+  (add-watch pipeline-state :notify-most-recent-build-running (partial call-callback-when-no-first-step-is-active callback)))
 
 (defn update [{step-id :step-id state :_pipeline-state build-number :build-number { home-dir :home-dir } :config } step-result]
   (if (not (nil? state)) ; convenience for tests: if no state exists we just do nothing
