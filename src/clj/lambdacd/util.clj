@@ -1,8 +1,6 @@
 (ns lambdacd.util
   (:import (java.nio.file Files)
            (java.nio.file.attribute FileAttribute)
-           (clojure.lang Named)
-           (java.util Formatter$DateTime)
            (org.joda.time DateTime))
   (:require [clojure.string :as string]
             [clojure.java.shell :as jsh]

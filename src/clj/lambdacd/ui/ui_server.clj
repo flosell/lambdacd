@@ -26,7 +26,6 @@
     (routes
       (GET "/api/builds/" [] (util/json (state-presentation/history-for @pipeline-state)))
       (GET "/api/builds/:buildnumber/" [buildnumber] (build-infos pipeline-def @pipeline-state buildnumber))
-      (GET "/api/pipeline" [] (util/json (pipeline pipeline-def)))
       (POST "/api/builds/:buildnumber/:step-id/retrigger" [buildnumber step-id]
             (do
               (async/thread (execution/retrigger pipeline-def ctx (util/parse-int buildnumber) [(util/parse-int step-id)]))
