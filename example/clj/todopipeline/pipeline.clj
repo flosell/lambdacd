@@ -12,6 +12,7 @@
             [lambdacd.util :as utils]
             [ring.server.standalone :as ring-server]
             [lambdacd.ui.ui-server :as ui]
+            [lambdacd.runners :as runners]
             [clojure.tools.logging :as log])
   (:use [lambdacd.steps.control-flow]
         [todopipeline.steps]))
@@ -66,6 +67,6 @@
         ;; the ring handler
         ring-handler (ui/ui-for pipeline)]
     (log/info "LambdaCD Home Directory is " home-dir)
-    (core/start-new-run-after-first-step-finished pipeline)
+    (runners/start-new-run-after-first-step-finished pipeline)
     (ring-server/serve ring-handler {:open-browser? false
                             :port 8080})))
