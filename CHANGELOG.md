@@ -11,6 +11,10 @@ The official release will have a defined and more stable API. If you are already
 * Cleanup old endpoints: `/api/pipeline` and `/api/pipeline-state`
 * Improve retriggering: Create a new pipeline-run instead of overwriting existing builds
 * Make bash-step killable
+* Breaking Changes:
+ * removed `core/mk-pipeline` as a method to initialize the pipeline.
+   Replaced with a more flexible `core/assemble-pipeline` and a few single functions that take over things like running
+   the pipeline and providing ring-handlers to access the pipeline. For details, see examples.
 
 ## 0.1.1
 

@@ -62,10 +62,10 @@
         ;; over time, such as the last seen revisions of various git-repositories, the build history and so on.
         config { :home-dir home-dir }
         ;; wiring everything together everything that's necessary for lambdacd to run
-        the-pipeline (core/assemble-pipeline pipeline-def config)
+        pipeline (core/assemble-pipeline pipeline-def config)
         ;; the ring handler
-        app (ui/ui-for the-pipeline)]
+        ring-handler (ui/ui-for pipeline)]
     (log/info "LambdaCD Home Directory is " home-dir)
-    (core/start-new-run-after-first-step-finished the-pipeline)
-    (ring-server/serve app {:open-browser? false
+    (core/start-new-run-after-first-step-finished pipeline)
+    (ring-server/serve ring-handler {:open-browser? false
                             :port 8080})))
