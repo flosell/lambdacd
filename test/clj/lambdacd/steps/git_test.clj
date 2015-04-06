@@ -8,17 +8,27 @@
             [lambdacd.util :as util]
             [lambdacd.testsupport.reporter]
             [lambdacd.util :as utils]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [lambdacd.steps.shell :as shell]))
+
+(defn some-context
+  ([]
+   (some-context (utils/create-temp-dir)))
+  ([parent]
+   {:config { :home-dir parent}
+    :step-id [42]
+    :result-channel (async/chan (async/dropping-buffer 0))
+    :is-killed (atom false)}))
 
 (defn- git-commits [cwd]
-  (reverse (string/split-lines (:out (util/bash cwd "git log --pretty=format:%H")))))
+  (reverse (string/split-lines (:out (shell/bash (some-context) cwd "git log --pretty=format:%H")))))
 
 (defn- git-head-commit [cwd]
   (last (git-commits cwd)))
 
 (defn- create-test-repo []
   (let [dir (util/create-temp-dir)]
-    (util/bash dir
+    (shell/bash (some-context) dir
                     "git init"
                     "echo \"hello\" > foo"
                     "git add -A"
@@ -31,7 +41,7 @@
      :repo-name (.getName (File. dir))}))
 
 (defn- commit-to [git-dir]
-  (util/bash git-dir
+  (shell/bash (some-context) git-dir
              "echo x >> foo"
              "git add -A"
              "git commit -m \"new commit\"")
@@ -90,16 +100,6 @@
           result-ch (execute-wait-for-async "some-uri-that-doesnt-exist" nil (async/chan 10) is-killed)]
       (swap! is-killed (constantly true))
       (is (= :killed (:status (async/<!! result-ch)))))))
-
-
-(defn some-context
-  ([]
-    (some-context (utils/create-temp-dir)))
-  ([parent]
-    {:config { :home-dir parent}
-     :step-id [42]
-     :result-channel (async/chan 100)
-     :is-killed (atom false)}))
 
 ;; TODO: replace this test with checkout-and-execute tests, phase out with-git
 (deftest with-git-test

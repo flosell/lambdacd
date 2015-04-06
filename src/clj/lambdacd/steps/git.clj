@@ -10,13 +10,13 @@
             [clojure.core.async :as async]
             [lambdacd.presentation.pipeline-state :as pipeline-state]))
 
-(defn- current-revision [repo-uri branch]
-  (util/bash "/"
+(defn- current-revision [repo-uri branch ctx]
+  (shell/bash ctx "/"
              "set -o pipefail"
              (str "git ls-remote --heads " repo-uri " " branch " | cut -f 1")))
 
-(defn- revision-changed-from [last-seen-revision repo-uri branch]
-  (let [revision-output (current-revision repo-uri branch)
+(defn- revision-changed-from [last-seen-revision repo-uri branch ctx]
+  (let [revision-output (current-revision repo-uri branch ctx)
         exit-code (:exit revision-output)
         new-revision-output (.trim (:out revision-output))]
     (if (not= 0 exit-code)
@@ -31,14 +31,14 @@
   (let [initial-output (str "Last seen revision: " (or last-seen-revision "None") ". Waiting for new commit...")]
     (async/>!! (:result-channel ctx) [:status :waiting])
     (async/>!! (:result-channel ctx) [:out initial-output])
-    (loop [result (revision-changed-from last-seen-revision repo-uri branch)]
+    (loop [result (revision-changed-from last-seen-revision repo-uri branch ctx)]
       (execution/if-not-killed ctx
         (if (= :success (:status result))
           (do
             (async/>!! (:result-channel ctx) [:out (str initial-output "\nFound new commit: " (:revision result) ".")])
             result)
           (do (Thread/sleep 1000)
-              (recur (revision-changed-from last-seen-revision repo-uri branch))))))))
+              (recur (revision-changed-from last-seen-revision repo-uri branch ctx))))))))
 
 (defn- last-seen-revision-for-this-step [ctx]
   (let [last-step-result (pipeline-state/most-recent-step-result-with :_git-last-seen-revision ctx)

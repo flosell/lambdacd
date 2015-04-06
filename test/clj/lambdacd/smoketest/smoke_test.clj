@@ -5,7 +5,10 @@
             [clojure.test :refer :all]
             [clojure.data.json :as json]
             [lambdacd.smoketest.pipeline :as pipeline]
-            [lambdacd.util :as util]))
+            [lambdacd.util :as util]
+            [clojure.core.async :as async]
+            [lambdacd.util :as utils]
+            [lambdacd.steps.shell :as shell]))
 
 
 (def url-base "http://localhost:3000/old")
@@ -49,8 +52,12 @@
        ~@body
        (finally (.stop server#)))))
 
+(defn some-context []
+ {:result-channel (async/chan (async/dropping-buffer 0))
+  :is-killed      (atom false)})
+
 (defn- create-test-repo-at [dir]
-  (util/bash dir
+  (shell/bash (some-context) dir
              "git init"
              "echo \"world\" > foo"
              "git add -A"
