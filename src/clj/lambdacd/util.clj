@@ -1,12 +1,17 @@
 (ns lambdacd.util
   (:import (java.nio.file Files)
            (java.nio.file.attribute FileAttribute)
-           (clojure.lang Named))
+           (clojure.lang Named)
+           (java.util Formatter$DateTime)
+           (org.joda.time DateTime))
   (:require [clojure.string :as string]
             [clojure.java.shell :as jsh]
             [clojure.tools.logging :as log]
             [clojure.data.json :as json]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [cheshire.core :as ch]
+            [cheshire.generate :as chg]
+            [clj-time.format :as f]))
 
 (defn range-from [from len] (range (inc from) (+ (inc from) len)))
 
@@ -39,18 +44,16 @@
 (defn contains-value? [v coll]
   (some #(= % v) coll))
 
-; TODO: this is only necessary because we were lazy when we initially built the ui and just dump the internal datastructure into json
-; get rid of this once we build a proper api for the ui
-(defn- handle-unorthodox-keys
-  [x]
-  (cond (instance? Named x) (name x)
-        (nil? x) (throw (Exception. "JSON object properties may not be nil"))
-        (seq? x) (str (seq (vec x)))
-        :else (str x)))
+(def iso-formatter (f/formatters :date-time))
+
+(chg/add-encoder DateTime (fn [v jsonGenerator] (.writeString jsonGenerator (f/unparse iso-formatter v))))
+
+(defn to-json [v]
+  (ch/generate-string v))
 
 (defn json [data]
   {:headers { "Content-Type" "application/json"}
-   :body (json/write-str data :key-fn handle-unorthodox-keys)
+   :body (to-json data)
    :status 200 })
 
 (defn ok []

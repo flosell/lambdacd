@@ -3,7 +3,8 @@
   (:require [clojure.test :refer :all]
             [lambdacd.internal.execution :refer :all]
             [lambdacd.testsupport.test-util :refer [eventually]]
-            [clojure.core.async :as async]))
+            [clojure.core.async :as async]
+            [lambdacd.testsupport.test-util :as tu]))
 
 (defn some-step-processing-input [arg & _]
   (assoc arg :foo :baz :status :success))
@@ -52,7 +53,6 @@
   (async/>!! c [:out "hello"])
   (async/>!! c [:out "hello world"])
   (async/>!! c [:some-value 42])
-  (async/>!! c [:status :success])
   (Thread/sleep 10) ; wait for a bit so that the success doesn't screw up the order of events tested
   {:status :success})
 
@@ -95,13 +95,13 @@
   (testing "that the final pipeline-state is properly set for a step returning a static result"
     (let [pipeline-state-atom (atom {})]
       (is (= { 5 { [0 0] {:status :success } } }
-             (do (execute-step some-successful-step {} {:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state-atom})
-                 @pipeline-state-atom)))))
+             (tu/without-ts (do (execute-step some-successful-step {} {:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state-atom})
+                 @pipeline-state-atom))))))
   (testing "that the final pipeline-state is properly set for a step returning a static and an async result"
     (let [pipeline-state-atom (atom {})]
       (is (= { 5 { [0 0] {:status :success } } }
-             (do (execute-step some-step-that-sends-failure-on-ch-returns-success {} {:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state-atom})
-                 @pipeline-state-atom)))))
+             (tu/without-ts (do (execute-step some-step-that-sends-failure-on-ch-returns-success {} {:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state-atom})
+                 @pipeline-state-atom))))))
   (testing "that the pipeline-state is updated over time"
     (let [pipeline-state (atom {})]
       (is (= [{ 5 { [0 0] {:status :running } } }
@@ -109,8 +109,9 @@
               { 5 { [0 0] {:status :running :out "hello world"} } }
               { 5 { [0 0] {:status :running :some-value 42 :out "hello world"} } }
               { 5 { [0 0] {:status :success :some-value 42 :out "hello world"} } }]
-             (atom-history-for pipeline-state
-               (execute-step some-step-building-up-result-state-incrementally {} {:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state}))))))
+             (map tu/without-ts
+                  (atom-history-for pipeline-state
+                    (execute-step some-step-building-up-result-state-incrementally {} {:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state})))))))
   (testing "that the step result contains the static and the async output"
     (let [pipeline-state (atom {})]
       (is (= {:outputs {[0 0] {:status :success :some-value 42 :out "hello world"} } :status :success }
@@ -167,7 +168,7 @@
                  [2] { :status :failure }}
               1 {[1] { :status :success :retrigger-mock-for-build-number 0 }
                  [1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0}
-                 [2] { :status :success }}} @pipeline-state-atom))))
+                 [2] { :status :success }}} (tu/without-ts @pipeline-state-atom)))))
   (testing "that we can retrigger a pipeline from the initial step as well"
     (let [pipeline-state-atom (atom { 0 {}})
           pipeline `(some-successful-step some-other-step some-failing-step)
@@ -176,7 +177,7 @@
       (is (= {0 {}
               1 {[1] { :status :success}
                  [2] {:status :success :foo :baz}
-                 [3] { :status :failure }}} @pipeline-state-atom))))
+                 [3] { :status :failure }}} (tu/without-ts @pipeline-state-atom)))))
   (testing "that retriggering anything but a root-level step is prevented at this time"
     (let [pipeline-state-atom (atom {})
           pipeline `((some-control-flow some-step) some-successful-step)

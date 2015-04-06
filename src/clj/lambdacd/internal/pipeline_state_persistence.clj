@@ -2,10 +2,15 @@
   "defines conversions between the data-models we use internally and the data-model that's used in JSON
    (which is more user facing)"
   (:import (java.util.regex Pattern)
-           (java.io File))
+           (java.io File)
+           (org.joda.time DateTime))
   (:require [clojure.string :as str]
             [lambdacd.util :as util]
             [clojure.java.io :as io]
+            [clj-time.format :as f]
+            [clj-time.coerce :as c]
+            [cheshire.core :as ch]
+            [cheshire.generate :as chg]
             [clojure.data.json :as json]))
 
 
@@ -27,18 +32,30 @@
 (defn json-format->pipeline-state [json-map]
   (into {} (map step-json->step json-map)))
 
+
+(defn- to-date-if-date [v]
+  (try
+    (f/parse util/iso-formatter v)
+    (catch Throwable t v)))
+
+(defn- post-process-values [k v]
+  (if (= :status k)
+    (keyword v)
+    (to-date-if-date v)))
+
 (defn- read-state [filename]
   (let [build-number (util/parse-int (second (re-find #"build-(\d+)" filename)))
-        state (json-format->pipeline-state (json/read-str (slurp filename) :key-fn keyword))]
+        state (json-format->pipeline-state (json/read-str (slurp filename) :key-fn keyword :value-fn post-process-values))]
     { build-number state }))
 
 (defn write-build-history [home-dir build-number new-state]
   (if home-dir
     (let [dir (str home-dir "/" "build-" build-number "/")
           path (str dir "pipeline-state.json")
-          state-as-json (pipeline-state->json-format (get new-state build-number))]
+          state-as-json (pipeline-state->json-format (get new-state build-number))
+          state-as-json-string (util/to-json state-as-json)]
       (.mkdirs (io/file dir))
-      (util/write-as-json path state-as-json))))
+      (spit path state-as-json-string))))
 
 (defn read-build-history-from [home-dir]
   (let [dir (io/file home-dir)

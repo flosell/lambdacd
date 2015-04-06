@@ -1,7 +1,8 @@
 (ns lambdacd.internal.pipeline-state
   "responsible to manage the current state of the pipeline
   i.e. what's currently running, what are the results of each step, ..."
-  (:require [lambdacd.internal.pipeline-state-persistence :as persistence]))
+  (:require [lambdacd.internal.pipeline-state-persistence :as persistence]
+            [clj-time.core :as t]))
 
 (def clean-pipeline-state {})
 
@@ -10,7 +11,9 @@
 
 (defn- update-current-run [step-id step-result current-state]
   (let [current-step-result (get current-state step-id)
-        new-step-result (merge current-step-result step-result)]
+        new-step-result (-> current-step-result
+                            (assoc :most-recent-update-at (t/now))
+                            (merge step-result))]
     (assoc current-state step-id new-step-result)))
 
 (defn- update-pipeline-state [build-number step-id step-result current-state]

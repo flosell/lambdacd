@@ -1,19 +1,13 @@
 (ns lambdacd.internal.pipeline-state-persistence-test
   (:use [lambdacd.testsupport.test-util])
   (:require [clojure.test :refer :all]
-            [lambdacd.internal.pipeline-state-persistence :refer :all]))
+            [lambdacd.internal.pipeline-state-persistence :refer :all]
+            [clj-time.core :as t]
+            [lambdacd.util :as utils]))
 
-(deftest pipeline-state->json-format-test
-  (testing "that it converts to a decent-json-compatible format"
-    (is (= #{{:step-id "0" :step-result { :status :success }}
-             {:step-id "0-1-2" :step-result { :status :failure :out "something went wrong" }}}
-           (into #{} (pipeline-state->json-format { [0] { :status :success }
-                                          [0 1 2] { :status :failure :out "something went wrong" }}))))))
-
-(deftest json-format->pipeline-state-test
-  (testing "that it converts to a decent-json-compatible format"
-    (is (= { [0] { :status :success }
-             [0 1 2] { :status :failure :out "something went wrong" }}
-           (json-format->pipeline-state [{:step-id "0" :step-result { :status :success }}
-                                         {:step-id "0-1-2" :step-result { :status :failure :out "something went wrong" }}])))))
-
+(deftest roundtrip-persistence-test
+  (let [some-pipeline-state { 3 {'(0)     {:status :success :most-recent-update-at (t/epoch)}
+                                 '(0 1 2) {:status :failure :out "something went wrong"}}}
+        home-dir (utils/create-temp-dir)]
+    (write-build-history home-dir 3 some-pipeline-state)
+    (is (= some-pipeline-state (read-build-history-from home-dir)))))

@@ -1,7 +1,8 @@
 (ns lambdacd.testsupport.test-util
   (:require [clojure.test :refer :all]
             [lambdacd.internal.execution :as execution]
-            [clojure.core.async :as async]))
+            [clojure.core.async :as async]
+            [clojure.walk :as w]))
 
 (defmacro my-time
   "measure the time a function took to execute"
@@ -54,3 +55,26 @@
             (Thread/sleep 100)
             (recur (inc count#)))
           result#))))
+
+(defn- tuple? [x]
+  (and (vector? x) (= 2 (count x))))
+
+(defn- remove-if-key-value-pair-with-key [k]
+  (fn [x]
+    (if (and (tuple? x) (= k (first x)))
+      nil
+      x)))
+
+(defn- remove-with-key
+  [k form]
+  (w/postwalk (remove-if-key-value-pair-with-key k) form))
+
+
+(defn without-key [m k]
+  (remove-with-key k m))
+
+(defn without-ts
+  "strip timestamp information from map to make tests less cluttered with data that's not interesting at the moment"
+  [m]
+  (-> m
+      (without-key :most-recent-update-at)))

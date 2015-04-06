@@ -28,6 +28,8 @@
                  [prone "0.8.0"]
                  [selmer "0.8.0"]
                  [environ "1.0.0"]
+                 [clj-time "0.9.0"]
+                 [cheshire "5.4.0"]
                  [org.clojure/clojurescript "0.0-2850" :scope "provided"]
                  ]
   :test-selectors {:default (complement :smoke)

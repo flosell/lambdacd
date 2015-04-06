@@ -13,16 +13,14 @@
   (ring/serve handler (merge {:join? false, :open-browser? false} options)))
 
 (defn- server-status []
-  (:status (deref (http/get (str url-base "/api/pipeline-state")))))
-
-(defn- pipeline-state []
-  (json/read-str (:body (deref (http/get (str url-base "/api/pipeline-state"))))))
+  (:status (deref (http/get (str url-base "/api/builds/1/")))))
 
 (defn first-build []
-  (get (pipeline-state) "1"))
+  (let [data (:body (deref (http/get (str url-base "/api/builds/1/"))))]
+    (json/read-str data)))
 
 (defn- manual-trigger []
-  (get (first-build) "(1)"))
+  (get (first (first-build)) "result"))
 
 (defn- manual-trigger-state []
   (get (manual-trigger)  "status"))

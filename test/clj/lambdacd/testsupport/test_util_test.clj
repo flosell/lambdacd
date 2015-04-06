@@ -39,3 +39,7 @@
 (deftest timing-test
   (testing "that my-time more or less accurately measures the execution time of a step"
     (is (close? 10 50 (my-time (some-step-taking-50ms {}))))))
+
+(deftest without-keys-test
+  (testing "that we can get rid of key-value pairs in a nested map"
+    (is (= {:a {:b {:foo :bar} :d {:bar :baz}}} (without-key {:a {:b {:c 1 :foo :bar} :d {:c 2 :bar :baz}}} :c)))))

@@ -34,11 +34,7 @@
   (testing "that a proper ring-json-response is returned"
     (is (= {:body    "{\"hello\":\"world\"}"
             :headers {"Content-Type" "application/json"}
-            :status  200} (json { :hello :world }))))
-  (testing "that it can handle lazy sequences as json-keys (as they happen when we deserialize step-ids from history json and have them in the state)"
-    (is (= {:body    "{\"(0 1)\":\"hello\"}"
-            :headers {"Content-Type" "application/json"}
-            :status  200} (json { (range 2) "hello" })))))
+            :status  200} (json { :hello :world })))))
 
 (deftest parse-int-test
   (testing "that we can parse integers"
