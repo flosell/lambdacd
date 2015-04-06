@@ -48,7 +48,7 @@
 (defn- persist-last-seen-revision [wait-for-result ctx]
   (let [current-revision (:revision wait-for-result)]
     (async/>!! (:result-channel ctx) [:_git-last-seen-revision current-revision]) ; by sending it through the result-channel, we can be pretty sure users don't overwrite it
-    wait-for-result))
+    (assoc wait-for-result :_git-last-seen-revision current-revision)))
 
 (defn wait-for-git
   "step that waits for the head of a branch to change"
