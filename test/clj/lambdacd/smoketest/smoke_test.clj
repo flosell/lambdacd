@@ -5,12 +5,14 @@
             [clojure.test :refer :all]
             [clojure.data.json :as json]
             [lambdacd.smoketest.pipeline :as pipeline]
-            [lambdacd.util :as util]))
+            [lambdacd.util :as util]
+            [lambdacd.core :as core]
+            [lambdacd.ui.ui-server :as ui]))
 
 
-(def url-base "http://localhost:3000/old")
-(defn- test-server [handler options]
-  (ring/serve handler (merge {:join? false, :open-browser? false} options)))
+(def url-base "http://localhost:3000")
+(defn- test-server [handler]
+  (ring/serve handler (merge {:join? false, :open-browser? false})))
 
 (defn- server-status []
   (:status (deref (http/get (str url-base "/api/builds/1/")))))
@@ -56,20 +58,20 @@
              "git add -A"
              "git commit -m \"some message\""))
 
-
 (deftest ^:smoke smoke-test
   (testing "that we can run a pipeline"
     (create-test-repo-at steps/some-repo-location)
-    (with-server (test-server pipeline/app { :init pipeline/start-pipeline-thread })
-      (is (= 200 (server-status)))
-      (is (= "waiting" (manual-trigger-state)))
-      (is (= 200 (trigger-manual-trigger)))
-      (wait-a-bit)
-      (is (= "success" (manual-trigger-state)))
-      (is (= 5 @steps/some-counter))
-      (is (= "world\n" @steps/some-value-read-from-git-repo))
-      (is (= "hello world\n" @steps/the-global-value))
-      (is (= 200 (retrigger-increment-counter-by-three)))
-      (wait-a-bit)
-      (is (= 10 @steps/some-counter))
-      )))
+    (let [pipeline (core/assemble-pipeline pipeline/pipeline-def pipeline/config)]
+      (core/start-one-run-after-another pipeline)
+      (with-server (test-server (ui/ui-for pipeline))
+        (is (= 200 (server-status)))
+        (is (= "waiting" (manual-trigger-state)))
+        (is (= 200 (trigger-manual-trigger)))
+        (wait-a-bit)
+        (is (= "success" (manual-trigger-state)))
+        (is (= 5 @steps/some-counter))
+        (is (= "world\n" @steps/some-value-read-from-git-repo))
+        (is (= "hello world\n" @steps/the-global-value))
+        (is (= 200 (retrigger-increment-counter-by-three)))
+        (wait-a-bit)
+        (is (= 10 @steps/some-counter))))))
