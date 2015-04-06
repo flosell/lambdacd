@@ -11,6 +11,7 @@
   (:require [lambdacd.core :as core]
             [lambdacd.util :as utils]
             [ring.server.standalone :as ring-server]
+            [lambdacd.ui.ui-server :as ui]
             [clojure.tools.logging :as log])
   (:use [lambdacd.steps.control-flow]
         [todopipeline.steps]))
@@ -59,14 +60,12 @@
         ;; individual build-steps in the `:config`-value of the context and will be used by the infrastructure and
         ;; build-steps. :home-dir is the directory where LambdaCD will store all it's internal data that should be persisted
         ;; over time, such as the last seen revisions of various git-repositories, the build history and so on.
-        config { :home-dir home-dir :dont-wait-for-completion true}
+        config { :home-dir home-dir }
         ;; wiring everything together everything that's necessary for lambdacd to run
-        pipeline (core/mk-pipeline pipeline-def config)
+        the-pipeline (core/assemble-pipeline pipeline-def config)
         ;; the ring handler
-        app (:ring-handler pipeline)
-        ;; and the function that starts a thread that runs the actual pipeline.
-        start-pipeline-thread (:init pipeline)]
+        app (ui/ui-for the-pipeline)]
     (log/info "LambdaCD Home Directory is " home-dir)
-    (start-pipeline-thread)
+    (core/start-new-run-after-first-step-finished the-pipeline)
     (ring-server/serve app {:open-browser? false
                             :port 8080})))

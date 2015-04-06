@@ -11,7 +11,8 @@
             [lambdacd.internal.execution :as execution]
             [lambdacd.presentation.unified :as unified]
             [clojure.core.async :as async]
-            [lambdacd.util :as util]))
+            [lambdacd.util :as util]
+            [compojure.route :as route]))
 
 (defn- pipeline [pipeline-def]
   (presentation/display-representation pipeline-def))
@@ -21,16 +22,29 @@
         build-state (get pipeline-state build-number-as-int)]
     (util/json (unified/unified-presentation pipeline-def build-state))))
 
-(defn ui-for [pipeline-def pipeline-state ctx]
+(defn- rest-api [{pipeline-def :pipeline-def pipeline-state :state ctx :context}]
   (ring-json/wrap-json-params
     (routes
-      (GET "/api/builds/" [] (util/json (state-presentation/history-for @pipeline-state)))
-      (GET "/api/builds/:buildnumber/" [buildnumber] (build-infos pipeline-def @pipeline-state buildnumber))
-      (POST "/api/builds/:buildnumber/:step-id/retrigger" [buildnumber step-id]
+      (GET "/builds/" [] (util/json (state-presentation/history-for @pipeline-state)))
+      (GET "/builds/:buildnumber/" [buildnumber] (build-infos pipeline-def @pipeline-state buildnumber))
+      (POST "/builds/:buildnumber/:step-id/retrigger" [buildnumber step-id]
             (do
               (async/thread (execution/retrigger pipeline-def ctx (util/parse-int buildnumber) [(util/parse-int step-id)]))
               (util/ok)))
-      (POST "/api/dynamic/:id" {{id :id } :params data :json-params} (do
-                                                   (manualtrigger/post-id id (w/keywordize-keys data))
-                                                   (util/json {:status :success})))
-      (GET "/" [] (resp/resource-response "index.html" {:root "public/old"})))))
+      (POST "/dynamic/:id" {{id :id } :params data :json-params} (do
+                                                                       (manualtrigger/post-id id (w/keywordize-keys data))
+                                                                       (util/json {:status :success}))))))
+(defn- ui []
+  (routes
+    (route/resources "/" {:root "public/old"})
+    (GET "/" [] (resp/resource-response "index.html" {:root "public/old"}))))
+
+(defn ui-for
+  ([pipeline]
+   (routes
+     (context "/api" [] (rest-api pipeline))
+     (context "" [] (ui))))
+  ([pipeline-def pipeline-state ctx]
+   (ui-for {:pipeline-def pipeline-def
+            :state pipeline-state
+            :context ctx})))

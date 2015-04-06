@@ -8,17 +8,23 @@
             [ring.util.response :as resp]))
 
 
-(defn- start-one-run-after-another [pipeline-def context]
-  (async/thread (while true (execution/run pipeline-def context))))
+(defn start-one-run-after-another
+  ([{pipeline-def :pipeline-def context :context}]
+   (start-one-run-after-another pipeline-def context))
+  ([pipeline-def context]
+    (async/thread (while true (execution/run pipeline-def context)))))
 
-(defn- start-pipeline-thread-after-first-step-finished [pipeline-def context]
-  (let [pipeline-run-fn (fn [] (async/thread (execution/run pipeline-def context)))]
-    (pipeline-state/notify-when-most-recent-build-running context pipeline-run-fn)
-    (pipeline-run-fn)))
+(defn start-new-run-after-first-step-finished
+  ([{pipeline-def :pipeline-def context :context}]
+   (start-new-run-after-first-step-finished pipeline-def context))
+  ([pipeline-def context]
+    (let [pipeline-run-fn (fn [] (async/thread (execution/run pipeline-def context)))]
+      (pipeline-state/notify-when-most-recent-build-running context pipeline-run-fn)
+      (pipeline-run-fn))))
 
 (defn- start-pipeline-thread [pipeline-def context start-next-run-after-first-step-finished]
   (if start-next-run-after-first-step-finished
-    (start-pipeline-thread-after-first-step-finished pipeline-def context)
+    (start-new-run-after-first-step-finished pipeline-def context)
     (start-one-run-after-another pipeline-def context)))
 
 
@@ -29,7 +35,6 @@
     (route/resources "/")
     (route/not-found "<h1>Page not found</h1>")))
 
-
 (defn mk-pipeline [pipeline-def config]
   (let [state (atom (pipeline-state/initial-pipeline-state config))
           start-next-run-after-first-step-finished (get config :dont-wait-for-completion false)
@@ -38,3 +43,11 @@
     {:ring-handler (mk-complete-route pipeline-def state context)
      :init (partial start-pipeline-thread pipeline-def context start-next-run-after-first-step-finished)
      :state state}))
+
+(defn assemble-pipeline [pipeline-def config]
+  (let [state (atom (pipeline-state/initial-pipeline-state config))
+        context {:_pipeline-state state
+                 :config config}]
+    {:state state
+     :context context
+     :pipeline-def pipeline-def}))
