@@ -9,10 +9,16 @@
 (defn initial-pipeline-state [{ home-dir :home-dir }]
   (persistence/read-build-history-from home-dir))
 
+(defn- put-if-not-present [m k v]
+  (if (contains? m k)
+    m
+    (assoc m k v)))
+
 (defn- update-current-run [step-id step-result current-state]
   (let [current-step-result (get current-state step-id)
         new-step-result (-> current-step-result
                             (assoc :most-recent-update-at (t/now))
+                            (put-if-not-present :first-updated-at (t/now))
                             (merge step-result))]
     (assoc current-state step-id new-step-result)))
 

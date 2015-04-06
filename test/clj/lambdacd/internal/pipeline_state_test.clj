@@ -33,19 +33,24 @@
              (update { :build-number 10 :step-id [0] :_pipeline-state state} {:foo :bar})
              (update { :build-number 10 :step-id [0] :_pipeline-state state} {:bar :baz})
              (tu/without-ts @state)))))
-  (testing "that update will set a first-updated-at most-recent-update-at timestamp"
-    (let [first-update-timestamp (t/minus (t/now) (t/seconds 1))
+  (testing "that update will set a first-updated-at and most-recent-update-at timestamp"
+    (let [first-update-timestamp (t/minus (t/now) (t/minutes 1))
+          last-updated-timestamp (t/now)
           state (atom clean-pipeline-state)
           ctx { :build-number 10 :step-id [0] :_pipeline-state state}]
       (t/do-at first-update-timestamp (update ctx {:foo :bar}))
-      (is (= {10 {[0] {:foo :bar :most-recent-update-at first-update-timestamp }}} @state))))
+      (t/do-at last-updated-timestamp (update ctx {:foo :baz}))
+      (is (= {10 {[0] {:foo :baz :most-recent-update-at last-updated-timestamp :first-updated-at first-update-timestamp }}} @state))))
   (testing "that updating will save the current state to the file-system"
     (let [home-dir (utils/create-temp-dir)
           config { :home-dir home-dir }
           step-result { :foo :bar }
           ctx { :build-number 10  :step-id [0] :config config :_pipeline-state (atom nil)}]
       (t/do-at (t/epoch) (update ctx step-result))
-      (is (= [{ "step-id" "0" "step-result" { "foo" "bar" "most-recent-update-at" "1970-01-01T00:00:00.000Z"}}] (json/read-str (slurp (str home-dir "/build-10/pipeline-state.json"))))))))
+      (is (= [{ "step-id" "0"
+               "step-result" {"foo" "bar"
+                              "most-recent-update-at" "1970-01-01T00:00:00.000Z"
+                              "first-updated-at" "1970-01-01T00:00:00.000Z"}}] (json/read-str (slurp (str home-dir "/build-10/pipeline-state.json"))))))))
 
 (defn- write-pipeline-state [home-dir build-number state]
   (let [dir (str home-dir "/" "build-" build-number)

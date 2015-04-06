@@ -77,4 +77,5 @@
   "strip timestamp information from map to make tests less cluttered with data that's not interesting at the moment"
   [m]
   (-> m
-      (without-key :most-recent-update-at)))
+      (without-key :most-recent-update-at)
+      (without-key :first-updated-at)))
