@@ -1,16 +1,19 @@
 # Your first build pipeline with LambdaCD
 
 This will guide you through a simple pipeline setup.
-LambdaCD being a clojure-library, knowing a bit of clojure helps, but if you aren't a convert yet, give it a shot anyway. If you need help, I provided some [pointers](basic-clojure.md) to help you out.
+LambdaCD being a clojure-library, knowing a bit of clojure helps, but if you aren't a convert yet, give it a shot anyway.
+If you need help, I provided some [pointers](basic-clojure.md) to help you out.
 
 ## The task
 
-As LambdaCD is a tool to implement build-pipelines, in this walkthrough we are going to implement one. Specifically, we are going to implement a pipeline that is pulling a [TodoMVC](http://todomvc.com/) client and backend from GitHub, run tests, assemble publish artifacts and deploy those artifacts onto servers to run from.
+As LambdaCD is a tool to implement build-pipelines, in this walkthrough we are going to implement one.
+Specifically, we are going to implement a pipeline that is pulling a [TodoMVC](http://todomvc.com/) client and backend
+from GitHub, run tests, assemble publish artifacts and deploy those artifacts onto servers to run from.
 
 The whole thing will look more or less like this:
 ![Our pipline design](img/pipeline-overview.png)
 
-If you want to see the end-result, look into the LambdaCD-Repository: [../src/todopipeline](../src/todopipeline)
+If you want to see the end-result, look into the LambdaCD-Repository: [../example/clj/todopipeline](../example/clj/todopipeline)
 
 ## Setup
 
@@ -30,19 +33,33 @@ So let's get started.
 
 ### Poking around
 
-After all this setup, lets really get started. First of all, we need a new project to develop our pipeline: `lein new lambdacd pipeline-tutorial` will create a new project for you, already set up with some sensible defaults and ready to run.
+After all this setup, lets really get started.
+First of all, we need a new project to develop our pipeline: `lein new lambdacd pipeline-tutorial` will create a new project for you,
+already set up with some sensible defaults and ready to run.
 
-So let's run it: `cd` ito the newly created `pipeline-tutorial` directory and run `lein ring server`. After a few seconds, this will start up a server listening on port 3000 and your browser will pop up, with the overview-page showing your pipelines current state. Click on the first step (it's a manual trigger) to start the pipeline. Now things start to move and you see a running build.
+So let's run it:
+`cd` ito the newly created `pipeline-tutorial` directory and run `lein run`.
+After a few seconds, this will start up a server listening on port 8080.
+Open [http://localhost:8080](http://localhost:8080) to see the overview-page showing your pipelines current state.
+Click on the first step (it's a manual trigger) to start the pipeline. Now things start to move and you see a running build.
 
 ### Pipeline Structure
 
 But where did this all come from?
 
-Let's find out. Open `src/pipeline_tutorial/pipeline.clj`. This is where your pipeline lives. Specifically, `pipeline-def`. This contains a list of clojure functions that are being executed during a pipeline-run. So in this case, it first calls the function `wait-for-manual-trigger` from the `lambdacd.manualtrigger` namespace. This is a function LambdaCD provides to implement the trigger functionality you just saw. After this function returns (after you clicked the trigger), the `some-step-that-does-nothing`-function is called. This is a step that's defined by us (more on that in a minute).
+Let's find out. Open `src/pipeline_tutorial/pipeline.clj`. This is where your pipeline lives.
+Specifically, `pipeline-def`. This contains a list of clojure functions that are being executed during a pipeline-run.
+So in this case, it first calls the function `wait-for-manual-trigger` from the `lambdacd.manualtrigger` namespace.
+This is a function LambdaCD provides to implement the trigger functionality you just saw.
+After this function returns (after you clicked the trigger), the `some-step-that-does-nothing`-function is called.
+This is a step that's defined by us (more on that in a minute).
 
 And after that? What is this list doing there with the `in-parallel`?
 
-You can probably already guess it: This is our way of nesting: Lists indicate that the first function in the list (`in-parallel` in this case) will take care of executing the nested steps. We'll get into this in more detail later so for now, just believe me that this will execute the functions echoing "foo" and "bar" in parallel, waiting for both to finish and then continuing with the rest of the pipeline.
+You can probably already guess it: This is our way of nesting:
+Lists indicate that the first function in the list (`in-parallel` in this case) will take care of executing the nested steps.
+We'll get into this in more detail later so for now, just believe me that this will execute the functions echoing "foo"
+and "bar" in parallel, waiting for both to finish and then continuing with the rest of the pipeline.
 
 ### The steps
 
@@ -60,19 +77,11 @@ In our example the steps are defined in `src/pipeline_tutorial/steps.clj`. As th
 
 Now we covered most of the code that was generated for you, except for some infrastructure that binds the whole thing together. You don't need to care about this to finish the tutorial but a bit of context might help understand what's going on under the hood.
 
-Back in `pipeline.clj`, you'll find those three lines.
-```clojure
-(def pipeline (mk-pipeline pipeline-def))
+Back in `pipeline.clj`, you'll find a `main` function that serves as an entry-point to your application. In this case,
+it'll wire together the pipeline, start a thread running your pipeline and also start a server that serves your UI.
 
-(def app (:ring-handler pipeline))
-(def start-pipeline-thread (:init pipeline))
-```
-The first wires together all the internals of LambdaCD and exposes the interesting parts as a map, accessible as `pipeline`.
-
-The two other lines define the symbols `app` and `start-pipeline-thread`. `app` is a [Ring](https://github.com/ring-clojure/ring) handler, basically the function that handles all the traffic from the HTTP server you just saw.
-`start-pipeline-thread` is a function that does just that, starting the pipeline in a seperate thread in the background.
-
-Both of these symbols are referenced from `project.clj` where they are being picked up by Leiningen when you start the server.
+The `main`-function is referenced in `project.clj` and is therefore picked up by Leiningen when you call `lein run`
+or package your application into a runnable jar (`lein uberjar`).
 
 ## A basic deployment script with git and bash
 
