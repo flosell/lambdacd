@@ -186,10 +186,10 @@ If you run this now, it'll probably work already (assuming you defined the deplo
 
 LambdaCD just execute the elements in the pipeline one by one. If it is a function-name, it executes this function. If it is a list, it first evaluates the list (i.e. executes the function on the beginning of the list with the rest as parameters) and then executes the result.
 
-So to implement `in-cwd`, we need a function that takes the location of the working directory and a number of functions and returns a function that matches the step-contract. So far so good:
+So to implement `our-own-in-cwd`, we need a function that takes the location of the working directory and a number of functions and returns a function that matches the step-contract. So far so good:
 
 ```clojure
-(defn ^{:display-type :container} in-cwd [cwd & steps]
+(defn ^{:display-type :container} our-own-in-cwd [cwd & steps]
   (fn [args ctx]
     {:status :success}))
 ```
@@ -199,7 +199,7 @@ Now we satisfied the contract, but we still need someone to do the hard work of 
 To put it all together:
 
 ```clojure
-(defn ^{:display-type :container} in-cwd [cwd & steps]
+(defn ^{:display-type :container} our-own-in-cwd [cwd & steps]
   (fn [args ctx]
         (execution/execute-steps steps (assoc args :cwd cwd) (execution/new-base-context-for ctx))))
 ```
