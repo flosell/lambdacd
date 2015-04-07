@@ -194,7 +194,7 @@ So to implement `our-own-in-cwd`, we need a function that takes the location of 
     {:status :success}))
 ```
 
-Now we satisfied the contract, but we still need someone to do the hard work of actually calling the child-steps. For this, we use the functions provided by the `lambdacd.execution` namespace. Specifically, `execute-steps` which some steps to execute, the arguments for the steps and a context. But beware, we can't just use our normal context. We now need something called a base-context, which (in a very simplified way) makes sure that LambdaCD can identify the steps as being children of your step.
+Now we satisfied the contract, but we still need someone to do the hard work of actually calling the child-steps. For this, we use the functions provided by the `lambdacd.internal.execution` namespace. Specifically, `execute-steps` which some steps to execute, the arguments for the steps and a context. But beware, we can't just use our normal context. We now need something called a base-context, which (in a very simplified way) makes sure that LambdaCD can identify the steps as being children of your step.
 
 To put it all together:
 
