@@ -111,9 +111,9 @@ Almost ready... But what's our working directory? It's probably wherever we chec
 ```
 
 
-Great, a first build step, but without some code to check out, it's not particulary useful... So we want something that checks out our git repo and does something so that client-package is being executed with the path of the checked out git in the `:cwd` value. Fortunately, LambdaCD already provides such a thing: `lambdacd.git/with-git`. It takes a repository-uri and some steps and creates a nesting operation for us where all the given steps are executed with `:cwd` set to a folder containing the checked out repo.
+Great, a first build step, but without some code to check out, it's not particulary useful... So we want something that checks out our git repo and does something so that client-package is being executed with the path of the checked out git in the `:cwd` value. Fortunately, LambdaCD already provides such a thing: `lambdacd.steps.git/with-git`. It takes a repository-uri and some steps and creates a nesting operation for us where all the given steps are executed with `:cwd` set to a folder containing the checked out repo.
 
-So let's first add this to the `require` statements on the beginning of the file: `[lambdacd.git :as git]`. This imports the `lambdacd.git` namespace, aliased as `git`.
+So let's first add this to the `require` statements on the beginning of the file: `[lambdacd.steps.git :as git]`. This imports the `lambdacd.steps.git` namespace, aliased as `git`.
 
 Now we can use it:
 
@@ -194,7 +194,7 @@ So to implement `our-own-in-cwd`, we need a function that takes the location of 
     {:status :success}))
 ```
 
-Now we satisfied the contract, but we still need someone to do the hard work of actually calling the child-steps. For this, we use the functions provided by the `lambdacd.internal.execution` namespace. Specifically, `execute-steps` which some steps to execute, the arguments for the steps and a context. But beware, we can't just use our normal context. We now need something called a base-context, which (in a very simplified way) makes sure that LambdaCD can identify the steps as being children of your step.
+    Now we satisfied the contract, but we still need someone to do the hard work of actually calling the child-steps. For this, we use the functions provided by the `lambdacd.internal.execution` namespace. Specifically, `execute-steps` which some steps to execute, the arguments for the steps and a context. But beware, we can't just use our normal context. We now need something called a base-context, which (in a very simplified way) makes sure that LambdaCD can identify the steps as being children of your step.
 
 To put it all together:
 
