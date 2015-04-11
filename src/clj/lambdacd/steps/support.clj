@@ -32,4 +32,4 @@
 
 (defmacro chain [args ctx & forms]
   (let [fns (into [] (map to-fn forms))]
-    `(execute-until-failure ~args {} ~fns)))
+    `(execute-until-failure ~args ~ctx ~fns)))

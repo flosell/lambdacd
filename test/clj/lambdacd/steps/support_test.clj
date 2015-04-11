@@ -84,4 +84,7 @@
                                           (step-that-should-never-be-called)))))
   (testing "that a given argument is passed on to the step"
     (is (= {:status :success :the-arg 42} (chain {:v 42} {}
-                                               (some-step-returning-an-argument-passed-in))))))
+                                               (some-step-returning-an-argument-passed-in)))))
+  (testing "that a given context is passed on to the step"
+    (is (= {:status :success :the-ctx-1 {:v 42}} (chain {} {:v 42}
+                                                 (some-step-returning-the-context-passed-in))))))
