@@ -96,7 +96,7 @@
   (let [s-with-id (steps-with-ids steps (:step-id base-context))]
     (map (to-step-with-context base-context) s-with-id)))
 
-(defn- keep-globals [step-result old-args]
+(defn keep-globals [step-result old-args]
   (let [existing-globals (:global old-args)
         new-globals (:global step-result)
         merged-globals (merge existing-globals new-globals)
