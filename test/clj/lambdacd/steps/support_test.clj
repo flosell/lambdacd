@@ -72,13 +72,16 @@
 
 (deftest chain-test
   (testing "that we can just call a single step"
-    (is (= {:status :success :foo :bar} (chain (some-step {} {})))))
+    (is (= {:status :success :foo :bar} (chain {} {} (some-step)))))
   (testing "that the results of two steps get merged"
-    (is (= {:status :success :foo :baz} (chain
-                                         (some-step {} {})
-                                         (some-other-step {} {})))))
+    (is (= {:status :success :foo :baz} (chain {} {}
+                                         (some-step)
+                                         (some-other-step)))))
   (testing "that a failing step stops the execution"
-    (is (= {:status :failure :foo :bar} (chain
-                                          (some-step {} {})
-                                          (some-failling-step {} {})
-                                          (step-that-should-never-be-called {} {}))))))
+    (is (= {:status :failure :foo :bar} (chain {} {}
+                                          (some-step )
+                                          (some-failling-step)
+                                          (step-that-should-never-be-called)))))
+  (testing "that a given argument is passed on to the step"
+    (is (= {:status :success :the-arg 42} (chain {:v 42} {}
+                                               (some-step-returning-an-argument-passed-in))))))

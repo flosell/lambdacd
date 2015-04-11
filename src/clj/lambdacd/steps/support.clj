@@ -11,6 +11,8 @@
 
 
 (defn execute-until-failure [args ctx fns]
+  "run the given steps one by one until a step fails and merge the results.
+   results of one step are the inputs for the next one."
   (loop [x (first fns)
          rest (rest fns)
          result {}
@@ -24,8 +26,10 @@
           (recur (first rest) (next rest) complete-result complete-result))))))
 
 (defn to-fn [form]
-  `(fn [args# ctx#] ~form))
+  (let [f# (first form)
+        r# (next form)]
+    `(fn [args# ctx#] (~f# args# ctx# ~@r#))))
 
-(defmacro chain [& forms]
+(defmacro chain [args ctx & forms]
   (let [fns (into [] (map to-fn forms))]
-    `(execute-until-failure {} {} ~fns)))
+    `(execute-until-failure ~args {} ~fns)))
