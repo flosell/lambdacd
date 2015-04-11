@@ -10,11 +10,11 @@
     :default b))
 
 
-(defn execute-until-failure [args ctx fns]
+(defn chain-steps [args ctx steps]
   "run the given steps one by one until a step fails and merge the results.
    results of one step are the inputs for the next one."
-  (loop [x (first fns)
-         rest (rest fns)
+  (loop [x (first steps)
+         rest (rest steps)
          result {}
          args args]
     (if (nil? x)
@@ -31,5 +31,6 @@
     `(fn [args# ctx#] (~f# args# ctx# ~@r#))))
 
 (defmacro chain [args ctx & forms]
+  "a bit of syntactic sugar for chaining steps. Basically the threading-macro for LambdaCD"
   (let [fns (into [] (map to-fn forms))]
-    `(execute-until-failure ~args ~ctx ~fns)))
+    `(chain-steps ~args ~ctx ~fns)))
