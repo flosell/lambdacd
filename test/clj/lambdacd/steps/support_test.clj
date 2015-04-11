@@ -70,6 +70,8 @@
                                                                    [some-step-returning-the-context-passed-in
                                                                     some-other-step-returning-the-context-passed-in])))))
 
+; Note: if cursive complains about incorrect arity, that's cursive not knowing what the chain-macro does.
+; as long as the tests are green, you can ignore this...
 (deftest chain-test
   (testing "that we can just call a single step"
     (is (= {:status :success :foo :bar} (chain {} {} (some-step)))))
