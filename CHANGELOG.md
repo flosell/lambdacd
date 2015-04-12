@@ -5,7 +5,7 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
-## 0.1.2 [wip]
+## 0.2.0
 
 * Recording start and update timestamps for every build step
 * Cleanup old endpoints: `/api/pipeline` and `/api/pipeline-state`
