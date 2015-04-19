@@ -26,7 +26,7 @@
       (do
         (log/debug "waiting for new revision. current revision" revision-output "last seen" last-seen-revision)
         (if (not= last-seen-revision new-revision-output)
-          {:status :success :revision new-revision-output}
+          {:status :success :revision new-revision-output :old-revision last-seen-revision}
           nil)))))
 
 (defn- wait-for-revision-changed-from [last-seen-revision repo-uri branch ctx]
