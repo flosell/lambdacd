@@ -67,7 +67,7 @@
 
 
 (deftest wait-for-git-test
-  (testing "that it returns immediately (since it has no last known revision), calls after that wait for the next commit independent of whether the commit occurred before or after starting to wait"
+  (testing "that it waits for a new commit to happen"
     (let [test-repo (create-test-repo)
           git-src-dir (:dir test-repo)
           original-head-commit (last (:commits test-repo))
