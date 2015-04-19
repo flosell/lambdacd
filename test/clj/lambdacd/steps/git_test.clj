@@ -56,40 +56,41 @@
    :result-channel result-channel
    :is-killed is-killed})
 
-(defn- execute-wait-for-async [git-src-dir last-seen-revision result-channel is-killed]
-  (let [ctx (ctx-with last-seen-revision result-channel is-killed)
-        ch (async/go (wait-for-git ctx (repo-uri-for git-src-dir) "master"))]
-    (Thread/sleep 500) ;; dirty hack to make sure we started waiting before making the next commit
-    ch))
+(defn- execute-wait-for-async
+  ([git-src-dir last-seen-revision]
+   (execute-wait-for-async git-src-dir last-seen-revision (async/chan 100) (atom false)))
+  ([git-src-dir last-seen-revision result-channel is-killed]
+    (let [ctx (ctx-with last-seen-revision result-channel is-killed)
+          ch (async/go (wait-for-git ctx (repo-uri-for git-src-dir) "master"))]
+      (Thread/sleep 500) ;; dirty hack to make sure we started waiting before making the next commit
+      ch)))
 
 
 (deftest wait-for-git-test
   (testing "that it returns immediately (since it has no last known revision), calls after that wait for the next commit independent of whether the commit occurred before or after starting to wait"
-    (let [is-not-killed (atom false)
-          result-channel (async/chan 100)
-          create-output (create-test-repo)
-          git-src-dir (:dir create-output)
-          original-head-commit (last (:commits create-output))
-          commit-hash-with-nothing-waiting-for-it (commit-to git-src-dir)
-          wait-for-commit-that-happend-while-not-waiting-ch (execute-wait-for-async git-src-dir original-head-commit result-channel is-not-killed)
-          wait-for-commit-that-happend-while-not-waiting-ch-result  (get-value-or-timeout-from wait-for-commit-that-happend-while-not-waiting-ch)
-          wait-started-while-not-having-a-new-commit-ch (execute-wait-for-async git-src-dir commit-hash-with-nothing-waiting-for-it result-channel is-not-killed)
+    (let [test-repo (create-test-repo)
+          git-src-dir (:dir test-repo)
+          original-head-commit (last (:commits test-repo))
+          wait-started-while-not-having-a-new-commit-ch (execute-wait-for-async git-src-dir original-head-commit)
           commit-hash-after-waiting-started-already (commit-to git-src-dir)
-          wait-started-while-not-having-a-new-commit-result (get-value-or-timeout-from wait-started-while-not-having-a-new-commit-ch)
-          ]
-      (is (= commit-hash-with-nothing-waiting-for-it (:revision wait-for-commit-that-happend-while-not-waiting-ch-result)))
-      (is (= :success (:status wait-for-commit-that-happend-while-not-waiting-ch-result)))
+          wait-started-while-not-having-a-new-commit-result (get-value-or-timeout-from wait-started-while-not-having-a-new-commit-ch)]
       (is (= commit-hash-after-waiting-started-already (:revision wait-started-while-not-having-a-new-commit-result)))
       (is (= :success (:status wait-started-while-not-having-a-new-commit-result)))))
+  (testing "that waiting returns immediately when a commit happened while it was not waiting"
+    (let [test-repo (create-test-repo)
+          git-src-dir (:dir test-repo)
+          original-head-commit (last (:commits test-repo))
+          commit-hash-with-nothing-waiting-for-it (commit-to git-src-dir)
+          wait-for-commit-that-happend-while-not-waiting-ch-result  (get-value-or-timeout-from (execute-wait-for-async git-src-dir original-head-commit))]
+      (is (= commit-hash-with-nothing-waiting-for-it (:revision wait-for-commit-that-happend-while-not-waiting-ch-result)))
+      (is (= :success (:status wait-for-commit-that-happend-while-not-waiting-ch-result)))))
   (testing "that when no previous commit is known, we just wait for the next one"
-    (let [is-not-killed (atom false)
-          result-channel (async/chan 100)
-          create-output (create-test-repo)
-          git-src-dir (:dir create-output)
-          wait-for-ch (execute-wait-for-async git-src-dir nil result-channel is-not-killed)
+    (let [git-src-dir (:dir (create-test-repo))
+          wait-for-ch (execute-wait-for-async git-src-dir nil)
           new-commit-hash (commit-to git-src-dir)
           wait-for-result (get-value-or-timeout-from wait-for-ch)]
-      (is (= new-commit-hash (:revision wait-for-result)))))
+      (is (= new-commit-hash (:revision wait-for-result)))
+      (is (= :success (:status wait-for-result)))))
   (testing "that it retries until being killed if the repository cannot be reached"
     (let [is-killed (atom false)
           result-ch (execute-wait-for-async "some-uri-that-doesnt-exist" nil (async/chan 10) is-killed)]
