@@ -117,11 +117,11 @@
 (defn with-commit-details
   "given :revision and :old-revision (as wait-for-git provides them), enriches
    the data with details about the commits between these revisions"
-  [repo-uri args ctx]
+  [ctx repo args]
   (let [old-revision (:old-revision args)
         new-revision (:revision args)
         dir (util/create-temp-dir (home-dir ctx))
-        _ (shell/bash ctx dir (str "git clone --depth 100 " repo-uri " repo"))
+        _ (shell/bash ctx dir (str "git clone --depth 100 " repo " repo"))
         log-result (shell/bash ctx
                                (io/file dir "repo")
                                (str "git log --pretty=oneline " old-revision "..." new-revision))

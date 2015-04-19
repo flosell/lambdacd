@@ -169,7 +169,7 @@
         other-commit (commit-to git-dir "some other commit")
         args {:status :success :foo :bar :revision other-commit :old-revision old-revision}
         ctx (some-context)
-        result (with-commit-details (repo-uri-for git-dir) args ctx)]
+        result (with-commit-details ctx (repo-uri-for git-dir) args)]
     (is (= :success (:status result)))
     (is (= :bar (:foo result)))
     (is (= other-commit (:revision result)))
