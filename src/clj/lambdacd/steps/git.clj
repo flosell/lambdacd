@@ -11,14 +11,16 @@
             [lambdacd.presentation.pipeline-state :as pipeline-state]))
 
 (defn- current-revision [repo-uri branch]
-  (util/bash "/"
-             "set -o pipefail"
-             (str "git ls-remote --heads " repo-uri " " branch " | cut -f 1")))
+  (let [shell-output (util/bash "/"
+                       "set -o pipefail"
+                       (str "git ls-remote --heads " repo-uri " " branch " | cut -f 1"))
+        revision (.trim (:out shell-output))]
+    (assoc shell-output :revision revision)))
 
 (defn- revision-changed-from [last-seen-revision repo-uri branch]
   (let [revision-output (current-revision repo-uri branch)
         exit-code (:exit revision-output)
-        new-revision-output (.trim (:out revision-output))]
+        new-revision-output (:revision revision-output)]
     (if (not= 0 exit-code)
       {:status :failure :out (:out revision-output)}
       (do
@@ -40,10 +42,12 @@
           (do (Thread/sleep 1000)
               (recur (revision-changed-from last-seen-revision repo-uri branch))))))))
 
-(defn- last-seen-revision-for-this-step [ctx]
+(defn- last-seen-revision-for-this-step [ctx repo-uri branch]
   (let [last-step-result (pipeline-state/most-recent-step-result-with :_git-last-seen-revision ctx)
-        last-seen-revision (:_git-last-seen-revision last-step-result)]
-    last-seen-revision))
+        last-seen-revision-in-history (:_git-last-seen-revision last-step-result)]
+    (if (not (nil? last-seen-revision-in-history))
+      last-seen-revision-in-history
+      (:revision (current-revision repo-uri branch)))))
 
 (defn- persist-last-seen-revision [wait-for-result ctx]
   (let [current-revision (:revision wait-for-result)]
@@ -53,7 +57,7 @@
 (defn wait-for-git
   "step that waits for the head of a branch to change"
   [ctx repo-uri branch]
-  (let [last-seen-revision (last-seen-revision-for-this-step ctx)
+  (let [last-seen-revision (last-seen-revision-for-this-step ctx repo-uri branch)
         wait-for-result (wait-for-revision-changed-from last-seen-revision repo-uri branch ctx)]
     (persist-last-seen-revision wait-for-result ctx)))
 

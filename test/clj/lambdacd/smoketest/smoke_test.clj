@@ -55,6 +55,12 @@
 (defn- create-test-repo-at [dir]
   (util/bash dir
              "git init"
+             "touch foo"
+             "git add -A"
+             "git commit -m \"some message\""))
+
+(defn- commit [dir]
+  (util/bash dir
              "echo \"world\" > foo"
              "git add -A"
              "git commit -m \"some message\""))
@@ -70,6 +76,8 @@
         (is (= 200 (trigger-manual-trigger)))
         (wait-a-bit)
         (is (= "success" (manual-trigger-state)))
+        (commit steps/some-repo-location)
+        (wait-a-bit)
         (is (= 5 @steps/some-counter))
         (is (= "world\n" @steps/some-value-read-from-git-repo))
         (is (= "hello world\n" @steps/the-global-value))

@@ -70,8 +70,6 @@
           create-output (create-test-repo)
           git-src-dir (:dir create-output)
           original-head-commit (last (:commits create-output))
-          wait-for-original-commit-ch (execute-wait-for-async git-src-dir nil result-channel is-not-killed)
-          wait-for-original-commit-result  (get-value-or-timeout-from wait-for-original-commit-ch)
           commit-hash-with-nothing-waiting-for-it (commit-to git-src-dir)
           wait-for-commit-that-happend-while-not-waiting-ch (execute-wait-for-async git-src-dir original-head-commit result-channel is-not-killed)
           wait-for-commit-that-happend-while-not-waiting-ch-result  (get-value-or-timeout-from wait-for-commit-that-happend-while-not-waiting-ch)
@@ -79,12 +77,19 @@
           commit-hash-after-waiting-started-already (commit-to git-src-dir)
           wait-started-while-not-having-a-new-commit-result (get-value-or-timeout-from wait-started-while-not-having-a-new-commit-ch)
           ]
-      (is (= original-head-commit (:revision wait-for-original-commit-result)))
-      (is (= :success (:status wait-for-original-commit-result)))
       (is (= commit-hash-with-nothing-waiting-for-it (:revision wait-for-commit-that-happend-while-not-waiting-ch-result)))
       (is (= :success (:status wait-for-commit-that-happend-while-not-waiting-ch-result)))
       (is (= commit-hash-after-waiting-started-already (:revision wait-started-while-not-having-a-new-commit-result)))
       (is (= :success (:status wait-started-while-not-having-a-new-commit-result)))))
+  (testing "that when no previous commit is known, we just wait for the next one"
+    (let [is-not-killed (atom false)
+          result-channel (async/chan 100)
+          create-output (create-test-repo)
+          git-src-dir (:dir create-output)
+          wait-for-ch (execute-wait-for-async git-src-dir nil result-channel is-not-killed)
+          new-commit-hash (commit-to git-src-dir)
+          wait-for-result (get-value-or-timeout-from wait-for-ch)]
+      (is (= new-commit-hash (:revision wait-for-result)))))
   (testing "that it retries until being killed if the repository cannot be reached"
     (let [is-killed (atom false)
           result-ch (execute-wait-for-async "some-uri-that-doesnt-exist" nil (async/chan 10) is-killed)]
