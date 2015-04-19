@@ -1,5 +1,8 @@
 
 #app {
+  display:-ms-flexbox;
+  display:-webkit-box;
+  display:-webkit-flex;
   display:flex;
   border-top: thin black solid;
   height:100%;
@@ -19,6 +22,9 @@
 }
 
 #currentBuild ol {
+  display:-ms-flexbox;
+  display:-webkit-box;
+  display:-webkit-flex;
   display:flex;
 }
 
@@ -28,6 +34,9 @@ ul,ol {
 }
 
 #currentBuild li {
+  display:-ms-flexbox;
+  display:-webkit-box;
+  display:-webkit-flex;
   display:flex;
   flex-shrink:0;
   margin-left:10px;
@@ -35,6 +44,9 @@ ul,ol {
 }
 
 div {
+  display:-ms-flexbox;
+  display:-webkit-box;
+  display:-webkit-flex;
   display:flex;
 }
 
