@@ -26,7 +26,7 @@
   {:status :success})
 
 (defn wait-for-some-repo [_ ctx]
-  (git/wait-for-git ctx some-repo-uri "master"))
+  (git/wait-with-details ctx some-repo-uri "master"))
 
 (defn ^{:display-type :container} with-some-repo [& steps]
   (git/with-git some-repo-uri steps))

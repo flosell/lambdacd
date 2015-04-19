@@ -12,8 +12,8 @@ The official release will have a defined and more stable API. If you are already
   relevant for all steps, e.g. a common working directory.
 * `wait-for-git` no longer returns immediately when no last commit is known. Instead just waits for the first commit.
   This behavior seems more intuitive since otherwise on initial run, all build pipelines would start running.
-* Git-Support: added `with-commit-details`, a function that enriches the wait-for-git result with information about the
-  commits found since last build
+* Git-Support: added `with-commit-details`, a function that enriches the `wait-for-git` result with information about the
+  commits found since last build and a convenience function `wait-with-details` that wraps both.
 
 ## 0.2.0
 

@@ -15,13 +15,13 @@
 ;; It's a function that just waits until something changes in the repo.
 ;; Once done, it returns and the build can go on
 (defn wait-for-frontend-repo [_ ctx]
-  (let [wait-result (git/wait-for-git ctx frontend-repo "master")
+  (let [wait-result (git/wait-with-details ctx frontend-repo "master")
         frontend-revision (:revision wait-result)]
     (assoc wait-result :frontend-revision frontend-revision
                        :backend-revision "HEAD")))
 
 (defn wait-for-backend-repo [_ ctx]
-  (let [wait-result (git/wait-for-git ctx backend-repo "master")
+  (let [wait-result (git/wait-with-details ctx backend-repo "master")
         backend-revision (:revision wait-result)]
     (assoc wait-result :frontend-revision "HEAD"
                        :backend-revision backend-revision)))

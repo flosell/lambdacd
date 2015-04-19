@@ -131,3 +131,7 @@
         new-out (str "\n\nChanges between commits:\n\n" original-out log-output)]
     (println new-out)
     (assoc args :commits commits :out new-out)))
+
+(defn wait-with-details [ctx repo branch]
+  (let [wait-result (wait-for-git ctx repo branch)]
+    (with-commit-details ctx repo wait-result)))
