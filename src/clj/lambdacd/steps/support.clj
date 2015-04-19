@@ -20,10 +20,11 @@
     (if (nil? x)
       result
       (let [step-result (x args ctx)
-            complete-result (merge-with merge-values result step-result)]
+            complete-result (merge-with merge-values result step-result)
+            next-args (merge args complete-result)]
         (if (not= :success (:status step-result))
           complete-result
-          (recur (first rest) (next rest) complete-result complete-result))))))
+          (recur (first rest) (next rest) complete-result next-args))))))
 
 (defn to-fn [form]
   (let [f# (first form)

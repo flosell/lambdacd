@@ -10,6 +10,8 @@
 
 (defn some-failling-step [args ctx]
   {:status :failure})
+(defn some-successful-step [args ctx]
+  {:status :success})
 
 (defn some-step-that-returns-a-value [args ctx]
   {:v 42 :status :success})
@@ -43,6 +45,9 @@
   (testing "that the input argument is passed to the first step"
     (is (= {:status :success :the-arg 42} (chain-steps {:v 42} {}
                                                                  [some-step-returning-an-argument-passed-in]))))
+  (testing "that the input argument is passed to all the steps"
+    (is (= {:status :success :the-arg 42} (chain-steps {:v 42} {}
+                                                       [some-successful-step some-step-returning-an-argument-passed-in]))))
   (testing "that the results of two steps get merged"
     (is (= {:status :success :foo :baz} (chain-steps {} {}
                                                                [some-step some-other-step]))))
