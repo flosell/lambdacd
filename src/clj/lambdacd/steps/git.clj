@@ -8,7 +8,9 @@
             [clojure.tools.logging :as log]
             [lambdacd.steps.shell :as shell]
             [clojure.core.async :as async]
-            [lambdacd.presentation.pipeline-state :as pipeline-state]))
+            [lambdacd.presentation.pipeline-state :as pipeline-state]
+            [clojure.string :as s]
+            [clojure.java.io :as io]))
 
 (defn- current-revision [repo-uri branch]
   (let [shell-output (util/bash "/"
@@ -61,8 +63,11 @@
         wait-for-result (wait-for-revision-changed-from last-seen-revision repo-uri branch ctx)]
     (persist-last-seen-revision wait-for-result ctx)))
 
+(defn- home-dir [ctx]
+  (:home-dir (:config ctx)))
+
 (defn- checkout [ctx repo-uri revision]
-  (let [home-dir (:home-dir (:config ctx))
+  (let [home-dir (home-dir ctx)
         base-dir (util/create-temp-dir home-dir)
         sh-result (shell/bash ctx base-dir
                               (str "echo \"Cloning " revision " of " repo-uri "\"")
@@ -98,3 +103,31 @@
   [repo-uri steps]
   (fn [args ctx]
     (checkout-and-execute repo-uri (:revision args) args ctx steps)))
+
+(defn- parse-log-lines [l]
+  (let [[hash & msg-parts] (s/split l #" ")
+        msg (s/join " " msg-parts)]
+    [hash {:msg msg}]))
+
+(defn- parse-log [git-oneline-log]
+  (let [lines (s/split-lines git-oneline-log)
+        parsed-lines (into {} (map parse-log-lines lines))]
+    parsed-lines))
+
+(defn with-commit-details
+  "given :revision and :old-revision (as wait-for-git provides them), enriches
+   the data with details about the commits between these revisions"
+  [repo-uri args ctx]
+  (let [old-revision (:old-revision args)
+        new-revision (:revision args)
+        dir (util/create-temp-dir (home-dir ctx))
+        _ (shell/bash ctx dir (str "git clone --depth 100 " repo-uri " repo"))
+        log-result (shell/bash ctx
+                               (io/file dir "repo")
+                               (str "git log --pretty=oneline " old-revision "..." new-revision))
+        log-output (:out log-result)
+        commits (parse-log log-output)
+        original-out (:out args)
+        new-out (str "\n\nChanges between commits:\n\n" original-out log-output)]
+    (println new-out)
+    (assoc args :commits commits :out new-out)))

@@ -30,12 +30,15 @@
      :commits (git-commits dir)
      :repo-name (.getName (File. dir))}))
 
-(defn- commit-to [git-dir]
-  (util/bash git-dir
-             "echo x >> foo"
-             "git add -A"
-             "git commit -m \"new commit\"")
-  (git-head-commit git-dir))
+(defn- commit-to
+  ([git-dir]
+   (commit-to git-dir "new commit"))
+  ([git-dir commit-msg]
+    (util/bash git-dir
+               "echo x >> foo"
+               "git add -A"
+               (str "git commit -m \"" commit-msg "\""))
+    (git-head-commit git-dir)))
 
 (defn step-that-returns-the-current-cwd-head [{cwd :cwd} & _]
   {:current-head (git-head-commit cwd)})
@@ -155,3 +158,26 @@
       (is (map-containing {:the-number 42 } (checkout-and-execute repo-uri "HEAD" args (some-context) [some-step-that-returns-21 some-step-that-returns-42]))))
     (testing "that it returns the results of the last step it executed"
       (is (= some-parent-folder (.getParent (.getParentFile (io/file (:thecwd (checkout-and-execute repo-uri "HEAD" args (some-context some-parent-folder) [some-step-that-returns-the-cwd]))))))))))
+
+
+(deftest with-commit-details-test
+  (testing "that we can get the details between two commits and whatever we put in")
+  (let [test-repo (create-test-repo)
+        old-revision (last (:commits test-repo))
+        git-dir (:dir test-repo)
+        commit (commit-to git-dir "some commit")
+        other-commit (commit-to git-dir "some other commit")
+        args {:status :success :foo :bar :revision other-commit :old-revision old-revision}
+        ctx (some-context)
+        result (with-commit-details (repo-uri-for git-dir) args ctx)]
+    (is (= :success (:status result)))
+    (is (= :bar (:foo result)))
+    (is (= other-commit (:revision result)))
+    (is (= old-revision (:old-revision result)))
+    (is (= {commit       {:msg "some commit"}
+            other-commit {:msg "some other commit"}} (:commits result)))
+    (is (.contains (:out result) "some commit"))
+    (is (.contains (:out result) "some other "))
+    (is (.contains (:out result) commit))
+    (is (.contains (:out result) other-commit))
+    ))
