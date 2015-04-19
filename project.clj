@@ -53,8 +53,7 @@
                                         :pretty-print  false}}}}
   :profiles {:release {:hooks [leiningen.cljsbuild]}
              :dev {:main todopipeline.pipeline
-                   :repl-options {:init-ns lambdacd.handler
-                                  :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
+                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
                    :dependencies [[ring-mock "0.1.5"]
                                   [prismatic/dommy "1.0.0"]
