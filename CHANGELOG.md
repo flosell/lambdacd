@@ -8,7 +8,8 @@ The official release will have a defined and more stable API. If you are already
 ## 0.2.1
 
 * UI: support safari and other older browsers
-
+* Step-Chaining now passes on the initial arguments to all the steps to enable users to pass on parameters that are
+  relevant for all steps, e.g. a common working directory. 
 ## 0.2.0
 
 * Recording start and update timestamps for every build step
