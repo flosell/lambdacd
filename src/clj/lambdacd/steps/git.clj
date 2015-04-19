@@ -129,7 +129,6 @@
         commits (parse-log log-output)
         original-out (:out args)
         new-out (str "\n\nChanges between commits:\n\n" original-out log-output)]
-    (println new-out)
     (assoc args :commits commits :out new-out)))
 
 (defn wait-with-details [ctx repo branch]
