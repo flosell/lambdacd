@@ -59,6 +59,9 @@ Nevertheless, give it a try, send in bug reports, feature requests or just give 
 * A complete LambdaCD infrastructure in code: https://github.com/flosell/devops-101-lambdacd
 * Documented Sample-Code: http://flosell.github.io/lambdacd/marginalia/uberdoc.html
 
+## Related projects
+
+* [lambdacd-cctray](https://github.com/flosell/lambdacd-cctray): Support for cctray.xml to integrate LambdaCD with build monitoring tools such as [nevergreen](http://nevergreen.io/) or [CCMenu](http://ccmenu.org/)
 
 ## Development
 
