@@ -50,17 +50,18 @@
       last-seen-revision-in-history
       (:revision (current-revision repo-uri branch)))))
 
-(defn- persist-last-seen-revision [wait-for-result ctx]
-  (let [current-revision (:revision wait-for-result)]
-    (async/>!! (:result-channel ctx) [:_git-last-seen-revision current-revision]) ; by sending it through the result-channel, we can be pretty sure users don't overwrite it
-    (assoc wait-for-result :_git-last-seen-revision current-revision)))
+(defn- persist-last-seen-revision [wait-for-result last-seen-revision ctx]
+  (let [current-revision (:revision wait-for-result)
+        revision-to-persist (or current-revision last-seen-revision)]
+    (async/>!! (:result-channel ctx) [:_git-last-seen-revision revision-to-persist]) ; by sending it through the result-channel, we can be pretty sure users don't overwrite it
+    (assoc wait-for-result :_git-last-seen-revision revision-to-persist)))
 
 (defn wait-for-git
   "step that waits for the head of a branch to change"
   [ctx repo-uri branch]
   (let [last-seen-revision (last-seen-revision-for-this-step ctx repo-uri branch)
         wait-for-result (wait-for-revision-changed-from last-seen-revision repo-uri branch ctx)]
-    (persist-last-seen-revision wait-for-result ctx)))
+    (persist-last-seen-revision wait-for-result last-seen-revision ctx)))
 
 (defn- home-dir [ctx]
   (:home-dir (:config ctx)))

@@ -117,10 +117,20 @@
           _ (commit-to git-src-dir)
           wait-for-result (get-value-or-timeout-from wait-for-ch)]
       (is (= original-head-commit (:old-revision wait-for-result)))))
+  (testing "that wait-for can be killed and that the last seen revision is being kept"
+    (let [is-killed (atom false)
+          test-repo (create-test-repo)
+          git-src-dir (:dir test-repo)
+          original-head-commit (last (:commits test-repo))
+          wait-for-ch (execute-wait-for-async git-src-dir nil (async/chan 10) is-killed)
+          _ (reset! is-killed true)
+          wait-for-result (get-value-or-timeout-from wait-for-ch)]
+      (is (= :killed (:status wait-for-result)))
+      (is (= original-head-commit (:_git-last-seen-revision wait-for-result)))))
   (testing "that it retries until being killed if the repository cannot be reached"
     (let [is-killed (atom false)
           result-ch (execute-wait-for-async "some-uri-that-doesnt-exist" nil (async/chan 10) is-killed)]
-      (swap! is-killed (constantly true))
+      (reset! is-killed true)
       (is (= :killed (:status (async/<!! result-ch)))))))
 
 
