@@ -7,7 +7,7 @@ The official release will have a defined and more stable API. If you are already
 
 ## 0.2.2
 
-* Bug fixes: #11
+* Bug fixes: #10, #11
 
 ## 0.2.1
 
