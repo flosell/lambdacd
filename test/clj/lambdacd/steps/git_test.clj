@@ -52,12 +52,25 @@
     (async/>! c {:status :timeout :current-revision "timeout"}))
   (async/<!! c))
 
-(defn- ctx-with [last-seen-revision result-channel is-killed]
+(defn- ctx-with
+  ([is-killed]
+   (ctx-with nil (async/chan 100) is-killed))
+  ([last-seen-revision result-channel is-killed]
   {:_pipeline-state (atom { 9 { [42] { :_git-last-seen-revision last-seen-revision }}
                            10 {}})
    :step-id [42]
    :result-channel result-channel
-   :is-killed is-killed})
+   :config { :home-dir (utils/create-temp-dir)}
+   :is-killed is-killed}))
+
+(defn- some-context
+  ([]
+   (some-context (utils/create-temp-dir)))
+  ([parent]
+   {:config { :home-dir parent}
+    :step-id [42]
+    :result-channel (async/chan 100)
+    :is-killed (atom false)}))
 
 (defn- execute-wait-for-async
   ([git-src-dir last-seen-revision]
@@ -111,14 +124,7 @@
       (is (= :killed (:status (async/<!! result-ch)))))))
 
 
-(defn some-context
-  ([]
-    (some-context (utils/create-temp-dir)))
-  ([parent]
-    {:config { :home-dir parent}
-     :step-id [42]
-     :result-channel (async/chan 100)
-     :is-killed (atom false)}))
+
 
 ;; TODO: replace this test with checkout-and-execute tests, phase out with-git
 (deftest with-git-test
@@ -161,23 +167,30 @@
 
 
 (deftest with-commit-details-test
-  (testing "that we can get the details between two commits and whatever we put in")
-  (let [test-repo (create-test-repo)
-        old-revision (last (:commits test-repo))
-        git-dir (:dir test-repo)
-        commit (commit-to git-dir "some commit")
-        other-commit (commit-to git-dir "some other commit")
-        args {:status :success :foo :bar :revision other-commit :old-revision old-revision}
-        ctx (some-context)
-        result (with-commit-details ctx (repo-uri-for git-dir) args)]
-    (is (= :success (:status result)))
-    (is (= :bar (:foo result)))
-    (is (= other-commit (:revision result)))
-    (is (= old-revision (:old-revision result)))
-    (is (= {commit       {:msg "some commit"}
-            other-commit {:msg "some other commit"}} (:commits result)))
-    (is (.contains (:out result) "some commit"))
-    (is (.contains (:out result) "some other "))
-    (is (.contains (:out result) commit))
-    (is (.contains (:out result) other-commit))
-    ))
+  (testing "that we can get the details between two commits and whatever we put in"
+    (let [test-repo (create-test-repo)
+          old-revision (last (:commits test-repo))
+          git-dir (:dir test-repo)
+          commit (commit-to git-dir "some commit")
+          other-commit (commit-to git-dir "some other commit")
+          args {:status :success :foo :bar :revision other-commit :old-revision old-revision}
+          ctx (some-context)
+          result (with-commit-details ctx (repo-uri-for git-dir) args)]
+      (is (= :success (:status result)))
+      (is (= :bar (:foo result)))
+      (is (= other-commit (:revision result)))
+      (is (= old-revision (:old-revision result)))
+      (is (= {commit       {:msg "some commit"}
+              other-commit {:msg "some other commit"}} (:commits result)))
+      (is (.contains (:out result) "some commit"))
+      (is (.contains (:out result) "some other "))
+      (is (.contains (:out result) commit))
+      (is (.contains (:out result) other-commit)))))
+
+(deftest wait-with-details-test
+  (testing "that we can kill the wait"
+    (let [test-repo (create-test-repo)
+          git-dir (:dir test-repo)
+          ctx (ctx-with (atom true))
+          result (wait-with-details ctx (repo-uri-for git-dir) "master")]
+      (is (= :killed (:status result))))))

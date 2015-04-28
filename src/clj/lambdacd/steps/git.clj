@@ -1,14 +1,13 @@
 (ns lambdacd.steps.git
   "build-steps that let you work with git repositories"
   (:import (java.io File))
-  (:require [lambdacd.steps.shell :as sh]
-            [lambdacd.internal.execution :as execution]
+  (:require [lambdacd.internal.execution :as execution]
             [lambdacd.util :as util]
-            [clojure.data.json :as json]
             [clojure.tools.logging :as log]
             [lambdacd.steps.shell :as shell]
             [clojure.core.async :as async]
             [lambdacd.presentation.pipeline-state :as pipeline-state]
+            [lambdacd.steps.support :as support]
             [clojure.string :as s]
             [clojure.java.io :as io]))
 
@@ -133,4 +132,6 @@
 
 (defn wait-with-details [ctx repo branch]
   (let [wait-result (wait-for-git ctx repo branch)]
-    (with-commit-details ctx repo wait-result)))
+    (if (= :success (:status wait-result))
+      (with-commit-details ctx repo wait-result)
+      wait-result)))
