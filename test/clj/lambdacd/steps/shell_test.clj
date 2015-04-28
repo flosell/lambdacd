@@ -31,6 +31,8 @@
       (is (= "foo\nbar\n" (:out (bash (some-ctx)"/" "echo foo" "echo bar" "exit 1" "echo baz")))))
     (testing "that the output also contains stderr"
       (is (= "foo\nerror\nbaz\n" (:out (bash (some-ctx)"/" "echo foo" ">&2 echo error" "echo baz")))))
+    (testing "that exports work until we are able to set environment variables"
+      (is (= "foo\n" (:out (bash (some-ctx)"/" "export X=foo" "echo $X")))))
     (testing "that the output channel is updated with every line"
       (let [some-ctx (some-ctx)
             result-channel (:result-channel some-ctx)]
