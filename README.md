@@ -57,7 +57,7 @@ Nevertheless, give it a try, send in bug reports, feature requests or just give 
 
 * Detailed Tutorial: [doc/walkthrough.md](doc/walkthrough.md)
 * A complete LambdaCD infrastructure in code: https://github.com/flosell/devops-101-lambdacd
-* Documented Sample-Code: http://flosell.github.io/lambdacd/marginalia/uberdoc.html
+* Documented Sample-Code: [example/clj/todopipeline](example/clj/todopipeline)
 
 ## Related projects
 
