@@ -27,8 +27,7 @@
                     "git add -A"
                     "git commit -m \"some other message\"")
     {:dir dir
-     :commits (git-commits dir)
-     :repo-name (.getName (File. dir))}))
+     :commits (git-commits dir)}))
 
 (defn- commit-to
   ([git-dir]
@@ -142,13 +141,11 @@
     (let [create-output (create-test-repo)
           git-src-dir (:dir create-output)
           commits (:commits create-output)
-          repo-name (:repo-name create-output)
           first-commit (first commits)
           with-git-args { :revision first-commit }
           with-git-function (with-git (repo-uri-for git-src-dir) [step-that-returns-the-current-cwd-head])
           with-git-result (with-git-function with-git-args (some-context))]
       (is (= first-commit (:current-head (get (:outputs with-git-result ) [1 42]))))
-      (is (.endsWith (:cwd with-git-result) repo-name))
       (is (.startsWith (:out with-git-result) "Cloning"))))
   (testing "that it fails when it couldn't check out a repository"
     (let [with-git-args { :revision "some-commit" }
