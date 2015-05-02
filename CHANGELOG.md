@@ -11,6 +11,8 @@ The official release will have a defined and more stable API. If you are already
 * New features:
   * `support/print-to-output` simplifies printing to the output-channel within a step
   * `support/printed-output` in return allows you to get everything that was printed within that step, typically to return at the end of a step
+* Improvements:
+  * `with-git` removes its workspace after all child-steps are finished
 
 
 ## 0.2.1
