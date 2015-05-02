@@ -23,7 +23,6 @@
   `(let ~(reduce #(conj %1 %2 `(ns-resolve '~ns '~%2)) [] fns)
      ~@tests))
 
-
 (defn history-for-atom [value-atom]
   (let [history-atom (atom [])]
     (add-watch value-atom :foo (fn [_ _ old new]
@@ -35,6 +34,11 @@
   `(let [history-atom# (history-for-atom ~value-atom)]
      ~body
      @history-atom#))
+
+
+(defn slurp-chan [c]
+  (async/close! c)
+  (async/<!! (async/into [] c)))
 
 (defn result-channel->map [ch]
   (async/<!!

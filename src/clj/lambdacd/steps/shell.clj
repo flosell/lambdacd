@@ -1,5 +1,5 @@
 (ns lambdacd.steps.shell
-  (:require [lambdacd.util :as utils]
+  (:require [lambdacd.steps.support :as support]
             [clojure.java.io :as io]
             [clojure.string :as string]
             [me.raynes.conch.low-level :as sh]
@@ -42,14 +42,14 @@
         kill-switch (:is-killed ctx)
         watch-ref (UUID/randomUUID)
         _ (add-kill-handling ctx proc was-killed watch-ref)
-        out (loop [acc ""]
-              (let [v (safe-read-line out-reader)
-                      new-acc (str acc v "\n")]
+        printer (support/new-printer)
+        out (loop []
+              (let [v (safe-read-line out-reader)]
                   (if v
                     (do
-                      (async/>!! result-ch [:out new-acc] )
-                      (recur new-acc))
-                    acc)))
+                      (support/print-to-output ctx printer v)
+                      (recur))
+                    (support/printed-output printer))))
           exit-code (sh/exit-code x)
           status (exit-code->status exit-code @was-killed)]
     (async/close! result-ch)

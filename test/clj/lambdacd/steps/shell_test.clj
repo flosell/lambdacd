@@ -1,7 +1,7 @@
 (ns lambdacd.steps.shell-test
   (:require [clojure.test :refer :all]
             [clojure.core.async :as async]
-            [lambdacd.testsupport.test-util :refer [result-channel->map]]
+            [lambdacd.testsupport.test-util :refer [result-channel->map slurp-chan]]
             [lambdacd.testsupport.data :refer [some-ctx some-ctx-with]]
             [lambdacd.steps.shell :refer :all]))
 
@@ -34,7 +34,7 @@
         (bash some-ctx "/" "echo foo" "echo bar")
         (is (= [[:out "foo\n"]
                 [:out "foo\nbar\n"]]
-               (async/<!! (async/into [] result-channel)))))))
+               (slurp-chan result-channel))))))
 
 (deftest shell-cwd-test
   (testing "that the comand gets executed in the correct directory"

@@ -8,6 +8,10 @@ The official release will have a defined and more stable API. If you are already
 ## 0.2.2
 
 * Bug fixes: #10, #11
+* New features:
+  * `support/print-to-output` simplifies printing to the output-channel within a step
+  * `support/printed-output` in return allows you to get everything that was printed within that step, typically to return at the end of a step
+
 
 ## 0.2.1
 

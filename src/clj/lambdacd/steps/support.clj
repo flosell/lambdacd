@@ -1,5 +1,6 @@
 (ns lambdacd.steps.support
-  (:require [clojure.string :as s]))
+  (:require [clojure.string :as s]
+            [clojure.core.async :as async]))
 
 (defn merge-values [a b]
   (cond
@@ -35,3 +36,17 @@
   "a bit of syntactic sugar for chaining steps. Basically the threading-macro for LambdaCD"
   (let [fns (into [] (map to-fn forms))]
     `(chain-steps ~args ~ctx ~fns)))
+
+(defn- append-output [msg]
+  (fn [old-output]
+    (str old-output msg "\n")))
+
+(defn new-printer []
+  (atom ""))
+
+(defn print-to-output [ctx printer msg]
+  (let [new-out (swap! printer (append-output msg))]
+    (async/>!! (:result-channel ctx) [:out new-out])))
+
+(defn printed-output [printer]
+  @printer)

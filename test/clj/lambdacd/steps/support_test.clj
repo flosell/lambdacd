@@ -1,6 +1,9 @@
 (ns lambdacd.steps.support-test
   (:require [clojure.test :refer :all]
-            [lambdacd.steps.support :refer :all]))
+            [lambdacd.steps.support :refer :all]
+            [lambdacd.testsupport.test-util :refer [slurp-chan]]
+            [lambdacd.testsupport.data :refer [some-ctx some-ctx-with]]
+            [clojure.core.async :as async]))
 
 (defn some-step [args ctx]
   {:status :success :foo :bar})
@@ -37,9 +40,27 @@
 (defn some-step-saying-world [args ctx]
   {:status :success :out "world"})
 
-
 (defn step-that-should-never-be-called [args ctx]
   (throw (IllegalStateException. "do not call me!")))
+
+
+(deftest print-to-output-test
+  (testing "that it writes to the result-channel with every call and accumulates writes"
+    (let [result-channel (async/chan 100)
+          printer (new-printer)
+          ctx (some-ctx-with :result-channel result-channel)]
+      (print-to-output ctx printer "Hello")
+      (print-to-output ctx printer "World")
+      (is (= [[:out "Hello\n"]
+              [:out "Hello\nWorld\n"]] (slurp-chan result-channel))))))
+
+(deftest printed-output-test
+  (testing "that we can get the things we printed before"
+    (let [printer (new-printer)
+          ctx (some-ctx)]
+      (print-to-output ctx printer "Hello")
+      (print-to-output ctx printer "World")
+      (is (= "Hello\nWorld\n" (printed-output printer))))))
 
 (deftest chain-steps-test
   (testing "that the input argument is passed to the first step"

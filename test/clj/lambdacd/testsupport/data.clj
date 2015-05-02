@@ -8,7 +8,8 @@
     :step-id         [42]
     :result-channel  (async/chan (async/dropping-buffer 100))
     :config          {:home-dir (utils/create-temp-dir)}
-    :is-killed       (atom false)})
+    :is-killed       (atom false)
+    :_out-acc        (atom "")})
 
 (defn some-ctx-with [& args]
   (apply assoc (some-ctx) args))
