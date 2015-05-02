@@ -39,6 +39,10 @@
     (let [f (create-temp-file)]
       (is (= "some-value-from-function" (with-temp f (throw-if-not-exists f))))
       (is (not (fs/exists? f)))))
+  (testing "that a tempfile is deleted when body throws"
+    (let [f (create-temp-file)]
+      (is (thrown? Exception (with-temp f (throw (Exception. "oh no!")))))
+      (is (not (fs/exists? f)))))
   (testing "that a temp-dir is deleted after use"
     (let [d (create-temp-dir)]
       (fs/touch (fs/file d "somefile"))

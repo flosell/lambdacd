@@ -34,9 +34,11 @@
   "evaluates the body, then deletes the given file or directory.
   returns the result of the evaluation of the body"
   [f body]
-  `(let [result# ~body]
-     (fs/delete-dir ~f)
-     result#))
+  `(try
+     (let [result# ~body]
+       result#)
+     (finally
+       (fs/delete-dir ~f))))
 
 
 (defn write-as-json [file data]
