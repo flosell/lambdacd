@@ -3,7 +3,7 @@
             [clojure.core.async :as async]))
 
 
-(def some-ctx
+(defn some-ctx []
    {:_pipeline-state (atom {})
     :step-id         [42]
     :result-channel  (async/chan (async/dropping-buffer 100))
@@ -11,4 +11,4 @@
     :is-killed       (atom false)})
 
 (defn some-ctx-with [& args]
-  (apply assoc some-ctx args))
+  (apply assoc (some-ctx) args))

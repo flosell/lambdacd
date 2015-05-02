@@ -135,13 +135,13 @@
           first-commit (first commits)
           with-git-args { :revision first-commit }
           with-git-function (with-git (repo-uri-for git-src-dir) [step-that-returns-the-current-cwd-head])
-          with-git-result (with-git-function with-git-args some-ctx)]
+          with-git-result (with-git-function with-git-args (some-ctx))]
       (is (= first-commit (:current-head (get (:outputs with-git-result ) [1 42]))))
       (is (.startsWith (:out with-git-result) "Cloning"))))
   (testing "that it fails when it couldn't check out a repository"
     (let [with-git-args { :revision "some-commit" }
           with-git-function (with-git "some-unknown-uri" [])
-          with-git-result (with-git-function with-git-args some-ctx)]
+          with-git-result (with-git-function with-git-args (some-ctx))]
       (is (=  :failure (:status with-git-result)))
       (is (.endsWith (:out with-git-result) "fatal: repository 'some-unknown-uri' does not exist\n" )))))
 
@@ -160,7 +160,7 @@
         ctx (some-context-with-home some-parent-folder)
         args {}]
     (testing "that it returns the results of the last step it executed"
-      (is (map-containing {:the-number 42 } (checkout-and-execute repo-uri "HEAD" args some-ctx [some-step-that-returns-21 some-step-that-returns-42]))))
+      (is (map-containing {:the-number 42 } (checkout-and-execute repo-uri "HEAD" args (some-ctx) [some-step-that-returns-21 some-step-that-returns-42]))))
     (testing "that it returns the results of the last step it executed"
       (is (= some-parent-folder (.getParent (.getParentFile (io/file (:thecwd (checkout-and-execute repo-uri "HEAD" args ctx [some-step-that-returns-the-cwd]))))))))))
 
@@ -173,7 +173,7 @@
           commit (commit-to git-dir "some commit")
           other-commit (commit-to git-dir "some other commit")
           args {:status :success :foo :bar :revision other-commit :old-revision old-revision}
-          result (with-commit-details some-ctx (repo-uri-for git-dir) args)]
+          result (with-commit-details (some-ctx) (repo-uri-for git-dir) args)]
       (is (= :success (:status result)))
       (is (= :bar (:foo result)))
       (is (= other-commit (:revision result)))
@@ -189,6 +189,6 @@
   (testing "that we can kill the wait"
     (let [test-repo (create-test-repo)
           git-dir (:dir test-repo)
-          ctx (assoc some-ctx :is-killed (atom true))
+          ctx (assoc (some-ctx) :is-killed (atom true))
           result (wait-with-details ctx (repo-uri-for git-dir) "master")]
       (is (= :killed (:status result))))))
