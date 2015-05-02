@@ -3,9 +3,6 @@
   (:require [clojure.test :refer :all]
             [lambdacd.steps.control-flow :refer :all]))
 
-(defn some-step-processing-input [arg & _]
-  (assoc arg :foo :baz :status :success))
-
 (defn some-step [arg & _]
   {:foo :baz})
 
@@ -33,8 +30,6 @@
 (defn some-failing-step [arg & _]
   {:status :failure})
 
-(defn some-step-not-returning-status [arg & _]
-  {})
 
 (deftest in-parallel-test
   (testing "that it collects all the outputs together correctly"

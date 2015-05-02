@@ -4,6 +4,7 @@
             [lambdacd.internal.execution :refer :all]
             [lambdacd.testsupport.test-util :refer [eventually]]
             [clojure.core.async :as async]
+            [lambdacd.testsupport.data :refer [some-ctx-with]]
             [lambdacd.testsupport.test-util :as tu]))
 
 (defn some-step-processing-input [arg & _]
@@ -161,7 +162,7 @@
                                          [1 1] {:status :success :out "I am nested"}
                                          [2] { :status :failure }}})
           pipeline `((some-control-flow some-step) some-successful-step)
-          context { :_pipeline-state pipeline-state-atom}]
+          context (some-ctx-with :_pipeline-state pipeline-state-atom)]
       (retrigger pipeline context 0 [2])
       (is (= {0 {[1] { :status :success }
                  [1 1] {:status :success :out "I am nested"}
@@ -186,14 +187,13 @@
 
 (deftest if-not-killed-test
   (testing "that the body will only be executed if step is still alive"
-    (let [output (async/chan 10)
-          killed-ctx {:is-killed (atom true) :result-channel output}
-          alive-ctx {:is-killed (atom false)}]
+    (let [killed-ctx (some-ctx-with :is-killed (atom true))
+          alive-ctx (some-ctx-with :is-killed (atom false))]
       (is (= {:status :success} (if-not-killed alive-ctx  {:status :success})))
       (is (= {:status :success} (if-not-killed alive-ctx  (assoc {} :status :success))))
       (is (= {:status :killed}  (if-not-killed killed-ctx   {:status :success})))))
   (testing "that the status is updated when the step was killed"
     (let [output (async/chan 10)
-          killed-ctx {:is-killed (atom true) :result-channel output}]
+          killed-ctx (some-ctx-with :is-killed (atom true) :result-channel output)]
       (if-not-killed killed-ctx  {:status :success})
       (is (= [:status :killed] (async/<!! output))))))

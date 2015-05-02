@@ -8,6 +8,7 @@
             [lambdacd.util :as util]
             [lambdacd.testsupport.reporter]
             [lambdacd.util :as utils]
+            [lambdacd.testsupport.data :refer [some-ctx some-ctx-with]]
             [clojure.java.io :as io]))
 
 (defn- git-commits [cwd]
@@ -51,31 +52,21 @@
     (async/>! c {:status :timeout :current-revision "timeout"}))
   (async/<!! c))
 
-(defn- ctx-with
-  ([is-killed]
-   (ctx-with nil (async/chan 100) is-killed))
-  ([last-seen-revision result-channel is-killed]
-  {:_pipeline-state (atom { 9 { [42] { :_git-last-seen-revision last-seen-revision }}
-                           10 {}})
-   :step-id [42]
+(defn- some-context-with [last-seen-revision result-channel is-killed]
+ (some-ctx-with
+   :_pipeline-state (atom { 9 { [42] { :_git-last-seen-revision last-seen-revision }}
+                                  10 {}})
    :result-channel result-channel
-   :config { :home-dir (utils/create-temp-dir)}
-   :is-killed is-killed}))
+   :is-killed is-killed))
 
-(defn- some-context
-  ([]
-   (some-context (utils/create-temp-dir)))
-  ([parent]
-   {:config { :home-dir parent}
-    :step-id [42]
-    :result-channel (async/chan 100)
-    :is-killed (atom false)}))
+(defn- some-context-with-home [parent]
+  (some-ctx-with :config {:home-dir parent}))
 
 (defn- execute-wait-for-async
   ([git-src-dir last-seen-revision]
    (execute-wait-for-async git-src-dir last-seen-revision (async/chan 100) (atom false)))
   ([git-src-dir last-seen-revision result-channel is-killed]
-    (let [ctx (ctx-with last-seen-revision result-channel is-killed)
+    (let [ctx (some-context-with last-seen-revision result-channel is-killed)
           ch (async/go (wait-for-git ctx (repo-uri-for git-src-dir) "master"))]
       (Thread/sleep 500) ;; dirty hack to make sure we started waiting before making the next commit
       ch)))
@@ -144,13 +135,13 @@
           first-commit (first commits)
           with-git-args { :revision first-commit }
           with-git-function (with-git (repo-uri-for git-src-dir) [step-that-returns-the-current-cwd-head])
-          with-git-result (with-git-function with-git-args (some-context))]
+          with-git-result (with-git-function with-git-args some-ctx)]
       (is (= first-commit (:current-head (get (:outputs with-git-result ) [1 42]))))
       (is (.startsWith (:out with-git-result) "Cloning"))))
   (testing "that it fails when it couldn't check out a repository"
     (let [with-git-args { :revision "some-commit" }
           with-git-function (with-git "some-unknown-uri" [])
-          with-git-result (with-git-function with-git-args (some-context))]
+          with-git-result (with-git-function with-git-args some-ctx)]
       (is (=  :failure (:status with-git-result)))
       (is (.endsWith (:out with-git-result) "fatal: repository 'some-unknown-uri' does not exist\n" )))))
 
@@ -166,11 +157,12 @@
         create-output (create-test-repo)
         git-src-dir (:dir create-output)
         repo-uri (repo-uri-for git-src-dir)
+        ctx (some-context-with-home some-parent-folder)
         args {}]
     (testing "that it returns the results of the last step it executed"
-      (is (map-containing {:the-number 42 } (checkout-and-execute repo-uri "HEAD" args (some-context) [some-step-that-returns-21 some-step-that-returns-42]))))
+      (is (map-containing {:the-number 42 } (checkout-and-execute repo-uri "HEAD" args some-ctx [some-step-that-returns-21 some-step-that-returns-42]))))
     (testing "that it returns the results of the last step it executed"
-      (is (= some-parent-folder (.getParent (.getParentFile (io/file (:thecwd (checkout-and-execute repo-uri "HEAD" args (some-context some-parent-folder) [some-step-that-returns-the-cwd]))))))))))
+      (is (= some-parent-folder (.getParent (.getParentFile (io/file (:thecwd (checkout-and-execute repo-uri "HEAD" args ctx [some-step-that-returns-the-cwd]))))))))))
 
 
 (deftest with-commit-details-test
@@ -181,8 +173,7 @@
           commit (commit-to git-dir "some commit")
           other-commit (commit-to git-dir "some other commit")
           args {:status :success :foo :bar :revision other-commit :old-revision old-revision}
-          ctx (some-context)
-          result (with-commit-details ctx (repo-uri-for git-dir) args)]
+          result (with-commit-details some-ctx (repo-uri-for git-dir) args)]
       (is (= :success (:status result)))
       (is (= :bar (:foo result)))
       (is (= other-commit (:revision result)))
@@ -198,6 +189,6 @@
   (testing "that we can kill the wait"
     (let [test-repo (create-test-repo)
           git-dir (:dir test-repo)
-          ctx (ctx-with (atom true))
+          ctx (assoc some-ctx :is-killed (atom true))
           result (wait-with-details ctx (repo-uri-for git-dir) "master")]
       (is (= :killed (:status result))))))

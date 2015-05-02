@@ -6,6 +6,7 @@
             [clojure.data.json :as json]
             [clj-time.core :as t]
             [lambdacd.testsupport.test-util :as tu]
+            [lambdacd.testsupport.data :refer [some-ctx-with]]
             [clojure.data :as d]
             [clojure.java.io :as io]))
 
@@ -37,7 +38,7 @@
     (let [first-update-timestamp (t/minus (t/now) (t/minutes 1))
           last-updated-timestamp (t/now)
           state (atom clean-pipeline-state)
-          ctx { :build-number 10 :step-id [0] :_pipeline-state state}]
+          ctx (some-ctx-with :build-number 10 :step-id [0] :_pipeline-state state)]
       (t/do-at first-update-timestamp (update ctx {:foo :bar}))
       (t/do-at last-updated-timestamp (update ctx {:foo :baz}))
       (is (= {10 {[0] {:foo :baz :most-recent-update-at last-updated-timestamp :first-updated-at first-update-timestamp }}} @state))))
@@ -45,7 +46,7 @@
     (let [home-dir (utils/create-temp-dir)
           config { :home-dir home-dir }
           step-result { :foo :bar }
-          ctx { :build-number 10  :step-id [0] :config config :_pipeline-state (atom nil)}]
+          ctx (some-ctx-with :build-number 10  :step-id [0] :config config )]
       (t/do-at (t/epoch) (update ctx step-result))
       (is (= [{ "step-id" "0"
                "step-result" {"foo" "bar"
