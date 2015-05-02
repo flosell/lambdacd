@@ -9,7 +9,8 @@
             [lambdacd.presentation.pipeline-state :as pipeline-state]
             [lambdacd.steps.support :as support]
             [clojure.string :as s]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [lambdacd.util :as utils]))
 
 (defn- current-revision [repo-uri branch]
   (let [shell-output (util/bash "/"
@@ -85,16 +86,17 @@
   (let [checkout-result (checkout ctx repo-uri revision)
         repo-location (:cwd checkout-result)
         checkout-exit-code (:exit checkout-result)]
-    (if (= 0 checkout-exit-code)
-      (let [execute-steps-result (execution/execute-steps steps (assoc args :cwd repo-location) (execution/new-base-context-for ctx))
-            result-with-checkout-output (assoc execute-steps-result :out (:out checkout-result))
-            step-ids (keys (:outputs execute-steps-result))
-            last-step-id (last-step-id-of step-ids)
-            output-of-last-step (get-in execute-steps-result [:outputs last-step-id])]
-        (merge result-with-checkout-output output-of-last-step))
-      {:status :failure
-       :out (:out checkout-result)
-       :exit (:exit checkout-result)})))
+    (utils/with-temp repo-location
+      (if (= 0 checkout-exit-code)
+        (let [execute-steps-result (execution/execute-steps steps (assoc args :cwd repo-location) (execution/new-base-context-for ctx))
+              result-with-checkout-output (assoc execute-steps-result :out (:out checkout-result))
+              step-ids (keys (:outputs execute-steps-result))
+              last-step-id (last-step-id-of step-ids)
+              output-of-last-step (get-in execute-steps-result [:outputs last-step-id])]
+          (merge result-with-checkout-output output-of-last-step))
+        {:status :failure
+         :out (:out checkout-result)
+         :exit (:exit checkout-result)}))))
 
 (defn with-git
   "creates a container-step that checks out a given revision from a repository.
