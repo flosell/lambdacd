@@ -9,9 +9,11 @@
 
 [![Build Status](https://travis-ci.org/flosell/lambdacd.svg)](https://travis-ci.org/flosell/lambdacd)
 
-This project is still in it's early prototype/proof of concept/experimentation stage, so don't rely on everything working flawlessly. There will be bugs, there will be missing features, things will change and things will look ugly.
+This project is still in it's early phase, don't rely on everything working flawlessly.
+There will be bugs, there will be missing features, things will change and things will look ugly.
 
-Nevertheless, give it a try, send in bug reports, feature requests or just give feedback!
+However, people do use LambdaCD in their day to day work and are happy it, so give it a try!
+And if you notice something, please open bug reports, feature requests or just give feedback!
 
 ## Usage
 
