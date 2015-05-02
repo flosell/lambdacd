@@ -1,7 +1,6 @@
 (ns lambdacd.util-test
   (:use [lambdacd.util])
   (:require [clojure.test :refer :all]
-            [clojure.core.async :as async]
             [me.raynes.fs :as fs]
             [clojure.java.io :as io]))
 
@@ -22,9 +21,9 @@
 (deftest create-temp-dir-test
   (testing "creating in default tmp folder"
     (testing "that we can create a temp-directory"
-      (is (.exists (io/file (create-temp-dir)))))
+      (is (fs/exists? (io/file (create-temp-dir)))))
     (testing "that it is writable"
-      (is (.mkdir (io/file (create-temp-dir) "hello")))))
+      (is (fs/mkdir (io/file (create-temp-dir) "hello")))))
   (testing "creating in a defined parent directory"
     (testing "that it is a child of the parent directory"
       (let [parent (create-temp-dir)]
@@ -35,14 +34,22 @@
     (throw (IllegalStateException. (str f " does not exist")))
     "some-value-from-function"))
 
-(deftest with-tempfile-test
-  (testing "that the tempfile is deleted after use"
+(deftest with-temp-test
+  (testing "that a tempfile is deleted after use"
     (let [f (create-temp-file)]
-      (is (= "some-value-from-function" (with-temp-file f (throw-if-not-exists f))))
-      (is (not (fs/exists? f))))))
+      (is (= "some-value-from-function" (with-temp f (throw-if-not-exists f))))
+      (is (not (fs/exists? f)))))
+  (testing "that a temp-dir is deleted after use"
+    (let [d (create-temp-dir)]
+      (fs/touch (fs/file d "somefile"))
+
+      (is (= "some-value-from-function" (with-temp d (throw-if-not-exists d))))
+
+      (is (not (fs/exists? (fs/file d "somefile"))))
+      (is (not (fs/exists? d))))))
 
 
-  (deftest json-test
+(deftest json-test
   (testing "that a proper ring-json-response is returned"
     (is (= {:body    "{\"hello\":\"world\"}"
             :headers {"Content-Type" "application/json"}

@@ -69,5 +69,5 @@
         all-commands (string/join "\n" commands)
         bash-command (str "bash -e '" temp-file "' 2>&1")]
     (spit temp-file all-commands)
-    (util/with-temp-file temp-file
+    (util/with-temp temp-file
       (mysh cwd bash-command ctx))))

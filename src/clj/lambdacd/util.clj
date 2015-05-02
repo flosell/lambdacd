@@ -17,19 +17,25 @@
 (defn no-file-attributes []
   (into-array FileAttribute []))
 
+
+(def temp-prefix "lambdacd")
+
 (defn create-temp-dir
   ([]
-    (str (Files/createTempDirectory "foo" (no-file-attributes))))
+    (str (Files/createTempDirectory temp-prefix (no-file-attributes))))
   ([parent]
-    (str (Files/createTempDirectory (.toPath (io/file parent)) "foo" (into-array FileAttribute [])))))
+    (str (Files/createTempDirectory (.toPath (io/file parent)) temp-prefix (into-array FileAttribute [])))))
 
 
 (defn create-temp-file []
-  (str (Files/createTempFile "lambdacd" "" (no-file-attributes))))
+  (str (Files/createTempFile temp-prefix "" (no-file-attributes))))
 
-(defmacro with-temp-file [f body]
+(defmacro with-temp
+  "evaluates the body, then deletes the given file or directory.
+  returns the result of the evaluation of the body"
+  [f body]
   `(let [result# ~body]
-     (fs/delete ~f)
+     (fs/delete-dir ~f)
      result#))
 
 
