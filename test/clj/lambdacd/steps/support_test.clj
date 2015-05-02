@@ -41,7 +41,7 @@
 (defn step-that-should-never-be-called [args ctx]
   (throw (IllegalStateException. "do not call me!")))
 
-(deftest execute-until-failure-test
+(deftest chain-steps-test
   (testing "that the input argument is passed to the first step"
     (is (= {:status :success :the-arg 42} (chain-steps {:v 42} {}
                                                                  [some-step-returning-an-argument-passed-in]))))
