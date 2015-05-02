@@ -33,25 +33,28 @@
     (.readLine reader)
     (catch IOException e nil)))
 
+(defn- read-and-print-shell-output [proc-result ctx]
+  (let [out-reader (io/reader (:out proc-result))
+        printer (support/new-printer)]
+    (loop []
+      (let [line (safe-read-line out-reader)]
+        (if line
+          (do
+            (support/print-to-output ctx printer line)
+            (recur)))))
+    (support/printed-output printer)))
+
 (defn- mysh [cwd cmd  ctx]
   (let [result-ch (:result-channel ctx)
         x (sh/proc "bash" "-c" cmd :dir cwd)
         proc (:process x)
-        out-reader (io/reader (:out x))
         was-killed (atom false)
         kill-switch (:is-killed ctx)
         watch-ref (UUID/randomUUID)
         _ (add-kill-handling ctx proc was-killed watch-ref)
-        printer (support/new-printer)
-        out (loop []
-              (let [v (safe-read-line out-reader)]
-                  (if v
-                    (do
-                      (support/print-to-output ctx printer v)
-                      (recur))
-                    (support/printed-output printer))))
-          exit-code (sh/exit-code x)
-          status (exit-code->status exit-code @was-killed)]
+        out (read-and-print-shell-output x ctx)
+        exit-code (sh/exit-code x)
+        status (exit-code->status exit-code @was-killed)]
     (async/close! result-ch)
     (remove-watch kill-switch watch-ref)
     {:exit exit-code :status status :out out}))
