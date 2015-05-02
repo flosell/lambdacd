@@ -11,6 +11,7 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/data.json "0.2.5"]
                  [me.raynes/conch "0.8.0"]
+                 [me.raynes/fs "1.4.6"]
                  [org.clojure/core.async "0.1.338.0-5c5012-alpha"]
                  [compojure "1.1.8"]
                  [org.clojure/tools.logging "0.3.0"]

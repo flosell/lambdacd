@@ -4,7 +4,9 @@
             [clojure.string :as string]
             [me.raynes.conch.low-level :as sh]
             [clojure.core.async :as async]
-            [lambdacd.internal.execution :as execution])
+            [lambdacd.internal.execution :as execution]
+            [lambdacd.util :as utils]
+            [lambdacd.util :as util])
   (:import (java.util UUID)
            (java.io IOException)))
 
@@ -63,6 +65,9 @@
   "step that executes commands in a bash. arguments are the working-directory and at least one command to execute
   returns stdout and stderr as :out value, the exit code as :exit and succeeds if exit-code was 0"
   [ctx cwd & commands]
-  (let [combined-command (str "bash -c '" (string/join " && " commands) "' 2>&1") ;; very hacky but it does the job of redirecting stderr to stdout
-        shell-result (mysh cwd combined-command ctx)]
-    shell-result))
+  (let [temp-file (utils/create-temp-file)
+        all-commands (string/join "\n" commands)
+        bash-command (str "bash -e '" temp-file "' 2>&1")]
+    (spit temp-file all-commands)
+    (util/with-temp-file temp-file
+      (mysh cwd bash-command ctx))))

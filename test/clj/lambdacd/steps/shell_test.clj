@@ -16,8 +16,7 @@
   (testing "that bash returns the right return code for a single failing command"
     (is (= 1 (:exit (bash (some-ctx) "/" "exit 1")))))
   (testing "that bash returns the right return code for a series of commands"
-    (is  (= 1 (:exit (bash (some-ctx) "/" "echo foo" "echo bar" "exit 1" "echo baz")))))
-  )
+    (is  (= 1 (:exit (bash (some-ctx) "/" "echo foo" "echo bar" "exit 1" "echo baz"))))))
 
 (deftest shell-output-test
     (testing "that bash returns the right output for a single command"
@@ -40,6 +39,16 @@
   (testing "that the comand gets executed in the correct directory"
     (is (= "/\n" (:out (bash (some-ctx) "/" "pwd"))))))
 
+(deftest shell-execution-test
+  (testing "that execution of commands stops after a command had an error"
+    (let [result (bash (some-ctx) "/"
+                       "echo hello"
+                       "test 1 -eq 2"
+                       "echo this-shouldnt-be-reached")]
+      (is (= "hello\n" (:out result)))
+      (is (= 1 (:exit result)))))
+  (testing "that it supports commands that contain single-quotes"
+    (is (= "Hello World\n" (:out (bash (some-ctx) "/" "echo 'Hello World'"))))))
 
 (deftest kill-test
   (testing "that we are able to kill a running shell-step"

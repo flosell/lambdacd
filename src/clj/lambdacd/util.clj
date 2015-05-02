@@ -9,15 +9,29 @@
             [clojure.java.io :as io]
             [cheshire.core :as ch]
             [cheshire.generate :as chg]
+            [me.raynes.fs :as fs]
             [clj-time.format :as f]))
 
 (defn range-from [from len] (range (inc from) (+ (inc from) len)))
 
+(defn no-file-attributes []
+  (into-array FileAttribute []))
+
 (defn create-temp-dir
   ([]
-    (str (Files/createTempDirectory "foo" (into-array FileAttribute []))))
+    (str (Files/createTempDirectory "foo" (no-file-attributes))))
   ([parent]
     (str (Files/createTempDirectory (.toPath (io/file parent)) "foo" (into-array FileAttribute [])))))
+
+
+(defn create-temp-file []
+  (str (Files/createTempFile "lambdacd" "" (no-file-attributes))))
+
+(defmacro with-temp-file [f body]
+  `(let [result# ~body]
+     (fs/delete ~f)
+     result#))
+
 
 (defn write-as-json [file data]
   (spit file (json/write-str data)))

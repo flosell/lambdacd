@@ -2,6 +2,7 @@
   (:use [lambdacd.util])
   (:require [clojure.test :refer :all]
             [clojure.core.async :as async]
+            [me.raynes.fs :as fs]
             [clojure.java.io :as io]))
 
 (deftest range-test
@@ -29,8 +30,19 @@
       (let [parent (create-temp-dir)]
         (is (= parent (.getParent (io/file (create-temp-dir parent)))))))))
 
+(defn- throw-if-not-exists [f]
+  (if (not (fs/exists? f))
+    (throw (IllegalStateException. (str f " does not exist")))
+    "some-value-from-function"))
 
-(deftest json-test
+(deftest with-tempfile-test
+  (testing "that the tempfile is deleted after use"
+    (let [f (create-temp-file)]
+      (is (= "some-value-from-function" (with-temp-file f (throw-if-not-exists f))))
+      (is (not (fs/exists? f))))))
+
+
+  (deftest json-test
   (testing "that a proper ring-json-response is returned"
     (is (= {:body    "{\"hello\":\"world\"}"
             :headers {"Content-Type" "application/json"}
