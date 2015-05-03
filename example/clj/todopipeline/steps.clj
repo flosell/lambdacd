@@ -82,3 +82,7 @@
 ;; We could have made a failing step easier as well by just returning ```{ :status :failure }```
 (defn some-failing-step [_ ctx]
   (shell/bash ctx "/" "echo \"i am going to fail now...\"" "exit 1"))
+
+
+(defn always-echo-something [_ ctx]
+  (shell/bash ctx "/" "while true; do date; sleep 1; done"))

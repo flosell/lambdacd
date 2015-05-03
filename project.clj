@@ -93,8 +93,10 @@
                                                :notify-command ["phantomjs" "test/bin/runner-none.js" "target/cljs-tests/test" "target/cljs-tests/test.js"
                                                                 "test/vendor/es5-shim.js"
                                                                 "test/vendor/es5-sham.js"
+                                                                "resources/public/old/thirdparty/stickyfill.min.js"
                                                                 "test/vendor/console-polyfill.js"]}}
                                :test-commands {"unit" ["phantomjs" "test/bin/runner-none.js" "target/cljs-tests/test" "target/cljs-tests/test.js"
                                                        "test/vendor/es5-shim.js"
                                                        "test/vendor/es5-sham.js"
+                                                       "resources/public/old/thirdparty/stickyfill.min.js"
                                                        "test/vendor/console-polyfill.js"]}}}})

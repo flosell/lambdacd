@@ -95,3 +95,8 @@ li:not([data-status]) {
 .results {
   display:inline-block;
 }
+
+.tail {
+  position:sticky;
+  top:10px;
+}

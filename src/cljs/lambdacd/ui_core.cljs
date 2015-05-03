@@ -31,40 +31,40 @@
 (defn poll-state [state-atom build-number-atom]
   (poll state-atom #(api/get-build-state @build-number-atom)))
 
-(defn current-build-component [build-state-atom build-number step-id-to-display-atom output-details-visible]
+(defn current-build-component [build-state-atom build-number step-id-to-display-atom output-details-visible do-tail]
   (if (not (nil? @build-state-atom))
     [:div {:key build-number :class "blocked"}
      [:h2 (str "Current Build " build-number)]
      [pipeline/pipeline-component build-number build-state-atom]
      [:h2 "Output"]
-     [output/output-component @build-state-atom @step-id-to-display-atom output-details-visible]]
+     [output/output-component @build-state-atom @step-id-to-display-atom output-details-visible do-tail]]
     [commons/loading-screen]))
 
 
-(defn root [build-number-atom step-id-to-display-atom history state output-details-visible]
+(defn root [build-number-atom step-id-to-display-atom history state output-details-visible do-tail]
   (let [build-number @build-number-atom]
     (if build-number
       (do
         [:div
          [:div {:id "builds"} [history/build-history-component @history]]
-          [:div {:id "currentBuild"} [current-build-component state build-number step-id-to-display-atom output-details-visible]]])
+          [:div {:id "currentBuild"} [current-build-component state build-number step-id-to-display-atom output-details-visible do-tail]]])
       [:div {:id "loading"}
        :h1 "Loading..."]
     )))
 
 
-(defn- navigate [build-number-atom step-id-to-display-atom state-atom token]
-  (let [nav-result (route/dispatch-route build-number-atom step-id-to-display-atom state-atom token)]
+(defn- navigate [build-number-atom step-id-to-display-atom state-atom do-tail token]
+  (let [nav-result (route/dispatch-route build-number-atom step-id-to-display-atom state-atom do-tail token)]
     (if (not (= :ok (:routing nav-result)))
       (.setToken (History.) (:redirect-to nav-result))
       )))
 
-(defn hook-browser-navigation! [build-number-atom step-id-to-display-atom state-atom]
+(defn hook-browser-navigation! [build-number-atom step-id-to-display-atom do-tail state-atom]
   (doto (History.)
     (events/listen
       EventType/NAVIGATE
       (fn [event]
-        (navigate build-number-atom step-id-to-display-atom state-atom (.-token event))))
+        (navigate build-number-atom step-id-to-display-atom state-atom do-tail (.-token event))))
     (.setEnabled true)))
 
 (defn init! []
@@ -72,11 +72,17 @@
         step-id-to-display-atom (atom nil)
         history-atom (atom nil)
         state-atom (atom nil)
-        output-details-visible (atom false)]
+        output-details-visible (atom false)
+        do-tail (atom false)]
     (poll-history history-atom)
     (poll-state state-atom build-number-atom)
-    (hook-browser-navigation! build-number-atom step-id-to-display-atom state-atom)
+    (hook-browser-navigation! build-number-atom step-id-to-display-atom do-tail state-atom)
     ; #' is necessary so that fighweel can update: https://github.com/reagent-project/reagent/issues/94
-    (reagent/render-component [#'root build-number-atom step-id-to-display-atom history-atom state-atom output-details-visible] (.getElementById js/document "app"))))
+    (reagent/render-component [#'root
+                               build-number-atom
+                               step-id-to-display-atom
+                               history-atom state-atom
+                               output-details-visible
+                               do-tail] (.getElementById js/document "app"))))
 
 

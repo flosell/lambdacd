@@ -7,22 +7,23 @@
     {[:buildnumber ] :build
      [:buildnumber "/" :step-id] :build-and-step-id}])
 
-(defn- set-state [build-number-atom step-id-atom build-number step-id]
+(defn- set-state [build-number-atom step-id-atom build-number do-tail step-id]
   (reset! build-number-atom build-number)
-  (reset! step-id-atom step-id))
+  (reset! step-id-atom step-id)
+  (reset! do-tail false))
 
 (defn- parse-step-id [step-id-string]
   (into [] (map js/parseInt (string/split step-id-string #"-"))))
 
-(defn dispatch-route [build-number-atom step-id-to-display-atom state-atom path]
+(defn dispatch-route [build-number-atom step-id-to-display-atom state-atom do-tail path]
   (let [{handler :handler params :route-params } (bidi/match-route route path)]
     (case handler
           :build             (do
                                (reset! state-atom nil)
-                               (set-state build-number-atom step-id-to-display-atom (js/parseInt (:buildnumber params)) nil)
+                               (set-state build-number-atom step-id-to-display-atom (js/parseInt (:buildnumber params)) do-tail nil)
                                {:routing :ok})
           :build-and-step-id (do
-                               (set-state build-number-atom step-id-to-display-atom (js/parseInt (:buildnumber params)) (parse-step-id (:step-id params)))
+                               (set-state build-number-atom step-id-to-display-atom (js/parseInt (:buildnumber params)) do-tail (parse-step-id (:step-id params)))
                                {:routing :ok})
           {:routing :failed :redirect-to (bidi/path-for route :build :buildnumber 1)})))
 
