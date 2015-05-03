@@ -15,26 +15,32 @@
 (defn- scroll-to-bottom []
   (js/window.scrollTo 0 js/document.body.scrollHeight ))
 
-(defn sticky [component]
-  (with-meta component
-             {:component-did-mount
-              (fn [this]
-                (js/Stickyfill.add (reagent/dom-node this)))}))
+(defn- is-scrolled-to-bottom []
+  (let [delta (- (- js/document.body.scrollHeight js/document.body.scrollTop) js/document.body.clientHeight)
+        is-bottom (< delta 20)]
+    is-bottom))
 
-(defn plain-tail-button [do-tail]
-  [:button {:on-click (negate do-tail) :class "tail"} (if @do-tail "don't follow output" "follow output")])
+(defn scroll-wrapper [component]
+  (let [scrolled-to-bottom-before-update (atom false)
+        before-update #(reset! scrolled-to-bottom-before-update (is-scrolled-to-bottom))
+        after-update #(if @scrolled-to-bottom-before-update (scroll-to-bottom))
+        wrapped-component (with-meta component
+                             {:component-will-mount before-update
+                              :component-will-update before-update
+                              :component-did-update after-update
+                              :component-did-mount after-update})]
+    [wrapped-component]))
 
-(defn tail-button [do-tail]
-  [(sticky (partial plain-tail-button do-tail))])
 
-(defn output-component [build-state step-id-to-display details-visible do-tail]
+(defn- plain-output-component [build-state step-id-to-display details-visible]
   (let [step (state/find-by-step-id build-state step-id-to-display)
         result (:result step )
         output (:out result)]
-    (if @do-tail
-      (scroll-to-bottom))
     [:div {:class "results"}
-     [:button {:on-click (negate details-visible) :class "expand-details"} (if @details-visible "-" "+")]
-     [tail-button do-tail]
+     [:button {:on-click (negate details-visible)} (if @details-visible "-" "+")]
      [details-component details-visible result]
      [:pre output]]))
+
+
+(defn output-component [build-state step-id-to-display details-visible]
+  (scroll-wrapper (partial plain-output-component build-state step-id-to-display details-visible)))
