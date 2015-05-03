@@ -80,28 +80,28 @@
 
 (deftest execute-step-test
   (testing "that executing returns the step result added to the input args"
-    (is (= {:outputs { [0 0] {:foo :baz :x :y :status :success}} :status :success} (execute-step some-step-processing-input {:x :y} {:step-id [0 0]}))))
+    (is (= {:outputs { [0 0] {:foo :baz :x :y :status :success}} :status :success} (execute-step {:x :y} [{:step-id [0 0]} some-step-processing-input]))))
   (testing "that executing returns the steps result-status as a special field and leaves it in the output as well"
-    (is (= {:outputs { [0 0] {:status :success} } :status :success} (execute-step some-successful-step {} {:step-id [0 0]}))))
+    (is (= {:outputs { [0 0] {:status :success} } :status :success} (execute-step {} [{:step-id [0 0]} some-successful-step]))))
   (testing "that the result-status is :undefined if the step doesn't return any"
-    (is (= {:outputs { [0 0] {:status :undefined} } :status :undefined} (execute-step some-step-not-returning-status {} {:step-id [0 0]}))))
+    (is (= {:outputs { [0 0] {:status :undefined} } :status :undefined} (execute-step {} [{:step-id [0 0]} some-step-not-returning-status] ))))
   (testing "that if an exception is thrown in the step, it will result in a failure and the exception output is logged"
-    (let [output (execute-step some-step-throwing-an-exception {} {:step-id [0 0]})]
+    (let [output (execute-step {} [{:step-id [0 0]} some-step-throwing-an-exception])]
       (is (= :failure (get-in output [:outputs [0 0] :status])))
       (is (.contains (get-in output [:outputs [0 0] :out]) "Something went wrong"))))
   (testing "that the context passed to the step contains an output-channel and that results passed into this channel are merged into the result"
-    (is (= {:outputs { [0 0] {:out "hello world" :status :success}} :status :success} (execute-step some-step-writing-to-the-result-channel {} {:step-id [0 0]}))))
+    (is (= {:outputs { [0 0] {:out "hello world" :status :success}} :status :success} (execute-step {} [{:step-id [0 0]} some-step-writing-to-the-result-channel]))))
   (testing "that the context data is being passed on to the step"
-    (is (= {:outputs { [0 0] {:status :success :context-info "foo"}} :status :success} (execute-step some-step-consuming-the-context {} {:step-id [0 0] :the-info "foo"}))))
+    (is (= {:outputs { [0 0] {:status :success :context-info "foo"}} :status :success} (execute-step {} [{:step-id [0 0] :the-info "foo"} some-step-consuming-the-context]))))
   (testing "that the final pipeline-state is properly set for a step returning a static result"
     (let [pipeline-state-atom (atom {})]
       (is (= { 5 { [0 0] {:status :success } } }
-             (tu/without-ts (do (execute-step some-successful-step {} {:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state-atom})
+             (tu/without-ts (do (execute-step {} [{:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state-atom} some-successful-step])
                  @pipeline-state-atom))))))
   (testing "that the final pipeline-state is properly set for a step returning a static and an async result"
     (let [pipeline-state-atom (atom {})]
       (is (= { 5 { [0 0] {:status :success } } }
-             (tu/without-ts (do (execute-step some-step-that-sends-failure-on-ch-returns-success {} {:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state-atom})
+             (tu/without-ts (do (execute-step {} [{:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state-atom} some-step-that-sends-failure-on-ch-returns-success])
                  @pipeline-state-atom))))))
   (testing "that the pipeline-state is updated over time"
     (let [pipeline-state (atom {})]
@@ -112,15 +112,15 @@
               { 5 { [0 0] {:status :success :some-value 42 :out "hello world"} } }]
              (map tu/without-ts
                   (atom-history-for pipeline-state
-                    (execute-step some-step-building-up-result-state-incrementally {} {:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state})))))))
+                    (execute-step {} [{:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state} some-step-building-up-result-state-incrementally])))))))
   (testing "that the step result contains the static and the async output"
     (let [pipeline-state (atom {})]
       (is (= {:outputs {[0 0] {:status :success :some-value 42 :out "hello world"} } :status :success }
-             (execute-step some-step-building-up-result-state-incrementally {} {:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state})))))
+             (execute-step {} [{:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state} some-step-building-up-result-state-incrementally])))))
   (testing "that in doubt, the static output overlays the async output"
     (let [pipeline-state (atom {})]
       (is (= {:outputs {[0 0] {:status :success } } :status :success }
-             (execute-step some-step-that-sends-failure-on-ch-returns-success {} {:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state}))))))
+             (execute-step {} [{:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state} some-step-that-sends-failure-on-ch-returns-success]))))))
 
 (deftest context-for-steps-test
   (testing "that we can generate proper contexts for steps and keep other context info as it is"
