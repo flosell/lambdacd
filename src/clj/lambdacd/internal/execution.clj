@@ -48,11 +48,16 @@
     (finally
       (async/close! (:result-channel ctx)))))
 
-(defn execute-step [args [{:keys [step-id] :as ctx} step]]
+(defn execute-step [args [{:keys [step-id] :as ctx} step] & {:keys [result-channel]
+                                                             :or {result-channel (async/chan (async/dropping-buffer 0))}}]
  (pipeline-state/running ctx)
- (let [result-ch (async/chan 10)
-       ctx-with-result-ch (assoc ctx :result-channel result-ch)
-       processed-async-result-ch (process-channel-result-async result-ch ctx)
+ (let [result-ch-to-write (async/chan 10)
+       result-ch-to-read (async/chan 10)
+       mult (async/mult result-ch-to-write)
+       _ (async/tap mult result-channel)
+       _ (async/tap mult result-ch-to-read)
+       ctx-with-result-ch (assoc ctx :result-channel result-ch-to-write)
+       processed-async-result-ch (process-channel-result-async result-ch-to-read ctx)
        immediate-step-result (execute-or-catch step args ctx-with-result-ch)
        processed-async-result (async/<!! processed-async-result-ch)
        complete-step-result (merge  processed-async-result immediate-step-result)

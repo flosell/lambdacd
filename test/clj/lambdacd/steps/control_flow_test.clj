@@ -1,7 +1,9 @@
 (ns lambdacd.steps.control-flow-test
   (:use [lambdacd.testsupport.test-util])
   (:require [clojure.test :refer :all]
-            [lambdacd.steps.control-flow :refer :all]))
+            [lambdacd.testsupport.data :refer [some-ctx-with some-ctx]]
+            [lambdacd.steps.control-flow :refer :all]
+            [clojure.core.async :as async]))
 
 (defn some-step [arg & _]
   {:foo :baz})
@@ -30,6 +32,20 @@
 (defn some-failing-step [arg & _]
   {:status :failure})
 
+(defn some-step-sending-waiting-on-channel [_ {ch :result-channel}]
+  (async/>!! ch [:status :running])
+  (Thread/sleep 20)
+  (async/>!! ch [:status :waiting])
+  (Thread/sleep 100)
+  {:status :success})
+
+(defn some-step-sending-running-then-waiting-then-finished-on-channel [_ {ch :result-channel}]
+  (Thread/sleep 10)
+  (async/>!! ch [:status :waiting])
+  (Thread/sleep 40)
+  (async/>!! ch [:status :success])
+  {:status :success})
+
 
 (deftest in-parallel-test
   (testing "that it collects all the outputs together correctly"
@@ -45,12 +61,20 @@
 
 (deftest either-test
   (testing "that it succeeds whenever one step finishes successfully"
-    (is (close? 100 100 (my-time ((either some-step-taking-100ms  some-step-taking-500ms) {} {:step-id [0 0]})))))
+    (is (close? 100 100 (my-time ((either some-step-taking-100ms  some-step-taking-500ms) {} (some-ctx))))))
   (testing "that it returns only the results of the first successful step"
     (is (= {:status :success :foo :bar}
-           ((either some-step-taking-100ms  some-step-taking-500ms) {} { :step-id [0 0] })))
+           ((either some-step-taking-100ms  some-step-taking-500ms) {} (some-ctx))))
     (is (= {:status :success :successful "after a while"}
-           ((either some-failing-step some-step-being-successful-after-200ms) {} { :step-id [0 0] }))))
+           ((either some-failing-step some-step-being-successful-after-200ms) {} (some-ctx)))))
   (testing "that it fails once all children failed"
     (is (= { :status :failure }
-           ((either some-failing-step some-failing-step) {} { :step-id [0 0] })))))
+           ((either some-failing-step some-failing-step) {} (some-ctx)))))
+  (testing "that it can inherit the result status children send over the result channel"
+    (let [result-ch (async/chan 100)
+          ctx (some-ctx-with :result-channel result-ch)]
+      ((either some-step-sending-waiting-on-channel some-step-sending-running-then-waiting-then-finished-on-channel) {} ctx)
+      (is (= [[:status :running]
+              [:status :running]
+              [:status :waiting]
+              [:status :success]] (slurp-chan result-ch))))))

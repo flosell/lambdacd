@@ -17,8 +17,8 @@
 (defn execute-steps [steps args ctx & opts]
   (apply execution/do-execute-steps steps args ctx opts))
 
-(defn execute-step [args [ctx step]]
-  (execution/execute-step args [ctx step]))
+(defn execute-step [args [ctx step] & opts]
+  (apply execution/execute-step args [ctx step] opts))
 
 (defn new-base-context-for [ctx]
   (execution/new-base-context-for ctx))

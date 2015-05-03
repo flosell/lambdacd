@@ -2,7 +2,7 @@
   (:use [lambdacd.testsupport.test-util])
   (:require [clojure.test :refer :all]
             [lambdacd.internal.execution :refer :all]
-            [lambdacd.testsupport.test-util :refer [eventually]]
+            [lambdacd.testsupport.test-util :refer [eventually slurp-chan]]
             [clojure.core.async :as async]
             [lambdacd.testsupport.data :refer [some-ctx-with]]
             [lambdacd.testsupport.test-util :as tu]))
@@ -78,6 +78,9 @@
     (testing "merging into a flat list on collision"
       (is (= {:foo ["hello" "world" "test"]} (merge-step-results {:foo ["hello" "world"]} {:foo "test"}))))))
 
+(defn some-pipeline-state []
+  (atom {}))
+
 (deftest execute-step-test
   (testing "that executing returns the step result added to the input args"
     (is (= {:outputs { [0 0] {:foo :baz :x :y :status :success}} :status :success} (execute-step {:x :y} [{:step-id [0 0]} some-step-processing-input]))))
@@ -120,7 +123,12 @@
   (testing "that in doubt, the static output overlays the async output"
     (let [pipeline-state (atom {})]
       (is (= {:outputs {[0 0] {:status :success } } :status :success }
-             (execute-step {} [{:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state} some-step-that-sends-failure-on-ch-returns-success]))))))
+             (execute-step {} [{:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state} some-step-that-sends-failure-on-ch-returns-success])))))
+  (testing "that we can pass in a channel that gets a copy of the result-channel messages"
+    (let [result-channel (async/chan 100)]
+      (execute-step {} [{:step-id [0 0] :build-number 5 :_pipeline-state (some-pipeline-state)} some-step-writing-to-the-result-channel]
+                    :result-channel result-channel)
+      (is (= [[:out "hello world"]] (slurp-chan result-channel))))))
 
 (deftest context-for-steps-test
   (testing "that we can generate proper contexts for steps and keep other context info as it is"
