@@ -19,3 +19,6 @@
 
 (defn execute-step [args [ctx step]]
   (execution/execute-step args [ctx step]))
+
+(defn new-base-context-for [ctx]
+  (execution/new-base-context-for ctx))

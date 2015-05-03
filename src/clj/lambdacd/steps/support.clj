@@ -50,3 +50,4 @@
 
 (defn printed-output [printer]
   @printer)
+
