@@ -13,3 +13,6 @@
 
 (defn retrigger [pipeline context build-number step-id-to-retrigger]
   (execution/retrigger pipeline context build-number step-id-to-retrigger))
+
+(defn execute-steps [steps args ctx & opts]
+  (apply execution/do-execute-steps steps args ctx opts))

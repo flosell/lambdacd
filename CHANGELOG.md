@@ -14,7 +14,9 @@ The official release will have a defined and more stable API. If you are already
 * Improvements:
   * `with-git` removes its workspace after all child-steps are finished
   * Display build status in history (#3)
-
+* API Changes
+  * `lambdacd.internal.execution/execute-steps` is now deprecated. use the public `lambdacd.core/execute-steps` instead.
+    `lambdacd.core/execute-steps` takes keyword-arguments instead of argument lists for optional parameters.
 
 ## 0.2.1
 

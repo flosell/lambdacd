@@ -123,9 +123,6 @@
       (reset! is-killed true)
       (is (= :killed (:status (async/<!! result-ch)))))))
 
-
-
-
 ;; TODO: replace this test with checkout-and-execute tests, phase out with-git
 (deftest with-git-test
   (testing "that it checks out a particular revision and then returns, indicating the location of the checked out repo as :cwd value and that the cloned repo is in a directory named like the repo that was cloned"
