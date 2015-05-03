@@ -10,8 +10,22 @@
             [lambdacd.route :as route]
             [lambdacd.state :as state]))
 
+(defn- status-icon [status]
+  (let [class (case status
+                "failure" "fa fa-times"
+                "success" "fa fa-check"
+                "running" "fa fa-cog fa-spin"
+                "waiting" "fa fa-pause"
+                "fa fa-question")]
+    [:div {:class "history-item-status-icon" } [:i {:class class}]]))
+
 (defn history-item-component [{build-number :build-number status :status}]
-  [:li {:key build-number} [:a {:href (route/for-build-number build-number)} (str "Build " build-number)]])
+  [:li {:key build-number :class "history-item"}
+   [status-icon status]
+   [:div {:class "history-item-content"}
+     [:a {:href (route/for-build-number build-number) :class "history-item-header"} (str "Build " build-number)]
+     [:p {:class "history-item-detail"} status]]
+   ])
 
 (defn build-history-component [history]
   [:div {:class "blocked"}

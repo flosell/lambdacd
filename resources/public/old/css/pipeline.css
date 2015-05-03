@@ -11,10 +11,10 @@
 
 #builds {
   margin-right:10px;
-  padding-right:10px;
 
   flex-shrink:0;
-  border-right: thin black solid
+  border-right: thin black solid;
+  width: 120px;
 }
 
 .title {
@@ -52,6 +52,7 @@ div {
 
 div.blocked {
   display:block;
+  width:100%;
 }
 
 li[data-status=waiting] {
@@ -94,4 +95,27 @@ li:not([data-status]) {
 
 .results {
   display:inline-block;
+}
+
+
+.history-item {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border-bottom: thin black solid;
+  width:100%;
+  display:flex;
+}
+
+.history-item-content {
+  display:block;
+}
+
+.history-item-status-icon {
+  display:block;
+  padding-right:5px;
+  padding-left:5px;
+}
+
+.history-item-detail {
+  margin: 0;
 }
