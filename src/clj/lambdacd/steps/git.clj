@@ -37,7 +37,7 @@
     (async/>!! (:result-channel ctx) [:status :waiting])
     (async/>!! (:result-channel ctx) [:out initial-output])
     (loop [result (revision-changed-from last-seen-revision repo-uri branch)]
-      (execution/if-not-killed ctx
+      (support/if-not-killed ctx
         (if (= :success (:status result))
           (do
             (async/>!! (:result-channel ctx) [:out (str initial-output "\nFound new commit: " (:revision result) ".")])

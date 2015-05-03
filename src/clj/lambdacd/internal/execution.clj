@@ -176,13 +176,3 @@
       (duplicate-step-results-not-running-again new-build-number build-number pipeline-history context step-id-to-run)
       (do-execute-steps executable-pipeline {} (assoc context :step-id [(dec root-step-number)]
                                                            :build-number new-build-number)))))
-
-(defn killed? [ctx]
-  @(:is-killed ctx))
-
-(defmacro if-not-killed [ctx & body]
-  `(if (killed? ~ctx)
-     (do
-       (async/>!! (:result-channel ~ctx) [:status :killed])
-       {:status :killed})
-     ~@body))

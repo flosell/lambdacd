@@ -2,7 +2,7 @@
   (:require [lambdacd.internal.execution :as execution]
             [clojure.core.async :as async]
             [clojure.tools.logging :as log]
-            ))
+            [lambdacd.steps.support :as support]))
 
 (def ids-posted-to (atom {}))
 
@@ -17,7 +17,7 @@
   (async/>!! (:result-channel ctx) [:out (str "Waiting for trigger..." )])
   (loop []
     (let [trigger-parameters (was-posted? id)]
-      (execution/if-not-killed ctx
+      (support/if-not-killed ctx
         (if trigger-parameters
           (assoc trigger-parameters :status :success)
           (do (Thread/sleep 1000)

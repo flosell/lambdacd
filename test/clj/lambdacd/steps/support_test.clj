@@ -116,3 +116,16 @@
   (testing "that a given context is passed on to the step"
     (is (= {:status :success :the-ctx-1 {:v 42}} (chain {} {:v 42}
                                                  (some-step-returning-the-context-passed-in))))))
+
+(deftest if-not-killed-test
+  (testing "that the body will only be executed if step is still alive"
+    (let [killed-ctx (some-ctx-with :is-killed (atom true))
+          alive-ctx (some-ctx-with :is-killed (atom false))]
+      (is (= {:status :success} (if-not-killed alive-ctx  {:status :success})))
+      (is (= {:status :success} (if-not-killed alive-ctx  (assoc {} :status :success))))
+      (is (= {:status :killed}  (if-not-killed killed-ctx   {:status :success})))))
+  (testing "that the status is updated when the step was killed"
+    (let [output (async/chan 10)
+          killed-ctx (some-ctx-with :is-killed (atom true) :result-channel output)]
+      (if-not-killed killed-ctx  {:status :success})
+      (is (= [:status :killed] (async/<!! output))))))

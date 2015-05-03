@@ -51,3 +51,13 @@
 (defn printed-output [printer]
   @printer)
 
+
+(defn killed? [ctx]
+  @(:is-killed ctx))
+
+(defmacro if-not-killed [ctx & body]
+  `(if (killed? ~ctx)
+     (do
+       (async/>!! (:result-channel ~ctx) [:status :killed])
+       {:status :killed})
+     ~@body))
