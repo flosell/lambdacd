@@ -16,3 +16,6 @@
 
 (defn execute-steps [steps args ctx & opts]
   (apply execution/do-execute-steps steps args ctx opts))
+
+(defn execute-step [args [ctx step]]
+  (execution/execute-step args [ctx step]))

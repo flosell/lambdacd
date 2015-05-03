@@ -5,7 +5,7 @@
             [clojure.core.async :as async]))
 
 (defn- parallel-step-result-producer [args steps-and-ids]
-  (pmap (partial execution/execute-step args) steps-and-ids))
+  (pmap (partial core/execute-step args) steps-and-ids))
 
 (defn- execute-steps-in-parallel [steps args step-id]
   (core/execute-steps steps args step-id
@@ -22,7 +22,7 @@
     (async/<!! filtered-by-success)))
 
 (defn- step-producer-returning-with-first-successful [args steps-and-ids]
-  (let [step-result-channels (map #(async/go (execution/execute-step args %)) steps-and-ids)
+  (let [step-result-channels (map #(async/go (core/execute-step args %)) steps-and-ids)
         result (wait-for-success-on step-result-channels)]
     (if (nil? result)
       [{:status :failure}]
