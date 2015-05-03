@@ -36,7 +36,7 @@ testunit() {
 }
 
 release() {
-  testall && lein clean && lein with-profile +release release $1
+  testall && lein clean && lein with-profile +release release $1 && scripts/github-release.sh
 }
 
 releaseLocal() {
