@@ -20,7 +20,7 @@
     (running { :build-number build :step-id id :_pipeline-state state})
     @state))
 
-(deftest pipeline-state-test
+(deftest general-pipeline-state-test
   (testing "that the next buildnumber is the highest build-number currently in the pipeline-state"
     (is (= 5 (next-build-number {:_pipeline-state (atom { 3 {} 4 {} 1 {}})})))
     (is (= 1 (next-build-number {:_pipeline-state (atom clean-pipeline-state)}))))

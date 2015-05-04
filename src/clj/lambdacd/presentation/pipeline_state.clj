@@ -20,7 +20,7 @@
    :status (status-for-steps v)})
 
 (defn history-for [state]
-  (map history-entry state))
+  (sort-by :build-number (map history-entry state)))
 
 (defn most-recent-build-number-in [state]
   (apply max (keys state)))

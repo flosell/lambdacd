@@ -1,4 +1,4 @@
-(ns lambdacd.internal.pipeline-state-test
+(ns lambdacd.presentation.pipeline-state-test
   (:use [lambdacd.testsupport.test-util])
   (:require [clojure.test :refer :all]
             [lambdacd.presentation.pipeline-state :refer :all]))
