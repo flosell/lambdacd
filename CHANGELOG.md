@@ -5,6 +5,10 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
+## 0.2.3
+
+* Bug fixes: #13
+
 ## 0.2.2
 
 * Bug fixes: #8, #10, #11, #12
