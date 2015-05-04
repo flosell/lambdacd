@@ -8,18 +8,26 @@
     (is (= [{ :build-number 5
              :status :running}
             { :build-number 6
-             :status :ok}
+             :status :success}
             { :build-number 7
              :status :failure}
             { :build-number 8
              :status :waiting}
             { :build-number 9
               :status :unknown}
-            ] (history-for { 5 { [0] { :status :ok } [1] { :status :running}}
-                             6 { [0] { :status :ok } }
-                             7 { [0 2] { :status :running} [0 1] { :status :failure}}
-                             8 { [0] { :status :waiting }}
-                             9 { [0] { :no :status }}})))))
+            { :build-number 10
+             :status :success}
+            ] (history-for { 5  {[0]   { :status :success }
+                                 [1]   { :status :running}}
+                             6  {[0]   { :status :success } }
+                             7  {[0 2] { :status :running}
+                                 [0 1] { :status :failure}}
+                             8  {[0]   { :status :waiting }}
+                             9  {[0]   { :no :status }}
+                             10 {[1 1] { :status :killed }
+                                 [2 1] { :status :success}
+                                 [1]   { :status :success}
+                                 [2]   { :status :success}}})))))
 
 (deftest most-recent-build-test
   (testing "that it returns the most recent build number in the pipeline-state"

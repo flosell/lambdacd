@@ -4,14 +4,15 @@
 
 (defn- status-for-steps [steps]
   (let [statuses (map :status (vals steps))
+        statuses-not-killed (filter #(not= :killed %) statuses)
         has-failed (util/contains-value? :failure statuses)
         has-running (util/contains-value? :running statuses)
         has-waiting (util/contains-value? :waiting statuses)
-        all-ok (every? #(= % :ok) statuses)]
+        all-ok (every? #(= % :success) statuses-not-killed)]
     (cond
       has-failed :failure
       has-running :running
-      all-ok :ok
+      all-ok :success
       has-waiting :waiting
       :else :unknown)))
 
