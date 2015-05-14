@@ -158,7 +158,7 @@
         args {}]
     (testing "that it returns the results of the last step it executed"
       (is (map-containing {:the-number 42 } (checkout-and-execute repo-uri "HEAD" args (some-ctx) [some-step-that-returns-21 some-step-that-returns-42]))))
-    (testing "that it returns the results of the last step it executed"
+    (testing "that the git repo is checked out somewhere within the home folder"
       (is (= some-parent-folder (.getParent (.getParentFile (io/file (:thecwd (checkout-and-execute repo-uri "HEAD" args ctx [some-step-that-returns-the-cwd]))))))))))
 
 
