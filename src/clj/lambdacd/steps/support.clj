@@ -65,3 +65,6 @@
 
 (defn merge-globals [step-results]
   (or (:global (reduce execution/keep-globals {} step-results)) {}))
+
+(defn merge-step-results [step-results]
+  (reduce execution/merge-two-step-results {} step-results))

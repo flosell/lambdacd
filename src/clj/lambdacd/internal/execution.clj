@@ -77,7 +77,7 @@
     (merge-status r1 r2)
     (merge r1 r2)))
 
-(defn- merge-step-results [r1 r2]
+(defn merge-two-step-results [r1 r2]
   (merge-with merge-entry r1 r2))
 
 (defn- steps-with-ids [steps prev-id]
@@ -131,7 +131,7 @@
                                                   is-killed            (atom false)}}]
   (let [base-ctx-with-kill-switch (assoc ctx :is-killed is-killed)
         step-results (step-result-producer args (contexts-for-steps steps base-ctx-with-kill-switch))]
-    (reduce merge-step-results step-results)))
+    (reduce merge-two-step-results step-results)))
 
 (defn execute-steps ; DEPRECATED. use core/execute-steps instead (make sure you also use keyword arguments)
   ([steps args ctx]

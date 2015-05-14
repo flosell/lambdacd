@@ -66,17 +66,17 @@
     (async/>!! result-ch [:out "hello world"])
     {:status :success}))
 
-(with-private-fns [lambdacd.internal.execution [merge-step-results]]
+(with-private-fns [lambdacd.internal.execution [merge-two-step-results]]
   (deftest step-result-merge-test
     (testing "merging without collisions"
-      (is (= {:foo "hello" :bar "world"} (merge-step-results {:foo "hello"} {:bar "world"}))))
+      (is (= {:foo "hello" :bar "world"} (merge-two-step-results {:foo "hello"} {:bar "world"}))))
     (testing "merging with value-collisions on keyword overwrites"
-      (is (= {:status :failure} (merge-step-results {:status :success} {:status :failure}))))
+      (is (= {:status :failure} (merge-two-step-results {:status :success} {:status :failure}))))
     (testing "merging of nested maps"
       (is (= {:outputs {[1 0] {:foo :baz} [2 0] {:foo :baz}}}
-             (merge-step-results {:outputs {[1 0] {:foo :baz}}} {:outputs { [2 0] {:foo :baz}}}))))
+             (merge-two-step-results {:outputs {[1 0] {:foo :baz}}} {:outputs { [2 0] {:foo :baz}}}))))
     (testing "merging into a flat list on collision"
-      (is (= {:foo ["hello" "world" "test"]} (merge-step-results {:foo ["hello" "world"]} {:foo "test"}))))))
+      (is (= {:foo ["hello" "world" "test"]} (merge-two-step-results {:foo ["hello" "world"]} {:foo "test"}))))))
 
 (defn some-pipeline-state []
   (atom {}))

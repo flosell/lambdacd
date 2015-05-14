@@ -1,6 +1,7 @@
 (ns lambdacd.steps.control-flow-test
   (:use [lambdacd.testsupport.test-util])
   (:require [clojure.test :refer :all]
+            [lambdacd.testsupport.matchers :refer [map-containing]]
             [lambdacd.testsupport.data :refer [some-ctx-with some-ctx]]
             [lambdacd.steps.control-flow :refer :all]
             [clojure.core.async :as async]))
@@ -46,12 +47,21 @@
   (async/>!! ch [:status :success])
   {:status :success})
 
+(defn some-step-that-returns-a-global-value [& _]
+  {:status :success :global {:some :value}})
+
+(defn some-step-that-returns-42 [args ctx]
+  {:status :success :the-number 42})
 
 (deftest in-parallel-test
   (testing "that it collects all the outputs together correctly"
-    (is (= {:outputs { [1 0 0] {:foo :baz :status :undefined} [2 0 0] {:foo :baz :status :undefined}} :status :undefined} ((in-parallel some-step some-step) {} { :step-id [0 0] }))))
+    (is (map-containing {:outputs { [1 0 0] {:foo :baz :status :undefined} [2 0 0] {:foo :baz :status :undefined}} :status :undefined} ((in-parallel some-step some-step) {} { :step-id [0 0] }))))
   (testing "that one failing step fails the pipeline"
-    (is (= {:outputs { [1 0 0] {:status :success} [2 0 0] {:status :failure}} :status :failure} ((in-parallel some-successful-step some-failing-step) {} {:step-id [0 0]}))))
+    (is (map-containing {:outputs { [1 0 0] {:status :success} [2 0 0] {:status :failure}} :status :failure} ((in-parallel some-successful-step some-failing-step) {} {:step-id [0 0]}))))
+  (testing "global values are returned properly"
+    (is (map-containing {:global {:some :value}} ((in-parallel some-step-that-returns-a-global-value some-successful-step) {} {:step-id [0 0]}))))
+  (testing "that all the result-values are merged together into a new result"
+    (is (map-containing {:the-number 42 :foo :baz} ((in-parallel some-step-that-returns-42 some-other-step) {} {:step-id [0 0]}))))
   (testing "that it executes things faster than it would serially"
     (is (close? 100 100 (my-time ((in-parallel some-step-taking-100ms some-step-taking-100ms some-step-taking-100ms) {} {:step-id [0 0]}))))))
 

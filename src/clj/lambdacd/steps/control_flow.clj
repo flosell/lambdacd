@@ -1,10 +1,9 @@
 (ns lambdacd.steps.control-flow
   "control flow elements for a pipeline: steps that control the way their child-steps are being run"
-  (:require [lambdacd.internal.execution :as execution]
-            [lambdacd.core :as core]
+  (:require [lambdacd.core :as core]
             [clojure.core.async :as async]
             [lambdacd.util :as util]
-            [lambdacd.presentation.pipeline-state :as pipeline-state]))
+            [lambdacd.steps.support :as support]))
 
 (defn- parallel-step-result-producer [args steps-and-ids]
   (pmap (partial core/execute-step args) steps-and-ids))
@@ -15,7 +14,11 @@
 
 (defn ^{:display-type :parallel} in-parallel [& steps]
   (fn [args ctx]
-    (execute-steps-in-parallel steps args (core/new-base-context-for ctx))))
+    (let [result (execute-steps-in-parallel steps args (core/new-base-context-for ctx))
+          outputs (vals (:outputs result))
+          globals (support/merge-globals outputs)
+          merged-step-results (support/merge-step-results outputs)]
+      (merge merged-step-results result {:global globals}))))
 
 
 (defn- wait-for-success-on [channels]
@@ -83,8 +86,7 @@
         result (wait-for-success-on step-result-channels)]
     (if (nil? result)
       [{:status :failure}]
-      [result]))
-  )
+      [result])))
 
 (defn ^{:display-type :parallel} either [& steps]
   (fn [args ctx]
