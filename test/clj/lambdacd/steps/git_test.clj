@@ -148,6 +148,8 @@
   {:status :success :the-number 21})
 (defn some-step-that-returns-the-cwd [{cwd :cwd} _]
   {:status :success :thecwd cwd})
+(defn some-step-that-returns-a-global-value [& _]
+  {:status :success :global {:some :value}})
 
 (deftest checkout-and-execute-test
   (let [some-parent-folder (util/create-temp-dir)
@@ -158,6 +160,8 @@
         args {}]
     (testing "that it returns the results of the last step it executed"
       (is (map-containing {:the-number 42 } (checkout-and-execute repo-uri "HEAD" args (some-ctx) [some-step-that-returns-21 some-step-that-returns-42]))))
+    (testing "that global values can be returned from any step and will be part of the final result"
+      (is (map-containing {:global {:some :value}} (checkout-and-execute repo-uri "HEAD" args (some-ctx) [some-step-that-returns-a-global-value some-step-that-returns-42]))))
     (testing "that the git repo is checked out somewhere within the home folder"
       (is (= some-parent-folder (.getParent (.getParentFile (io/file (:thecwd (checkout-and-execute repo-uri "HEAD" args ctx [some-step-that-returns-the-cwd]))))))))))
 

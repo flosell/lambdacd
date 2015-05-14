@@ -100,9 +100,10 @@
 (defn keep-globals [step-result old-args]
   (let [existing-globals (:global old-args)
         new-globals (:global step-result)
-        merged-globals (merge existing-globals new-globals)
+        merged-globals (merge new-globals existing-globals)
         args-with-old-and-new-globals (assoc step-result :global merged-globals)]
     args-with-old-and-new-globals))
+
 
 (defn- keep-original-args [step-result old-args]
   (merge old-args step-result))

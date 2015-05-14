@@ -1,6 +1,7 @@
 (ns lambdacd.steps.support
   (:require [clojure.string :as s]
-            [clojure.core.async :as async]))
+            [clojure.core.async :as async]
+            [lambdacd.internal.execution :as execution]))
 
 (defn merge-values [a b]
   (cond
@@ -61,3 +62,6 @@
        (async/>!! (:result-channel ~ctx) [:status :killed])
        {:status :killed})
      ~@body))
+
+(defn merge-globals [step-results]
+  (or (:global (reduce execution/keep-globals {} step-results)) {}))

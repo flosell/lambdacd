@@ -1,8 +1,7 @@
 (ns lambdacd.steps.git
   "build-steps that let you work with git repositories"
   (:import (java.io File))
-  (:require [lambdacd.internal.execution :as execution]
-            [lambdacd.util :as util]
+  (:require [lambdacd.util :as util]
             [clojure.tools.logging :as log]
             [lambdacd.steps.shell :as shell]
             [clojure.core.async :as async]
@@ -91,10 +90,13 @@
       (if (= 0 checkout-exit-code)
         (let [execute-steps-result (core/execute-steps steps (assoc args :cwd repo-location) (core/new-base-context-for ctx))
               result-with-checkout-output (assoc execute-steps-result :out (:out checkout-result))
-              step-ids (keys (:outputs execute-steps-result))
+              step-ids-and-outputs (:outputs execute-steps-result)
+              step-ids (keys step-ids-and-outputs)
+              outputs (vals step-ids-and-outputs)
               last-step-id (last-step-id-of step-ids)
-              output-of-last-step (get-in execute-steps-result [:outputs last-step-id])]
-          (merge result-with-checkout-output output-of-last-step))
+              output-of-last-step (get-in execute-steps-result [:outputs last-step-id])
+              globals (support/merge-globals outputs)]
+          (merge result-with-checkout-output output-of-last-step {:global globals}))
         {:status :failure
          :out (:out checkout-result)
          :exit (:exit checkout-result)}))))

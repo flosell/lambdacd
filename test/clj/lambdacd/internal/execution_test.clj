@@ -192,3 +192,4 @@
           pipeline `((some-control-flow some-step) some-successful-step)
           context { :_pipeline-state pipeline-state-atom}]
       (is (thrown? IllegalArgumentException (retrigger pipeline context 0 [2 1]))))))
+

@@ -3,6 +3,7 @@
             [lambdacd.steps.support :refer :all]
             [lambdacd.testsupport.test-util :refer [slurp-chan]]
             [lambdacd.testsupport.data :refer [some-ctx some-ctx-with]]
+            [lambdacd.testsupport.matchers :refer [map-containing]]
             [clojure.core.async :as async]))
 
 (defn some-step [args ctx]
@@ -129,3 +130,15 @@
           killed-ctx (some-ctx-with :is-killed (atom true) :result-channel output)]
       (if-not-killed killed-ctx  {:status :success})
       (is (= [:status :killed] (async/<!! output))))))
+
+(deftest merge-globals-test
+  (testing "that only global values are returned"
+    (is (= {:foo :bar} (merge-globals [{:x :y :global {:foo :bar}}]))))
+  (testing "that it can merge global values from the outputs of several steps"
+    (is (map-containing {:foo :bar :bar :baz} (merge-globals [{:x :y :global {:foo :bar}} {:global { :bar :baz}}]))))
+  (testing "that later global values overwrite earlier ones"
+    (is (= {:foo :baz} (merge-globals [{:x :y :global {:foo :bar}} {:x :y :global {:foo :baz}}]))))
+  (testing "that nothing bad happens if steps don't have global values"
+    (is (= {} (merge-globals [{:x :y } {} {:z 1 :global {}} ])))
+    (is (= {} (merge-globals [ ])))
+    (is (= {} (merge-globals [{:x :y } {} {:z 1} ])))))
