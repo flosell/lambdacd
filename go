@@ -55,6 +55,10 @@ serveClojureScript() {
   lein figwheel app
 }
 
+repl-server() {
+  lein repl :headless :port 58488
+}
+
 if [ "$1" == "setup" ]; then
     setup
 elif [ "$1" == "testall" ]; then
@@ -75,6 +79,8 @@ elif [ "$1" == "serve" ]; then
     serve
 elif [ "$1" == "serve-cljs" ]; then
     serveClojureScript
+elif [ "$1" == "repl-server" ]; then
+    repl-server
 else
     echo "usage: $0 <goal>
 
@@ -88,6 +94,7 @@ goal:
     serve-cljs    -- compile clojurescript and watch for changes
     push          -- run all tests and push current state
     release       -- release current version
-    release-local -- install current version in local repository"
+    release-local -- install current version in local repository
+    repl-server   -- start a repl cursive can use to run tests in"
     exit 1
 fi
