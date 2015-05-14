@@ -142,3 +142,19 @@
     (is (= {} (merge-globals [{:x :y } {} {:z 1 :global {}} ])))
     (is (= {} (merge-globals [ ])))
     (is (= {} (merge-globals [{:x :y } {} {:z 1} ])))))
+
+(deftest merge-step-results-test
+  (testing "that step-results are merged"
+    (is (= {:foo :bar :bar :baz} (merge-step-results [{:foo :bar} {:bar :baz}]))))
+  (testing "that nothing bad happens from empty results"
+    (is (= { :bar :baz} (merge-step-results [{} {:bar :baz}])))
+    (is (= { } (merge-step-results [])))
+    (is (= { } (merge-step-results [{} {}]))))
+  (testing "that later step-results overwrite earlier ones"
+    (is (= {:foo :baz} (merge-step-results [{:foo :bar} {:foo :baz}]))))
+  (testing "that there is a special status handling"
+    (is (= {:status :success} (merge-step-results [{:status :success} {:status :success}])))
+    (is (= {:status :failure} (merge-step-results [{:status :success} {:status :failure}])))
+    (is (= {:status :unknown} (merge-step-results [{:status :unknown} {:status :success}]))) ; non-success trumps order
+    (is (= {:status :unknown} (merge-step-results [{:status :failure} {:status :unknown}]))) ; non-success overwrites in order
+    (is (= {:status :failure} (merge-step-results [{:status :failure} {:status :success}]))))) ; non-success trumps order
