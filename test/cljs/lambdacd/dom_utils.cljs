@@ -25,6 +25,7 @@
       true
       (do (println "Not found: " res)
           false))))
+
 (defn not-found-in [div re]
   (let [res (.-innerHTML div)]
     (if (not (re-find re res))

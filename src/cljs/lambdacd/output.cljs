@@ -1,6 +1,7 @@
 (ns lambdacd.output
   (:require [lambdacd.state :as state]
-            [reagent.core :as reagent :refer [atom]]))
+            [reagent.core :as reagent :refer [atom]]
+            [clojure.string :as s]))
 
 (defn negate [a]
   (fn [& _ ]
@@ -31,11 +32,21 @@
                               :component-did-mount after-update})]
     [wrapped-component]))
 
+(defn status-to-string [status]
+  (s/upper-case status))
+
+(defn- still-active? [status]
+  (or (nil? status) (= status "running") (= status "waiting")))
+
+(defn- enhanced-output [{status :status output :out}]
+   (if (still-active? status)
+     output
+     (str output "\n\n" "Step is finished: " (status-to-string status))))
 
 (defn- plain-output-component [build-state step-id-to-display details-visible]
   (let [step (state/find-by-step-id build-state step-id-to-display)
         result (:result step )
-        output (:out result)]
+        output (enhanced-output result)]
     [:div {:class "results"}
      [:button {:on-click (negate details-visible)} (if @details-visible "-" "+")]
      [details-component details-visible result]

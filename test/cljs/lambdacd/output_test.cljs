@@ -8,34 +8,80 @@
 (def some-child
   {:name "do-other-stuff"
    :step-id [1 1]
-   :result {:status :running :some-key :some-value :out "hello from child"}
+   :result {:status "running" :some-key :some-value :out "hello from child"}
    :children: []})
 
 (def root-step
   {:name "in-parallel"
    :step-id [1]
-   :result {:status :ok :out "hello from root"}
+   :result {:status "running" :out "hello from root"}
    :children
    [some-child]})
 
-(def some-build-state [root-step])
+(def some-running-build-state [root-step])
+
+(def some-waiting-build-state [{:name "do-other-stuff"
+                                   :step-id [1 1]
+                                   :result {:status "waiting" :out "waiting..."}
+                                   :children: []}])
+(def some-unknown-build-state [{:name "do-other-stuff"
+                                :step-id [1 1]
+                                :result {:status nil :out "waiting..."}
+                                :children: []}])
+
+(def some-successful-build-state [{:name "do-other-stuff"
+                                 :step-id [1 1]
+                                 :result {:status "success" :out "hello from successful step"}
+                                 :children: []}])
+(def some-failed-build-state [{:name "do-other-stuff"
+                                 :step-id [1 1]
+                                 :result {:status "failure" :out "hello from successful child"}
+                                 :children: []}])
 
 (deftest output-test
          (testing "that we can display the :out output of a step"
                   (tu/with-mounted-component
-                    (output/output-component some-build-state [1 1] (atom true))
+                    (output/output-component some-running-build-state [1 1] (atom true))
                     (fn [c div]
                       (is (dom/found-in div #"hello from child")))))
+         (testing "that the output contains a message indicating the success of a build step"
+                  (tu/with-mounted-component
+                    (output/output-component some-successful-build-state [1 1] (atom true))
+                    (fn [c div]
+                      (is (dom/found-in div #"Step is finished: SUCCESS")))))
+         (testing "that the output contains a message indicating the failure of a build step"
+                  (tu/with-mounted-component
+                    (output/output-component some-failed-build-state [1 1] (atom true))
+                    (fn [c div]
+                      (is (dom/found-in div #"Step is finished: FAILURE")))))
+         (testing "that the finished message does not appear if the step doesn't have a known state"
+                  (tu/with-mounted-component
+                    (output/output-component some-unknown-build-state [1 1] (atom true))
+                    (fn [c div]
+                      (is (dom/not-found-in div #"Step is finished"))))
+                  (tu/with-mounted-component
+                    (output/output-component some-waiting-build-state [1 1] (atom true))
+                    (fn [c div]
+                      (is (dom/not-found-in div #"Step is finished")))))
+         (testing "that the finished message does not appear if the step is still running"
+                  (tu/with-mounted-component
+                    (output/output-component some-running-build-state [1 1] (atom true))
+                    (fn [c div]
+                      (is (dom/not-found-in div #"Step is finished"))))
+                  (tu/with-mounted-component
+                    (output/output-component some-waiting-build-state [1 1] (atom true))
+                    (fn [c div]
+                      (is (dom/not-found-in div #"Step is finished")))))
          (testing "that we can display the other attributes of the output map"
                   (tu/with-mounted-component
-                    (output/output-component some-build-state [1 1] (atom true))
+                    (output/output-component some-running-build-state [1 1] (atom true))
                     (fn [c div]
                       (is (dom/found-in (sel1 div :button) #"-"))
                       (is (dom/found-in div #"some-key"))
                       (is (dom/found-in div #"some-value")))))
          (testing "that we can hide the other attributes of the output map"
                   (tu/with-mounted-component
-                    (output/output-component some-build-state [1 1] (atom false))
+                    (output/output-component some-running-build-state [1 1] (atom false))
                     (fn [c div]
                       (dom/fire! (sel1 div :button) :click)
                       (is (dom/found-in (sel1 div :button) #"\+"))
