@@ -7,7 +7,7 @@ The official release will have a defined and more stable API. If you are already
 
 ## 0.2.4
 
-* Bug fixes: #14
+* Bug fixes: #14, #15
 * Minor enhancements: #4
 
 ## 0.2.3

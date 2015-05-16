@@ -73,9 +73,10 @@
       s2)))
 
 (defn- merge-entry [r1 r2]
-  (if (keyword? r1)
-    (merge-status r1 r2)
-    (merge r1 r2)))
+  (cond
+    (keyword? r1) (merge-status r1 r2)
+    (coll? r1) (merge r1 r2)
+    :else r2))
 
 (defn merge-two-step-results [r1 r2]
   (merge-with merge-entry r1 r2))
