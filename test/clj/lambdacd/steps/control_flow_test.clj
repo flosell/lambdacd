@@ -67,7 +67,11 @@
 
 (deftest in-cwd-test
   (testing "that it collects all the outputs together correctly and passes cwd to steps"
-    (is (= {:outputs { [1 0 0] {:foo "somecwd" :status :success} [2 0 0] {:foo :baz :status :success}} :status :success} ((in-cwd "somecwd" some-step-for-cwd some-other-step) {} {:step-id [0 0]})))))
+    (is (map-containing {:outputs { [1 0 0] {:foo "somecwd" :status :success} [2 0 0] {:foo :baz :status :success}} :status :success} ((in-cwd "somecwd" some-step-for-cwd some-other-step) {} {:step-id [0 0]}))))
+  (testing "that all the result-values are merged together into a new result"
+    (is (map-containing {:the-number 42 :foo :baz} ((in-cwd "somecwd" some-step-that-returns-42 some-other-step) {} {:step-id [0 0]}))))
+  (testing "global values are returned properly"
+    (is (map-containing {:global {:some :value}} ((in-cwd "somecwd" some-step-that-returns-a-global-value some-successful-step) {} {:step-id [0 0]})))))
 
 (deftest either-test
   (testing "that it succeeds whenever one step finishes successfully"

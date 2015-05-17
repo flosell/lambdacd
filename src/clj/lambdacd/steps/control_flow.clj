@@ -12,14 +12,16 @@
   (core/execute-steps steps args step-id
                            :step-result-producer parallel-step-result-producer))
 
+(defn- post-process-container-results [result]
+  (let [outputs (vals (:outputs result))
+        globals (support/merge-globals outputs)
+        merged-step-results (support/merge-step-results outputs)]
+    (merge merged-step-results result {:global globals})))
+
 (defn ^{:display-type :parallel} in-parallel [& steps]
   (fn [args ctx]
-    (let [result (execute-steps-in-parallel steps args (core/new-base-context-for ctx))
-          outputs (vals (:outputs result))
-          globals (support/merge-globals outputs)
-          merged-step-results (support/merge-step-results outputs)]
-      (merge merged-step-results result {:global globals}))))
-
+    (post-process-container-results
+      (execute-steps-in-parallel steps args (core/new-base-context-for ctx)))))
 
 (defn- wait-for-success-on [channels]
   (let [merged (async/merge channels)
@@ -99,8 +101,7 @@
         (first (vals (:outputs execute-output)))
         execute-output))))
 
-
-
 (defn ^{:display-type :container} in-cwd [cwd & steps]
   (fn [args ctx]
-    (core/execute-steps steps (assoc args :cwd cwd) (core/new-base-context-for ctx))))
+    (post-process-container-results
+      (core/execute-steps steps (assoc args :cwd cwd) (core/new-base-context-for ctx)))))
