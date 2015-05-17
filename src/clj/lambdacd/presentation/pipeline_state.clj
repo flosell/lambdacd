@@ -10,19 +10,19 @@
 (defn- root-step? [[step-id _]]
   (= 1 (count step-id)))
 
-(defn- get-step-id [[step-id _]]
-  step-id)
+(defn- root-step-id [[step-id _]]
+  (first step-id))
 
-(defn- get-step-result [[_ step-result]]
+(defn- step-result [[_ step-result]]
   step-result)
 
 (defn- status-for-steps [step-ids-and-results]
   (let [accumulated-status (->> step-ids-and-results
-                              (filter root-step?)
-                              (sort-by get-step-id desc)
-                              (first)
-                              (get-step-result)
-                              (:status))]
+                                (filter root-step?)
+                                (sort-by root-step-id desc)
+                                (first)
+                                (step-result)
+                                (:status))]
     (or accumulated-status :unknown)))
 
 (defn- not-waiting? [result]
