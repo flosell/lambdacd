@@ -38,12 +38,12 @@
 (defn- latest-most-recent-update [steps]
   (first-with-key-ordered-by steps latest-first :most-recent-update-at))
 
-(defn- history-entry [[k v]]
-  (let [steps (vals v)]
-    {:build-number k
-     :status (status-for-steps steps)
-     :most-recent-update-at (latest-most-recent-update steps)
-     :first-updated-at (earliest-first-update steps)}))
+(defn- history-entry [[build-number step-ids-and-results]]
+  (let [step-results (vals step-ids-and-results)]
+    {:build-number build-number
+     :status (status-for-steps step-results)
+     :most-recent-update-at (latest-most-recent-update step-results)
+     :first-updated-at (earliest-first-update step-results)}))
 
 (defn history-for [state]
   (sort-by :build-number (map history-entry state)))
