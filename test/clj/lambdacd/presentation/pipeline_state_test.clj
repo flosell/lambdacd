@@ -16,38 +16,39 @@
     (is (= [{:build-number 5
              :status :running
              :most-recent-update-at after-stop-time
-             :first-updated-at start-time }
-            {:build-number 6
+             :first-updated-at start-time }]
+           (history-for {5  {[0]   { :status :success :most-recent-update-at stop-time :first-updated-at start-time }
+                             [1]   { :status :running :most-recent-update-at after-stop-time :first-updated-at start-time}}})))
+    (is (= [{:build-number 6
              :status :success
              :most-recent-update-at stop-time
-             :first-updated-at start-time}
-            {:build-number 7
+             :first-updated-at start-time}]
+           (history-for { 6  {[0]   { :status :success :most-recent-update-at stop-time :first-updated-at start-time}}})))
+    (is (= [{:build-number 7
              :status :failure
              :most-recent-update-at stop-time
-             :first-updated-at before-start-time}
-            {:build-number 8
-             :status :waiting
-             :most-recent-update-at stop-time
-             :first-updated-at start-time}
-            {:build-number 9
-             :status :unknown
-             :most-recent-update-at stop-time
-             :first-updated-at start-time}
-            {:build-number 10
+             :first-updated-at before-start-time}]
+           (history-for { 7  {[0 2] { :status :running :most-recent-update-at stop-time :first-updated-at start-time}
+                              [0 1] { :status :failure :most-recent-update-at stop-time :first-updated-at before-start-time}}})))
+    (is (= [{:build-number 10
              :status :success
              :most-recent-update-at stop-time
-             :first-updated-at start-time}
-            ] (history-for { 5  {[0]   { :status :success :most-recent-update-at stop-time :first-updated-at start-time }
-                                 [1]   { :status :running :most-recent-update-at after-stop-time :first-updated-at start-time}}
-                             6  {[0]   { :status :success :most-recent-update-at stop-time :first-updated-at start-time}}
-                             7  {[0 2] { :status :running :most-recent-update-at stop-time :first-updated-at start-time}
-                                 [0 1] { :status :failure :most-recent-update-at stop-time :first-updated-at before-start-time}}
-                             8  {[0]   { :status :waiting :most-recent-update-at stop-time :first-updated-at start-time}}
-                             9  {[0]   { :no :status      :most-recent-update-at stop-time :first-updated-at start-time}}
-                             10 {[1 1] { :status :killed  :most-recent-update-at stop-time :first-updated-at long-before-start-time :has-been-waiting true}
-                                 [2 1] { :status :success :most-recent-update-at long-after-stop-time :first-updated-at start-time :has-been-waiting true}
-                                 [1]   { :status :success :most-recent-update-at stop-time :first-updated-at start-time}
-                                 [2]   { :status :success :most-recent-update-at stop-time :first-updated-at start-time}}})))))
+             :first-updated-at start-time}]
+           (history-for {10 {[1 1] { :status :killed  :most-recent-update-at stop-time :first-updated-at long-before-start-time :has-been-waiting true}
+                             [2 1] { :status :success :most-recent-update-at long-after-stop-time :first-updated-at start-time :has-been-waiting true}
+                             [1]   { :status :success :most-recent-update-at stop-time :first-updated-at start-time}
+                             [2]   { :status :success :most-recent-update-at stop-time :first-updated-at start-time}}})))
+    (testing "that more than one item works and a missing status leads to status unknown"
+      (is (= [{:build-number 8
+               :status :waiting
+               :most-recent-update-at stop-time
+               :first-updated-at start-time}
+              {:build-number 9
+               :status :unknown
+               :most-recent-update-at stop-time
+               :first-updated-at start-time}]
+             (history-for {8  {[0]   { :status :waiting :most-recent-update-at stop-time :first-updated-at start-time}}
+                           9  {[0]   { :no :status      :most-recent-update-at stop-time :first-updated-at start-time}}}))))))
 
 (deftest most-recent-build-test
   (testing "that it returns the most recent build number in the pipeline-state"
