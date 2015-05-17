@@ -18,8 +18,8 @@
                :status :success
                :most-recent-update-at stop-time
                :first-updated-at before-start-time}]
-             (history-for { 7  {[0 2] { :status :success :most-recent-update-at stop-time :first-updated-at start-time}
-                                [0 1] { :status :success :most-recent-update-at stop-time :first-updated-at before-start-time}}}))))
+             (history-for { 7  {[2] { :status :success :most-recent-update-at stop-time :first-updated-at start-time}
+                                [1] { :status :success :most-recent-update-at stop-time :first-updated-at before-start-time}}}))))
     (testing "that the most recent update will be the pipelines most recent update"
       (is (= [{:build-number 5
                :status :success
@@ -27,34 +27,35 @@
                :first-updated-at start-time }]
              (history-for {5  {[0]   { :status :success :most-recent-update-at stop-time :first-updated-at start-time }
                                [1]   { :status :success :most-recent-update-at after-stop-time :first-updated-at start-time}}})))))
-  (testing "that the build-status is accumulated correctly"
-    (testing "that the status will be running while the pipeline is still active"
-      (is (= [{:build-number 5
-               :status :running
-               :most-recent-update-at stop-time
-               :first-updated-at start-time }]
-             (history-for {5  {[0]   { :status :success :most-recent-update-at stop-time :first-updated-at start-time }
-                               [1]   { :status :running :most-recent-update-at stop-time :first-updated-at start-time}}}))))
+    (testing "that the build-status is accumulated correctly"
+      (testing "that the status will be running while the pipeline is still active"
+        (is (= [{:build-number 5
+                 :status :running
+                 :most-recent-update-at stop-time
+                 :first-updated-at start-time }]
+               (history-for {5  {[0]   { :status :success :most-recent-update-at stop-time :first-updated-at start-time }
+                                 [1]   { :status :running :most-recent-update-at stop-time :first-updated-at start-time}}}))))
     (testing "that if everything is successful, the pipeline as a whole is successful"
-      (is (= [{:build-number 6
-               :status :success
+      (is (= [{:build-number          6
+               :status                :success
                :most-recent-update-at stop-time
-               :first-updated-at start-time}]
-             (history-for { 6  {[0]   { :status :success :most-recent-update-at stop-time :first-updated-at start-time}}}))))
+               :first-updated-at      start-time}]
+             (history-for {6 {[0] {:status :success :most-recent-update-at stop-time :first-updated-at start-time}}}))))
     (testing "that a pipeline will still be in running state while there is a running step"
       (is (= [{:build-number 7
                :status :running
                :most-recent-update-at stop-time
                :first-updated-at start-time}]
-             (history-for { 7  {[0 2] { :status :running :most-recent-update-at stop-time :first-updated-at start-time}
-                                [0 1] { :status :failure :most-recent-update-at stop-time :first-updated-at start-time}}}))))
+             (history-for { 7  {[0] { :status :running :most-recent-update-at stop-time :first-updated-at start-time}
+                                [1 0] { :status :running :most-recent-update-at stop-time :first-updated-at start-time}
+                                [2 0] { :status :failure :most-recent-update-at stop-time :first-updated-at start-time}}}))))
     (testing "that a pipeline will be a failure once there is a failed step"
       (is (= [{:build-number 7
                :status :failure
                :most-recent-update-at stop-time
                :first-updated-at start-time}]
-             (history-for { 7  {[0 2] { :status :success :most-recent-update-at stop-time :first-updated-at start-time}
-                                [0 1] { :status :failure :most-recent-update-at stop-time :first-updated-at start-time}}}))))
+             (history-for { 7  {[1] { :status :success :most-recent-update-at stop-time :first-updated-at start-time}
+                                [2] { :status :failure :most-recent-update-at stop-time :first-updated-at start-time}}}))))
     (testing "that a killed step will be ignored"
       (is (= [{:build-number 10
                :status :success

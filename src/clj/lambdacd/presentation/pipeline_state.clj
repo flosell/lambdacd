@@ -1,26 +1,29 @@
 (ns lambdacd.presentation.pipeline-state
   (:require [lambdacd.util :as util]))
 
-
-(defn- status-for-steps [steps]
-  (let [statuses (map :status steps)
-        statuses-not-killed (filter #(not= :killed %) statuses)
-        has-failed (util/contains-value? :failure statuses)
-        has-running (util/contains-value? :running statuses)
-        has-waiting (util/contains-value? :waiting statuses)
-        all-ok (every? #(= % :success) statuses-not-killed)]
-    (cond
-      has-running :running
-      has-failed :failure
-      all-ok :success
-      has-waiting :waiting
-      :else :unknown)))
-
-(defn- latest-first [a b]
+(defn- desc [a b]
   (compare b a))
 
-(defn- earliest-first [a b]
+(defn- asc [a b]
   (compare a b))
+
+(defn- root-step? [[step-id _]]
+  (= 1 (count step-id)))
+
+(defn- get-step-id [[step-id _]]
+  step-id)
+
+(defn- get-step-result [[_ step-result]]
+  step-result)
+
+(defn- status-for-steps [step-ids-and-results]
+  (let [accumulated-status (->> step-ids-and-results
+                              (filter root-step?)
+                              (sort-by get-step-id desc)
+                              (first)
+                              (get-step-result)
+                              (:status))]
+    (or accumulated-status :unknown)))
 
 (defn- not-waiting? [result]
   (not (:has-been-waiting result)))
@@ -33,15 +36,15 @@
        (first)))
 
 (defn- earliest-first-update [steps]
-  (first-with-key-ordered-by steps earliest-first :first-updated-at))
+  (first-with-key-ordered-by steps asc :first-updated-at))
 
 (defn- latest-most-recent-update [steps]
-  (first-with-key-ordered-by steps latest-first :most-recent-update-at))
+  (first-with-key-ordered-by steps desc :most-recent-update-at))
 
 (defn- history-entry [[build-number step-ids-and-results]]
   (let [step-results (vals step-ids-and-results)]
     {:build-number build-number
-     :status (status-for-steps step-results)
+     :status (status-for-steps step-ids-and-results)
      :most-recent-update-at (latest-most-recent-update step-results)
      :first-updated-at (earliest-first-update step-results)}))
 
