@@ -8,6 +8,7 @@
             [lambdacd.pipeline :as pipeline]
             [lambdacd.commons :as commons]
             [lambdacd.route :as route]
+            [lambdacd.time :as time]
             [lambdacd.state :as state]))
 
 (defn- status-icon [status]
@@ -19,12 +20,17 @@
                 "fa fa-question")]
     [:div {:class "history-item-status-icon" } [:i {:class class}]]))
 
-(defn history-item-component [{build-number :build-number status :status}]
+(defn history-item-component [{build-number :build-number
+                               status :status
+                               most-recent-update-at :most-recent-update-at
+                               first-updated-at :first-updated-at}]
   [:li {:key build-number :class "history-item"}
    [status-icon status]
    [:div {:class "history-item-content"}
      [:a {:href (route/for-build-number build-number) :class "history-item-header"} (str "Build " build-number)]
-     [:p {:class "history-item-detail"} status]]
+     [:p {:class "history-item-detail"} status]
+     [:i {:class "history-item-detail"} (time/format-duration first-updated-at most-recent-update-at)]
+    ]
    ])
 
 (defn build-history-component [history]

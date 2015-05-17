@@ -17,6 +17,22 @@
                  (is (dom/found-in div #"Builds"))
                  (is (dom/found-in div #"Build 1"))
                  (is (dom/found-in div #"Build 3")))))
+  (testing "that the history contains all the builds"
+           (tu/with-mounted-component
+             (history/build-history-component
+               [{:build-number 1} {:build-number 3}])
+             (fn [c div]
+               (is (dom/found-in div #"Builds"))
+               (is (dom/found-in div #"Build 1"))
+               (is (dom/found-in div #"Build 3")))))
+  (testing "that the history displays the duration of a build"
+           (tu/with-mounted-component
+             (history/build-history-component
+               [{:build-number 1
+                 :first-updated-at "2015-05-17T10:02:36.684Z"
+                 :most-recent-update-at "2015-05-17T10:03:51.684Z"}])
+             (fn [c div]
+               (is (dom/found-in div #"1min 15sec")))))
   (testing "that the history displays build status icons"
            (tu/with-mounted-component
              (history/build-history-component

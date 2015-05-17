@@ -3,7 +3,7 @@
 
 
 (defn- status-for-steps [steps]
-  (let [statuses (map :status (vals steps))
+  (let [statuses (map :status steps)
         statuses-not-killed (filter #(not= :killed %) statuses)
         has-failed (util/contains-value? :failure statuses)
         has-running (util/contains-value? :running statuses)
@@ -16,9 +16,24 @@
       has-waiting :waiting
       :else :unknown)))
 
+(defn- desc [a b]
+  (compare b a))
+
+(defn- asc [a b]
+  (compare a b))
+
+(defn- earliest-first-update [steps]
+  (first (sort asc (map :first-updated-at steps))))
+
+(defn- latest-most-recent-update [steps]
+  (first (sort desc (map :most-recent-update-at steps))))
+
 (defn- history-entry [[k v]]
-  { :build-number k
-   :status (status-for-steps v)})
+  (let [steps (vals v)]
+    {:build-number k
+     :status (status-for-steps steps)
+     :most-recent-update-at (latest-most-recent-update steps)
+     :first-updated-at (earliest-first-update steps)}))
 
 (defn history-for [state]
   (sort-by :build-number (map history-entry state)))

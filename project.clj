@@ -30,6 +30,7 @@
                  [selmer "0.8.0"]
                  [environ "1.0.0"]
                  [clj-time "0.9.0"]
+                 [com.andrewmcveigh/cljs-time "0.3.5"]
                  [cheshire "5.4.0"]
                  [org.clojure/clojurescript "0.0-2850" :scope "provided"]
                  ]
