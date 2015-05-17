@@ -55,23 +55,31 @@
 
 (deftest in-parallel-test
   (testing "that it collects all the outputs together correctly"
-    (is (map-containing {:outputs { [1 0 0] {:foo :baz :status :undefined} [2 0 0] {:foo :baz :status :undefined}} :status :undefined} ((in-parallel some-step some-step) {} { :step-id [0 0] }))))
+    (is (map-containing {:outputs { [1 0 0] {:foo :baz :status :undefined} [2 0 0] {:foo :baz :status :undefined}} :status :undefined} ((in-parallel some-step some-step) {} (some-ctx-with :step-id [0 0])))))
   (testing "that one failing step fails the pipeline"
-    (is (map-containing {:outputs { [1 0 0] {:status :success} [2 0 0] {:status :failure}} :status :failure} ((in-parallel some-successful-step some-failing-step) {} {:step-id [0 0]}))))
+    (is (map-containing {:outputs { [1 0 0] {:status :success} [2 0 0] {:status :failure}} :status :failure} ((in-parallel some-successful-step some-failing-step) {} (some-ctx-with :step-id [0 0])))))
   (testing "global values are returned properly"
-    (is (map-containing {:global {:some :value}} ((in-parallel some-step-that-returns-a-global-value some-successful-step) {} {:step-id [0 0]}))))
+    (is (map-containing {:global {:some :value}} ((in-parallel some-step-that-returns-a-global-value some-successful-step) {} (some-ctx)))))
   (testing "that all the result-values are merged together into a new result"
-    (is (map-containing {:the-number 42 :foo :baz} ((in-parallel some-step-that-returns-42 some-other-step) {} {:step-id [0 0]}))))
+    (is (map-containing {:the-number 42 :foo :baz} ((in-parallel some-step-that-returns-42 some-other-step) {} (some-ctx)))))
   (testing "that it executes things faster than it would serially"
-    (is (close? 100 100 (my-time ((in-parallel some-step-taking-100ms some-step-taking-100ms some-step-taking-100ms) {} {:step-id [0 0]}))))))
+    (is (close? 100 100 (my-time ((in-parallel some-step-taking-100ms some-step-taking-100ms some-step-taking-100ms) {} (some-ctx))))))
+  (testing "that it can inherit the result status children send over the result channel"
+    (let [result-ch (async/chan 100)
+          ctx (some-ctx-with :result-channel result-ch)]
+      ((in-parallel some-step-sending-waiting-on-channel some-step-sending-running-then-waiting-then-finished-on-channel) {} ctx)
+      (is (= [[:status :running]
+              [:status :running]
+              [:status :waiting]
+              [:status :success]] (slurp-chan result-ch))))))
 
 (deftest in-cwd-test
   (testing "that it collects all the outputs together correctly and passes cwd to steps"
-    (is (map-containing {:outputs { [1 0 0] {:foo "somecwd" :status :success} [2 0 0] {:foo :baz :status :success}} :status :success} ((in-cwd "somecwd" some-step-for-cwd some-other-step) {} {:step-id [0 0]}))))
+    (is (map-containing {:outputs { [1 0 0] {:foo "somecwd" :status :success} [2 0 0] {:foo :baz :status :success}} :status :success} ((in-cwd "somecwd" some-step-for-cwd some-other-step) {} (some-ctx-with :step-id [0 0])))))
   (testing "that all the result-values are merged together into a new result"
-    (is (map-containing {:the-number 42 :foo :baz} ((in-cwd "somecwd" some-step-that-returns-42 some-other-step) {} {:step-id [0 0]}))))
+    (is (map-containing {:the-number 42 :foo :baz} ((in-cwd "somecwd" some-step-that-returns-42 some-other-step) {} (some-ctx)))))
   (testing "global values are returned properly"
-    (is (map-containing {:global {:some :value}} ((in-cwd "somecwd" some-step-that-returns-a-global-value some-successful-step) {} {:step-id [0 0]})))))
+    (is (map-containing {:global {:some :value}} ((in-cwd "somecwd" some-step-that-returns-a-global-value some-successful-step) {} (some-ctx))))))
 
 (deftest either-test
   (testing "that it succeeds whenever one step finishes successfully"

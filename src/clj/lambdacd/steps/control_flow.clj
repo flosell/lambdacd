@@ -5,23 +5,13 @@
             [lambdacd.util :as util]
             [lambdacd.steps.support :as support]))
 
-(defn- parallel-step-result-producer [args steps-and-ids]
-  (pmap (partial core/execute-step args) steps-and-ids))
 
-(defn- execute-steps-in-parallel [steps args step-id]
-  (core/execute-steps steps args step-id
-                           :step-result-producer parallel-step-result-producer))
 
 (defn- post-process-container-results [result]
   (let [outputs (vals (:outputs result))
         globals (support/merge-globals outputs)
         merged-step-results (support/merge-step-results outputs)]
     (merge merged-step-results result {:global globals})))
-
-(defn ^{:display-type :parallel} in-parallel [& steps]
-  (fn [args ctx]
-    (post-process-container-results
-      (execute-steps-in-parallel steps args (core/new-base-context-for ctx)))))
 
 (defn- wait-for-success-on [channels]
   (let [merged (async/merge channels)
@@ -80,10 +70,15 @@
         status-channel (process-inheritance all-channels)]
     (async/pipe status-channel own-result-channel)))
 
-(defn- step-producer-returning-with-first-successful [{result-channel :result-channel} args steps-and-ids]
-  (let [result-channels (repeatedly (count steps-and-ids) #(async/chan 10))
+(defn- inheriting-result-channels-for-steps [ctx steps-and-ids]
+  (let [result-channel (:result-channel ctx)
+        result-channels (repeatedly (count steps-and-ids) #(async/chan 10))
         steps-ids-and-channels (map vector steps-and-ids result-channels)
-        _ (inherit-from result-channels result-channel)
+        _ (inherit-from result-channels result-channel)]
+    steps-ids-and-channels))
+
+(defn- step-producer-returning-with-first-successful [ctx args steps-and-ids]
+  (let [steps-ids-and-channels (inheriting-result-channels-for-steps ctx steps-and-ids)
         step-result-channels (map #(async/go (execute-step-with-channel args %)) steps-ids-and-channels)
         result (wait-for-success-on step-result-channels)]
     (if (nil? result)
@@ -100,6 +95,20 @@
       (if (= :success (:status execute-output))
         (first (vals (:outputs execute-output)))
         execute-output))))
+
+(defn- parallel-step-result-producer [ctx args steps-and-ids]
+  (let [steps-ids-and-channels (inheriting-result-channels-for-steps ctx steps-and-ids)]
+    (pmap #(execute-step-with-channel args %) steps-ids-and-channels)))
+
+(defn- execute-steps-in-parallel [ctx steps args step-id]
+  (core/execute-steps steps args step-id
+                      :step-result-producer (partial parallel-step-result-producer ctx)))
+
+(defn ^{:display-type :parallel} in-parallel [& steps]
+  (fn [args ctx]
+    (post-process-container-results
+      (execute-steps-in-parallel ctx steps args (core/new-base-context-for ctx)))))
+
 
 (defn ^{:display-type :container} in-cwd [cwd & steps]
   (fn [args ctx]
