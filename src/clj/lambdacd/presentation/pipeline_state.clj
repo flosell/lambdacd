@@ -16,10 +16,10 @@
       has-waiting :waiting
       :else :unknown)))
 
-(defn- desc [a b]
+(defn- latest-first [a b]
   (compare b a))
 
-(defn- asc [a b]
+(defn- earliest-first [a b]
   (compare a b))
 
 (defn- not-waiting? [result]
@@ -33,10 +33,10 @@
        (first)))
 
 (defn- earliest-first-update [steps]
-  (first-with-key-ordered-by steps asc :first-updated-at))
+  (first-with-key-ordered-by steps earliest-first :first-updated-at))
 
 (defn- latest-most-recent-update [steps]
-  (first-with-key-ordered-by steps desc :most-recent-update-at))
+  (first-with-key-ordered-by steps latest-first :most-recent-update-at))
 
 (defn- history-entry [[k v]]
   (let [steps (vals v)]
