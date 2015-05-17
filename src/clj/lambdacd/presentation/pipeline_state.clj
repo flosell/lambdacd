@@ -10,8 +10,8 @@
         has-waiting (util/contains-value? :waiting statuses)
         all-ok (every? #(= % :success) statuses-not-killed)]
     (cond
-      has-failed :failure
       has-running :running
+      has-failed :failure
       all-ok :success
       has-waiting :waiting
       :else :unknown)))

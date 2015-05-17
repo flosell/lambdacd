@@ -7,7 +7,7 @@ The official release will have a defined and more stable API. If you are already
 
 ## 0.2.4
 
-* Bug fixes: #14, #15
+* Bug fixes: #14, #15, #17
 * Improvements:
  * Display status in output at the end of a build step (#4)
  * Display total build time in history (#16)
