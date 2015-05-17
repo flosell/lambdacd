@@ -1,8 +1,8 @@
 (ns lambdacd.steps.manualtrigger
-  (:require [lambdacd.internal.execution :as execution]
-            [clojure.core.async :as async]
+  (:require [clojure.core.async :as async]
             [clojure.tools.logging :as log]
-            [lambdacd.steps.support :as support]))
+            [lambdacd.steps.support :as support])
+  (:import (java.util UUID)))
 
 (def ids-posted-to (atom {}))
 
@@ -27,7 +27,7 @@
   "build step that waits for someone to trigger the build by POSTing to the url indicated by a random trigger id.
   the trigger-id is returned as the :trigger-id result value. see UI implementation for details"
   [_ ctx & _]
-  (let [id (str (java.util.UUID/randomUUID))
+  (let [id (str (UUID/randomUUID))
         result-ch (:result-channel ctx)]
     (async/>!! result-ch [:trigger-id id])
     (async/>!! result-ch [:status :waiting])
