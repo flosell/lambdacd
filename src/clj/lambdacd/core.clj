@@ -15,7 +15,7 @@
   (execution/retrigger pipeline context build-number step-id-to-retrigger))
 
 (defn execute-steps [steps args ctx & opts]
-  (apply execution/do-execute-steps steps args ctx opts))
+  (apply execution/execute-steps steps args ctx opts))
 
 (defn execute-step [args [ctx step] & opts]
   (apply execution/execute-step args [ctx step] opts))

@@ -146,29 +146,29 @@
 (deftest execute-steps-test
   (testing "that executing steps returns outputs of both steps with different step ids"
     (is (= {:outputs { [1 0] {:foo :baz :status :success} [2 0] {:foo :baz :status :success}} :status :success}
-           (do-execute-steps [some-other-step some-other-step] {} { :step-id [0 0] }))))
+           (execute-steps [some-other-step some-other-step] {} { :step-id [0 0] }))))
   (testing "that a failing step prevents the succeeding steps from being executed"
     (is (= {:outputs { [1 0] {:status :success} [2 0] {:status :failure}} :status :failure}
-           (do-execute-steps [some-successful-step some-failing-step some-other-step] {} { :step-id [0 0] }))))
+           (execute-steps [some-successful-step some-failing-step some-other-step] {} { :step-id [0 0] }))))
   (testing "that the results of one step are the inputs to the other step"
     (is (= {:outputs { [1 0] {:status :success :foobar 42} [2 0] {:status :success :foobar-times-ten 420}} :status :success}
-           (do-execute-steps [some-step-returning-foobar-value some-step-using-foobar-value] {} { :step-id [0 0] }))))
+           (execute-steps [some-step-returning-foobar-value some-step-using-foobar-value] {} { :step-id [0 0] }))))
   (testing "that the original input is passed into all steps"
     (testing "the normal case"
       (is (= {:outputs { [1 0] {:status :success :foobar-times-ten 420} [2 0] {:status :success :foobar-times-ten 420}} :status :success}
-             (do-execute-steps [some-step-using-foobar-value some-step-using-foobar-value] {:foobar 42} { :step-id [0 0] }))))
+             (execute-steps [some-step-using-foobar-value some-step-using-foobar-value] {:foobar 42} { :step-id [0 0] }))))
     (testing "step result overlays the original input"
       (is (= {:outputs { [1 0] {:status :success :foobar 10} [2 0] {:status :success :foobar-times-ten 100}} :status :success}
-             (do-execute-steps [some-step-returning-ten-as-foobar-value some-step-using-foobar-value] {:foobar 42} { :step-id [0 0] })))))
+             (execute-steps [some-step-returning-ten-as-foobar-value some-step-using-foobar-value] {:foobar 42} { :step-id [0 0] })))))
   (testing "that a steps :global results will be passed on to all subsequent steps"
     (is (= {:outputs {[1 0] {:status :success :global { :foobar 42}}
                       [2 0] {:status :success :foobar-times-ten 420}
                       [3 0] {:status :success :foobar-times-ten 420}}
             :status :success}
-           (do-execute-steps [some-step-returning-global-foobar-value some-step-using-global-foobar-value some-step-using-global-foobar-value] {} { :step-id [0 0] }))))
+           (execute-steps [some-step-returning-global-foobar-value some-step-using-global-foobar-value some-step-using-global-foobar-value] {} { :step-id [0 0] }))))
   (testing "that execute steps injects a kill-switch by default"
     (is (= {:outputs { [1 0] {:status :success} [2 0] {:status :success}} :status :success}
-           (do-execute-steps [some-successful-step step-that-expects-a-kill-switch] {} { :step-id [0 0] })))))
+           (execute-steps [some-successful-step step-that-expects-a-kill-switch] {} { :step-id [0 0] })))))
 
 (defn some-control-flow [&] ; just a mock, we don't actually execute this
   )

@@ -133,21 +133,12 @@
           new-result
           (recur (cons step-result result) (rest remaining-steps-with-id) new-args))))))
 
-; TODO: once execute-steps is removed in next release, rename this to execute-steps
-(defn do-execute-steps [steps args ctx & {:keys [step-result-producer is-killed]
+(defn execute-steps [steps args ctx & {:keys [step-result-producer is-killed]
                                            :or   {step-result-producer serial-step-result-producer
                                                   is-killed            (atom false)}}]
   (let [base-ctx-with-kill-switch (assoc ctx :is-killed is-killed)
         step-results (step-result-producer args (contexts-for-steps steps base-ctx-with-kill-switch))]
     (reduce merge-two-step-results step-results)))
-
-(defn execute-steps ; DEPRECATED. use core/execute-steps instead (make sure you also use keyword arguments)
-  ([steps args ctx]
-    (do-execute-steps steps args ctx))
-  ([step-result-producer steps args ctx]
-   (do-execute-steps steps args ctx :step-result-producer step-result-producer))
-   ([step-result-producer steps args ctx is-killed]
-    (do-execute-steps steps args ctx :step-result-producer step-result-producer :is-killed is-killed)))
 
 (defn- new-base-id-for [step-id]
   (cons 0 step-id))
@@ -161,7 +152,7 @@
 (defn run [pipeline context]
   (let [build-number (pipeline-state/next-build-number context)]
     (let [runnable-pipeline (map eval pipeline)]
-      (do-execute-steps runnable-pipeline {} (merge context {:step-id [0]
+      (execute-steps runnable-pipeline {} (merge context {:step-id [0]
                                                           :build-number build-number})))))
 
 (defn add-result [new-build-number retriggered-build-number initial-ctx [step-id result]]
@@ -188,5 +179,5 @@
           executable-pipeline (map eval pipeline-fragment-to-run)
           new-build-number (pipeline-state/next-build-number context)]
       (duplicate-step-results-not-running-again new-build-number build-number pipeline-history context step-id-to-run)
-      (do-execute-steps executable-pipeline {} (assoc context :step-id [(dec root-step-number)]
+      (execute-steps executable-pipeline {} (assoc context :step-id [(dec root-step-number)]
                                                            :build-number new-build-number)))))
