@@ -57,6 +57,11 @@
   (Thread/sleep 10) ; wait for a bit so that the success doesn't screw up the order of events tested
   {:status :success})
 
+(defn some-step-sending-a-wait [_ {c :result-channel}]
+  (async/>!! c [:status :waiting])
+  (Thread/sleep 10) ; wait for a bit so that the success doesn't screw up the order of events tested
+  {:status :success})
+
 (defn some-step-that-sends-failure-on-ch-returns-success [_ {c :result-channel}]
   (async/>!! c [:status :failure])
   {:status :success})
@@ -90,6 +95,8 @@
     (is (= {:outputs { [0 0] {:status :success} } :status :success} (execute-step {} [{:step-id [0 0]} some-successful-step]))))
   (testing "that the result-status is :undefined if the step doesn't return any"
     (is (= {:outputs { [0 0] {:status :undefined} } :status :undefined} (execute-step {} [{:step-id [0 0]} some-step-not-returning-status] ))))
+  (testing "that the result indicates that a step has been waiting"
+    (is (= {:outputs { [0 0] {:status :success :has-been-waiting true}} :status :success} (execute-step {} [{:step-id [0 0]} some-step-sending-a-wait] ))))
   (testing "that if an exception is thrown in the step, it will result in a failure and the exception output is logged"
     (let [output (execute-step {} [{:step-id [0 0]} some-step-throwing-an-exception])]
       (is (= :failure (get-in output [:outputs [0 0] :status])))

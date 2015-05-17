@@ -15,11 +15,18 @@
 (defn- is-finished [key value]
   (and (= key :status) (not= value :waiting)))
 
+(defn- attach-wait-indicator-if-necessary [result k v]
+  (if (and (= k :status) (= v :waiting))
+    (assoc result :has-been-waiting true)
+    result))
+
 (defn process-channel-result-async [c ctx]
   (async/go
     (loop [cur-result {}]
       (let [[key value] (async/<! c)
-            new-result (assoc cur-result key value)]
+            new-result (-> cur-result
+                           (assoc key value)
+                           (attach-wait-indicator-if-necessary key value))]
         (if (and (nil? key) (nil? value))
           cur-result
           (do

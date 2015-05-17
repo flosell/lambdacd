@@ -22,11 +22,21 @@
 (defn- asc [a b]
   (compare a b))
 
+(defn- not-waiting? [result]
+  (not (:has-been-waiting result)))
+
+(defn- first-with-key-ordered-by [steps comp key]
+  (->> steps
+       (filter not-waiting?)
+       (map key)
+       (sort comp)
+       (first)))
+
 (defn- earliest-first-update [steps]
-  (first (sort asc (map :first-updated-at steps))))
+  (first-with-key-ordered-by steps asc :first-updated-at))
 
 (defn- latest-most-recent-update [steps]
-  (first (sort desc (map :most-recent-update-at steps))))
+  (first-with-key-ordered-by steps desc :most-recent-update-at))
 
 (defn- history-entry [[k v]]
   (let [steps (vals v)]

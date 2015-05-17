@@ -8,7 +8,8 @@
 (def before-start-time (t/minus start-time (t/seconds 10)))
 (def stop-time (t/plus start-time (t/seconds 10)))
 (def after-stop-time (t/plus stop-time (t/seconds 10)))
-
+(def long-before-start-time (t/minus start-time (t/hours 10)))
+(def long-after-stop-time (t/plus stop-time (t/hours 10)))
 
 (deftest history-test
   (testing "that it converts the internal pipeline-state into a more readable history-representation"
@@ -43,8 +44,8 @@
                                  [0 1] { :status :failure :most-recent-update-at stop-time :first-updated-at before-start-time}}
                              8  {[0]   { :status :waiting :most-recent-update-at stop-time :first-updated-at start-time}}
                              9  {[0]   { :no :status      :most-recent-update-at stop-time :first-updated-at start-time}}
-                             10 {[1 1] { :status :killed  :most-recent-update-at stop-time :first-updated-at start-time}
-                                 [2 1] { :status :success :most-recent-update-at stop-time :first-updated-at start-time}
+                             10 {[1 1] { :status :killed  :most-recent-update-at stop-time :first-updated-at long-before-start-time :has-been-waiting true}
+                                 [2 1] { :status :success :most-recent-update-at long-after-stop-time :first-updated-at start-time :has-been-waiting true}
                                  [1]   { :status :success :most-recent-update-at stop-time :first-updated-at start-time}
                                  [2]   { :status :success :most-recent-update-at stop-time :first-updated-at start-time}}})))))
 
