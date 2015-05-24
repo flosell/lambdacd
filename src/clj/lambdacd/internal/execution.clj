@@ -55,7 +55,15 @@
     (finally
       (async/close! (:result-channel ctx)))))
 
-(defn execute-step [args [{:keys [step-id] :as ctx} step] & {:keys [result-channel]
+(defn reuse-from-history-if-required [{:keys [step-id] :as ctx} {build-number-to-resuse :reuse-from-build-number :as result}]
+  (if build-number-to-resuse
+    (let [state @(:_pipeline-state ctx)
+          old-result (get-in state [build-number-to-resuse step-id])]
+      (assoc old-result :retrigger-mock-for-build-number build-number-to-resuse))
+    result))
+
+
+(defn execute-step [args [{:keys [step-id build-number] :as ctx} step] & {:keys [result-channel]
                                                              :or {result-channel (async/chan (async/dropping-buffer 0))}}]
  (pipeline-state/running ctx)
  (let [result-ch-to-write (async/chan 10)
@@ -66,8 +74,9 @@
        ctx-with-result-ch (assoc ctx :result-channel result-ch-to-write)
        processed-async-result-ch (process-channel-result-async result-ch-to-read ctx)
        immediate-step-result (execute-or-catch step args ctx-with-result-ch)
+       step-result-or-history (reuse-from-history-if-required ctx immediate-step-result)
        processed-async-result (async/<!! processed-async-result-ch)
-       complete-step-result (merge  processed-async-result immediate-step-result)
+       complete-step-result (merge  processed-async-result step-result-or-history)
        processed-final-result (process-final-result complete-step-result ctx)]
    (log/debug (str "executed step " step-id processed-final-result))
    (step-output step-id processed-final-result)))
@@ -169,33 +178,35 @@
         history-to-duplicate (filter (partial to-be-duplicated? step-id-to-run) pipeline-history)]
     (dorun (map do-add-result history-to-duplicate))))
 
-(defn mock-step [& _]
-  {:status :success})
+(defn mock-step [build-number]
+  (fn [& _]
+    {:reuse-from-build-number build-number}))
+
 
 (defn- with-step-id [parent-step-id]
   (fn [idx step]
     [(cons (inc idx) parent-step-id) step]))
 
 (declare mock-for-steps-again)
-(defn- replace-with-mock-or-recur [step-id-to-retrigger]
+(defn- replace-with-mock-or-recur [step-id-to-retrigger build-number]
   (fn [[step-id step]]
     (cond
       (and
         (step-id/before? step-id step-id-to-retrigger)
-        (not (step-id/parent-of? step-id step-id-to-retrigger))) `mock-step
-      (step-id/parent-of? step-id step-id-to-retrigger) (cons (first step) (mock-for-steps-again (rest step) step-id step-id-to-retrigger))
+        (not (step-id/parent-of? step-id step-id-to-retrigger))) (cons mock-step [build-number])
+      (step-id/parent-of? step-id step-id-to-retrigger) (cons (first step) (mock-for-steps-again (rest step) step-id step-id-to-retrigger build-number))
       :else step)))
 
-(defn- mock-for-steps-again [steps cur-step-id step-id-to-retrigger]
+(defn- mock-for-steps-again [steps cur-step-id step-id-to-retrigger build-number]
   (->> steps
       (map-indexed (with-step-id cur-step-id))
-      (map (replace-with-mock-or-recur step-id-to-retrigger))))
+      (map (replace-with-mock-or-recur step-id-to-retrigger build-number))))
 
 (defn retrigger [pipeline context build-number step-id-to-run]
   (let [pipeline-state (deref (:_pipeline-state context))
         pipeline-history (get pipeline-state build-number)
-        pipeline-fragment-to-run (mock-for-steps-again pipeline [] step-id-to-run)
-        executable-pipeline (doall (map eval pipeline-fragment-to-run))
+        pipeline-fragment-to-run (mock-for-steps-again pipeline [] step-id-to-run build-number)
+        executable-pipeline (map eval pipeline-fragment-to-run)
         new-build-number (pipeline-state/next-build-number context)]
     (duplicate-step-results-not-running-again new-build-number build-number pipeline-history context step-id-to-run)
     (execute-steps executable-pipeline {} (assoc context :step-id [0]

@@ -222,8 +222,8 @@
                  [1 1] {:status :success :out "I am nested"}
                  [2 1] {:status :unknown :out "this will be retriggered"}}
               1 {[1] {:status :success
-                      :outputs {[1 1] {:status :success}
-                                [2 1] {:the-some :val :status :success}}
+                      :outputs {[1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0 }
+                                [2 1] {:the-some :val :status :success }}
                       :retrigger-mock-for-build-number 0}
                  [1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0}
                  [2 1] {:the-some :val :status :success}
