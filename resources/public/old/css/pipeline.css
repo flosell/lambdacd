@@ -25,6 +25,10 @@
   margin-bottom:10px;
 }
 
+#currentBuild {
+  overflow: scroll;
+}
+
 #currentBuild ol {
   display:-ms-flexbox;
   display:-webkit-box;
