@@ -1,6 +1,9 @@
 (ns lambdacd.route
   (:require [bidi.bidi :as bidi]
-            [clojure.string :as string]))
+            [goog.history.EventType :as EventType]
+            [goog.events :as events]
+            [clojure.string :as string])
+  (:import goog.History))
 
 (def route
   ["/builds/"
@@ -31,3 +34,24 @@
 
 (defn for-build-and-step-id [build-number step-id]
   (str "#" (bidi/path-for route :build-and-step-id :buildnumber build-number :step-id (string/join "-" step-id))))
+
+; TODO: hacky global variable...
+(def history (History.))
+
+(defn- navigate [build-number-atom step-id-to-display-atom state-atom token]
+  (let [nav-result (dispatch-route build-number-atom step-id-to-display-atom state-atom token)]
+    (if (not (= :ok (:routing nav-result)))
+      (.setToken history (:redirect-to nav-result))
+      )))
+
+
+(defn hook-browser-navigation! [build-number-atom step-id-to-display-atom state-atom]
+  (doto history
+    (events/listen
+      EventType/NAVIGATE
+      (fn [event]
+        (navigate build-number-atom step-id-to-display-atom state-atom (.-token event))))
+    (.setEnabled true)))
+
+(defn set-build-number [build-number]
+  (.setToken history (str "/builds/" build-number)))

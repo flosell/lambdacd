@@ -195,7 +195,7 @@
                                          [2] { :status :failure }}})
           pipeline `((some-control-flow some-step) some-successful-step)
           context (some-ctx-with :_pipeline-state pipeline-state-atom)]
-      (retrigger pipeline context 0 [2])
+      (retrigger pipeline context 0 [2] 1)
       (is (= {0 {[1] { :status :success }
                  [1 1] {:status :success :out "I am nested"}
                  [2] { :status :failure }}
@@ -206,7 +206,7 @@
     (let [pipeline-state-atom (atom { 0 {}})
           pipeline `(some-successful-step some-other-step some-failing-step)
           context { :_pipeline-state pipeline-state-atom}]
-      (retrigger pipeline context 0 [1])
+      (retrigger pipeline context 0 [1] 1)
       (is (= {0 {}
               1 {[1] { :status :success}
                  [2] {:status :success :foo :baz}
@@ -217,7 +217,7 @@
                                          [2 1] {:status :unknown :out "this will be retriggered"}}})
           pipeline `((some-control-flow-thats-called some-step-that-fails-if-retriggered some-step-to-retrigger) some-successful-step)
           context (some-ctx-with :_pipeline-state pipeline-state-atom)]
-      (retrigger pipeline context 0 [2 1])
+      (retrigger pipeline context 0 [2 1] 1)
       (is (= {0 {[1] { :status :success }
                  [1 1] {:status :success :out "I am nested"}
                  [2 1] {:status :unknown :out "this will be retriggered"}}

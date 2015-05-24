@@ -12,7 +12,7 @@
      :pipeline-def pipeline-def}))
 
 (defn retrigger [pipeline context build-number step-id-to-retrigger]
-  (execution/retrigger pipeline context build-number step-id-to-retrigger))
+  (execution/retrigger-async pipeline context build-number step-id-to-retrigger))
 
 (defn execute-steps [steps args ctx & opts]
   (apply execution/execute-steps steps args ctx opts))

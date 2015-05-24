@@ -29,9 +29,8 @@
       (GET "/builds/" [] (util/json (state-presentation/history-for @pipeline-state)))
       (GET "/builds/:buildnumber/" [buildnumber] (build-infos pipeline-def @pipeline-state buildnumber))
       (POST "/builds/:buildnumber/:step-id/retrigger" [buildnumber step-id]
-            (do
-              (async/thread (core/retrigger pipeline-def ctx (util/parse-int buildnumber) (map util/parse-int (string/split step-id #"-"))))
-              (util/ok)))
+            (let [new-buildnumber (core/retrigger pipeline-def ctx (util/parse-int buildnumber) (map util/parse-int (string/split step-id #"-")))]
+              (util/json {:build-number new-buildnumber})))
       (POST "/dynamic/:id" {{id :id } :params data :json-params} (do
                                                                        (manualtrigger/post-id id (w/keywordize-keys data))
                                                                        (util/json {:status :success}))))))

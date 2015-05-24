@@ -1,8 +1,6 @@
 (ns lambdacd.ui-core
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [reagent.core :as reagent :refer [atom]]
-            [goog.events :as events]
-            [goog.history.EventType :as EventType]
             [cljs.core.async :as async]
             [lambdacd.utils :as utils]
             [lambdacd.api :as api]
@@ -12,7 +10,7 @@
             [lambdacd.commons :as commons]
             [lambdacd.output :as output]
             [lambdacd.state :as state])
-  (:import goog.History))
+  )
 
 (enable-console-print!)
 
@@ -58,19 +56,6 @@
     )))
 
 
-(defn- navigate [build-number-atom step-id-to-display-atom state-atom token]
-  (let [nav-result (route/dispatch-route build-number-atom step-id-to-display-atom state-atom token)]
-    (if (not (= :ok (:routing nav-result)))
-      (.setToken (History.) (:redirect-to nav-result))
-      )))
-
-(defn hook-browser-navigation! [build-number-atom step-id-to-display-atom state-atom]
-  (doto (History.)
-    (events/listen
-      EventType/NAVIGATE
-      (fn [event]
-        (navigate build-number-atom step-id-to-display-atom state-atom (.-token event))))
-    (.setEnabled true)))
 
 (defn init! []
   (let [build-number-atom (atom nil)
@@ -81,7 +66,7 @@
         connection-lost-atom (atom false)]
     (poll-history history-atom connection-lost-atom)
     (poll-state state-atom build-number-atom connection-lost-atom)
-    (hook-browser-navigation! build-number-atom step-id-to-display-atom state-atom)
+    (route/hook-browser-navigation! build-number-atom step-id-to-display-atom state-atom)
     ; #' is necessary so that fighweel can update: https://github.com/reagent-project/reagent/issues/94
     (reagent/render-component [#'root build-number-atom step-id-to-display-atom history-atom state-atom output-details-visible connection-lost-atom] (.getElementById js/document "app"))))
 

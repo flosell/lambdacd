@@ -202,12 +202,17 @@
       (map-indexed (with-step-id cur-step-id))
       (map (replace-with-mock-or-recur step-id-to-retrigger build-number))))
 
-(defn retrigger [pipeline context build-number step-id-to-run]
+(defn retrigger [pipeline context build-number step-id-to-run next-build-number]
   (let [pipeline-state (deref (:_pipeline-state context))
         pipeline-history (get pipeline-state build-number)
         pipeline-fragment-to-run (mock-for-steps-again pipeline [] step-id-to-run build-number)
-        executable-pipeline (map eval pipeline-fragment-to-run)
-        new-build-number (pipeline-state/next-build-number context)]
-    (duplicate-step-results-not-running-again new-build-number build-number pipeline-history context step-id-to-run)
+        executable-pipeline (map eval pipeline-fragment-to-run) ]
+    (duplicate-step-results-not-running-again next-build-number build-number pipeline-history context step-id-to-run)
     (execute-steps executable-pipeline {} (assoc context :step-id [0]
-                                                         :build-number new-build-number))))
+                                                         :build-number next-build-number))))
+
+(defn retrigger-async [pipeline context build-number step-id-to-run]
+  (let [next-build-number (pipeline-state/next-build-number context)]
+    (async/thread
+      (retrigger pipeline context build-number step-id-to-run next-build-number ))
+    next-build-number))
