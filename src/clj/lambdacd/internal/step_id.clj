@@ -1,7 +1,9 @@
 (ns lambdacd.internal.step-id
   (:require [lambdacd.util :as util]))
 
-
+(defn parent-of? [a b]
+  (let [cut-off-b (take-last (count a) b)]
+    (= a cut-off-b)))
 
 (defn later-than? [a b]
   (let [length (max (count a) (count b))
