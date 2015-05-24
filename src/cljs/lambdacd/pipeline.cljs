@@ -33,10 +33,7 @@
     is-finished))
 
 (defn can-be-retriggered? [step]
-  (let [step-id (:step-id step)
-        is-not-nested (= (count step-id) 1) ;; this is an implementation detail, retriggering of nested steps not properly implemented yet
-        is-finished (is-finished step)]
-    (and is-finished is-not-nested)))
+  (is-finished step))
 
 (defn retrigger [build-number build-step]
   (api/retrigger build-number (string/join "-" (:step-id build-step))))

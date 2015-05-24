@@ -211,7 +211,7 @@
               1 {[1] { :status :success}
                  [2] {:status :success :foo :baz}
                  [3] { :status :failure }}} (tu/without-ts @pipeline-state-atom)))))
-  (testing "that retriggering anything but a root-level step is prevented at this time"
+  (testing "that retriggering works for nested steps"
     (let [pipeline-state-atom (atom { 0 {[1] { :status :success }
                                          [1 1] {:status :success :out "I am nested"}
                                          [2 1] {:status :unknown :out "this will be retriggered"}}})
