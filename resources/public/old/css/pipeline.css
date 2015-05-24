@@ -1,6 +1,6 @@
 
-#app .connection-lost {
-  background-color: grey;
+#app .connection-lost * {
+  opacity: 0.8;
 }
 
 #app {
