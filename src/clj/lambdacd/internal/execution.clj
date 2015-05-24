@@ -169,15 +169,34 @@
         history-to-duplicate (filter (partial to-be-duplicated? step-id-to-run) pipeline-history)]
     (dorun (map do-add-result history-to-duplicate))))
 
+(defn mock-step [& _]
+  {:status :success})
+
+(defn- with-step-id [parent-step-id]
+  (fn [idx step]
+    [(cons (inc idx) parent-step-id) step]))
+
+(declare mock-for-steps-again)
+(defn- replace-with-mock-or-recur [step-id-to-retrigger]
+  (fn [[step-id step]]
+    (cond
+      (and
+        (step-id/before? step-id step-id-to-retrigger)
+        (not (step-id/parent-of? step-id step-id-to-retrigger))) `mock-step
+      (step-id/parent-of? step-id step-id-to-retrigger) (cons (first step) (mock-for-steps-again (rest step) step-id step-id-to-retrigger))
+      :else step)))
+
+(defn- mock-for-steps-again [steps cur-step-id step-id-to-retrigger]
+  (->> steps
+      (map-indexed (with-step-id cur-step-id))
+      (map (replace-with-mock-or-recur step-id-to-retrigger))))
+
 (defn retrigger [pipeline context build-number step-id-to-run]
-  (if (> (count step-id-to-run) 1)
-    (throw (IllegalArgumentException. "retriggering nested steps is not supported at this point"))
-    (let [pipeline-state (deref (:_pipeline-state context))
-          pipeline-history (get pipeline-state build-number)
-          root-step-number (first step-id-to-run)
-          pipeline-fragment-to-run (nthrest pipeline (dec root-step-number))
-          executable-pipeline (map eval pipeline-fragment-to-run)
-          new-build-number (pipeline-state/next-build-number context)]
-      (duplicate-step-results-not-running-again new-build-number build-number pipeline-history context step-id-to-run)
-      (execute-steps executable-pipeline {} (assoc context :step-id [(dec root-step-number)]
-                                                           :build-number new-build-number)))))
+  (let [pipeline-state (deref (:_pipeline-state context))
+        pipeline-history (get pipeline-state build-number)
+        pipeline-fragment-to-run (mock-for-steps-again pipeline [] step-id-to-run)
+        executable-pipeline (doall (map eval pipeline-fragment-to-run))
+        new-build-number (pipeline-state/next-build-number context)]
+    (duplicate-step-results-not-running-again new-build-number build-number pipeline-history context step-id-to-run)
+    (execute-steps executable-pipeline {} (assoc context :step-id [0]
+                                                         :build-number new-build-number))))

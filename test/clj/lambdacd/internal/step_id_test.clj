@@ -32,10 +32,11 @@
 
 (deftest parent-relationship-test
   (testing "you need a common postfix to be a parent of something"
+    (is (not (parent-of? [1] [1])))
     (is (parent-of? [1] [2 1]))
     (is (not (parent-of? [2 1] [1])))
     (is (parent-of? [2] [2 2]))
     (is (not (parent-of? [2 2] [2])))
     (is (parent-of? [2] [1 2 2]))
     (is (not (parent-of? [1 2 2] [2])))
-    (is (not (parent-of? [1] [2 2 2])))))
+    (is (not (parent-of? [1] [2 2 2]))) ))

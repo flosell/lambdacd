@@ -5,7 +5,10 @@
             [lambdacd.testsupport.test-util :refer [eventually slurp-chan]]
             [clojure.core.async :as async]
             [lambdacd.testsupport.data :refer [some-ctx-with]]
-            [lambdacd.testsupport.test-util :as tu]))
+            [lambdacd.testsupport.test-util :as tu]
+            [lambdacd.internal.execution :as execution]
+            [lambdacd.core :as core])
+  (:import java.lang.IllegalStateException))
 
 (defn some-step-processing-input [arg & _]
   (assoc arg :foo :baz :status :success))
@@ -170,8 +173,20 @@
     (is (= {:outputs { [1 0] {:status :success} [2 0] {:status :success}} :status :success}
            (execute-steps [some-successful-step step-that-expects-a-kill-switch] {} { :step-id [0 0] })))))
 
+
+
 (defn some-control-flow [&] ; just a mock, we don't actually execute this
-  )
+  (throw (IllegalStateException. "This shouldn't be called")))
+
+(defn some-step-that-fails-if-retriggered [ & _]
+  (throw (IllegalStateException. "This step shouldn't be called")))
+
+(defn some-control-flow-thats-called [& steps]
+  (fn [arg ctx]
+    (execution/execute-steps steps (assoc arg :some :val) (core/new-base-context-for ctx))))
+
+(defn some-step-to-retrigger [args _]
+  {:status :success :the-some (:some args)})
 
 (deftest retrigger-test
   (testing "that retriggering results in a completely new pipeline-run where not all the steps are executed"
@@ -197,8 +212,20 @@
                  [2] {:status :success :foo :baz}
                  [3] { :status :failure }}} (tu/without-ts @pipeline-state-atom)))))
   (testing "that retriggering anything but a root-level step is prevented at this time"
-    (let [pipeline-state-atom (atom {})
-          pipeline `((some-control-flow some-step) some-successful-step)
-          context { :_pipeline-state pipeline-state-atom}]
-      (is (thrown? IllegalArgumentException (retrigger pipeline context 0 [2 1]))))))
+    (let [pipeline-state-atom (atom { 0 {[1] { :status :success }
+                                         [1 1] {:status :success :out "I am nested"}
+                                         [2 1] {:status :unknown :out "this will be retriggered"}}})
+          pipeline `((some-control-flow-thats-called some-step-that-fails-if-retriggered some-step-to-retrigger) some-successful-step)
+          context (some-ctx-with :_pipeline-state pipeline-state-atom)]
+      (retrigger pipeline context 0 [2 1])
+      (is (= {0 {[1] { :status :success }
+                 [1 1] {:status :success :out "I am nested"}
+                 [2 1] {:status :unknown :out "this will be retriggered"}}
+              1 {[1] {:status :success
+                      :outputs {[1 1] {:status :success}
+                                [2 1] {:the-some :val :status :success}}
+                      :retrigger-mock-for-build-number 0}
+                 [1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0}
+                 [2 1] {:the-some :val :status :success}
+                 [2] { :status :success }}} (tu/without-ts @pipeline-state-atom))))))
 

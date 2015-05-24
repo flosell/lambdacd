@@ -12,7 +12,8 @@
             [clojure.core.async :as async]
             [lambdacd.util :as util]
             [compojure.route :as route]
-            [lambdacd.core :as core]))
+            [lambdacd.core :as core]
+            [clojure.string :as string]))
 
 (defn- pipeline [pipeline-def]
   (presentation/display-representation pipeline-def))
@@ -29,7 +30,7 @@
       (GET "/builds/:buildnumber/" [buildnumber] (build-infos pipeline-def @pipeline-state buildnumber))
       (POST "/builds/:buildnumber/:step-id/retrigger" [buildnumber step-id]
             (do
-              (async/thread (core/retrigger pipeline-def ctx (util/parse-int buildnumber) [(util/parse-int step-id)]))
+              (async/thread (core/retrigger pipeline-def ctx (util/parse-int buildnumber) (map util/parse-int (string/split step-id #"-"))))
               (util/ok)))
       (POST "/dynamic/:id" {{id :id } :params data :json-params} (do
                                                                        (manualtrigger/post-id id (w/keywordize-keys data))

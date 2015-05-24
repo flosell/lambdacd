@@ -4,7 +4,8 @@
             [lambdacd.utils :refer [click-handler]]
             [lambdacd.utils :refer [append-components]]
             [lambdacd.api :as api]
-            [lambdacd.route :as route]))
+            [lambdacd.route :as route]
+            [clojure.string :as string]))
 
 (declare build-step-component) ;; mutual recursion
 
@@ -38,7 +39,7 @@
     (and is-finished is-not-nested)))
 
 (defn retrigger [build-number build-step]
-  (api/retrigger build-number (first (:step-id build-step))))
+  (api/retrigger build-number (string/join "-" (:step-id build-step))))
 
 (defn retrigger-component [build-number build-step]
   (if (can-be-retriggered? build-step)
