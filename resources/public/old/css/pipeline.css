@@ -1,4 +1,8 @@
 
+#app .connection-lost {
+  background-color: grey;
+}
+
 #app {
   display:-ms-flexbox;
   display:-webkit-box;
@@ -69,27 +73,27 @@ li[data-status=waiting] {
   text-decoration: none;
 }
 
-li[data-status=running] {
+#pipeline li[data-status=running] {
   background:lightblue;
 }
 
-li[data-status=success]  {
+#pipeline li[data-status=success]  {
   background:lightgreen;
 }
 
-li[data-status=failure]  {
+#pipeline li[data-status=failure]  {
   background:tomato;
 }
 
-li[data-status=undefined] {
+#pipeline li[data-status=undefined] {
   background:yellow;
 }
 
-li[data-status=killed] {
+#pipeline li[data-status=killed] {
   background:lightgrey;
 }
 
-li:not([data-status]) {
+#pipeline li:not([data-status]) {
   background:white;
 }
 

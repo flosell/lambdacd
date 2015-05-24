@@ -5,9 +5,6 @@
             [lambdacd.history :as history]
             [lambdacd.testutils :as tu]))
 
-
-
-
 (deftest history-test-cljs
   (testing "that the history contains all the builds"
            (tu/with-mounted-component

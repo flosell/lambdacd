@@ -18,18 +18,23 @@
 
 (def poll-frequency 1000)
 
-(defn poll [atom fn]
+(defn poll [atom connection-lost-atom fn]
   (go-loop []
-    (let [history (async/<! (fn))]
-      (reset! atom history))
+    (let [new-val (async/<! (fn))]
+      (if new-val
+        (do
+          (reset! connection-lost-atom false)
+          (reset! atom new-val))
+        (reset! connection-lost-atom true))
+      )
     (async/<! (utils/timeout poll-frequency))
     (recur)))
 
-(defn poll-history [history-atom]
-  (poll history-atom api/get-build-history))
+(defn poll-history [history-atom connection-lost-atom]
+  (poll history-atom connection-lost-atom api/get-build-history))
 
-(defn poll-state [state-atom build-number-atom]
-  (poll state-atom #(api/get-build-state @build-number-atom)))
+(defn poll-state [state-atom build-number-atom connection-lost-atom]
+  (poll state-atom connection-lost-atom #(api/get-build-state @build-number-atom)))
 
 (defn current-build-component [build-state-atom build-number step-id-to-display-atom output-details-visible]
   (if (not (nil? @build-state-atom))
@@ -41,11 +46,11 @@
     [commons/loading-screen]))
 
 
-(defn root [build-number-atom step-id-to-display-atom history state output-details-visible]
+(defn root [build-number-atom step-id-to-display-atom history state output-details-visible connection-lost]
   (let [build-number @build-number-atom]
     (if build-number
       (do
-        [:div
+        [:div (if @connection-lost {:class "connection-lost"})
          [:div {:id "builds"} [history/build-history-component @history]]
           [:div {:id "currentBuild"} [current-build-component state build-number step-id-to-display-atom output-details-visible]]])
       [:div {:id "loading"}
@@ -72,11 +77,12 @@
         step-id-to-display-atom (atom nil)
         history-atom (atom nil)
         state-atom (atom nil)
-        output-details-visible (atom false)]
-    (poll-history history-atom)
-    (poll-state state-atom build-number-atom)
+        output-details-visible (atom false)
+        connection-lost-atom (atom false)]
+    (poll-history history-atom connection-lost-atom)
+    (poll-state state-atom build-number-atom connection-lost-atom)
     (hook-browser-navigation! build-number-atom step-id-to-display-atom state-atom)
     ; #' is necessary so that fighweel can update: https://github.com/reagent-project/reagent/issues/94
-    (reagent/render-component [#'root build-number-atom step-id-to-display-atom history-atom state-atom output-details-visible] (.getElementById js/document "app"))))
+    (reagent/render-component [#'root build-number-atom step-id-to-display-atom history-atom state-atom output-details-visible connection-lost-atom] (.getElementById js/document "app"))))
 
 
