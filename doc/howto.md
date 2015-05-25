@@ -14,10 +14,6 @@ You can use the bash command from `lambdacd.steps.shell`:
 You can also define environment variables:
 ```clojure
 (defn some-build-step [arg ctx]
-(bash (some-ctx) "/"
-                             {"HELLO" "say hello"
-                              "WORLD" "say world"}
-                             "echo $HELLO"
   (shell/bash ctx "/some/working/directory" {"ENV_VARIABLE" "hello"}
               "echo $ENV_VARIABLE"))
 ```
