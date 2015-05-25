@@ -41,6 +41,9 @@
 (defn some-step-saying-world [args ctx]
   {:status :success :out "world"})
 
+(defn some-step-with-additional-arguments [args ctx hello world]
+  {:status :success :hello hello :world world})
+
 (defn step-that-should-never-be-called [args ctx]
   (throw (IllegalStateException. "do not call me!")))
 
@@ -114,6 +117,14 @@
   (testing "that a given argument is passed on to the step"
     (is (= {:status :success :the-arg 42} (chain {:v 42} {}
                                                (some-step-returning-an-argument-passed-in)))))
+  (testing "that we can have more arguments than just args and ctx"
+    (is (= {:status :success :hello "hello" :world "world"}
+           (chain {} {} (some-step-with-additional-arguments "hello" "world")))))
+  (testing "that we can also hardcode results at the end of the chain"
+    (is (= {:status :success :this-is :test :foo :bar}
+           (chain {} {}
+                  (some-step)
+                  {:status :success :this-is :test}))))
   (testing "that a given context is passed on to the step"
     (is (= {:status :success :the-ctx-1 {:v 42}} (chain {} {:v 42}
                                                  (some-step-returning-the-context-passed-in))))))

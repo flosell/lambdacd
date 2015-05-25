@@ -31,7 +31,9 @@
 (defn to-fn [form]
   (let [f# (first form)
         r# (next form)]
-    `(fn [args# ctx#] (~f# args# ctx# ~@r#))))
+    (if (map? form)
+      `(fn [& _# ] ~form)
+      `(fn [args# ctx#] (~f# args# ctx# ~@r#)))))
 
 (defmacro chain [args ctx & forms]
   "a bit of syntactic sugar for chaining steps. Basically the threading-macro for LambdaCD"

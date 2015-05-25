@@ -14,6 +14,7 @@ The official release will have a defined and more stable API. If you are already
  * Indicate lost connection to LambdaCD in UI
  * Allow retriggering of nested steps (#5)
  * Redirect to new build when retriggering
+ * Support hardcoded result-maps in `chain`-macro
 * API Changes:
  * removed deprecated argument lists for `lambdacd.internal.execution/execute-steps`
 
