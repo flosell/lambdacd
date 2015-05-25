@@ -57,6 +57,8 @@ And if you notice something, please open bug reports, feature requests or just g
 
 ## Resources
 
+* [FAQ](doc/FAQ.md)
+* [How to do ...](doc/howto.md)
 * Detailed Tutorial: [doc/walkthrough.md](doc/walkthrough.md)
 * A complete LambdaCD infrastructure in code: https://github.com/flosell/devops-101-lambdacd
 * Documented Sample-Code: [example/clj/todopipeline](example/clj/todopipeline)
