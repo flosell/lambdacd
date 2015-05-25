@@ -46,9 +46,9 @@
             (recur)))))
     (support/printed-output printer)))
 
-(defn- mysh [cwd cmd  ctx]
+(defn- mysh [cwd cmd ctx env]
   (let [result-ch (:result-channel ctx)
-        x (sh/proc "bash" "-c" cmd :dir cwd)
+        x (sh/proc "bash" "-c" cmd :dir cwd :env env)
         proc (:process x)
         was-killed (atom false)
         kill-switch (:is-killed ctx)
@@ -64,10 +64,13 @@
 (defn bash
   "step that executes commands in a bash. arguments are the working-directory and at least one command to execute
   returns stdout and stderr as :out value, the exit code as :exit and succeeds if exit-code was 0"
-  [ctx cwd & commands]
+  [ctx cwd & optional-env-and-commands]
   (let [temp-file (utils/create-temp-file)
-        all-commands (string/join "\n" commands)
+        env-or-first-command (first optional-env-and-commands)
+        env (if (map? env-or-first-command) env-or-first-command {})
+        commands (if (map? env-or-first-command) (rest optional-env-and-commands) optional-env-and-commands)
+        command-lines (string/join "\n" commands)
         bash-command (str "bash -e '" temp-file "' 2>&1")]
-    (spit temp-file all-commands)
+    (spit temp-file command-lines)
     (util/with-temp temp-file
-      (mysh cwd bash-command ctx))))
+      (mysh cwd bash-command ctx env))))

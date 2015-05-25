@@ -25,8 +25,6 @@
       (is (= "foo\nbar\n" (:out (bash (some-ctx) "/" "echo foo" "echo bar" "exit 1" "echo baz")))))
     (testing "that the output also contains stderr"
       (is (= "foo\nerror\nbaz\n" (:out (bash (some-ctx) "/" "echo foo" ">&2 echo error" "echo baz")))))
-    (testing "that exports work until we are able to set environment variables"
-      (is (= "foo\n" (:out (bash (some-ctx) "/" "export X=foo" "echo $X")))))
     (testing "that the output channel is updated with every line"
       (let [some-ctx (some-ctx-with :result-channel (async/chan 100))
             result-channel (:result-channel some-ctx)]
@@ -38,6 +36,14 @@
 (deftest shell-cwd-test
   (testing "that the comand gets executed in the correct directory"
     (is (= "/\n" (:out (bash (some-ctx) "/" "pwd"))))))
+
+(deftest env-variables-test
+  (testing "that we can add environment variables"
+    (is (= "say hello\nsay world\n" (:out (bash (some-ctx) "/"
+                             {"HELLO" "say hello"
+                              "WORLD" "say world"}
+                             "echo $HELLO"
+                             "echo $WORLD"))))))
 
 (deftest shell-execution-test
   (testing "that execution of commands stops after a command had an error"
