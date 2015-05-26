@@ -5,6 +5,11 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
+## 0.3.1
+
+* Bug fixes:
+  * Fix updated scrolling (#18)
+
 ## 0.3.0
 
 * Bug fixes: #14, #15, #17
