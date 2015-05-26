@@ -25,8 +25,8 @@
   margin-bottom:10px;
 }
 
-#currentBuild {
-  overflow: scroll;
+#pipeline {
+  overflow-y: scroll;
 }
 
 #currentBuild ol {
