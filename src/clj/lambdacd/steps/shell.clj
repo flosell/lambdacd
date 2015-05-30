@@ -46,9 +46,12 @@
             (recur)))))
     (support/printed-output printer)))
 
-(defn- mysh [cwd cmd ctx env]
+(defn- execte-shell-command [cwd shell-script ctx env]
   (let [result-ch (:result-channel ctx)
-        x (sh/proc "bash" "-c" cmd :dir cwd :env env)
+        x (sh/proc "bash" "-e" shell-script
+                   :dir cwd
+                   :env env
+                   :redirect-err true)
         proc (:process x)
         was-killed (atom false)
         kill-switch (:is-killed ctx)
@@ -69,8 +72,7 @@
         env-or-first-command (first optional-env-and-commands)
         env (if (map? env-or-first-command) env-or-first-command {})
         commands (if (map? env-or-first-command) (rest optional-env-and-commands) optional-env-and-commands)
-        command-lines (string/join "\n" commands)
-        bash-command (str "bash -e '" temp-file "' 2>&1")]
+        command-lines (string/join "\n" commands)]
     (spit temp-file command-lines)
     (util/with-temp temp-file
-      (mysh cwd bash-command ctx env))))
+      (execte-shell-command cwd temp-file ctx env))))
