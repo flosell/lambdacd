@@ -163,7 +163,7 @@ Throw a bit of parallelism into the structure and we are good to go:
     lambdacd.manualtrigger/wait-for-manual-trigger
     (in-parallel
       (with-frontend-git
-        client-package)
+        frontend-package)
       (with-backend-git
         server-test
         server-package))
