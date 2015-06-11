@@ -93,7 +93,7 @@ I'm guessing we need the step to call the `package.sh` and `publish.sh` scripts.
 
 So let's put this into a function:
 ```clojure
-(defn client-package [args & _]
+(defn frontend-package [args & _]
   (shell/bash <cwd ???> ; I don't know
     "bower install"
     "./package.sh"
@@ -111,7 +111,7 @@ Almost ready... But what's our working directory? It's probably wherever we chec
 ```
 
 
-Great, a first build step, but without some code to check out, it's not particulary useful... So we want something that checks out our git repo and does something so that client-package is being executed with the path of the checked out git in the `:cwd` value. Fortunately, LambdaCD already provides such a thing: `lambdacd.steps.git/with-git`. It takes a repository-uri and some steps and creates a nesting operation for us where all the given steps are executed with `:cwd` set to a folder containing the checked out repo.
+Great, a first build step, but without some code to check out, it's not particulary useful... So we want something that checks out our git repo and does something so that frontend-package is being executed with the path of the checked out git in the `:cwd` value. Fortunately, LambdaCD already provides such a thing: `lambdacd.steps.git/with-git`. It takes a repository-uri and some steps and creates a nesting operation for us where all the given steps are executed with `:cwd` set to a folder containing the checked out repo.
 
 So let's first add this to the `require` statements on the beginning of the file: `[lambdacd.steps.git :as git]`. This imports the `lambdacd.steps.git` namespace, aliased as `git`.
 
