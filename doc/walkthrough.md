@@ -144,12 +144,12 @@ Well, now, if this works, the backend part pretty much works the same:
 (defn ^{:display-type :container} with-backend-git [& steps]
   (git/with-git backend-repo steps))
 
-(defn server-test [{cwd :cwd} & _]
-  (shell/bash cwd
+(defn server-test [{cwd :cwd} ctx]
+  (shell/bash ctx cwd
     "lein test"))
 
-(defn server-package [{cwd :cwd} & _]
-  (shell/bash cwd
+(defn server-package [{cwd :cwd} ctx]
+  (shell/bash ctx cwd
     "lein uberjar"
     "./publish.sh"))
 ```
