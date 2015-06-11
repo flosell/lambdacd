@@ -103,8 +103,8 @@ So let's put this into a function:
 Almost ready... But what's our working directory? It's probably wherever we checked out the git repository. Let's just assume some other step before took care of it and use argument destructuring to get working directory out of the arguments map the step receives:
 
 ```clojure
-(defn frontend-package [{cwd :cwd} & _]
-  (shell/bash cwd
+(defn frontend-package [{cwd :cwd} ctx]
+  (shell/bash ctx cwd
     "bower install"
     "./package.sh"
     "./publish.sh"))
