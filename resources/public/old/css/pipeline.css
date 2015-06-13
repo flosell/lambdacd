@@ -89,10 +89,6 @@ li[data-status=waiting] {
   background:tomato;
 }
 
-#pipeline li[data-status=undefined] {
-  background:yellow;
-}
-
 #pipeline li[data-status=killed] {
   background:lightgrey;
 }

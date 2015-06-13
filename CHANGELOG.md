@@ -5,6 +5,11 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
+## 0.3.2
+
+* Improvements:
+  * Remove styling for undefined step-status (#23)
+
 ## 0.3.1
 
 * Bug fixes:
