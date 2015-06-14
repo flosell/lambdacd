@@ -55,7 +55,7 @@
     (finally
       (async/close! (:result-channel ctx)))))
 
-(defn reuse-from-history-if-required [{:keys [step-id] :as ctx} {build-number-to-resuse :reuse-from-build-number :as result}]
+(defn- reuse-from-history-if-required [{:keys [step-id] :as ctx} {build-number-to-resuse :reuse-from-build-number :as result}]
   (if build-number-to-resuse
     (let [state @(:_pipeline-state ctx)
           old-result (get-in state [build-number-to-resuse step-id])]
@@ -120,7 +120,7 @@
     out-ch))
 
 
-(defn unify-statuses [statuses]
+(defn- unify-statuses [statuses]
   (let [has-failed (util/contains-value? :failure statuses)
         has-running (util/contains-value? :running statuses)
         all-waiting (every? #(= % :waiting) statuses)
@@ -207,16 +207,16 @@
                                                           :step-id []
                                                           :build-number build-number})))))
 
-(defn add-result [new-build-number retriggered-build-number initial-ctx [step-id result]]
+(defn- add-result [new-build-number retriggered-build-number initial-ctx [step-id result]]
   (let [ctx (assoc initial-ctx :build-number new-build-number :step-id step-id)
         result-with-annotation (assoc result :retrigger-mock-for-build-number retriggered-build-number)]
     (pipeline-state/update ctx result-with-annotation)))
 
-(defn to-be-duplicated? [step-id-retriggered [cur-step-id _]]
+(defn- to-be-duplicated? [step-id-retriggered [cur-step-id _]]
   (let [result (step-id/before? cur-step-id step-id-retriggered)]
     result))
 
-(defn duplicate-step-results-not-running-again [new-build-number retriggered-build-number pipeline-history context step-id-to-run]
+(defn- duplicate-step-results-not-running-again [new-build-number retriggered-build-number pipeline-history context step-id-to-run]
   (let [do-add-result (partial add-result new-build-number retriggered-build-number context)
         history-to-duplicate (filter (partial to-be-duplicated? step-id-to-run) pipeline-history)]
     (dorun (map do-add-result history-to-duplicate))))
