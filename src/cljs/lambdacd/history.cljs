@@ -37,6 +37,6 @@
   [:div {:class "blocked"}
    [:h2 "Builds"]
    (if (not (nil? history))
-     (let [history-to-display (sort-by :build-number history)]
+     (let [history-to-display (sort-by :build-number > history)]
        [:ul (map history-item-component history-to-display)])
      [commons/loading-screen])])
