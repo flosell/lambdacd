@@ -62,15 +62,19 @@
       (assoc old-result :retrigger-mock-for-build-number build-number-to-resuse))
     result))
 
+(defn- copy-to [write-channel & channels-receiving-copies]
+  (let [mult (async/mult write-channel)]
+    (doall (map #(async/tap mult %) channels-receiving-copies))))
 
-(defn execute-step [args [{:keys [step-id _] :as ctx} step] & {:keys [result-channel]
-                                                               :or   {result-channel (async/chan (async/dropping-buffer 0))}}]
+; TODO: the result-channel argument is deprecated, remove after next release
+(defn execute-step [args [ctx step] & {:keys [result-channel]}]
  (pipeline-state/running ctx)
- (let [result-ch-to-write (async/chan 10)
+ (let [step-id (:step-id ctx)
+       result-channel-from-ctx (:result-channel ctx)
+       output-result-channel (or result-channel result-channel-from-ctx (async/chan (async/dropping-buffer 0)) )
+       result-ch-to-write (async/chan 10)
        result-ch-to-read (async/chan 10)
-       mult (async/mult result-ch-to-write)
-       _ (async/tap mult result-channel)
-       _ (async/tap mult result-ch-to-read)
+       _ (copy-to result-ch-to-write output-result-channel result-ch-to-read)
        ctx-with-result-ch (assoc ctx :result-channel result-ch-to-write)
        processed-async-result-ch (process-channel-result-async result-ch-to-read ctx)
        immediate-step-result (execute-or-catch step args ctx-with-result-ch)

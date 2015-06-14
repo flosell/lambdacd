@@ -9,6 +9,8 @@ The official release will have a defined and more stable API. If you are already
 
 * Improvements:
   * Remove styling for undefined step-status (#23)
+* API changes:
+  * the `:result-channel` argument for `execute-step` is now deprecated. Pass custom result-channels in via the ctx instead
 
 ## 0.3.1
 
