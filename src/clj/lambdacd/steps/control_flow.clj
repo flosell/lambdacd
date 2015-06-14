@@ -87,7 +87,7 @@
 (defn ^{:display-type :parallel} either [& steps]
   (fn [args ctx]
     (let [kill-switch (atom false)
-          execute-output (core/execute-steps steps args (core/new-base-context-for ctx)
+          execute-output (core/execute-steps steps args ctx
                                                      :is-killed kill-switch
                                                      :step-result-producer (partial step-producer-returning-with-first-successful ctx))]
       (reset! kill-switch true)
@@ -106,10 +106,10 @@
 (defn ^{:display-type :parallel} in-parallel [& steps]
   (fn [args ctx]
     (post-process-container-results
-      (execute-steps-in-parallel ctx steps args (core/new-base-context-for ctx)))))
+      (execute-steps-in-parallel ctx steps args ctx))))
 
 
 (defn ^{:display-type :container} in-cwd [cwd & steps]
   (fn [args ctx]
     (post-process-container-results
-      (core/execute-steps steps (assoc args :cwd cwd) (core/new-base-context-for ctx)))))
+      (core/execute-steps steps (assoc args :cwd cwd) ctx))))

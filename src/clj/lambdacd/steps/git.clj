@@ -88,7 +88,7 @@
         checkout-exit-code (:exit checkout-result)]
     (utils/with-temp repo-location
       (if (= 0 checkout-exit-code)
-        (let [execute-steps-result (core/execute-steps steps (assoc args :cwd repo-location) (core/new-base-context-for ctx))
+        (let [execute-steps-result (core/execute-steps steps (assoc args :cwd repo-location) ctx)
               result-with-checkout-output (assoc execute-steps-result :out (:out checkout-result))
               step-ids-and-outputs (:outputs execute-steps-result)
               step-ids (keys step-ids-and-outputs)
