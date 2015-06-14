@@ -4,7 +4,7 @@
             [lambdacd.internal.execution :refer :all]
             [lambdacd.testsupport.test-util :refer [eventually slurp-chan]]
             [clojure.core.async :as async]
-            [lambdacd.testsupport.data :refer [some-ctx-with]]
+            [lambdacd.testsupport.data :refer [some-ctx-with some-ctx]]
             [lambdacd.testsupport.test-util :as tu]
             [lambdacd.internal.execution :as execution]
             [lambdacd.core :as core])
@@ -93,30 +93,34 @@
 
 (deftest execute-step-test
   (testing "that executing returns the step result added to the input args"
-    (is (= {:outputs { [0 0] {:foo :baz :x :y :status :success}} :status :success} (execute-step {:x :y} [{:step-id [0 0]} some-step-processing-input]))))
+    (is (= {:outputs { [0 0] {:foo :baz :x :y :status :success}} :status :success} (execute-step {:x :y} [(some-ctx-with :step-id [0 0]) some-step-processing-input]))))
   (testing "that executing returns the steps result-status as a special field and leaves it in the output as well"
-    (is (= {:outputs { [0 0] {:status :success} } :status :success} (execute-step {} [{:step-id [0 0]} some-successful-step]))))
+    (is (= {:outputs { [0 0] {:status :success} } :status :success} (execute-step {} [(some-ctx-with :step-id [0 0]) some-successful-step]))))
   (testing "that the result-status is :undefined if the step doesn't return any"
-    (is (= {:outputs { [0 0] {:status :undefined} } :status :undefined} (execute-step {} [{:step-id [0 0]} some-step-not-returning-status] ))))
+    (is (= {:outputs { [0 0] {:status :undefined} } :status :undefined} (execute-step {} [(some-ctx-with :step-id [0 0]) some-step-not-returning-status] ))))
   (testing "that the result indicates that a step has been waiting"
-    (is (= {:outputs { [0 0] {:status :success :has-been-waiting true}} :status :success} (execute-step {} [{:step-id [0 0]} some-step-sending-a-wait] ))))
+    (is (= {:outputs { [0 0] {:status :success :has-been-waiting true}} :status :success} (execute-step {} [(some-ctx-with :step-id [0 0]) some-step-sending-a-wait] ))))
   (testing "that if an exception is thrown in the step, it will result in a failure and the exception output is logged"
     (let [output (execute-step {} [{:step-id [0 0]} some-step-throwing-an-exception])]
       (is (= :failure (get-in output [:outputs [0 0] :status])))
       (is (.contains (get-in output [:outputs [0 0] :out]) "Something went wrong"))))
   (testing "that the context passed to the step contains an output-channel and that results passed into this channel are merged into the result"
-    (is (= {:outputs { [0 0] {:out "hello world" :status :success}} :status :success} (execute-step {} [{:step-id [0 0]} some-step-writing-to-the-result-channel]))))
+    (is (= {:outputs { [0 0] {:out "hello world" :status :success}} :status :success} (execute-step {} [(some-ctx-with :step-id [0 0]) some-step-writing-to-the-result-channel]))))
   (testing "that the context data is being passed on to the step"
-    (is (= {:outputs { [0 0] {:status :success :context-info "foo"}} :status :success} (execute-step {} [{:step-id [0 0] :the-info "foo"} some-step-consuming-the-context]))))
+    (is (= {:outputs { [0 0] {:status :success :context-info "foo"}} :status :success} (execute-step {} [(some-ctx-with :step-id [0 0] :the-info "foo") some-step-consuming-the-context]))))
   (testing "that the final pipeline-state is properly set for a step returning a static result"
     (let [pipeline-state-atom (atom {})]
       (is (= { 5 { [0 0] {:status :success } } }
-             (tu/without-ts (do (execute-step {} [{:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state-atom} some-successful-step])
+             (tu/without-ts (do (execute-step {} [(some-ctx-with :step-id [0 0]
+                                                                 :build-number 5
+                                                                 :_pipeline-state pipeline-state-atom) some-successful-step])
                  @pipeline-state-atom))))))
   (testing "that the final pipeline-state is properly set for a step returning a static and an async result"
     (let [pipeline-state-atom (atom {})]
       (is (= { 5 { [0 0] {:status :success } } }
-             (tu/without-ts (do (execute-step {} [{:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state-atom} some-step-that-sends-failure-on-ch-returns-success])
+             (tu/without-ts (do (execute-step {} [(some-ctx-with :step-id [0 0]
+                                                                 :build-number 5
+                                                                 :_pipeline-state pipeline-state-atom) some-step-that-sends-failure-on-ch-returns-success])
                  @pipeline-state-atom))))))
   (testing "that the pipeline-state is updated over time"
     (let [pipeline-state (atom {})]
@@ -127,18 +131,18 @@
               { 5 { [0 0] {:status :success :some-value 42 :out "hello world"} } }]
              (map tu/without-ts
                   (atom-history-for pipeline-state
-                    (execute-step {} [{:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state} some-step-building-up-result-state-incrementally])))))))
+                    (execute-step {} [(some-ctx-with :step-id [0 0]
+                                                     :build-number 5
+                                                     :_pipeline-state pipeline-state) some-step-building-up-result-state-incrementally])))))))
   (testing "that the step result contains the static and the async output"
-    (let [pipeline-state (atom {})]
-      (is (= {:outputs {[0 0] {:status :success :some-value 42 :out "hello world"} } :status :success }
-             (execute-step {} [{:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state} some-step-building-up-result-state-incrementally])))))
+    (is (= {:outputs {[0 0] {:status :success :some-value 42 :out "hello world"} } :status :success }
+           (execute-step {} [(some-ctx-with :step-id [0 0]) some-step-building-up-result-state-incrementally]))))
   (testing "that in doubt, the static output overlays the async output"
-    (let [pipeline-state (atom {})]
-      (is (= {:outputs {[0 0] {:status :success } } :status :success }
-             (execute-step {} [{:step-id [0 0] :build-number 5 :_pipeline-state pipeline-state} some-step-that-sends-failure-on-ch-returns-success])))))
+    (is (= {:outputs {[0 0] {:status :success } } :status :success }
+           (execute-step {} [(some-ctx-with :step-id [0 0]) some-step-that-sends-failure-on-ch-returns-success]))))
   (testing "that we can pass in a channel that gets a copy of the result-channel messages"
     (let [result-channel (async/chan 100)]
-      (execute-step {} [{:step-id [0 0] :build-number 5 :_pipeline-state (some-pipeline-state)} some-step-writing-to-the-result-channel]
+      (execute-step {} [(some-ctx) some-step-writing-to-the-result-channel]
                     :result-channel result-channel)
       (is (= [[:out "hello world"]] (slurp-chan result-channel))))))
 
