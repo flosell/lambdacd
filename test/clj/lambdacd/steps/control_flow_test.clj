@@ -1,6 +1,7 @@
 (ns lambdacd.steps.control-flow-test
   (:use [lambdacd.testsupport.test-util])
   (:require [clojure.test :refer :all]
+            [lambdacd.steps.control-flow :as control-flow]
             [lambdacd.testsupport.matchers :refer [map-containing]]
             [lambdacd.testsupport.data :refer [some-ctx-with some-ctx]]
             [lambdacd.steps.control-flow :refer :all]
@@ -75,11 +76,22 @@
 
 (deftest in-cwd-test
   (testing "that it collects all the outputs together correctly and passes cwd to steps"
-    (is (map-containing {:outputs { [1 0 0] {:foo "somecwd" :status :success} [2 0 0] {:foo :baz :status :success}} :status :success} ((in-cwd "somecwd" some-step-for-cwd some-other-step) {} (some-ctx-with :step-id [0 0])))))
+    (is (map-containing {:outputs { [1 0 0] {:foo "somecwd" :status :success} [2 0 0] {:foo :baz :status :success}} :status :success}
+                        ((in-cwd "somecwd" some-step-for-cwd some-other-step) {} (some-ctx-with :step-id [0 0])))))
   (testing "that all the result-values are merged together into a new result"
-    (is (map-containing {:the-number 42 :foo :baz} ((in-cwd "somecwd" some-step-that-returns-42 some-other-step) {} (some-ctx)))))
+    (is (map-containing {:the-number 42 :foo :baz}
+                        ((in-cwd "somecwd" some-step-that-returns-42 some-other-step) {} (some-ctx)))))
   (testing "global values are returned properly"
-    (is (map-containing {:global {:some :value}} ((in-cwd "somecwd" some-step-that-returns-a-global-value some-successful-step) {} (some-ctx))))))
+    (is (map-containing {:global {:some :value}}
+                        ((in-cwd "somecwd" some-step-that-returns-a-global-value some-successful-step) {} (some-ctx))))))
+
+(deftest do-test
+  (testing "that it runs all the children and collects the results"
+    (is (map-containing {:outputs { [1 0 0] {:status :success} [2 0 0] {:foo :baz :status :success}} :status :success}
+                        ((run some-successful-step some-other-step) {} (some-ctx-with :step-id [0 0])))))
+  (testing "that it stops after the first failure"
+    (is (map-containing {:outputs { [1 0 0] {:status :success} [2 0 0] {:status :failure}} :status :failure}
+                        ((run some-successful-step some-failing-step some-other-step) {} (some-ctx-with :step-id [0 0]))))))
 
 (deftest either-test
   (testing "that it succeeds whenever one step finishes successfully"

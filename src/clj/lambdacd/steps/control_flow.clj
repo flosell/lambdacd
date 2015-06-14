@@ -50,3 +50,8 @@
   (fn [args ctx]
     (post-process-container-results
       (core/execute-steps steps (assoc args :cwd cwd) ctx))))
+
+(defn ^{:display-type :container} run [ & steps]
+  (fn [args ctx]
+    (post-process-container-results
+      (core/execute-steps steps args ctx))))
