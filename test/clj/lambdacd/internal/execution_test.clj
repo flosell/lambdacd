@@ -140,7 +140,7 @@
   (testing "that in doubt, the static output overlays the async output"
     (is (= {:outputs {[0 0] {:status :success } } :status :success }
            (execute-step {} [(some-ctx-with :step-id [0 0]) some-step-that-sends-failure-on-ch-returns-success]))))
-  (testing "that we can pass in a channel that gets a copy of the result-channel messages"
+  (testing "that we can pass in a channel that gets a copy of the result-channel messages (deprecated)"
     (let [result-channel (async/chan 100)]
       (execute-step {} [(some-ctx) some-step-writing-to-the-result-channel] :result-channel result-channel)
       (is (= [[:out "hello world"]] (slurp-chan result-channel)))))
