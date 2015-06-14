@@ -101,22 +101,19 @@
 (defn merge-two-step-results [r1 r2]
   (merge-with merge-entry r1 r2))
 
-(defn- steps-with-ids [steps prev-id]
-  (let [significant-part (first prev-id)
-        rest-part (rest prev-id)
-        significant-ids (util/range-from significant-part (count steps))
-        ids (map #(cons %1 rest-part) significant-ids)]
-    (map vector ids steps)))
-
 (defn- to-step-with-context [ctx]
-  (fn [[id step]]
+  (fn [id step]
     [(assoc ctx :step-id id) step]))
 
 (defn contexts-for-steps
   "creates contexts for steps"
   [steps base-context]
-  (let [s-with-id (steps-with-ids steps (:step-id base-context))]
-    (map (to-step-with-context base-context) s-with-id)))
+  (let [prev-id (:step-id base-context)
+        significant-part (first prev-id)
+        rest-part (rest prev-id)
+        significant-ids (util/range-from significant-part (count steps))
+        ids (map #(cons %1 rest-part) significant-ids)]
+    (map (to-step-with-context base-context) ids steps)))
 
 (defn keep-globals [step-result old-args]
   (let [existing-globals (:global old-args)
