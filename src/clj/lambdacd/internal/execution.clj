@@ -104,8 +104,58 @@
 (defn- to-context-and-step [ctx]
   (fn [idx step]
     (let [parent-step-id (:step-id ctx)
-          new-step-id (cons (inc idx) parent-step-id)]
-    [(assoc ctx :step-id new-step-id) step])))
+          new-step-id (cons (inc idx) parent-step-id)
+          step-ctx (assoc ctx :step-id new-step-id
+                              :result-channel (async/chan 10))]
+    [step-ctx step])))
+
+(defn- chan-with-idx [idx c]
+  (let [out-ch (async/chan 10)]
+    (async/go-loop []
+      (if-let [v (async/<! c)]
+        (do
+          (async/>! out-ch [idx v])
+          (recur))
+        (async/close! out-ch)))
+    out-ch))
+
+
+(defn unify-statuses [statuses]
+  (let [has-failed (util/contains-value? :failure statuses)
+        has-running (util/contains-value? :running statuses)
+        all-waiting (every? #(= % :waiting) statuses)
+        one-ok (util/contains-value? :success statuses)]
+    (cond
+      has-failed :failure
+      one-ok :success
+      has-running :running
+      all-waiting :waiting
+      :else :unknown)))
+
+(defn- send-new-status [statuses out-ch]
+  (let [statuses (vals statuses)
+        unified (unify-statuses statuses)]
+    (async/>!! out-ch [:status unified])))
+
+(defn- process-inheritance [status-with-indexes]
+  (let [out-ch (async/chan 100)]
+    (async/go
+      (loop [statuses {}]
+        (if-let [[idx [k v]] (async/<! status-with-indexes)]
+          (if (= :status k)
+            (let [new-statuses (assoc statuses idx v)]
+              (send-new-status new-statuses out-ch)
+              (recur new-statuses))
+            (recur statuses))
+          (async/close! out-ch))))
+    out-ch))
+
+(defn- inherit-from [result-channels own-result-channel]
+  {:pre [(not (nil? own-result-channel))]}
+  (let [channels-with-idx (map-indexed #(chan-with-idx %1 %2) result-channels)
+        all-channels (async/merge channels-with-idx)
+        status-channel (process-inheritance all-channels)]
+    (async/pipe status-channel own-result-channel)))
 
 (defn contexts-for-steps
   "creates contexts for steps"
@@ -144,15 +194,17 @@
                                        :or   {step-result-producer serial-step-result-producer
                                                is-killed            (atom false)}}]
   (let [base-ctx-with-kill-switch (assoc ctx :is-killed is-killed)
-        step-results (step-result-producer args (contexts-for-steps steps base-ctx-with-kill-switch))]
+        step-contexts (contexts-for-steps steps base-ctx-with-kill-switch)
+        result-channels (map #(:result-channel (first %)) step-contexts)
+        _ (inherit-from result-channels (:result-channel ctx))
+        step-results (step-result-producer args step-contexts)]
     (reduce merge-two-step-results step-results)))
-
-
 
 (defn run [pipeline context]
   (let [build-number (pipeline-state/next-build-number context)]
     (let [runnable-pipeline (map eval pipeline)]
-      (execute-steps runnable-pipeline {} (merge context {:step-id []
+      (execute-steps runnable-pipeline {} (merge context {:result-channel (async/chan (async/dropping-buffer 0))
+                                                          :step-id []
                                                           :build-number build-number})))))
 
 (defn add-result [new-build-number retriggered-build-number initial-ctx [step-id result]]
@@ -200,6 +252,7 @@
         executable-pipeline (map eval pipeline-fragment-to-run) ]
     (duplicate-step-results-not-running-again next-build-number build-number pipeline-history context step-id-to-run)
     (execute-steps executable-pipeline {} (assoc context :step-id []
+                                                         :result-channel (async/chan (async/dropping-buffer 0))
                                                          :build-number next-build-number))))
 
 (defn retrigger-async [pipeline context build-number step-id-to-run]
