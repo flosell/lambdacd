@@ -101,19 +101,16 @@
 (defn merge-two-step-results [r1 r2]
   (merge-with merge-entry r1 r2))
 
-(defn- to-step-with-context [ctx]
-  (fn [id step]
-    [(assoc ctx :step-id id) step]))
+(defn- to-context-and-step [ctx]
+  (fn [idx step]
+    (let [parent-step-id (:step-id ctx)
+          new-step-id (cons (inc idx) parent-step-id)]
+    [(assoc ctx :step-id new-step-id) step])))
 
 (defn contexts-for-steps
   "creates contexts for steps"
   [steps base-context]
-  (let [prev-id (:step-id base-context)
-        significant-part (first prev-id)
-        rest-part (rest prev-id)
-        significant-ids (util/range-from significant-part (count steps))
-        ids (map #(cons %1 rest-part) significant-ids)]
-    (map (to-step-with-context base-context) ids steps)))
+  (map-indexed (to-context-and-step base-context) steps))
 
 (defn keep-globals [step-result old-args]
   (let [existing-globals (:global old-args)
@@ -150,19 +147,12 @@
         step-results (step-result-producer args (contexts-for-steps steps base-ctx-with-kill-switch))]
     (reduce merge-two-step-results step-results)))
 
-(defn- new-base-id-for [step-id]
-  (cons 0 step-id))
 
-(defn new-base-context-for [ctx]
-  (let [old-step-id (:step-id ctx)
-        new-step-id (new-base-id-for old-step-id)
-        new-context (assoc ctx :step-id new-step-id :result-channel nil)]
-    new-context))
 
 (defn run [pipeline context]
   (let [build-number (pipeline-state/next-build-number context)]
     (let [runnable-pipeline (map eval pipeline)]
-      (execute-steps runnable-pipeline {} (merge context {:step-id [0]
+      (execute-steps runnable-pipeline {} (merge context {:step-id []
                                                           :build-number build-number})))))
 
 (defn add-result [new-build-number retriggered-build-number initial-ctx [step-id result]]
@@ -209,7 +199,7 @@
         pipeline-fragment-to-run (mock-for-steps-again pipeline [] step-id-to-run build-number)
         executable-pipeline (map eval pipeline-fragment-to-run) ]
     (duplicate-step-results-not-running-again next-build-number build-number pipeline-history context step-id-to-run)
-    (execute-steps executable-pipeline {} (assoc context :step-id [0]
+    (execute-steps executable-pipeline {} (assoc context :step-id []
                                                          :build-number next-build-number))))
 
 (defn retrigger-async [pipeline context build-number step-id-to-run]

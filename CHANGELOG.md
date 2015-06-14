@@ -11,6 +11,7 @@ The official release will have a defined and more stable API. If you are already
   * Remove styling for undefined step-status (#23)
 * API changes:
   * the `:result-channel` argument for `execute-step` is now deprecated. Pass custom result-channels in via the ctx instead
+  * Generating a new base context moved to `execute-step`, therefore `core/new-base-context-for` is now deprecated, just use `ctx` instead
 
 ## 0.3.1
 

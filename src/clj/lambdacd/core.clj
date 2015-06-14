@@ -20,5 +20,7 @@
 (defn execute-step [args [ctx step] & opts]
   (apply execution/execute-step args [ctx step] opts))
 
+;; DEPRECATED and no longer necessary. logic to create new step-ids for children has moved to execute-steps
+;; use ctx in places where calls to this function were necessary.
 (defn new-base-context-for [ctx]
-  (execution/new-base-context-for ctx))
+  ctx)

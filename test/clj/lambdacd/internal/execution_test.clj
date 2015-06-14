@@ -151,34 +151,35 @@
 
 (deftest context-for-steps-test
   (testing "that we can generate proper contexts for steps and keep other context info as it is"
-    (is (= [[{:some-value 42 :step-id [1 0]} some-step] [{:some-value 42 :step-id [2 0]} some-step]] (contexts-for-steps [some-step some-step] {:some-value 42 :step-id [0 0]})))))
+    (is (= [[{:some-value 42 :step-id [1 0]} some-step] [{:some-value 42 :step-id [2 0]} some-step]]
+           (contexts-for-steps [some-step some-step] {:some-value 42 :step-id [0]})))))
 
 (deftest execute-steps-test
   (testing "that executing steps returns outputs of both steps with different step ids"
     (is (= {:outputs { [1 0] {:foo :baz :status :success} [2 0] {:foo :baz :status :success}} :status :success}
-           (execute-steps [some-other-step some-other-step] {} { :step-id [0 0] }))))
+           (execute-steps [some-other-step some-other-step] {} { :step-id [0] }))))
   (testing "that a failing step prevents the succeeding steps from being executed"
     (is (= {:outputs { [1 0] {:status :success} [2 0] {:status :failure}} :status :failure}
-           (execute-steps [some-successful-step some-failing-step some-other-step] {} { :step-id [0 0] }))))
+           (execute-steps [some-successful-step some-failing-step some-other-step] {} { :step-id [0] }))))
   (testing "that the results of one step are the inputs to the other step"
     (is (= {:outputs { [1 0] {:status :success :foobar 42} [2 0] {:status :success :foobar-times-ten 420}} :status :success}
-           (execute-steps [some-step-returning-foobar-value some-step-using-foobar-value] {} { :step-id [0 0] }))))
+           (execute-steps [some-step-returning-foobar-value some-step-using-foobar-value] {} { :step-id [0] }))))
   (testing "that the original input is passed into all steps"
     (testing "the normal case"
       (is (= {:outputs { [1 0] {:status :success :foobar-times-ten 420} [2 0] {:status :success :foobar-times-ten 420}} :status :success}
-             (execute-steps [some-step-using-foobar-value some-step-using-foobar-value] {:foobar 42} { :step-id [0 0] }))))
+             (execute-steps [some-step-using-foobar-value some-step-using-foobar-value] {:foobar 42} { :step-id [0] }))))
     (testing "step result overlays the original input"
       (is (= {:outputs { [1 0] {:status :success :foobar 10} [2 0] {:status :success :foobar-times-ten 100}} :status :success}
-             (execute-steps [some-step-returning-ten-as-foobar-value some-step-using-foobar-value] {:foobar 42} { :step-id [0 0] })))))
+             (execute-steps [some-step-returning-ten-as-foobar-value some-step-using-foobar-value] {:foobar 42} { :step-id [0] })))))
   (testing "that a steps :global results will be passed on to all subsequent steps"
     (is (= {:outputs {[1 0] {:status :success :global { :foobar 42}}
                       [2 0] {:status :success :foobar-times-ten 420}
                       [3 0] {:status :success :foobar-times-ten 420}}
             :status :success}
-           (execute-steps [some-step-returning-global-foobar-value some-step-using-global-foobar-value some-step-using-global-foobar-value] {} { :step-id [0 0] }))))
+           (execute-steps [some-step-returning-global-foobar-value some-step-using-global-foobar-value some-step-using-global-foobar-value] {} { :step-id [0] }))))
   (testing "that execute steps injects a kill-switch by default"
     (is (= {:outputs { [1 0] {:status :success} [2 0] {:status :success}} :status :success}
-           (execute-steps [some-successful-step step-that-expects-a-kill-switch] {} { :step-id [0 0] })))))
+           (execute-steps [some-successful-step step-that-expects-a-kill-switch] {} { :step-id [0] })))))
 
 
 
@@ -190,7 +191,7 @@
 
 (defn some-control-flow-thats-called [& steps]
   (fn [arg ctx]
-    (execution/execute-steps steps (assoc arg :some :val) (new-base-context-for ctx))))
+    (execution/execute-steps steps (assoc arg :some :val) ctx)))
 
 (defn some-step-to-retrigger [args _]
   {:status :success :the-some (:some args)})
@@ -235,9 +236,3 @@
                  [1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0}
                  [2 1] {:the-some :val :status :success}
                  [2] { :status :success }}} (tu/without-ts @pipeline-state-atom))))))
-
-(deftest base-context-test
-  (testing "that the base-context doesn't contain the old result-channel so children based on the base context don't accidently write to their parents result-channel"
-    (is (nil? (:result-channel (new-base-context-for (some-ctx-with :result-channel "some-value"))))))
-  (testing "that the base-context contains the basis for all new step-ids"
-    (is (= [0 42] (:step-id (new-base-context-for (some-ctx-with :step-id [42])))))))
