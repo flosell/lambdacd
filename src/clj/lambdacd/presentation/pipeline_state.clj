@@ -28,7 +28,10 @@
 (defn- not-waiting? [result]
   (not (:has-been-waiting result)))
 
-(defn- first-with-key-ordered-by [steps comp key]
+(defn not-retriggered? [result]
+  (not (:retrigger-mock-for-build-number result)))
+
+(defn- first-with-key-ordered-by [comp key steps]
   (->> steps
        (filter not-waiting?)
        (map key)
@@ -36,10 +39,12 @@
        (first)))
 
 (defn- earliest-first-update [steps]
-  (first-with-key-ordered-by steps asc :first-updated-at))
+  (->> steps
+      (filter not-retriggered?)
+      (first-with-key-ordered-by asc :first-updated-at)))
 
 (defn- latest-most-recent-update [steps]
-  (first-with-key-ordered-by steps desc :most-recent-update-at))
+  (first-with-key-ordered-by desc :most-recent-update-at steps))
 
 (defn- history-entry [[build-number step-ids-and-results]]
   (let [step-results (vals step-ids-and-results)]

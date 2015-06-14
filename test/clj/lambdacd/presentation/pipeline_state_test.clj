@@ -20,6 +20,13 @@
                :first-updated-at before-start-time}]
              (history-for { 7  {'(2) { :status :success :most-recent-update-at stop-time :first-updated-at start-time}
                                 '(1) { :status :success :most-recent-update-at stop-time :first-updated-at before-start-time}}}))))
+    (testing "that retriggered steps are ignored when searching the earliest start time"
+      (is (= [{:build-number 7
+               :status :success
+               :most-recent-update-at stop-time
+               :first-updated-at start-time}]
+             (history-for { 7  {'(2) { :status :success :most-recent-update-at stop-time :first-updated-at start-time}
+                                '(1) { :status :success :most-recent-update-at stop-time :first-updated-at before-start-time :retrigger-mock-for-build-number 42}}}))))
     (testing "that the most recent update will be the pipelines most recent update"
       (is (= [{:build-number 5
                :status :success
