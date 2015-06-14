@@ -143,8 +143,8 @@
           (recur (cons step-result result) (rest remaining-steps-with-id) new-args))))))
 
 (defn execute-steps [steps args ctx & {:keys [step-result-producer is-killed]
-                                           :or   {step-result-producer serial-step-result-producer
-                                                  is-killed            (atom false)}}]
+                                       :or   {step-result-producer serial-step-result-producer
+                                               is-killed            (atom false)}}]
   (let [base-ctx-with-kill-switch (assoc ctx :is-killed is-killed)
         step-results (step-result-producer args (contexts-for-steps steps base-ctx-with-kill-switch))]
     (reduce merge-two-step-results step-results)))
