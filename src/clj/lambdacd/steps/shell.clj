@@ -60,7 +60,6 @@
         out (read-and-print-shell-output x ctx)
         exit-code (sh/exit-code x)
         status (exit-code->status exit-code @was-killed)]
-    (async/close! result-ch)
     (remove-watch kill-switch watch-ref)
     {:exit exit-code :status status :out out}))
 
