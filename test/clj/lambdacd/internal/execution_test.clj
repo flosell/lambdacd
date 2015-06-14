@@ -190,7 +190,7 @@
 
 (defn some-control-flow-thats-called [& steps]
   (fn [arg ctx]
-    (execution/execute-steps steps (assoc arg :some :val) (core/new-base-context-for ctx))))
+    (execution/execute-steps steps (assoc arg :some :val) (new-base-context-for ctx))))
 
 (defn some-step-to-retrigger [args _]
   {:status :success :the-some (:some args)})
@@ -236,3 +236,8 @@
                  [2 1] {:the-some :val :status :success}
                  [2] { :status :success }}} (tu/without-ts @pipeline-state-atom))))))
 
+(deftest base-context-test
+  (testing "that the base-context doesn't contain the old result-channel so children based on the base context don't accidently write to their parents result-channel"
+    (is (nil? (:result-channel (new-base-context-for (some-ctx-with :result-channel "some-value"))))))
+  (testing "that the base-context contains the basis for all new step-ids"
+    (is (= [0 42] (:step-id (new-base-context-for (some-ctx-with :step-id [42])))))))

@@ -80,7 +80,7 @@
        immediate-step-result (execute-or-catch step args ctx-with-result-ch)
        step-result-or-history (reuse-from-history-if-required ctx immediate-step-result)
        processed-async-result (async/<!! processed-async-result-ch)
-       complete-step-result (merge  processed-async-result step-result-or-history)
+       complete-step-result (merge processed-async-result step-result-or-history)
        processed-final-result (process-final-result complete-step-result ctx)]
    (log/debug (str "executed step " step-id processed-final-result))
    (step-output step-id processed-final-result)))
@@ -159,7 +159,7 @@
 (defn new-base-context-for [ctx]
   (let [old-step-id (:step-id ctx)
         new-step-id (new-base-id-for old-step-id)
-        new-context (assoc ctx :step-id new-step-id)]
+        new-context (assoc ctx :step-id new-step-id :result-channel nil)]
     new-context))
 
 (defn run [pipeline context]

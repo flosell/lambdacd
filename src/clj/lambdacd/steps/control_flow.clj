@@ -24,13 +24,12 @@
 
 (defn- chan-with-idx [idx c]
   (let [out-ch (async/chan 10)]
-    (async/go
-      (loop []
+    (async/go-loop []
         (if-let [v (async/<! c)]
           (do
             (async/>! out-ch [idx v])
             (recur))
-          (async/close! out-ch))))
+          (async/close! out-ch)))
     out-ch))
 
 
