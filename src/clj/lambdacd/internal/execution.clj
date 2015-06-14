@@ -63,8 +63,8 @@
     result))
 
 
-(defn execute-step [args [{:keys [step-id build-number] :as ctx} step] & {:keys [result-channel]
-                                                             :or {result-channel (async/chan (async/dropping-buffer 0))}}]
+(defn execute-step [args [{:keys [step-id _] :as ctx} step] & {:keys [result-channel]
+                                                               :or   {result-channel (async/chan (async/dropping-buffer 0))}}]
  (pipeline-state/running ctx)
  (let [result-ch-to-write (async/chan 10)
        result-ch-to-read (async/chan 10)
