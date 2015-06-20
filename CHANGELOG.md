@@ -10,6 +10,7 @@ The official release will have a defined and more stable API. If you are already
 * Bug fixes
   * Fix bug in retriggering that left next step in undefined state (#26)
 * API changes:
+  * Steps returning no `:status` will now be treated as failures instead of receiving status `:undefined`
   * Removed deprecated `:result-channel` argument for `execute-step`
   * Removed deprecated `core/new-base-context-for`
   * `core/execute-step` always requires a `:result-channel` in `ctx`.

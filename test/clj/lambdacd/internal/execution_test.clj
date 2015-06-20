@@ -96,8 +96,9 @@
     (is (= {:outputs { [0 0] {:foo :baz :x :y :status :success}} :status :success} (execute-step {:x :y} [(some-ctx-with :step-id [0 0]) some-step-processing-input]))))
   (testing "that executing returns the steps result-status as a special field and leaves it in the output as well"
     (is (= {:outputs { [0 0] {:status :success} } :status :success} (execute-step {} [(some-ctx-with :step-id [0 0]) some-successful-step]))))
-  (testing "that the result-status is :undefined if the step doesn't return any"
-    (is (= {:outputs { [0 0] {:status :undefined} } :status :undefined} (execute-step {} [(some-ctx-with :step-id [0 0]) some-step-not-returning-status] ))))
+  (testing "that we treat steps returning no status as failures"
+    (is (= {:outputs { [0 0] {:status :failure :out "step did not return any status!"} } :status :failure}
+           (execute-step {} [(some-ctx-with :step-id [0 0]) some-step-not-returning-status] ))))
   (testing "that the result indicates that a step has been waiting"
     (is (= {:outputs { [0 0] {:status :success :has-been-waiting true}} :status :success} (execute-step {} [(some-ctx-with :step-id [0 0]) some-step-sending-a-wait] ))))
   (testing "that if an exception is thrown in the step, it will result in a failure and the exception output is logged"

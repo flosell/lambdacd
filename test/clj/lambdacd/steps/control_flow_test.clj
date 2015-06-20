@@ -8,7 +8,7 @@
             [clojure.core.async :as async]))
 
 (defn some-step [arg & _]
-  {:foo :baz})
+  {:foo :baz :status :undefined})
 
 (defn some-other-step [arg & _]
   {:foo :baz :status :success})

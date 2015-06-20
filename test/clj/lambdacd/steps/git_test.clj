@@ -41,7 +41,8 @@
     (git-head-commit git-dir)))
 
 (defn step-that-returns-the-current-cwd-head [{cwd :cwd} & _]
-  {:current-head (git-head-commit cwd)})
+  {:current-head (git-head-commit cwd)
+   :status :success})
 
 (defn- repo-uri-for [git-src-dir]
   (str "file://" git-src-dir))

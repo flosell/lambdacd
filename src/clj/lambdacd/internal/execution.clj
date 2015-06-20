@@ -33,11 +33,6 @@
             (pipeline-state/update ctx new-result)
             (recur new-result)))))))
 
-(defn- process-final-result [step-result ctx]
-  (let [new-step-result (assoc step-result :status (get step-result :status :undefined))]
-    (pipeline-state/update ctx new-step-result)
-    new-step-result))
-
 (defmacro with-err-str
   [& body]
   `(let [s# (new StringWriter)]
@@ -47,7 +42,10 @@
 
 (defn- execute-or-catch [step args ctx]
   (try
-    (step args ctx)
+    (let [step-result (step args ctx)]
+      (if (nil? (:status step-result))
+        {:status :failure :out "step did not return any status!"}
+        step-result))
     (catch Throwable e
        {:status :failure :out (with-err-str (repl/pst e))})
     (finally
@@ -76,10 +74,10 @@
        immediate-step-result (execute-or-catch step args ctx-with-result-ch)
        step-result-or-history (reuse-from-history-if-required ctx immediate-step-result)
        processed-async-result (async/<!! processed-async-result-ch)
-       complete-step-result (merge processed-async-result step-result-or-history)
-       processed-final-result (process-final-result complete-step-result ctx)]
-   (log/debug (str "executed step " step-id processed-final-result))
-   (step-output step-id processed-final-result)))
+       complete-step-result (merge processed-async-result step-result-or-history)]
+   (log/debug (str "executed step " step-id complete-step-result))
+   (pipeline-state/update ctx complete-step-result)
+   (step-output step-id complete-step-result)))
 
 (defn- merge-status [s1 s2]
   (if (= s1 :success)
@@ -219,7 +217,7 @@
 
 (defn mock-step [build-number]
   (fn [& _]
-    {:reuse-from-build-number build-number}))
+    {:reuse-from-build-number build-number :status :to-be-overwritten}))
 
 
 (defn- with-step-id [parent-step-id]
