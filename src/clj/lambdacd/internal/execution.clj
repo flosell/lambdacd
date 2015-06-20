@@ -10,7 +10,7 @@
 
 (defn- step-output [step-id step-result]
   {:outputs { step-id step-result}
-   :status (get step-result :status :undefined)})
+   :status (get step-result :status)})
 
 (defn- is-finished [key value]
   (and (= key :status) (not= value :waiting)))
