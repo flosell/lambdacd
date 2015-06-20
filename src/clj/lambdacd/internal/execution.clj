@@ -218,7 +218,6 @@
     (duplicate-step-results-not-running-again next-build-number build-number pipeline-history context step-id-to-run)
     (execute-steps executable-pipeline {} (assoc context :step-id []
                                                          :result-channel (async/chan (async/dropping-buffer 0))
-                                                         :step-results-channel (async/chan (async/dropping-buffer 0)) ;; FIXME: once pipeline state persistence moved, this needs to be handled somehow
                                                          :build-number next-build-number))))
 
 (defn retrigger-async [pipeline context build-number step-id-to-run]

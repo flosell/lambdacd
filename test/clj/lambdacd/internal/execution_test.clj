@@ -231,7 +231,7 @@
   (testing "that we can retrigger a pipeline from the initial step as well"
     (let [pipeline-state-atom (atom { 0 {}})
           pipeline `(some-successful-step some-other-step some-failing-step)
-          context { :_pipeline-state pipeline-state-atom}]
+          context (some-ctx-with :_pipeline-state pipeline-state-atom)]
       (retrigger pipeline context 0 [1] 1)
       (is (= {0 {}
               1 {[1] { :status :success}
