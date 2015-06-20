@@ -9,6 +9,7 @@
         context {:_pipeline-state      state
                  :config               config
                  :step-results-channel (async/chan)}]
+    (pipeline-state/start-pipeline-state-updater state context)
     {:state state
      :context context
      :pipeline-def pipeline-def}))

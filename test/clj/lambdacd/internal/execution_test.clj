@@ -7,7 +7,8 @@
             [lambdacd.testsupport.data :refer [some-ctx-with some-ctx]]
             [lambdacd.testsupport.test-util :as tu]
             [lambdacd.internal.execution :as execution]
-            [lambdacd.core :as core])
+            [lambdacd.core :as core]
+            [lambdacd.internal.pipeline-state :as pipeline-state])
   (:import java.lang.IllegalStateException))
 
 (defn some-step-processing-input [arg & _]
@@ -220,7 +221,8 @@
                                          [1 1] {:status :success :out "I am nested"}
                                          [2] { :status :failure }}})
           pipeline `((some-control-flow some-step) some-successful-step)
-          context (some-ctx-with :_pipeline-state pipeline-state-atom)]
+          context (some-ctx-with :_pipeline-state pipeline-state-atom :step-results-channel (async/chan))]
+      (pipeline-state/start-pipeline-state-updater pipeline-state-atom context)
       (retrigger pipeline context 0 [2] 1)
       (is (= {0 {[1] { :status :success }
                  [1 1] {:status :success :out "I am nested"}

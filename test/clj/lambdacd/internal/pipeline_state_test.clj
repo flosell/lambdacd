@@ -8,24 +8,18 @@
             [lambdacd.testsupport.test-util :as tu]
             [lambdacd.testsupport.data :refer [some-ctx-with]]
             [clojure.data :as d]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [clojure.core.async :as async]))
 
 (defn- after-update [build id newstate]
   (let [state (atom clean-pipeline-state)]
     (update { :build-number build :step-id id :_pipeline-state state} newstate)
     @state))
 
-(defn- after-running [build id]
-  (let [state (atom clean-pipeline-state)]
-    (running { :build-number build :step-id id :_pipeline-state state})
-    @state))
-
 (deftest general-pipeline-state-test
   (testing "that the next buildnumber is the highest build-number currently in the pipeline-state"
     (is (= 5 (next-build-number {:_pipeline-state (atom { 3 {} 4 {} 1 {}})})))
     (is (= 1 (next-build-number {:_pipeline-state (atom clean-pipeline-state)}))))
-  (testing "that after notifying about running, the pipeline state will reflect this"
-    (is (= { 42 { [0] { :status :running }}} (tu/without-ts (after-running 42 [0])))))
   (testing "that a new pipeline-state will be set on update"
     (is (= { 10 { [0] { :foo :bar }}} (tu/without-ts (after-update 10 [0] {:foo :bar})))))
   (testing "that update will not loose keys that are not in the new map" ; e.g. to make sure values that are sent on the result-channel are not lost if they don't appear in the final result-map
@@ -52,6 +46,18 @@
                "step-result" {"foo" "bar"
                               "most-recent-update-at" "1970-01-01T00:00:00.000Z"
                               "first-updated-at" "1970-01-01T00:00:00.000Z"}}] (json/read-str (slurp (str home-dir "/build-10/pipeline-state.json"))))))))
+
+(deftest initialize-pipeline-persistence-test
+  (testing "that we tap into a pipelines step-results-channel and update the pipeline state with its information"
+    (let [state (atom {})
+          step-results-channel (async/chan)
+          context (some-ctx-with :step-results-channel step-results-channel)]
+      (start-pipeline-state-updater state context)
+      (async/>!! step-results-channel {:build-number 1 :step-id [1 2] :step-result {:status :running}})
+      (async/>!! step-results-channel {:build-number 2 :step-id [1 2] :step-result {:status :success}})
+      (async/>!! step-results-channel {:build-number 1 :step-id [1 2] :step-result {:status :running :foo :bar}})
+      (is (= {1 { [1 2] {:status :running :foo :bar}}
+              2 { [1 2] {:status :success}}} (tu/without-ts @state))))))
 
 (defn- write-pipeline-state [home-dir build-number state]
   (let [dir (str home-dir "/" "build-" build-number)

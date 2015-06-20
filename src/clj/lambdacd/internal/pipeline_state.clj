@@ -2,7 +2,8 @@
   "responsible to manage the current state of the pipeline
   i.e. what's currently running, what are the results of each step, ..."
   (:require [lambdacd.internal.pipeline-state-persistence :as persistence]
-            [clj-time.core :as t]))
+            [clj-time.core :as t]
+            [clojure.core.async :as async]))
 
 (def clean-pipeline-state {})
 
@@ -52,12 +53,27 @@
 (defn notify-when-no-first-step-is-active [{pipeline-state :_pipeline-state} callback]
   (add-watch pipeline-state :notify-most-recent-build-running (partial call-callback-when-no-first-step-is-active callback)))
 
-(defn update [{step-id :step-id state :_pipeline-state build-number :build-number { home-dir :home-dir } :config } step-result]
-  (if (not (nil? state)) ; convenience for tests: if no state exists we just do nothing
-    (let [new-state (swap! state (partial update-pipeline-state build-number step-id step-result))]
-      (persistence/write-build-history home-dir build-number new-state))))
+(defn update
+  ([{step-id :step-id state :_pipeline-state build-number :build-number { home-dir :home-dir } :config } step-result]
+    (if (not (nil? state)) ; convenience for tests: if no state exists we just do nothing
+      (let [new-state (swap! state (partial update-pipeline-state build-number step-id step-result))]
+        (persistence/write-build-history home-dir build-number new-state))))
+  ([build-number step-id step-result home-dir state]
+   (if (not (nil? state)) ; convenience for tests: if no state exists we just do nothing
+     (let [new-state (swap! state (partial update-pipeline-state build-number step-id step-result))]
+       (persistence/write-build-history home-dir build-number new-state)))))
 
 (defn running [ctx]
   (update ctx {:status :running}))
 
 
+(defn start-pipeline-state-updater [state context]
+  (let [step-results-channel (get-in context [:step-results-channel])
+        home-dir (get-in context [ :config :home-dir])]
+    (async/go-loop []
+      (let [step-result-update (async/<! step-results-channel)
+            step-result (:step-result step-result-update)
+            build-number (:build-number step-result-update)
+            step-id (:step-id step-result-update)]
+        (update build-number step-id step-result home-dir state)
+        (recur)))))

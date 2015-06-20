@@ -56,14 +56,6 @@
     some-step-that-cant-be-reached
   ))
 
-
-(defn print-all-events-from [ch]
-  (async/go-loop []
-                 (if-let [msg (async/<! ch)]
-                   (do
-                     (println msg)
-                     (recur)))))
-
 (defn -main [& args]
   (let [home-dir (utils/create-temp-dir)
         ;; # The Configuration.
@@ -77,7 +69,6 @@
         ;; the ring handler
         ring-handler (ui/ui-for pipeline)]
     (log/info "LambdaCD Home Directory is " home-dir)
-    (print-all-events-from (:step-results-channel (:context pipeline)))
     (runners/start-new-run-after-first-step-finished pipeline)
     (ring-server/serve ring-handler {:open-browser? false
                             :port 8080})))
