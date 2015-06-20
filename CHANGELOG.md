@@ -5,10 +5,13 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
-## 0.3.3
+## 0.4.0
 
 * Bug fixes
   * Fix bug in retriggering that left next step in undefined state (#26)
+* API changes:
+  * Removed deprecated `:result-channel` argument for `execute-step`
+  * Removed deprecated `core/new-base-context-for`
 
 ## 0.3.2
 

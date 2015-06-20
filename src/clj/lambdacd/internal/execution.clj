@@ -66,12 +66,11 @@
   (let [mult (async/mult write-channel)]
     (doall (map #(async/tap mult %) channels-receiving-copies))))
 
-; TODO: the result-channel argument is deprecated, remove after next release
-(defn execute-step [args [ctx step] & {:keys [result-channel]}]
+(defn execute-step [args [ctx step]]
  (pipeline-state/running ctx)
  (let [step-id (:step-id ctx)
        result-channel-from-ctx (:result-channel ctx)
-       output-result-channel (or result-channel result-channel-from-ctx (async/chan (async/dropping-buffer 0)) )
+       output-result-channel (or result-channel-from-ctx (async/chan (async/dropping-buffer 0)) )
        result-ch-to-write (async/chan 10)
        result-ch-to-read (async/chan 10)
        _ (copy-to result-ch-to-write output-result-channel result-ch-to-read)
