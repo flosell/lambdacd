@@ -6,8 +6,8 @@
   (testing "that one successful step is enough to make the unified view successful"
     (is (= :success (successful-when-one-successful [:success :error])))
     (is (= :success (successful-when-one-successful [:waiting :success])))
-    (is (= :success (successful-when-one-successful [:waiting :success]))))
-    (is (= :success (successful-when-one-successful [:running :success])))
+    (is (= :success (successful-when-one-successful [:waiting :success])))
+    (is (= :success (successful-when-one-successful [:running :success]))))
   (testing "that one failed step fails the unified view"
     (is (= :failure (successful-when-one-successful [:failure :success])))
     (is (= :failure (successful-when-one-successful [:failure :running]))))
