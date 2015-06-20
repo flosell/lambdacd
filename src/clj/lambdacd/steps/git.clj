@@ -10,7 +10,8 @@
             [clojure.string :as s]
             [clojure.java.io :as io]
             [lambdacd.util :as utils]
-            [lambdacd.core :as core]))
+            [lambdacd.core :as core]
+            [lambdacd.steps.status :as status]))
 
 (defn- current-revision [repo-uri branch]
   (let [shell-output (util/bash "/"
@@ -88,7 +89,8 @@
         checkout-exit-code (:exit checkout-result)]
     (utils/with-temp repo-location
       (if (= 0 checkout-exit-code)
-        (let [execute-steps-result (core/execute-steps steps (assoc args :cwd repo-location) ctx)
+        (let [execute-steps-result (core/execute-steps steps (assoc args :cwd repo-location) ctx
+                                                       :unify-status-fn status/successful-when-all-successful)
               result-with-checkout-output (assoc execute-steps-result :out (:out checkout-result))
               step-ids-and-outputs (:outputs execute-steps-result)
               step-ids (keys step-ids-and-outputs)

@@ -2,7 +2,8 @@
   "control flow elements for a pipeline: steps that control the way their child-steps are being run"
   (:require [lambdacd.core :as core]
             [clojure.core.async :as async]
-            [lambdacd.steps.support :as support]))
+            [lambdacd.steps.support :as support]
+            [lambdacd.steps.status :as status]))
 
 (defn- post-process-container-results [result]
   (let [outputs (vals (:outputs result))
@@ -27,7 +28,8 @@
     (let [kill-switch (atom false)
           execute-output (core/execute-steps steps args ctx
                                                      :is-killed kill-switch
-                                                     :step-result-producer step-producer-returning-with-first-successful)]
+                                                     :step-result-producer step-producer-returning-with-first-successful
+                                                     :unify-status-fn status/successful-when-one-successful)]
       (reset! kill-switch true)
       (if (= :success (:status execute-output))
         (first (vals (:outputs execute-output)))
@@ -38,7 +40,8 @@
 
 (defn- execute-steps-in-parallel [steps args ctx]
   (core/execute-steps steps args ctx
-                      :step-result-producer parallel-step-result-producer))
+                      :step-result-producer parallel-step-result-producer
+                      :unify-status-fn status/successful-when-all-successful))
 
 (defn ^{:display-type :parallel} in-parallel [& steps]
   (fn [args ctx]
@@ -49,9 +52,11 @@
 (defn ^{:display-type :container} in-cwd [cwd & steps]
   (fn [args ctx]
     (post-process-container-results
-      (core/execute-steps steps (assoc args :cwd cwd) ctx))))
+      (core/execute-steps steps (assoc args :cwd cwd) ctx
+                          :unify-status-fn status/successful-when-all-successful))))
 
 (defn ^{:display-type :container} run [ & steps]
   (fn [args ctx]
     (post-process-container-results
-      (core/execute-steps steps args ctx))))
+      (core/execute-steps steps args ctx
+                          :unify-status-fn status/successful-when-all-successful))))

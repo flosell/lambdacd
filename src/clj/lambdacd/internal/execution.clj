@@ -1,11 +1,11 @@
 (ns lambdacd.internal.execution
   "low level functions for job-execution"
   (:require [clojure.core.async :as async]
-            [lambdacd.util :as util]
             [lambdacd.internal.pipeline-state :as pipeline-state]
             [clojure.tools.logging :as log]
             [lambdacd.internal.step-id :as step-id]
             [lambdacd.internal.step-results :as step-results]
+            [lambdacd.steps.status :as status]
             [clojure.repl :as repl])
   (:import (java.io StringWriter)))
 
@@ -100,19 +100,7 @@
                               :step-results-channel step-results-channel)]
     [step-ctx step])))
 
-(defn- unify-statuses [statuses]
-  (let [has-failed (util/contains-value? :failure statuses)
-        has-running (util/contains-value? :running statuses)
-        all-waiting (every? #(= % :waiting) statuses)
-        one-ok (util/contains-value? :success statuses)]
-    (cond
-      has-failed :failure
-      one-ok :success
-      has-running :running
-      all-waiting :waiting
-      :else :unknown)))
-
-(defn- process-inheritance [step-results-channel]
+(defn- process-inheritance [step-results-channel unify-status-fn]
   (let [out-ch (async/chan 100)]
     (async/go
       (loop [statuses {}]
@@ -120,16 +108,16 @@
           (do
               (let [step-status (get-in step-result-update [:step-result :status])
                     new-statuses (assoc statuses (:step-id step-result-update) step-status)
-                    old-unified (unify-statuses (vals statuses))
-                    new-unified (unify-statuses (vals new-statuses))]
+                    old-unified (unify-status-fn (vals statuses))
+                    new-unified (unify-status-fn (vals new-statuses))]
                 (if (not= old-unified new-unified)
                   (async/>!! out-ch [:status new-unified]))
                 (recur new-statuses)))
           (async/close! out-ch))))
     out-ch))
 
-(defn- inherit-from [step-results-channel own-result-channel]
-  (let [status-channel (process-inheritance step-results-channel)]
+(defn- inherit-from [step-results-channel own-result-channel unify-status-fn]
+  (let [status-channel (process-inheritance step-results-channel unify-status-fn)]
     (async/pipe status-channel own-result-channel)))
 
 (defn contexts-for-steps
@@ -165,13 +153,14 @@
           new-result
           (recur (cons step-result result) (rest remaining-steps-with-id) new-args))))))
 
-(defn execute-steps [steps args ctx & {:keys [step-result-producer is-killed]
+(defn execute-steps [steps args ctx & {:keys [step-result-producer is-killed unify-status-fn]
                                        :or   {step-result-producer serial-step-result-producer
-                                               is-killed            (atom false)}}]
+                                              is-killed            (atom false)
+                                              unify-status-fn      status/successful-when-all-successful}}]
   (let [base-ctx-with-kill-switch (assoc ctx :is-killed is-killed)
         step-results-channel (async/chan 100)
         step-contexts (contexts-for-steps steps base-ctx-with-kill-switch step-results-channel)
-        _ (inherit-from step-results-channel (:result-channel ctx))
+        _ (inherit-from step-results-channel (:result-channel ctx) unify-status-fn)
         step-results (step-result-producer args step-contexts)]
     (reduce merge-two-step-results step-results)))
 

@@ -1,7 +1,8 @@
 (ns lambdacd.steps.support
   (:require [clojure.string :as s]
             [clojure.core.async :as async]
-            [lambdacd.internal.execution :as execution]))
+            [lambdacd.internal.execution :as execution]
+            [lambdacd.util :as util]))
 
 (defn merge-values [a b]
   (cond
