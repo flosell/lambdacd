@@ -31,9 +31,7 @@
           cur-result
           (do
             (pipeline-state/update ctx new-result)
-             (if (is-finished key value)
-               new-result
-               (recur new-result))))))))
+            (recur new-result)))))))
 
 (defn- process-final-result [step-result ctx]
   (let [new-step-result (assoc step-result :status (get step-result :status :undefined))]
