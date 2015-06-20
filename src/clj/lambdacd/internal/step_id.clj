@@ -14,7 +14,7 @@
         equal-length-a (util/fill a-parents-first length -1)
         equal-length-b (util/fill b-parents-first length -1)
         a-and-b (map vector equal-length-a equal-length-b)
-        first-not-equal (first (take-while (fn [[x y]] (not= x y)) a-and-b))
+        first-not-equal (first (drop-while (fn [[x y]] (= x y)) a-and-b))
         [x y] first-not-equal]
     (if (nil? first-not-equal)
       (> (count a) (count b))

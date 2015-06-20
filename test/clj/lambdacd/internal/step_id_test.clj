@@ -28,7 +28,10 @@
     (is (not (later-than? [1] [1 1]))))
   (testing "that a step-id is not after or before itself"
     (is (not (later-than? [1 1] [1 1])))
-    (is (not (before? [1 1] [1 1])))))
+    (is (not (before? [1 1] [1 1]))))
+  (testing "that [3 2] is not before [2 2]"
+    (is (not (before? [3 2] [2 2])))
+    (is (later-than? [3 2] [2 2]))))
 
 (deftest parent-relationship-test
   (testing "you need a common postfix to be a parent of something"
