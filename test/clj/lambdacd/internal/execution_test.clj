@@ -141,22 +141,29 @@
   (testing "that in doubt, the static output overlays the async output"
     (is (= {:outputs {[0 0] {:status :success } } :status :success }
            (execute-step {} [(some-ctx-with :step-id [0 0]) some-step-that-sends-failure-on-ch-returns-success]))))
-  (testing "that we can pass in a channel through the context that gets a copy of the result-channel messages"
-    (let [result-channel (async/chan 100)]
-      (execute-step {} [(some-ctx-with :result-channel result-channel) some-step-writing-to-the-result-channel])
-      (is (= [[:out "hello world"]] (slurp-chan result-channel))))))
+  (testing "that we can pass in a step-results-channel that receives messages with the complete, accumulated step result"
+    (let [step-results-channel (async/chan 100)]
+      (execute-step {} [(some-ctx-with :step-id [0 0]
+                                       :build-number 5
+                                       :step-results-channel step-results-channel) some-step-building-up-result-state-incrementally])
+    (is (= [{:build-number 5 :step-id [0 0] :step-result {:status :running } }
+            {:build-number 5 :step-id [0 0] :step-result {:status :running :out "hello"} }
+            {:build-number 5 :step-id [0 0] :step-result {:status :running :out "hello world"} }
+            {:build-number 5 :step-id [0 0] :step-result {:status :running :some-value 42 :out "hello world"} }
+            {:build-number 5 :step-id [0 0] :step-result {:status :success :some-value 42 :out "hello world"} }] (slurp-chan step-results-channel))))))
 
 (deftest context-for-steps-test
   (testing "that we can generate proper contexts for steps and keep other context info as it is"
-    (let [result (contexts-for-steps [some-step some-step] (some-ctx-with :some-value 42 :step-id [0]))]
+    (let [step-results-channel (async/chan 42)
+          result (contexts-for-steps [some-step some-step] (some-ctx-with :some-value 42 :step-id [0]) step-results-channel)]
       (is (= some-step (second (first result))))
       (is (= some-step (second (second result))))
       (is (= 42 (:some-value (first (first result)))))
       (is (= 42 (:some-value (first (second result)))))
-      (is (not (nil? (:result-channel (first (first result))))))
+      (is (= step-results-channel (:step-results-channel (first (first result)))))
       (is (= [1 0] (:step-id (first (first result)))))
       (is (= [2 0] (:step-id (first (second result)))))
-      (is (not (nil? (:result-channel (first (second result)))))))))
+      (is (= step-results-channel (:step-results-channel (first (second result))))))))
 
 (deftest execute-steps-test
   (testing "that executing steps returns outputs of both steps with different step ids"

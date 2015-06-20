@@ -67,10 +67,9 @@
     (is (close? 100 100 (my-time ((in-parallel some-step-taking-100ms some-step-taking-100ms some-step-taking-100ms) {} (some-ctx))))))
   (testing "that it can inherit the result status children send over the result channel"
     (let [result-ch (async/chan 100)
-          ctx (some-ctx-with :result-channel result-ch)]
+          ctx (some-ctx-with :result-channel result-ch :step-id [333])]
       ((in-parallel some-step-sending-waiting-on-channel some-step-sending-running-then-waiting-then-finished-on-channel) {} ctx)
       (is (= [[:status :running]
-              [:status :running]
               [:status :waiting]
               [:status :success]] (slurp-chan result-ch))))))
 
@@ -109,6 +108,5 @@
           ctx (some-ctx-with :result-channel result-ch)]
       ((either some-step-sending-waiting-on-channel some-step-sending-running-then-waiting-then-finished-on-channel) {} ctx)
       (is (= [[:status :running]
-              [:status :running]
               [:status :waiting]
               [:status :success]] (slurp-chan result-ch))))))
