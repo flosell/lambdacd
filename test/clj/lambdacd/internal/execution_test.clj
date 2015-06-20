@@ -192,8 +192,6 @@
     (is (= {:outputs { [1 0] {:status :success} [2 0] {:status :success}} :status :success}
            (execute-steps [some-successful-step step-that-expects-a-kill-switch] {} (some-ctx-with :step-id [0]))))))
 
-
-
 (defn some-control-flow [&] ; just a mock, we don't actually execute this
   (throw (IllegalStateException. "This shouldn't be called")))
 

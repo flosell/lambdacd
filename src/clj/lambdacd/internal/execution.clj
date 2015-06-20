@@ -128,7 +128,7 @@
           (async/close! out-ch))))
     out-ch))
 
-(defn- inherit-from [own-result-channel step-results-channel]
+(defn- inherit-from [step-results-channel own-result-channel]
   (let [status-channel (process-inheritance step-results-channel)]
     (async/pipe status-channel own-result-channel)))
 
@@ -171,7 +171,7 @@
   (let [base-ctx-with-kill-switch (assoc ctx :is-killed is-killed)
         step-results-channel (async/chan 100)
         step-contexts (contexts-for-steps steps base-ctx-with-kill-switch step-results-channel)
-        _ (inherit-from (:result-channel ctx) step-results-channel)
+        _ (inherit-from step-results-channel (:result-channel ctx))
         step-results (step-result-producer args step-contexts)]
     (reduce merge-two-step-results step-results)))
 
