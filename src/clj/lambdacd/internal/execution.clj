@@ -230,17 +230,17 @@
   (fn [idx step]
     [(cons (inc idx) parent-step-id) step]))
 
-(declare mock-for-steps-again)
+(declare mock-for-steps)
 (defn- replace-with-mock-or-recur [step-id-to-retrigger build-number]
   (fn [[step-id step]]
     (cond
       (and
         (step-id/before? step-id step-id-to-retrigger)
         (not (step-id/parent-of? step-id step-id-to-retrigger))) (cons mock-step [build-number])
-      (step-id/parent-of? step-id step-id-to-retrigger) (cons (first step) (mock-for-steps-again (rest step) step-id step-id-to-retrigger build-number))
+      (step-id/parent-of? step-id step-id-to-retrigger) (cons (first step) (mock-for-steps (rest step) step-id step-id-to-retrigger build-number))
       :else step)))
 
-(defn- mock-for-steps-again [steps cur-step-id step-id-to-retrigger build-number]
+(defn- mock-for-steps [steps cur-step-id step-id-to-retrigger build-number]
   (->> steps
       (map-indexed (with-step-id cur-step-id))
       (map (replace-with-mock-or-recur step-id-to-retrigger build-number))))
@@ -248,7 +248,7 @@
 (defn retrigger [pipeline context build-number step-id-to-run next-build-number]
   (let [pipeline-state (deref (:_pipeline-state context))
         pipeline-history (get pipeline-state build-number)
-        pipeline-fragment-to-run (mock-for-steps-again pipeline [] step-id-to-run build-number)
+        pipeline-fragment-to-run (mock-for-steps pipeline [] step-id-to-run build-number)
         executable-pipeline (map eval pipeline-fragment-to-run) ]
     (duplicate-step-results-not-running-again next-build-number build-number pipeline-history context step-id-to-run)
     (execute-steps executable-pipeline {} (assoc context :step-id []
