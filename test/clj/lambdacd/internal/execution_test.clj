@@ -192,6 +192,15 @@
     (is (= {:outputs { [1 0] {:status :success} [2 0] {:status :success}} :status :success}
            (execute-steps [some-successful-step step-that-expects-a-kill-switch] {} (some-ctx-with :step-id [0]))))))
 
+(deftest execute-steps-inheritance-test
+  (testing "that the step-results channel passed in contains the step-results of all childrens"
+    (let [step-results-channel (async/chan 100)]
+      (execute-steps [some-other-step some-failing-step ] {} (some-ctx-with :step-results-channel step-results-channel :step-id [0] :build-number 2))
+      (is (= [{:build-number 2 :step-id [1 0] :step-result {:status :running}}
+              {:build-number 2 :step-id [1 0] :step-result {:foo :baz :status :success}}
+              {:build-number 2 :step-id [2 0] :step-result {:status :running}}
+              {:build-number 2 :step-id [2 0] :step-result {:status :failure}}] (slurp-chan step-results-channel))))))
+
 (defn some-control-flow [&] ; just a mock, we don't actually execute this
   (throw (IllegalStateException. "This shouldn't be called")))
 

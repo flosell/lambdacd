@@ -100,24 +100,25 @@
                               :step-results-channel step-results-channel)]
     [step-ctx step])))
 
-(defn- process-inheritance [step-results-channel unify-status-fn]
+(defn- process-inheritance [step-results-channel own-step-results-channel unify-status-fn]
   (let [out-ch (async/chan 100)]
     (async/go
       (loop [statuses {}]
         (if-let [step-result-update (async/<! step-results-channel)]
           (do
-              (let [step-status (get-in step-result-update [:step-result :status])
-                    new-statuses (assoc statuses (:step-id step-result-update) step-status)
-                    old-unified (unify-status-fn (vals statuses))
-                    new-unified (unify-status-fn (vals new-statuses))]
-                (if (not= old-unified new-unified)
-                  (async/>!! out-ch [:status new-unified]))
-                (recur new-statuses)))
+            (async/>! own-step-results-channel step-result-update)
+            (let [step-status (get-in step-result-update [:step-result :status])
+                  new-statuses (assoc statuses (:step-id step-result-update) step-status)
+                  old-unified (unify-status-fn (vals statuses))
+                  new-unified (unify-status-fn (vals new-statuses))]
+              (if (not= old-unified new-unified)
+                (async/>!! out-ch [:status new-unified]))
+              (recur new-statuses)))
           (async/close! out-ch))))
     out-ch))
 
-(defn- inherit-from [step-results-channel own-result-channel unify-status-fn]
-  (let [status-channel (process-inheritance step-results-channel unify-status-fn)]
+(defn- inherit-from [step-results-channel own-result-channel own-step-results-channel unify-status-fn]
+  (let [status-channel (process-inheritance step-results-channel own-step-results-channel unify-status-fn)]
     (async/pipe status-channel own-result-channel)))
 
 (defn contexts-for-steps
@@ -158,9 +159,9 @@
                                               is-killed            (atom false)
                                               unify-status-fn      status/successful-when-all-successful}}]
   (let [base-ctx-with-kill-switch (assoc ctx :is-killed is-killed)
-        step-results-channel (async/chan 100)
-        step-contexts (contexts-for-steps steps base-ctx-with-kill-switch step-results-channel)
-        _ (inherit-from step-results-channel (:result-channel ctx) unify-status-fn)
+        children-step-results-channel (async/chan 100)
+        step-contexts (contexts-for-steps steps base-ctx-with-kill-switch children-step-results-channel)
+        _ (inherit-from children-step-results-channel (:result-channel ctx) (:step-results-channel ctx) unify-status-fn)
         step-results (step-result-producer args step-contexts)]
     (reduce merge-two-step-results step-results)))
 
