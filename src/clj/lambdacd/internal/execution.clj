@@ -178,8 +178,8 @@
          cur-args args]
     (if (empty? remaining-steps-with-id)
       result
-      (let [step (first remaining-steps-with-id)
-            step-result (execute-step cur-args step)
+      (let [ctx-and-step (first remaining-steps-with-id)
+            step-result (execute-step cur-args ctx-and-step)
             step-output (first (vals (:outputs step-result)))
             new-result (cons step-result result)
             new-args (-> step-output
