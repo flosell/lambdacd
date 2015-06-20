@@ -69,8 +69,7 @@
 (defn execute-step [args [ctx step]]
  (pipeline-state/running ctx)
  (let [step-id (:step-id ctx)
-       result-channel-from-ctx (:result-channel ctx)
-       output-result-channel (or result-channel-from-ctx (async/chan (async/dropping-buffer 0)) )
+       output-result-channel (:result-channel ctx)
        result-ch-to-write (async/chan 10)
        result-ch-to-read (async/chan 10)
        _ (copy-to result-ch-to-write output-result-channel result-ch-to-read)

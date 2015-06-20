@@ -12,6 +12,8 @@ The official release will have a defined and more stable API. If you are already
 * API changes:
   * Removed deprecated `:result-channel` argument for `execute-step`
   * Removed deprecated `core/new-base-context-for`
+  * `core/execute-step` always requires a `:result-channel` in `ctx`.
+    This is already the case when used in conjunction with `execute-steps`
 
 ## 0.3.2
 

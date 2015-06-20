@@ -101,7 +101,7 @@
   (testing "that the result indicates that a step has been waiting"
     (is (= {:outputs { [0 0] {:status :success :has-been-waiting true}} :status :success} (execute-step {} [(some-ctx-with :step-id [0 0]) some-step-sending-a-wait] ))))
   (testing "that if an exception is thrown in the step, it will result in a failure and the exception output is logged"
-    (let [output (execute-step {} [{:step-id [0 0]} some-step-throwing-an-exception])]
+    (let [output (execute-step {} [(some-ctx-with :step-id [0 0]) some-step-throwing-an-exception])]
       (is (= :failure (get-in output [:outputs [0 0] :status])))
       (is (.contains (get-in output [:outputs [0 0] :out]) "Something went wrong"))))
   (testing "that the context passed to the step contains an output-channel and that results passed into this channel are merged into the result"
