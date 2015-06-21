@@ -13,7 +13,7 @@
 
 (defn- after-update [build id newstate]
   (let [state (atom clean-pipeline-state)]
-    (update { :build-number build :step-id id :_pipeline-state state} newstate)
+    (update build id newstate nil state)
     @state))
 
 (deftest general-pipeline-state-test
@@ -25,23 +25,20 @@
   (testing "that update will not loose keys that are not in the new map" ; e.g. to make sure values that are sent on the result-channel are not lost if they don't appear in the final result-map
     (is (= { 10 { [0] { :foo :bar :bar :baz }}}
            (let [state (atom clean-pipeline-state)]
-             (update { :build-number 10 :step-id [0] :_pipeline-state state} {:foo :bar})
-             (update { :build-number 10 :step-id [0] :_pipeline-state state} {:bar :baz})
+             (update 10 [0] {:foo :bar} nil state)
+             (update 10 [0] {:bar :baz} nil state)
              (tu/without-ts @state)))))
   (testing "that update will set a first-updated-at and most-recent-update-at timestamp"
     (let [first-update-timestamp (t/minus (t/now) (t/minutes 1))
           last-updated-timestamp (t/now)
-          state (atom clean-pipeline-state)
-          ctx (some-ctx-with :build-number 10 :step-id [0] :_pipeline-state state)]
-      (t/do-at first-update-timestamp (update ctx {:foo :bar}))
-      (t/do-at last-updated-timestamp (update ctx {:foo :baz}))
+          state (atom clean-pipeline-state)]
+      (t/do-at first-update-timestamp (update 10 [0] {:foo :bar} nil state))
+      (t/do-at last-updated-timestamp (update 10 [0] {:foo :baz} nil state))
       (is (= {10 {[0] {:foo :baz :most-recent-update-at last-updated-timestamp :first-updated-at first-update-timestamp }}} @state))))
   (testing "that updating will save the current state to the file-system"
     (let [home-dir (utils/create-temp-dir)
-          config { :home-dir home-dir }
-          step-result { :foo :bar }
-          ctx (some-ctx-with :build-number 10  :step-id [0] :config config )]
-      (t/do-at (t/epoch) (update ctx step-result))
+          step-result { :foo :bar }]
+      (t/do-at (t/epoch) (update 10 [0] step-result home-dir (atom {})))
       (is (= [{ "step-id" "0"
                "step-result" {"foo" "bar"
                               "most-recent-update-at" "1970-01-01T00:00:00.000Z"
@@ -56,6 +53,7 @@
       (async/>!! step-results-channel {:build-number 1 :step-id [1 2] :step-result {:status :running}})
       (async/>!! step-results-channel {:build-number 2 :step-id [1 2] :step-result {:status :success}})
       (async/>!! step-results-channel {:build-number 1 :step-id [1 2] :step-result {:status :running :foo :bar}})
+      (Thread/sleep 200)
       (is (= {1 { [1 2] {:status :running :foo :bar}}
               2 { [1 2] {:status :success}}} (tu/without-ts @state))))))
 
@@ -85,23 +83,23 @@
           callback (fn [& _] (swap! call-counter inc))]
       (notify-when-no-first-step-is-active { :_pipeline-state pipeline-state} callback)
       (is (= 0 @call-counter))
-      (update {:step-id [1] :_pipeline-state pipeline-state  :build-number 0 } {:status :running})
+      (update 0 [1] {:status :running} nil pipeline-state)
       (is (= 0 @call-counter))
-      (update {:step-id [1] :_pipeline-state pipeline-state  :build-number 0 } {:status :success})
+      (update 0 [1] {:status :success} nil pipeline-state)
       (is (= 1 @call-counter))
-      (update {:step-id [2] :_pipeline-state pipeline-state  :build-number 0 } {:status :success})
+      (update 0 [2] {:status :success} nil pipeline-state)
       (is (= 1 @call-counter))
-      (update {:step-id [1] :_pipeline-state pipeline-state  :build-number 1 } {:status :waiting})
+      (update 1 [1] {:status :waiting} nil pipeline-state)
       (is (= 1 @call-counter))
-      (update {:step-id [1] :_pipeline-state pipeline-state  :build-number 1 } {:status :running})
+      (update 1 [1] {:status :running} nil pipeline-state)
       (is (= 1 @call-counter))
-      (update {:step-id [1] :_pipeline-state pipeline-state  :build-number 1 } {:status :failure})
+      (update 1 [1] {:status :failure} nil pipeline-state)
       (is (= 2 @call-counter))
-      (update {:step-id [1] :_pipeline-state pipeline-state  :build-number 1 } {:status :failure})
+      (update 1 [1] {:status :failure} nil pipeline-state)
       (is (= 2 @call-counter))
-      (update {:step-id [2] :_pipeline-state pipeline-state  :build-number 2 } {:status :ok :retrigger-mock-for-build-number 1 })
+      (update 2 [2] {:status :ok :retrigger-mock-for-build-number 1 } nil pipeline-state)
       (is (= 2 @call-counter))
-      (update {:step-id [2] :_pipeline-state pipeline-state  :build-number 3 } {:status :ok })
+      (update 3 [2] {:status :ok } nil pipeline-state)
       (is (= 2 @call-counter))))
   (testing "that we are not notified if there is already a build waiting"
     (let [pipeline-state (atom {0 { [1] {:status :waiting}}
@@ -110,5 +108,5 @@
           callback (fn [& _] (swap! call-counter inc))]
       (notify-when-no-first-step-is-active { :_pipeline-state pipeline-state} callback)
       (is (= 0 @call-counter))
-      (update {:step-id [1] :_pipeline-state pipeline-state  :build-number 1 } {:status :success})
+      (update 1 [1] {:status :success} nil pipeline-state)
       (is (= 0 @call-counter)))))

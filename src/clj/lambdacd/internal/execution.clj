@@ -32,7 +32,6 @@
           cur-result
           (do
             (step-results/send-step-result ctx new-result)
-            (pipeline-state/update ctx new-result)
             (recur new-result)))))))
 
 (defmacro with-err-str
@@ -61,10 +60,9 @@
     result))
 
 (defn execute-step [args [ctx step]]
- (pipeline-state/running ctx)
  (let [_ (step-results/send-step-result ctx {:status :running})
        step-id (:step-id ctx)
-       result-ch (async/chan 10)
+       result-ch (async/chan)
        ctx-with-result-ch (assoc ctx :result-channel result-ch)
        processed-async-result-ch (process-channel-result-async result-ch ctx)
        immediate-step-result (execute-or-catch step args ctx-with-result-ch)
@@ -73,7 +71,6 @@
        complete-step-result (merge processed-async-result step-result-or-history)]
    (log/debug (str "executed step " step-id complete-step-result))
    (step-results/send-step-result ctx complete-step-result)
-   (pipeline-state/update ctx complete-step-result)
    (step-output step-id complete-step-result)))
 
 (defn- merge-status [s1 s2]
@@ -101,7 +98,7 @@
     [step-ctx step])))
 
 (defn- process-inheritance [step-results-channel own-step-results-channel unify-status-fn]
-  (let [out-ch (async/chan 100)]
+  (let [out-ch (async/chan)]
     (async/go
       (loop [statuses {}]
         (if-let [step-result-update (async/<! step-results-channel)]
@@ -159,7 +156,7 @@
                                               is-killed            (atom false)
                                               unify-status-fn      status/successful-when-all-successful}}]
   (let [base-ctx-with-kill-switch (assoc ctx :is-killed is-killed)
-        children-step-results-channel (async/chan 100)
+        children-step-results-channel (async/chan)
         step-contexts (contexts-for-steps steps base-ctx-with-kill-switch children-step-results-channel)
         _ (inherit-from children-step-results-channel (:result-channel ctx) (:step-results-channel ctx) unify-status-fn)
         step-results (step-result-producer args step-contexts)]
@@ -175,7 +172,7 @@
 (defn- add-result [new-build-number retriggered-build-number initial-ctx [step-id result]]
   (let [ctx (assoc initial-ctx :build-number new-build-number :step-id step-id)
         result-with-annotation (assoc result :retrigger-mock-for-build-number retriggered-build-number)]
-    (pipeline-state/update ctx result-with-annotation)))
+    (step-results/send-step-result ctx result-with-annotation)))
 
 (defn- to-be-duplicated? [step-id-retriggered [cur-step-id _]]
   (let [result (step-id/before? cur-step-id step-id-retriggered)]

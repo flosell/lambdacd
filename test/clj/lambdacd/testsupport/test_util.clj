@@ -37,6 +37,7 @@
 
 
 (defn slurp-chan [c]
+  (Thread/sleep 200) ; FIXME: hack
   (async/close! c)
   (async/<!! (async/into [] c)))
 

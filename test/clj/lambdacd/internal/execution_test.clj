@@ -111,31 +111,20 @@
   (testing "that the context data is being passed on to the step"
     (is (= {:outputs { [0 0] {:status :success :context-info "foo"}} :status :success} (execute-step {} [(some-ctx-with :step-id [0 0] :the-info "foo") some-step-consuming-the-context]))))
   (testing "that the final pipeline-state is properly set for a step returning a static result"
-    (let [pipeline-state-atom (atom {})]
-      (is (= { 5 { [0 0] {:status :success } } }
-             (tu/without-ts (do (execute-step {} [(some-ctx-with :step-id [0 0]
-                                                                 :build-number 5
-                                                                 :_pipeline-state pipeline-state-atom) some-successful-step])
-                 @pipeline-state-atom))))))
+    (let [step-results-channel (async/chan 100)]
+      (execute-step {} [(some-ctx-with :step-id [0 0]
+                                       :build-number 5
+                                       :step-results-channel step-results-channel) some-successful-step])
+      (is (= [{ :build-number 5 :step-id [0 0] :step-result {:status :running } }
+              { :build-number 5 :step-id [0 0] :step-result {:status :success } }] (slurp-chan step-results-channel)))))
   (testing "that the final pipeline-state is properly set for a step returning a static and an async result"
-    (let [pipeline-state-atom (atom {})]
-      (is (= { 5 { [0 0] {:status :success } } }
-             (tu/without-ts (do (execute-step {} [(some-ctx-with :step-id [0 0]
-                                                                 :build-number 5
-                                                                 :_pipeline-state pipeline-state-atom) some-step-that-sends-failure-on-ch-returns-success])
-                 @pipeline-state-atom))))))
-  (testing "that the pipeline-state is updated over time"
-    (let [pipeline-state (atom {})]
-      (is (= [{ 5 { [0 0] {:status :running } } }
-              { 5 { [0 0] {:status :running :out "hello"} } }
-              { 5 { [0 0] {:status :running :out "hello world"} } }
-              { 5 { [0 0] {:status :running :some-value 42 :out "hello world"} } }
-              { 5 { [0 0] {:status :success :some-value 42 :out "hello world"} } }]
-             (map tu/without-ts
-                  (atom-history-for pipeline-state
-                    (execute-step {} [(some-ctx-with :step-id [0 0]
-                                                     :build-number 5
-                                                     :_pipeline-state pipeline-state) some-step-building-up-result-state-incrementally])))))))
+    (let [step-results-channel (async/chan 100)]
+      (execute-step {} [(some-ctx-with :step-id [0 0]
+                                       :build-number 5
+                                       :step-results-channel step-results-channel) some-step-that-sends-failure-on-ch-returns-success])
+      (is (= [{ :build-number 5 :step-id [0 0] :step-result {:status :running } }
+              { :build-number 5 :step-id [0 0] :step-result {:status :failure } }
+              { :build-number 5 :step-id [0 0] :step-result {:status :success } }] (slurp-chan step-results-channel)))))
   (testing "that the step result contains the static and the async output"
     (is (= {:outputs {[0 0] {:status :success :some-value 42 :out "hello world"} } :status :success }
            (execute-step {} [(some-ctx-with :step-id [0 0]) some-step-building-up-result-state-incrementally]))))
@@ -215,44 +204,49 @@
 (defn some-step-to-retrigger [args _]
   {:status :success :the-some (:some args)})
 
+(defn pipeline-state-from [ch]
+  (Thread/sleep 200) ;; TODO: this is hacky, not sure yet where things are being buffered so that they aren't there...
+  (async/close! ch)
+  (loop [state {}]
+      (let [update (async/<!! ch)
+            {step-id :step-id build-number :build-number step-result :step-result} update]
+        (if (not (nil? update))
+          (recur (assoc-in state [build-number step-id] step-result))
+          state))))
+
 (deftest retrigger-test
   (testing "that retriggering results in a completely new pipeline-run where not all the steps are executed"
     (let [pipeline-state-atom (atom { 0 {[1] { :status :success }
                                          [1 1] {:status :success :out "I am nested"}
                                          [2] { :status :failure }}})
           pipeline `((some-control-flow some-step) some-successful-step)
-          context (some-ctx-with :_pipeline-state pipeline-state-atom :step-results-channel (async/chan))]
-      (pipeline-state/start-pipeline-state-updater pipeline-state-atom context)
+          step-results-channel (async/chan 100)
+          context (some-ctx-with :_pipeline-state pipeline-state-atom :step-results-channel step-results-channel)]
       (retrigger pipeline context 0 [2] 1)
-      (is (= {0 {[1] { :status :success }
-                 [1 1] {:status :success :out "I am nested"}
-                 [2] { :status :failure }}
-              1 {[1] { :status :success :retrigger-mock-for-build-number 0 }
+      (is (= {1 {[1] { :status :success :retrigger-mock-for-build-number 0 }
                  [1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0}
-                 [2] { :status :success }}} (tu/without-ts @pipeline-state-atom)))))
+                 [2] { :status :success }}} (pipeline-state-from step-results-channel)))))
   (testing "that we can retrigger a pipeline from the initial step as well"
     (let [pipeline-state-atom (atom { 0 {}})
           pipeline `(some-successful-step some-other-step some-failing-step)
-          context (some-ctx-with :_pipeline-state pipeline-state-atom)]
+          step-results-channel (async/chan 100)
+          context (some-ctx-with :_pipeline-state pipeline-state-atom :step-results-channel step-results-channel)]
       (retrigger pipeline context 0 [1] 1)
-      (is (= {0 {}
-              1 {[1] { :status :success}
+      (is (= {1 {[1] { :status :success}
                  [2] {:status :success :foo :baz}
-                 [3] { :status :failure }}} (tu/without-ts @pipeline-state-atom)))))
+                 [3] { :status :failure }}} (pipeline-state-from step-results-channel)))))
   (testing "that retriggering works for nested steps"
     (let [pipeline-state-atom (atom { 0 {[1] { :status :success }
                                          [1 1] {:status :success :out "I am nested"}
                                          [2 1] {:status :unknown :out "this will be retriggered"}}})
           pipeline `((some-control-flow-thats-called some-step-that-fails-if-retriggered some-step-to-retrigger) some-successful-step)
-          context (some-ctx-with :_pipeline-state pipeline-state-atom)]
+          step-results-channel (async/chan 100)
+          context (some-ctx-with :_pipeline-state pipeline-state-atom :step-results-channel step-results-channel)]
       (retrigger pipeline context 0 [2 1] 1)
-      (is (= {0 {[1] { :status :success }
-                 [1 1] {:status :success :out "I am nested"}
-                 [2 1] {:status :unknown :out "this will be retriggered"}}
-              1 {[1] {:status :success
+      (is (= {1 {[1] {:status :success
                       :outputs {[1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0 }
                                 [2 1] {:the-some :val :status :success }}
-                      :retrigger-mock-for-build-number 0}
+                      }
                  [1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0}
                  [2 1] {:the-some :val :status :success}
-                 [2] { :status :success }}} (tu/without-ts @pipeline-state-atom))))))
+                 [2] { :status :success }}} (pipeline-state-from step-results-channel))))))
