@@ -9,6 +9,7 @@ The official release will have a defined and more stable API. If you are already
 
 * Improvements:
   * Cleaned up status inheritance to make it more consistent
+  * Support variable arguments instead of step-vector as input for `chain-steps` (#29)
 * Bug fixes:
   * Fix bug in retriggering that left next step in undefined state (#26)
 * API changes:
@@ -16,7 +17,8 @@ The official release will have a defined and more stable API. If you are already
   * Removed deprecated `:result-channel` argument for `execute-step`
   * Removed deprecated `core/new-base-context-for`
   * `core/execute-step` does no longer output the result-channel data to a `:result-channel` in ctx.
-    Was replaced with `:step-results-channels` which provides a stream of complete, aggregated step-result data.
+    Was replaced with `:step-results-channels` which provides a stream of complete, aggregated step-result data
+  * Calling `lambdacd.steps.support/chain-steps` with a vector instead of just the steps is now deprecated (#29)
 
 ## 0.3.2
 

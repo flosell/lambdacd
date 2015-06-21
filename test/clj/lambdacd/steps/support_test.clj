@@ -69,36 +69,40 @@
 (deftest chain-steps-test
   (testing "that the input argument is passed to the first step"
     (is (= {:status :success :the-arg 42} (chain-steps {:v 42} {}
-                                                                 [some-step-returning-an-argument-passed-in]))))
+                                                                 some-step-returning-an-argument-passed-in))))
   (testing "that the input argument is passed to all the steps"
     (is (= {:status :success :the-arg 42} (chain-steps {:v 42} {}
-                                                       [some-successful-step some-step-returning-an-argument-passed-in]))))
+                                                       some-successful-step some-step-returning-an-argument-passed-in))))
   (testing "that the results of two steps get merged"
     (is (= {:status :success :foo :baz} (chain-steps {} {}
-                                                               [some-step some-other-step]))))
+                                                               some-step some-other-step))))
   (testing "that a failing step stops the execution"
     (is (= {:status :failure :foo :bar} (chain-steps {} {}
-                                                               [some-step
-                                                                some-failling-step
-                                                                step-that-should-never-be-called]))))
+                                                               some-step
+                                                               some-failling-step
+                                                               step-that-should-never-be-called))))
   (testing "that the results of the first step are the input for the next step"
     (is (= {:status :success :the-arg 42 :v 42} (chain-steps {} {}
-                                                                        [some-step-that-returns-a-value
-                                                                         some-step-returning-an-argument-passed-in]))))
+                                                                        some-step-that-returns-a-value
+                                                                        some-step-returning-an-argument-passed-in))))
   (testing "that global values are being kept over all steps"
     (is (= {:status :success
             :the-global-arg 42
-            :global {:g 42 :v 21}} (chain-steps {} {} [some-step-returning-a-global
-                                                     some-step-returning-a-different-global
-                                                     some-step-returning-a-global-argument-passed-in]))))
+            :global {:g 42 :v 21}} (chain-steps {} {} some-step-returning-a-global
+                                                      some-step-returning-a-different-global
+                                                      some-step-returning-a-global-argument-passed-in))))
   (testing "that overlapping string-outputs get concatenated"
     (is (= {:status :success
             :out "hello\nworld"} (chain-steps {} {} [some-step-saying-hello
                                                                some-step-saying-world]))))
   (testing "that the context is passed to all the steps"
     (is (= {:status :success :the-ctx-1 {:v 42} :the-ctx-2 {:v 42}} (chain-steps {} {:v 42}
-                                                                   [some-step-returning-the-context-passed-in
-                                                                    some-other-step-returning-the-context-passed-in])))))
+                                                                   some-step-returning-the-context-passed-in
+                                                                   some-other-step-returning-the-context-passed-in))))
+  (testing "that we can also use a step-vector as input (DEPRECATED)"
+    (is (= {:status :success :the-arg 42} (chain-steps {:v 42} {}
+                                                       [some-successful-step
+                                                        some-step-returning-an-argument-passed-in])))))
 
 ; Note: if cursive complains about incorrect arity, that's cursive not knowing what the chain-macro does.
 ; as long as the tests are green, you can ignore this...

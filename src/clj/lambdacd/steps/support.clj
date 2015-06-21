@@ -13,7 +13,7 @@
     :default b))
 
 
-(defn chain-steps [args ctx steps]
+(defn- do-chain-steps [args ctx steps]
   "run the given steps one by one until a step fails and merge the results.
    results of one step are the inputs for the next one."
   (loop [x (first steps)
@@ -29,6 +29,14 @@
           complete-result
           (recur (first rest) (next rest) complete-result next-args))))))
 
+(defn chain-steps
+  ([args ctx & steps] ; a vector as single steps parameter is now deprecated and will no longer be supported in future releases
+   (let [is-not-vararg (vector? (first steps))]
+     (if is-not-vararg
+      (do-chain-steps args ctx (first steps))
+      (do-chain-steps args ctx steps)))))
+
+
 (defn to-fn [form]
   (let [f# (first form)
         r# (next form)]
@@ -39,7 +47,7 @@
 (defmacro chain [args ctx & forms]
   "a bit of syntactic sugar for chaining steps. Basically the threading-macro for LambdaCD"
   (let [fns (into [] (map to-fn forms))]
-    `(chain-steps ~args ~ctx ~fns)))
+    `(apply chain-steps ~args ~ctx ~fns)))
 
 (defn- append-output [msg]
   (fn [old-output]
