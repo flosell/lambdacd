@@ -19,8 +19,8 @@
 
 (deftest general-pipeline-state-test
   (testing "that the next buildnumber is the highest build-number currently in the pipeline-state"
-    (is (= 5 (next-build-number-legacy {:_pipeline-state (atom { 3 {} 4 {} 1 {}})})))
-    (is (= 1 (next-build-number-legacy {:_pipeline-state (atom clean-pipeline-state)}))))
+    (is (= 5 (next-build-number-legacy (atom { 3 {} 4 {} 1 {}}))))
+    (is (= 1 (next-build-number-legacy (atom clean-pipeline-state)))))
   (testing "that a new pipeline-state will be set on update"
     (is (= { 10 { [0] { :foo :bar }}} (tu/without-ts (after-update 10 [0] {:foo :bar})))))
   (testing "that update will not loose keys that are not in the new map" ; e.g. to make sure values that are sent on the result-channel are not lost if they don't appear in the final result-map
@@ -81,8 +81,9 @@
   (testing "that we are being notified when the first step of the pipeline is finished"
     (let [pipeline-state (atom {0 {}})
           call-counter (atom 0)
-          callback (fn [& _] (swap! call-counter inc))]
-      (notify-when-no-first-step-is-active { :_pipeline-state pipeline-state} callback)
+          callback (fn [& _] (swap! call-counter inc))
+          component (new-default-pipeline-state pipeline-state {:home-dir (utils/create-temp-dir)} (async/chan (async/dropping-buffer 0)))]
+      (notify-when-no-first-step-is-active { :pipeline-state-component component} callback)
       (is (= 0 @call-counter))
       (update-legacy 0 [1] {:status :running} nil pipeline-state)
       (is (= 0 @call-counter))
@@ -106,8 +107,9 @@
     (let [pipeline-state (atom {0 { [1] {:status :waiting}}
                                 1 { [1] {:status :waiting}}})
           call-counter (atom 0)
-          callback (fn [& _] (swap! call-counter inc))]
-      (notify-when-no-first-step-is-active { :_pipeline-state pipeline-state} callback)
+          callback (fn [& _] (swap! call-counter inc))
+          component (new-default-pipeline-state pipeline-state {:home-dir (utils/create-temp-dir)} (async/chan (async/dropping-buffer 0)))]
+      (notify-when-no-first-step-is-active { :pipeline-state-component component } callback)
       (is (= 0 @call-counter))
       (update-legacy 1 [1] {:status :success} nil pipeline-state)
       (is (= 0 @call-counter)))))

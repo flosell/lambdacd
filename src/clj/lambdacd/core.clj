@@ -8,8 +8,7 @@
   (let [state (atom (default-pipeline-state/initial-pipeline-state config))
         step-results-channel (async/chan)
         pipeline-state-component (default-pipeline-state/new-default-pipeline-state state config step-results-channel)
-        context {:_pipeline-state      state
-                 :config               config
+        context {:config               config
                  :step-results-channel step-results-channel
                  :pipeline-state-component pipeline-state-component}]
     {:state state

@@ -33,8 +33,8 @@
     current-build-number
     0))
 
-(defn next-build-number-legacy [{pipeline-state :_pipeline-state }]
-  (inc (most-recent-build-number-in-state @pipeline-state)))
+(defn next-build-number-legacy [state]
+  (inc (most-recent-build-number-in-state @state)))
 
 (defn- is-active? [step-result]
   (let [status (:status step-result)]
@@ -51,8 +51,8 @@
     (if (and (empty? active-first-steps-new) (not (empty? active-first-steps-old)))
       (callback))))
 
-(defn notify-when-no-first-step-is-active [{pipeline-state :_pipeline-state} callback]
-  (add-watch pipeline-state :notify-most-recent-build-running (partial call-callback-when-no-first-step-is-active callback)))
+(defn notify-when-no-first-step-is-active [{component :pipeline-state-component} callback]
+  (add-watch (pipeline-state-protocol/get-internal-state component) :notify-most-recent-build-running (partial call-callback-when-no-first-step-is-active callback)))
 
 (defn update-legacy
   [build-number step-id step-result home-dir state]
@@ -67,8 +67,10 @@
     (update-legacy build-number step-id step-result home-dir state-atom))
   (get-all [self]
     @state-atom)
+  (get-internal-state [self]
+    state-atom)
   (next-build-number [self]
-    (next-build-number-legacy {:_pipeline-state state-atom})))
+    (next-build-number-legacy state-atom)))
 
 (defn start-pipeline-state-updater [instance step-results-channel] ; TODO: only public for test-purposes
   (async/go-loop []
