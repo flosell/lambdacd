@@ -8,10 +8,11 @@
   (let [state (atom (pipeline-state/initial-pipeline-state config))
         context {:_pipeline-state      state
                  :config               config
-                 :step-results-channel (async/chan)}]
-    (pipeline-state/start-pipeline-state-updater state context)
+                 :step-results-channel (async/chan)}
+        pipeline-state-component (pipeline-state/new-default-pipeline-state state config context)]
     {:state state
      :context context
+     :pipeline-state-component pipeline-state-component
      :pipeline-def pipeline-def}))
 
 (defn retrigger [pipeline context build-number step-id-to-retrigger]

@@ -3,7 +3,8 @@
   i.e. what's currently running, what are the results of each step, ..."
   (:require [lambdacd.internal.default-pipeline-state-persistence :as persistence]
             [clj-time.core :as t]
-            [clojure.core.async :as async]))
+            [clojure.core.async :as async]
+            [lambdacd.internal.pipeline-state :as pipeline-state-protocol]))
 
 (def clean-pipeline-state {})
 
@@ -53,20 +54,33 @@
 (defn notify-when-no-first-step-is-active [{pipeline-state :_pipeline-state} callback]
   (add-watch pipeline-state :notify-most-recent-build-running (partial call-callback-when-no-first-step-is-active callback)))
 
-(defn update
+(defn update-legacy
   [build-number step-id step-result home-dir state]
   (if (not (nil? state)) ; convenience for tests: if no state exists we just do nothing
     (let [new-state (swap! state (partial update-pipeline-state build-number step-id step-result))]
       (persistence/write-build-history home-dir build-number new-state))))
 
 
-(defn start-pipeline-state-updater [state context]
-  (let [step-results-channel (get-in context [:step-results-channel])
-        home-dir (get-in context [ :config :home-dir])]
+(defrecord DefaultPipelineState [state-atom home-dir]
+  pipeline-state-protocol/PipelineStateComponent
+  (update [self build-number step-id step-result]
+    (update-legacy build-number step-id step-result home-dir state-atom))
+  (get-all [self]
+    @state-atom))
+
+(defn start-pipeline-state-updater [instance context] ; TODO: only public for test-purposes
+  (let [step-results-channel (get-in context [:step-results-channel])]
     (async/go-loop []
       (if-let [step-result-update (async/<! step-results-channel)]
         (let [step-result (:step-result step-result-update)
               build-number (:build-number step-result-update)
               step-id (:step-id step-result-update)]
-          (update build-number step-id step-result home-dir state)
+          (pipeline-state-protocol/update instance build-number step-id step-result)
           (recur))))))
+
+(defn new-default-pipeline-state [state-atom config context]
+  (let [;state-atom (atom (initial-pipeline-state config)) ;; state-atom passed in at the moment until nothing relies directly on this atom any more
+        home-dir (:home-dir config)
+        instance (->DefaultPipelineState state-atom home-dir)]
+    (start-pipeline-state-updater instance context)
+    instance))

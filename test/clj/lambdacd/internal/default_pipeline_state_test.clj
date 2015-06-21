@@ -2,6 +2,7 @@
   (:use [lambdacd.testsupport.test-util])
   (:require [clojure.test :refer :all]
             [lambdacd.internal.default-pipeline-state :refer :all]
+            [lambdacd.internal.pipeline-state :as pipeline-state]
             [lambdacd.util :as utils]
             [clojure.data.json :as json]
             [clj-time.core :as t]
@@ -9,11 +10,12 @@
             [lambdacd.testsupport.data :refer [some-ctx-with]]
             [clojure.data :as d]
             [clojure.java.io :as io]
-            [clojure.core.async :as async]))
+            [clojure.core.async :as async]
+            [lambdacd.util :as util]))
 
 (defn- after-update [build id newstate]
   (let [state (atom clean-pipeline-state)]
-    (update build id newstate nil state)
+    (update-legacy build id newstate nil state)
     @state))
 
 (deftest general-pipeline-state-test
@@ -25,20 +27,20 @@
   (testing "that update will not loose keys that are not in the new map" ; e.g. to make sure values that are sent on the result-channel are not lost if they don't appear in the final result-map
     (is (= { 10 { [0] { :foo :bar :bar :baz }}}
            (let [state (atom clean-pipeline-state)]
-             (update 10 [0] {:foo :bar} nil state)
-             (update 10 [0] {:bar :baz} nil state)
+             (update-legacy 10 [0] {:foo :bar} nil state)
+             (update-legacy 10 [0] {:bar :baz} nil state)
              (tu/without-ts @state)))))
   (testing "that update will set a first-updated-at and most-recent-update-at timestamp"
     (let [first-update-timestamp (t/minus (t/now) (t/minutes 1))
           last-updated-timestamp (t/now)
           state (atom clean-pipeline-state)]
-      (t/do-at first-update-timestamp (update 10 [0] {:foo :bar} nil state))
-      (t/do-at last-updated-timestamp (update 10 [0] {:foo :baz} nil state))
+      (t/do-at first-update-timestamp (update-legacy 10 [0] {:foo :bar} nil state))
+      (t/do-at last-updated-timestamp (update-legacy 10 [0] {:foo :baz} nil state))
       (is (= {10 {[0] {:foo :baz :most-recent-update-at last-updated-timestamp :first-updated-at first-update-timestamp }}} @state))))
   (testing "that updating will save the current state to the file-system"
     (let [home-dir (utils/create-temp-dir)
           step-result { :foo :bar }]
-      (t/do-at (t/epoch) (update 10 [0] step-result home-dir (atom {})))
+      (t/do-at (t/epoch) (update-legacy 10 [0] step-result home-dir (atom {})))
       (is (= [{ "step-id" "0"
                "step-result" {"foo" "bar"
                               "most-recent-update-at" "1970-01-01T00:00:00.000Z"
@@ -46,17 +48,17 @@
 
 (deftest initialize-pipeline-persistence-test
   (testing "that we tap into a pipelines step-results-channel and update the pipeline state with its information"
-    (let [state (atom {})
-          step-results-channel (async/chan 10)
-          context (some-ctx-with :step-results-channel step-results-channel)]
+    (let [step-results-channel (async/chan 10)
+          context (some-ctx-with :step-results-channel step-results-channel)
+          instance (new-default-pipeline-state (atom {}) {:home-dir (util/create-temp-dir)} context)]
       (async/>!! step-results-channel {:build-number 1 :step-id [1 2] :step-result {:status :running}})
       (async/>!! step-results-channel {:build-number 2 :step-id [1 2] :step-result {:status :success}})
       (async/>!! step-results-channel {:build-number 1 :step-id [1 2] :step-result {:status :running :foo :bar}})
 
       (async/close! step-results-channel)
-      (async/<!! (start-pipeline-state-updater state context))
+      (async/<!! (start-pipeline-state-updater instance context))
       (is (= {1 { [1 2] {:status :running :foo :bar}}
-              2 { [1 2] {:status :success}}} (tu/without-ts @state))))))
+              2 { [1 2] {:status :success}}} (tu/without-ts (pipeline-state/get-all instance)))))))
 
 (defn- write-pipeline-state [home-dir build-number state]
   (let [dir (str home-dir "/" "build-" build-number)
@@ -84,23 +86,23 @@
           callback (fn [& _] (swap! call-counter inc))]
       (notify-when-no-first-step-is-active { :_pipeline-state pipeline-state} callback)
       (is (= 0 @call-counter))
-      (update 0 [1] {:status :running} nil pipeline-state)
+      (update-legacy 0 [1] {:status :running} nil pipeline-state)
       (is (= 0 @call-counter))
-      (update 0 [1] {:status :success} nil pipeline-state)
+      (update-legacy 0 [1] {:status :success} nil pipeline-state)
       (is (= 1 @call-counter))
-      (update 0 [2] {:status :success} nil pipeline-state)
+      (update-legacy 0 [2] {:status :success} nil pipeline-state)
       (is (= 1 @call-counter))
-      (update 1 [1] {:status :waiting} nil pipeline-state)
+      (update-legacy 1 [1] {:status :waiting} nil pipeline-state)
       (is (= 1 @call-counter))
-      (update 1 [1] {:status :running} nil pipeline-state)
+      (update-legacy 1 [1] {:status :running} nil pipeline-state)
       (is (= 1 @call-counter))
-      (update 1 [1] {:status :failure} nil pipeline-state)
+      (update-legacy 1 [1] {:status :failure} nil pipeline-state)
       (is (= 2 @call-counter))
-      (update 1 [1] {:status :failure} nil pipeline-state)
+      (update-legacy 1 [1] {:status :failure} nil pipeline-state)
       (is (= 2 @call-counter))
-      (update 2 [2] {:status :ok :retrigger-mock-for-build-number 1 } nil pipeline-state)
+      (update-legacy 2 [2] {:status :ok :retrigger-mock-for-build-number 1 } nil pipeline-state)
       (is (= 2 @call-counter))
-      (update 3 [2] {:status :ok } nil pipeline-state)
+      (update-legacy 3 [2] {:status :ok } nil pipeline-state)
       (is (= 2 @call-counter))))
   (testing "that we are not notified if there is already a build waiting"
     (let [pipeline-state (atom {0 { [1] {:status :waiting}}
@@ -109,5 +111,5 @@
           callback (fn [& _] (swap! call-counter inc))]
       (notify-when-no-first-step-is-active { :_pipeline-state pipeline-state} callback)
       (is (= 0 @call-counter))
-      (update 1 [1] {:status :success} nil pipeline-state)
+      (update-legacy 1 [1] {:status :success} nil pipeline-state)
       (is (= 0 @call-counter)))))
