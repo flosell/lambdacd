@@ -47,13 +47,14 @@
 (deftest initialize-pipeline-persistence-test
   (testing "that we tap into a pipelines step-results-channel and update the pipeline state with its information"
     (let [state (atom {})
-          step-results-channel (async/chan)
+          step-results-channel (async/chan 10)
           context (some-ctx-with :step-results-channel step-results-channel)]
-      (start-pipeline-state-updater state context)
       (async/>!! step-results-channel {:build-number 1 :step-id [1 2] :step-result {:status :running}})
       (async/>!! step-results-channel {:build-number 2 :step-id [1 2] :step-result {:status :success}})
       (async/>!! step-results-channel {:build-number 1 :step-id [1 2] :step-result {:status :running :foo :bar}})
-      (Thread/sleep 200)
+
+      (async/close! step-results-channel)
+      (async/<!! (start-pipeline-state-updater state context))
       (is (= {1 { [1 2] {:status :running :foo :bar}}
               2 { [1 2] {:status :success}}} (tu/without-ts @state))))))
 
