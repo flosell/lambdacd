@@ -1,4 +1,4 @@
-(ns lambdacd.internal.pipeline-state-persistence
+(ns lambdacd.internal.default-pipeline-state-persistence
   "defines conversions between the data-models we use internally and the data-model that's used in JSON
    (which is more user facing)"
   (:import (java.util.regex Pattern)

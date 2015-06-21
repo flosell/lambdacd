@@ -1,7 +1,7 @@
 (ns lambdacd.runners
   (:require [lambdacd.internal.execution :as execution]
             [clojure.core.async :as async]
-            [lambdacd.internal.pipeline-state :as pipeline-state]))
+            [lambdacd.internal.default-pipeline-state :as pipeline-state]))
 
 (defn start-new-run-after-first-step-finished
   "Runner that makes sure there is always one pipeline-run with the first step active. useful if the first step is waiting for

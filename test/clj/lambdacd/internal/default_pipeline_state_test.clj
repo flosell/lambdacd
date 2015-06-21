@@ -1,7 +1,7 @@
-(ns lambdacd.internal.pipeline-state-test
+(ns lambdacd.internal.default-pipeline-state-test
   (:use [lambdacd.testsupport.test-util])
   (:require [clojure.test :refer :all]
-            [lambdacd.internal.pipeline-state :refer :all]
+            [lambdacd.internal.default-pipeline-state :refer :all]
             [lambdacd.util :as utils]
             [clojure.data.json :as json]
             [clj-time.core :as t]

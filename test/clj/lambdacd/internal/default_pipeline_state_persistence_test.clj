@@ -1,7 +1,7 @@
-(ns lambdacd.internal.pipeline-state-persistence-test
+(ns lambdacd.internal.default-pipeline-state-persistence-test
   (:use [lambdacd.testsupport.test-util])
   (:require [clojure.test :refer :all]
-            [lambdacd.internal.pipeline-state-persistence :refer :all]
+            [lambdacd.internal.default-pipeline-state-persistence :refer :all]
             [clj-time.core :as t]
             [lambdacd.util :as utils]))
 

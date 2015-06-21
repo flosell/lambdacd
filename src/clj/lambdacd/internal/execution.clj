@@ -1,7 +1,7 @@
 (ns lambdacd.internal.execution
   "low level functions for job-execution"
   (:require [clojure.core.async :as async]
-            [lambdacd.internal.pipeline-state :as pipeline-state]
+            [lambdacd.internal.default-pipeline-state :as pipeline-state]
             [clojure.tools.logging :as log]
             [lambdacd.internal.step-id :as step-id]
             [lambdacd.internal.step-results :as step-results]

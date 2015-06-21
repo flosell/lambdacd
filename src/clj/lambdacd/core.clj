@@ -1,6 +1,6 @@
 (ns lambdacd.core
   (:use compojure.core)
-  (:require [lambdacd.internal.pipeline-state :as pipeline-state]
+  (:require [lambdacd.internal.default-pipeline-state :as pipeline-state]
             [lambdacd.internal.execution :as execution]
             [clojure.core.async :as async]))
 

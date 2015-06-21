@@ -1,7 +1,7 @@
-(ns lambdacd.internal.pipeline-state
+(ns lambdacd.internal.default-pipeline-state
   "responsible to manage the current state of the pipeline
   i.e. what's currently running, what are the results of each step, ..."
-  (:require [lambdacd.internal.pipeline-state-persistence :as persistence]
+  (:require [lambdacd.internal.default-pipeline-state-persistence :as persistence]
             [clj-time.core :as t]
             [clojure.core.async :as async]))
 

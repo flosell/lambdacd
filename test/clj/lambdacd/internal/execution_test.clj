@@ -8,7 +8,7 @@
             [lambdacd.testsupport.test-util :as tu]
             [lambdacd.internal.execution :as execution]
             [lambdacd.core :as core]
-            [lambdacd.internal.pipeline-state :as pipeline-state])
+            [lambdacd.internal.default-pipeline-state :as pipeline-state])
   (:import java.lang.IllegalStateException))
 
 (defn some-step-processing-input [arg & _]
