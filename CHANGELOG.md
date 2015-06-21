@@ -10,6 +10,10 @@ The official release will have a defined and more stable API. If you are already
 * Improvements:
   * Cleaned up status inheritance to make it more consistent
   * Support variable arguments instead of step-vector as input for `chain-steps` (#29)
+  * Internal refactorings to prepare for more component-oriented structure
+  * Contexts always contain `:step-results-channel` which can be used to access a stream of step-state updates,
+    e.g. to create custom persistence components or runners (still experimental)
+  * Cleaned up dependencies
 * Bug fixes:
   * Fix bug in retriggering that left next step in undefined state (#26)
 * API changes:
