@@ -55,8 +55,8 @@
 
 (defn- some-context-with [last-seen-revision result-channel is-killed]
  (some-ctx-with
-   :_pipeline-state (atom { 9 { [42] { :_git-last-seen-revision last-seen-revision }}
-                                  10 {}})
+   :initial-pipeline-state { 9 { [42] { :_git-last-seen-revision last-seen-revision }}
+                             10 {}}
    :result-channel result-channel
    :is-killed is-killed))
 

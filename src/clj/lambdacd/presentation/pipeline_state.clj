@@ -1,5 +1,6 @@
 (ns lambdacd.presentation.pipeline-state
-  (:require [lambdacd.util :as util]))
+  (:require [lambdacd.util :as util]
+            [lambdacd.internal.pipeline-state :as pipeline-state]))
 
 (defn- desc [a b]
   (compare b a))
@@ -61,7 +62,7 @@
 
 
 (defn most-recent-step-result-with [key ctx]
-  (let [state (deref (:_pipeline-state ctx))
+  (let [state (pipeline-state/get-all (:pipeline-state-component ctx))
         step-id (:step-id ctx)
         step-results (map second (reverse (sort-by first (seq state))))
         step-results-for-id (map #(get % step-id) step-results)

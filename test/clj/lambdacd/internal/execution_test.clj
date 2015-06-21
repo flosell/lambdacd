@@ -213,12 +213,13 @@
 
 (deftest retrigger-test
   (testing "that retriggering results in a completely new pipeline-run where not all the steps are executed"
-    (let [pipeline-state-atom (atom { 0 {[1] { :status :success }
-                                         [1 1] {:status :success :out "I am nested"}
-                                         [2] { :status :failure }}})
+    (let [initial-state { 0 {[1] { :status :success }
+                                   [1 1] {:status :success :out "I am nested"}
+                                   [2] { :status :failure }}}
           pipeline `((some-control-flow some-step) some-successful-step)
           step-results-channel (async/chan)
-          context (some-ctx-with :_pipeline-state pipeline-state-atom :step-results-channel step-results-channel)]
+          context (some-ctx-with :initial-pipeline-state initial-state
+                                 :step-results-channel step-results-channel)]
       (retrigger pipeline context 0 [2] 1)
       (Thread/sleep 200)
       (is (= {0 {[1] { :status :success }
@@ -228,23 +229,21 @@
                  [1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0}
                  [2] { :status :success }}} (tu/without-ts (ps/get-all (:pipeline-state-component context)))))))
   (testing "that we can retrigger a pipeline from the initial step as well"
-    (let [pipeline-state-atom (atom { 0 {}})
-          pipeline `(some-successful-step some-other-step some-failing-step)
+    (let [pipeline `(some-successful-step some-other-step some-failing-step)
           step-results-channel (async/chan)
-          context (some-ctx-with :_pipeline-state pipeline-state-atom :step-results-channel step-results-channel)]
+          context (some-ctx-with :step-results-channel step-results-channel)]
       (retrigger pipeline context 0 [1] 1)
       (Thread/sleep 200)
-      (is (= {0 {}
-              1 {[1] { :status :success}
+      (is (= {1 {[1] { :status :success}
                  [2] {:status :success :foo :baz}
                  [3] { :status :failure }}} (tu/without-ts (ps/get-all (:pipeline-state-component context)))))))
   (testing "that retriggering works for nested steps"
-    (let [pipeline-state-atom (atom { 0 {[1] { :status :success }
-                                         [1 1] {:status :success :out "I am nested"}
-                                         [2 1] {:status :unknown :out "this will be retriggered"}}})
+    (let [initial-state { 0 {[1] { :status :success }
+                             [1 1] {:status :success :out "I am nested"}
+                             [2 1] {:status :unknown :out "this will be retriggered"}}}
           pipeline `((some-control-flow-thats-called some-step-that-fails-if-retriggered some-step-to-retrigger) some-successful-step)
           step-results-channel (async/chan)
-          context (some-ctx-with :_pipeline-state pipeline-state-atom :step-results-channel step-results-channel)]
+          context (some-ctx-with :initial-pipeline-state initial-state :step-results-channel step-results-channel)]
       (retrigger pipeline context 0 [2 1] 1)
       (Thread/sleep 200)
       (is (= {0 {[1] { :status :success }
