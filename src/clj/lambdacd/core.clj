@@ -1,13 +1,13 @@
 (ns lambdacd.core
   (:use compojure.core)
-  (:require [lambdacd.internal.default-pipeline-state :as pipeline-state]
+  (:require [lambdacd.internal.default-pipeline-state :as default-pipeline-state]
             [lambdacd.internal.execution :as execution]
             [clojure.core.async :as async]))
 
 (defn assemble-pipeline [pipeline-def config]
-  (let [state (atom (pipeline-state/initial-pipeline-state config))
+  (let [state (atom (default-pipeline-state/initial-pipeline-state config))
         step-results-channel (async/chan)
-        pipeline-state-component (pipeline-state/new-default-pipeline-state state config step-results-channel)
+        pipeline-state-component (default-pipeline-state/new-default-pipeline-state state config step-results-channel)
         context {:_pipeline-state      state
                  :config               config
                  :step-results-channel step-results-channel

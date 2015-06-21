@@ -7,8 +7,8 @@
             [lambdacd.testsupport.data :refer [some-ctx-with some-ctx]]
             [lambdacd.testsupport.test-util :as tu]
             [lambdacd.internal.execution :as execution]
-            [lambdacd.core :as core]
-            [lambdacd.internal.default-pipeline-state :as pipeline-state])
+            [lambdacd.testsupport.noop-pipeline-state :as noop-pipeline-state]
+            [lambdacd.internal.pipeline-state :as ps])
   (:import java.lang.IllegalStateException))
 
 (defn some-step-processing-input [arg & _]
@@ -114,14 +114,16 @@
     (let [step-results-channel (async/chan 100)]
       (execute-step {} [(some-ctx-with :step-id [0 0]
                                        :build-number 5
-                                       :step-results-channel step-results-channel) some-successful-step])
+                                       :step-results-channel step-results-channel
+                                       :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state)) some-successful-step])
       (is (= [{ :build-number 5 :step-id [0 0] :step-result {:status :running } }
               { :build-number 5 :step-id [0 0] :step-result {:status :success } }] (slurp-chan step-results-channel)))))
   (testing "that the final pipeline-state is properly set for a step returning a static and an async result"
     (let [step-results-channel (async/chan 100)]
       (execute-step {} [(some-ctx-with :step-id [0 0]
                                        :build-number 5
-                                       :step-results-channel step-results-channel) some-step-that-sends-failure-on-ch-returns-success])
+                                       :step-results-channel step-results-channel
+                                       :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state)) some-step-that-sends-failure-on-ch-returns-success])
       (is (= [{ :build-number 5 :step-id [0 0] :step-result {:status :running } }
               { :build-number 5 :step-id [0 0] :step-result {:status :failure } }
               { :build-number 5 :step-id [0 0] :step-result {:status :success } }] (slurp-chan step-results-channel)))))
@@ -135,7 +137,8 @@
     (let [step-results-channel (async/chan 100)]
       (execute-step {} [(some-ctx-with :step-id [0 0]
                                        :build-number 5
-                                       :step-results-channel step-results-channel) some-step-building-up-result-state-incrementally])
+                                       :step-results-channel step-results-channel
+                                       :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state)) some-step-building-up-result-state-incrementally])
     (is (= [{:build-number 5 :step-id [0 0] :step-result {:status :running } }
             {:build-number 5 :step-id [0 0] :step-result {:status :running :out "hello"} }
             {:build-number 5 :step-id [0 0] :step-result {:status :running :out "hello world"} }
@@ -185,7 +188,11 @@
 (deftest execute-steps-inheritance-test
   (testing "that the step-results channel passed in contains the step-results of all childrens"
     (let [step-results-channel (async/chan 100)]
-      (execute-steps [some-other-step some-failing-step ] {} (some-ctx-with :step-results-channel step-results-channel :step-id [0] :build-number 2))
+      (execute-steps [some-other-step some-failing-step ] {} (some-ctx-with
+                                                               :step-results-channel step-results-channel
+                                                               :step-id [0]
+                                                               :build-number 2
+                                                               :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state)))
       (is (= [{:build-number 2 :step-id [1 0] :step-result {:status :running}}
               {:build-number 2 :step-id [1 0] :step-result {:foo :baz :status :success}}
               {:build-number 2 :step-id [2 0] :step-result {:status :running}}
@@ -204,49 +211,49 @@
 (defn some-step-to-retrigger [args _]
   {:status :success :the-some (:some args)})
 
-(defn pipeline-state-from [ch]
-  (Thread/sleep 200) ;; TODO: this is hacky, not sure yet where things are being buffered so that they aren't there...
-  (async/close! ch)
-  (loop [state {}]
-      (let [update (async/<!! ch)
-            {step-id :step-id build-number :build-number step-result :step-result} update]
-        (if (not (nil? update))
-          (recur (assoc-in state [build-number step-id] step-result))
-          state))))
-
 (deftest retrigger-test
   (testing "that retriggering results in a completely new pipeline-run where not all the steps are executed"
     (let [pipeline-state-atom (atom { 0 {[1] { :status :success }
                                          [1 1] {:status :success :out "I am nested"}
                                          [2] { :status :failure }}})
           pipeline `((some-control-flow some-step) some-successful-step)
-          step-results-channel (async/chan 100)
+          step-results-channel (async/chan)
           context (some-ctx-with :_pipeline-state pipeline-state-atom :step-results-channel step-results-channel)]
       (retrigger pipeline context 0 [2] 1)
-      (is (= {1 {[1] { :status :success :retrigger-mock-for-build-number 0 }
+      (Thread/sleep 200)
+      (is (= {0 {[1] { :status :success }
+                 [1 1] {:status :success :out "I am nested"}
+                 [2] { :status :failure }}
+              1 {[1] { :status :success :retrigger-mock-for-build-number 0 }
                  [1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0}
-                 [2] { :status :success }}} (pipeline-state-from step-results-channel)))))
+                 [2] { :status :success }}} (tu/without-ts (ps/get-all (:pipeline-state-component context)))))))
   (testing "that we can retrigger a pipeline from the initial step as well"
     (let [pipeline-state-atom (atom { 0 {}})
           pipeline `(some-successful-step some-other-step some-failing-step)
-          step-results-channel (async/chan 100)
+          step-results-channel (async/chan)
           context (some-ctx-with :_pipeline-state pipeline-state-atom :step-results-channel step-results-channel)]
       (retrigger pipeline context 0 [1] 1)
-      (is (= {1 {[1] { :status :success}
+      (Thread/sleep 200)
+      (is (= {0 {}
+              1 {[1] { :status :success}
                  [2] {:status :success :foo :baz}
-                 [3] { :status :failure }}} (pipeline-state-from step-results-channel)))))
+                 [3] { :status :failure }}} (tu/without-ts (ps/get-all (:pipeline-state-component context)))))))
   (testing "that retriggering works for nested steps"
     (let [pipeline-state-atom (atom { 0 {[1] { :status :success }
                                          [1 1] {:status :success :out "I am nested"}
                                          [2 1] {:status :unknown :out "this will be retriggered"}}})
           pipeline `((some-control-flow-thats-called some-step-that-fails-if-retriggered some-step-to-retrigger) some-successful-step)
-          step-results-channel (async/chan 100)
+          step-results-channel (async/chan)
           context (some-ctx-with :_pipeline-state pipeline-state-atom :step-results-channel step-results-channel)]
       (retrigger pipeline context 0 [2 1] 1)
-      (is (= {1 {[1] {:status :success
+      (Thread/sleep 200)
+      (is (= {0 {[1] { :status :success }
+                 [1 1] {:status :success :out "I am nested"}
+                 [2 1] {:status :unknown :out "this will be retriggered"}}
+              1 {[1] {:status :success
                       :outputs {[1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0 }
                                 [2 1] {:the-some :val :status :success }}
-                      }
+                      :retrigger-mock-for-build-number 0 }
                  [1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0}
                  [2 1] {:the-some :val :status :success}
-                 [2] { :status :success }}} (pipeline-state-from step-results-channel))))))
+                 [2] { :status :success }}} (tu/without-ts (ps/get-all (:pipeline-state-component context))))))))

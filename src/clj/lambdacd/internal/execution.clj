@@ -1,7 +1,8 @@
 (ns lambdacd.internal.execution
   "low level functions for job-execution"
   (:require [clojure.core.async :as async]
-            [lambdacd.internal.default-pipeline-state :as pipeline-state]
+            [lambdacd.internal.default-pipeline-state :as default-pipeline-state]
+            [lambdacd.internal.pipeline-state :as pipeline-state]
             [clojure.tools.logging :as log]
             [lambdacd.internal.step-id :as step-id]
             [lambdacd.internal.step-results :as step-results]
@@ -54,7 +55,7 @@
 
 (defn- reuse-from-history-if-required [{:keys [step-id] :as ctx} {build-number-to-resuse :reuse-from-build-number :as result}]
   (if build-number-to-resuse
-    (let [state @(:_pipeline-state ctx)
+    (let [state (pipeline-state/get-all (:pipeline-state-component ctx))
           old-result (get-in state [build-number-to-resuse step-id])]
       (assoc old-result :retrigger-mock-for-build-number build-number-to-resuse))
     result))
@@ -163,7 +164,7 @@
     (reduce merge-two-step-results step-results)))
 
 (defn run [pipeline context]
-  (let [build-number (pipeline-state/next-build-number context)]
+  (let [build-number (default-pipeline-state/next-build-number-legacy context)]
     (let [runnable-pipeline (map eval pipeline)]
       (execute-steps runnable-pipeline {} (merge context {:result-channel (async/chan (async/dropping-buffer 0))
                                                           :step-id []
@@ -208,7 +209,7 @@
       (map (replace-with-mock-or-recur step-id-to-retrigger build-number))))
 
 (defn retrigger [pipeline context build-number step-id-to-run next-build-number]
-  (let [pipeline-state (deref (:_pipeline-state context))
+  (let [pipeline-state (pipeline-state/get-all (:pipeline-state-component context))
         pipeline-history (get pipeline-state build-number)
         pipeline-fragment-to-run (mock-for-steps pipeline [] step-id-to-run build-number)
         executable-pipeline (map eval pipeline-fragment-to-run) ]
@@ -218,7 +219,7 @@
                                                          :build-number next-build-number))))
 
 (defn retrigger-async [pipeline context build-number step-id-to-run]
-  (let [next-build-number (pipeline-state/next-build-number context)]
+  (let [next-build-number (default-pipeline-state/next-build-number-legacy context)]
     (async/thread
       (retrigger pipeline context build-number step-id-to-run next-build-number ))
     next-build-number))

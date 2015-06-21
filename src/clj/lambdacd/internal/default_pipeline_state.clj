@@ -33,7 +33,7 @@
     current-build-number
     0))
 
-(defn next-build-number [{pipeline-state :_pipeline-state }]
+(defn next-build-number-legacy [{pipeline-state :_pipeline-state }]
   (inc (most-recent-build-number-in-state @pipeline-state)))
 
 (defn- is-active? [step-result]
@@ -66,7 +66,9 @@
   (update [self build-number step-id step-result]
     (update-legacy build-number step-id step-result home-dir state-atom))
   (get-all [self]
-    @state-atom))
+    @state-atom)
+  (next-build-number [self]
+    (next-build-number-legacy {:_pipeline-state state-atom})))
 
 (defn start-pipeline-state-updater [instance step-results-channel] ; TODO: only public for test-purposes
   (async/go-loop []
