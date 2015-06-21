@@ -8,7 +8,6 @@
             [clj-time.core :as t]
             [lambdacd.testsupport.test-util :as tu]
             [lambdacd.testsupport.data :refer [some-ctx-with]]
-            [clojure.data :as d]
             [clojure.java.io :as io]
             [clojure.core.async :as async]
             [lambdacd.util :as util]))
@@ -49,16 +48,15 @@
 (deftest initialize-pipeline-persistence-test
   (testing "that we tap into a pipelines step-results-channel and update the pipeline state with its information"
     (let [step-results-channel (async/chan 10)
-          context (some-ctx-with :step-results-channel step-results-channel)
-          instance (new-default-pipeline-state (atom {}) {:home-dir (util/create-temp-dir)} context)]
+          pipeline-state (new-default-pipeline-state (atom {}) {:home-dir (util/create-temp-dir)} step-results-channel)]
       (async/>!! step-results-channel {:build-number 1 :step-id [1 2] :step-result {:status :running}})
       (async/>!! step-results-channel {:build-number 2 :step-id [1 2] :step-result {:status :success}})
       (async/>!! step-results-channel {:build-number 1 :step-id [1 2] :step-result {:status :running :foo :bar}})
 
       (async/close! step-results-channel)
-      (async/<!! (start-pipeline-state-updater instance context))
+      (async/<!! (start-pipeline-state-updater pipeline-state step-results-channel))
       (is (= {1 { [1 2] {:status :running :foo :bar}}
-              2 { [1 2] {:status :success}}} (tu/without-ts (pipeline-state/get-all instance)))))))
+              2 { [1 2] {:status :success}}} (tu/without-ts (pipeline-state/get-all pipeline-state)))))))
 
 (defn- write-pipeline-state [home-dir build-number state]
   (let [dir (str home-dir "/" "build-" build-number)

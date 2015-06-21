@@ -68,19 +68,18 @@
   (get-all [self]
     @state-atom))
 
-(defn start-pipeline-state-updater [instance context] ; TODO: only public for test-purposes
-  (let [step-results-channel (get-in context [:step-results-channel])]
-    (async/go-loop []
-      (if-let [step-result-update (async/<! step-results-channel)]
-        (let [step-result (:step-result step-result-update)
-              build-number (:build-number step-result-update)
-              step-id (:step-id step-result-update)]
-          (pipeline-state-protocol/update instance build-number step-id step-result)
-          (recur))))))
+(defn start-pipeline-state-updater [instance step-results-channel] ; TODO: only public for test-purposes
+  (async/go-loop []
+    (if-let [step-result-update (async/<! step-results-channel)]
+      (let [step-result (:step-result step-result-update)
+            build-number (:build-number step-result-update)
+            step-id (:step-id step-result-update)]
+        (pipeline-state-protocol/update instance build-number step-id step-result)
+        (recur)))))
 
-(defn new-default-pipeline-state [state-atom config context]
+(defn new-default-pipeline-state [state-atom config step-results-channel]
   (let [;state-atom (atom (initial-pipeline-state config)) ;; state-atom passed in at the moment until nothing relies directly on this atom any more
         home-dir (:home-dir config)
         instance (->DefaultPipelineState state-atom home-dir)]
-    (start-pipeline-state-updater instance context)
+    (start-pipeline-state-updater instance step-results-channel)
     instance))

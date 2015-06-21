@@ -6,13 +6,14 @@
 
 (defn assemble-pipeline [pipeline-def config]
   (let [state (atom (pipeline-state/initial-pipeline-state config))
+        step-results-channel (async/chan)
+        pipeline-state-component (pipeline-state/new-default-pipeline-state state config step-results-channel)
         context {:_pipeline-state      state
                  :config               config
-                 :step-results-channel (async/chan)}
-        pipeline-state-component (pipeline-state/new-default-pipeline-state state config context)]
+                 :step-results-channel step-results-channel
+                 :pipeline-state-component pipeline-state-component}]
     {:state state
      :context context
-     :pipeline-state-component pipeline-state-component
      :pipeline-def pipeline-def}))
 
 (defn retrigger [pipeline context build-number step-id-to-retrigger]
