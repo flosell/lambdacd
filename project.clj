@@ -20,15 +20,8 @@
                  [ch.qos.logback/logback-classic "1.0.13"]
                  [ring-server "0.3.1"]
                  [ring/ring-json "0.3.1"]
-                 [bidi "1.18.7"]
-                 [cljsjs/react "0.12.2-5"]
-                 [cljs-ajax "0.3.10"]
-                 [reagent "0.5.0-alpha3"]
-                 [reagent-utils "0.1.2"]
-                 [clj-time "0.9.0"]
-                 [com.andrewmcveigh/cljs-time "0.3.5"]
                  [cheshire "5.4.0"]
-                 [org.clojure/clojurescript "0.0-2850" :scope "provided"]
+                 [clj-time "0.9.0"]
                  ]
   :test-selectors {:default (complement :smoke)
                    :smoke :smoke
@@ -49,49 +42,57 @@
                                         :jar true
                                         :optimizations :advanced
                                         :pretty-print  false}}}}
-  :profiles {:release {:hooks [leiningen.cljsbuild]}
-             :dev {:main todopipeline.pipeline
-                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
+  :profiles {:release  {:hooks [leiningen.cljsbuild]}
+             ;; the namespace for all the clojurescript-dependencies,
+             ;; we don't want them as dependencies of the final library as cljs is already compiled then
+             :provided {:dependencies [[bidi "1.18.7"]
+                                       [cljsjs/react "0.12.2-5"]
+                                       [cljs-ajax "0.3.10"]
+                                       [reagent "0.5.0-alpha3"]
+                                       [reagent-utils "0.1.2"]
+                                       [com.andrewmcveigh/cljs-time "0.3.5"]
+                                       [org.clojure/clojurescript "0.0-2850"]]}
+             :dev      {:main         todopipeline.pipeline
+                        :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
+                        :dependencies [[ring-mock "0.1.5"]
+                                       [prismatic/dommy "1.0.0"]
+                                       [http-kit "2.1.16"]
+                                       [ring/ring-devel "1.3.2"]
+                                       [leiningen "2.5.1"]
+                                       [figwheel "0.2.5"]
+                                       [weasel "0.6.0-SNAPSHOT"]
+                                       [com.cemerick/piggieback "0.1.6-SNAPSHOT"]
+                                       [pjstadig/humane-test-output "0.6.0"]]
 
-                   :dependencies [[ring-mock "0.1.5"]
-                                  [prismatic/dommy "1.0.0"]
-                                  [http-kit "2.1.16"]
-                                  [ring/ring-devel "1.3.2"]
-                                  [leiningen "2.5.1"]
-                                  [figwheel "0.2.5"]
-                                  [weasel "0.6.0-SNAPSHOT"]
-                                  [com.cemerick/piggieback "0.1.6-SNAPSHOT"]
-                                  [pjstadig/humane-test-output "0.6.0"]]
+                        :source-paths ["env/dev/clj"]
+                        :plugins      [[lein-figwheel "0.2.5"]
+                                       [com.cemerick/clojurescript.test "0.3.3"]]
 
-                   :source-paths ["env/dev/clj"]
-                   :plugins [[lein-figwheel "0.2.5"]
-                             [com.cemerick/clojurescript.test "0.3.3"]]
+                        :injections   [(require 'pjstadig.humane-test-output)
+                                       (pjstadig.humane-test-output/activate!)]
 
-                   :injections [(require 'pjstadig.humane-test-output)
-                                (pjstadig.humane-test-output/activate!)]
+                        :figwheel     {:http-server-root "public"
+                                       :server-port      3449
+                                       :css-dirs         ["resources/public/old/css"]}
 
-                   :figwheel {:http-server-root "public"
-                              :server-port 3449
-                              :css-dirs ["resources/public/old/css"]}
+                        :env          {:dev? true}
 
-                   :env {:dev? true}
-
-                   :cljsbuild {:builds {:app {:source-paths ["env/dev/cljs"]
-                                              :compiler {:main "lambdacd.dev"
-                                                         :optimizations :none
-                                                         :source-map true}}
-                                        :test {:source-paths ["src/cljs"  "test/cljs"]
-                                               :compiler       {:output-to     "target/cljs-tests/test.js"
-                                                                :source-map    "target/cljs-tests/test.js.map"
-                                                                :output-dir    "target/cljs-tests/test"
-                                                                :optimizations :none
-                                                                :pretty-print  true}
-                                               ;; if you want auto testing uncomment below
-                                               :notify-command ["phantomjs" "test/bin/runner-none.js" "target/cljs-tests/test" "target/cljs-tests/test.js"
-                                                                "test/vendor/es5-shim.js"
-                                                                "test/vendor/es5-sham.js"
-                                                                "test/vendor/console-polyfill.js"]}}
-                               :test-commands {"unit" ["phantomjs" "test/bin/runner-none.js" "target/cljs-tests/test" "target/cljs-tests/test.js"
-                                                       "test/vendor/es5-shim.js"
-                                                       "test/vendor/es5-sham.js"
-                                                       "test/vendor/console-polyfill.js"]}}}})
+                        :cljsbuild    {:builds        {:app  {:source-paths ["env/dev/cljs"]
+                                                              :compiler     {:main          "lambdacd.dev"
+                                                                             :optimizations :none
+                                                                             :source-map    true}}
+                                                       :test {:source-paths   ["src/cljs" "test/cljs"]
+                                                              :compiler       {:output-to     "target/cljs-tests/test.js"
+                                                                               :source-map    "target/cljs-tests/test.js.map"
+                                                                               :output-dir    "target/cljs-tests/test"
+                                                                               :optimizations :none
+                                                                               :pretty-print  true}
+                                                              ;; if you want auto testing uncomment below
+                                                              :notify-command ["phantomjs" "test/bin/runner-none.js" "target/cljs-tests/test" "target/cljs-tests/test.js"
+                                                                               "test/vendor/es5-shim.js"
+                                                                               "test/vendor/es5-sham.js"
+                                                                               "test/vendor/console-polyfill.js"]}}
+                                       :test-commands {"unit" ["phantomjs" "test/bin/runner-none.js" "target/cljs-tests/test" "target/cljs-tests/test.js"
+                                                               "test/vendor/es5-shim.js"
+                                                               "test/vendor/es5-sham.js"
+                                                               "test/vendor/console-polyfill.js"]}}}})
