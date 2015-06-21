@@ -14,22 +14,22 @@
             [clojure.data.json :as json]))
 
 
-(defn formatted-step-id [step-id]
+(defn- formatted-step-id [step-id]
   (str/join "-" step-id ))
 
-(defn unformat-step-id [formatted-step-id]
+(defn- unformat-step-id [formatted-step-id]
   (map util/parse-int (str/split formatted-step-id (Pattern/compile "-"))))
 
 (defn- step-result->json-format [[k v]]
   {:step-id (formatted-step-id k) :step-result v})
 
-(defn pipeline-state->json-format [pipeline-state]
+(defn- pipeline-state->json-format [pipeline-state]
   (map step-result->json-format pipeline-state))
 
 (defn- step-json->step [{step-result :step-result step-id :step-id}]
   {(unformat-step-id step-id) step-result})
 
-(defn json-format->pipeline-state [json-map]
+(defn- json-format->pipeline-state [json-map]
   (into {} (map step-json->step json-map)))
 
 
