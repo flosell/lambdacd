@@ -1,7 +1,6 @@
 (ns lambdacd.internal.execution
   "low level functions for job-execution"
   (:require [clojure.core.async :as async]
-            [lambdacd.internal.default-pipeline-state :as default-pipeline-state]
             [lambdacd.internal.pipeline-state :as pipeline-state]
             [clojure.tools.logging :as log]
             [lambdacd.internal.step-id :as step-id]
@@ -164,7 +163,7 @@
     (reduce merge-two-step-results step-results)))
 
 (defn run [pipeline context]
-  (let [build-number (default-pipeline-state/next-build-number-legacy context)]
+  (let [build-number (pipeline-state/next-build-number (:pipeline-state-component context))]
     (let [runnable-pipeline (map eval pipeline)]
       (execute-steps runnable-pipeline {} (merge context {:result-channel (async/chan (async/dropping-buffer 0))
                                                           :step-id []
@@ -219,7 +218,7 @@
                                                          :build-number next-build-number))))
 
 (defn retrigger-async [pipeline context build-number step-id-to-run]
-  (let [next-build-number (default-pipeline-state/next-build-number-legacy context)]
+  (let [next-build-number (pipeline-state/next-build-number (:pipeline-state-component context))]
     (async/thread
       (retrigger pipeline context build-number step-id-to-run next-build-number ))
     next-build-number))
