@@ -62,6 +62,7 @@ And if you notice something, please open bug reports, feature requests or just g
 * Detailed Tutorial: [doc/walkthrough.md](doc/walkthrough.md)
 * A complete LambdaCD infrastructure in code: https://github.com/flosell/devops-101-lambdacd
 * Documented Sample-Code: [example/clj/todopipeline](example/clj/todopipeline)
+* Blog Post on LambdaCD at Otto including tutorial: http://dev.otto.de/2015/06/29/microservices-ci-with-lambdacd-microservices-and-continuous-integration-with-lambdacd-23/
 
 ## Related projects
 
