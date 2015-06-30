@@ -3,8 +3,6 @@
             [clojure.java.io :as io]
             [clojure.string :as string]
             [me.raynes.conch.low-level :as sh]
-            [clojure.core.async :as async]
-            [lambdacd.internal.execution :as execution]
             [lambdacd.util :as utils]
             [lambdacd.util :as util])
   (:import (java.util UUID)
@@ -47,8 +45,7 @@
     (support/printed-output printer)))
 
 (defn- execte-shell-command [cwd shell-script ctx env]
-  (let [result-ch (:result-channel ctx)
-        x (sh/proc "bash" "-e" shell-script
+  (let [x (sh/proc "bash" "-e" shell-script
                    :dir cwd
                    :env env
                    :redirect-err true)
