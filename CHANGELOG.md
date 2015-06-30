@@ -5,6 +5,10 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
+## 0.4.1
+* Improvements:
+  * No longer shipping a `logback.xml` in the published jar.
+
 ## 0.4.0
 
 * Improvements:
