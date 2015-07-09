@@ -92,7 +92,7 @@
 (defn- to-context-and-step [ctx step-results-channel]
   (fn [idx step]
     (let [parent-step-id (:step-id ctx)
-          new-step-id (cons (inc idx) parent-step-id)
+          new-step-id (step-id/child-id parent-step-id (inc idx))
           step-ctx (assoc ctx :step-id new-step-id
                               :step-results-channel step-results-channel)]
     [step-ctx step])))

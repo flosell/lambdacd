@@ -24,3 +24,6 @@
   (and
     (not (= a b))
     (not (later-than? a b))))
+
+(defn child-id [parent-step-id child-number]
+  (cons child-number parent-step-id))

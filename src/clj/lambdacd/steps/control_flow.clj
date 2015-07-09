@@ -3,6 +3,7 @@
   (:require [lambdacd.core :as core]
             [clojure.core.async :as async]
             [lambdacd.steps.support :as support]
+            [lambdacd.internal.step-id :as step-id]
             [lambdacd.steps.status :as status]))
 
 (defn- post-process-container-results [result]
@@ -60,3 +61,13 @@
     (post-process-container-results
       (core/execute-steps steps args ctx
                           :unify-status-fn status/successful-when-all-successful))))
+
+(defn- child-context [ctx child-number]
+  (assoc ctx :step-id (step-id/child-id (:step-id ctx) child-number)))
+
+(defn ^{:display-type :parallel} junction [condition-step success-step failiure-step]
+  (fn [args ctx]
+    (post-process-container-results
+      (if (= :success (:status (core/execute-step args [(child-context ctx 1) condition-step])))
+        (core/execute-step args [(child-context ctx 2) success-step])
+        (core/execute-step args [(child-context ctx 3) failiure-step])))))
