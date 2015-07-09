@@ -54,6 +54,12 @@
 (defn some-step-that-returns-42 [args ctx]
   {:status :success :the-number 42})
 
+(defn some-step-that-returns-foo [args ctx]
+  {:status :success :message :foo})
+
+(defn some-step-that-returns-bar [args ctx]
+  {:status :success :message :bar})
+
 (deftest in-parallel-test
   (testing "that it collects all the outputs together correctly"
     (is (map-containing {:outputs { [1 0 0] {:foo :baz :status :undefined} [2 0 0] {:foo :baz :status :undefined}} :status :undefined} ((in-parallel some-step some-step) {} (some-ctx-with :step-id [0 0])))))
@@ -110,3 +116,11 @@
       (is (= [[:status :running]
               [:status :waiting]
               [:status :success]] (slurp-chan result-ch))))))
+
+(deftest junction-test
+  (testing "that it executes the success-step if the condition is a success"
+    (is (map-containing {:outputs {[2 0 0] {:status :success :message :foo}}}
+                        ((junction some-successful-step some-step-that-returns-foo some-step-that-returns-bar) {} (some-ctx-with :step-id [0 0])))))
+  (testing "that it executes the success-step if the condition is a success"
+    (is (map-containing {:outputs {[3 0 0] {:status :success :message :bar}}}
+                        ((junction some-failing-step some-step-that-returns-foo some-step-that-returns-bar) {} (some-ctx-with :step-id [0 0]))))))
