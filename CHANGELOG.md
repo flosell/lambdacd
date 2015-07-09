@@ -7,6 +7,7 @@ The official release will have a defined and more stable API. If you are already
 
 ## 0.4.1
 * Improvements:
+  * Added `junction` control flow step that adds a way to model if-then-else logic in a pipeline (#28,#32)
   * No longer shipping a `logback.xml` in the published jar.
 
 ## 0.4.0
