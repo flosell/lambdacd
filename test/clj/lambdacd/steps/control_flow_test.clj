@@ -84,7 +84,7 @@
     (is (map-containing {:global {:some :value}}
                         ((in-cwd "somecwd" some-step-that-returns-a-global-value some-successful-step) {} (some-ctx))))))
 
-(deftest do-test
+(deftest run-test
   (testing "that it runs all the children and collects the results"
     (is (map-containing {:outputs { [1 0 0] {:status :success} [2 0 0] {:foo :baz :status :success}} :status :success}
                         ((run some-successful-step some-other-step) {} (some-ctx-with :step-id [0 0])))))
