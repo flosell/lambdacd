@@ -14,6 +14,7 @@
             [lambdacd.steps.status :as status]))
 
 (defn- current-revision [repo-uri branch]
+  (log/debug (str "Polling branch " branch " on " repo-uri))
   (let [shell-output (util/bash "/"
                        "set -o pipefail"
                        (str "git ls-remote --heads " repo-uri " " branch " | cut -f 1"))
