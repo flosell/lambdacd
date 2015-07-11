@@ -68,10 +68,9 @@
    (execute-wait-for-async git-src-dir last-seen-revision (async/chan 100) (atom false)))
   ([git-src-dir last-seen-revision result-channel is-killed]
     (let [ctx (some-context-with last-seen-revision result-channel is-killed)
-          ch (async/go (wait-for-git ctx (repo-uri-for git-src-dir) "master"))]
+          ch (async/go (wait-for-git ctx (repo-uri-for git-src-dir) "master" :ms-between-polls 100))]
       (Thread/sleep 500) ;; dirty hack to make sure we started waiting before making the next commit
       ch)))
-
 
 (deftest wait-for-git-test
   (testing "that it waits for a new commit to happen"
@@ -192,5 +191,5 @@
     (let [test-repo (create-test-repo)
           git-dir (:dir test-repo)
           ctx (assoc (some-ctx) :is-killed (atom true))
-          result (wait-with-details ctx (repo-uri-for git-dir) "master")]
+          result (wait-with-details ctx (repo-uri-for git-dir) "master" :ms-between-polls 100)]
       (is (= :killed (:status result))))))

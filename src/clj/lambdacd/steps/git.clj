@@ -32,7 +32,7 @@
           {:status :success :revision new-revision-output :old-revision last-seen-revision}
           nil)))))
 
-(defn- wait-for-revision-changed-from [last-seen-revision repo-uri branch ctx]
+(defn- wait-for-revision-changed-from [last-seen-revision repo-uri branch ctx ms-between-polls]
   (let [initial-output (str "Last seen revision: " (or last-seen-revision "None") ". Waiting for new commit...")]
     (async/>!! (:result-channel ctx) [:status :waiting])
     (async/>!! (:result-channel ctx) [:out initial-output])
@@ -42,7 +42,7 @@
           (do
             (async/>!! (:result-channel ctx) [:out (str initial-output "\nFound new commit: " (:revision result) ".")])
             result)
-          (do (Thread/sleep 1000)
+          (do (Thread/sleep ms-between-polls)
               (recur (revision-changed-from last-seen-revision repo-uri branch))))))))
 
 (defn- last-seen-revision-for-this-step [ctx repo-uri branch]
@@ -60,9 +60,10 @@
 
 (defn wait-for-git
   "step that waits for the head of a branch to change"
-  [ctx repo-uri branch]
+  [ctx repo-uri branch & {:keys [ms-between-polls]
+                          :or   {ms-between-polls (* 10 1000)}}]
   (let [last-seen-revision (last-seen-revision-for-this-step ctx repo-uri branch)
-        wait-for-result (wait-for-revision-changed-from last-seen-revision repo-uri branch ctx)]
+        wait-for-result (wait-for-revision-changed-from last-seen-revision repo-uri branch ctx ms-between-polls)]
     (persist-last-seen-revision wait-for-result last-seen-revision ctx)))
 
 (defn- home-dir [ctx]
@@ -137,8 +138,8 @@
         new-out (str "\n\nChanges between commits:\n\n" original-out log-output)]
     (assoc args :commits commits :out new-out)))
 
-(defn wait-with-details [ctx repo branch]
-  (let [wait-result (wait-for-git ctx repo branch)]
+(defn wait-with-details [ctx repo branch & opts]
+  (let [wait-result (apply wait-for-git ctx repo branch opts)]
     (if (= :success (:status wait-result))
       (with-commit-details ctx repo wait-result)
       wait-result)))
