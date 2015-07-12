@@ -22,5 +22,5 @@
 (defn trigger [trigger-id data]
   (ajax/POST (str "api/dynamic/" trigger-id) data confirm-triggered))
 
-(defn retrigger [build-number first-part-of-step-id]
-  (ajax/POST (str "api/builds/" build-number "/" first-part-of-step-id "/retrigger") {} after-retriggered))
+(defn retrigger [build-number step-id]
+  (ajax/POST (str "api/builds/" build-number "/" step-id "/retrigger") {} after-retriggered))
