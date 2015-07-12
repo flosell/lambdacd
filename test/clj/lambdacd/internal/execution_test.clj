@@ -2,8 +2,10 @@
   (:use [lambdacd.testsupport.test-util])
   (:require [clojure.test :refer :all]
             [lambdacd.internal.execution :refer :all]
-            [lambdacd.testsupport.test-util :refer [eventually slurp-chan]]
+            [lambdacd.testsupport.test-util :refer :all]
+            [lambdacd.testsupport.matchers :refer :all]
             [clojure.core.async :as async]
+            [lambdacd.steps.support :as step-support]
             [lambdacd.testsupport.data :refer [some-ctx-with some-ctx]]
             [lambdacd.testsupport.test-util :as tu]
             [lambdacd.internal.execution :as execution]
@@ -75,6 +77,10 @@
     (async/>!! result-ch [:out "hello world"])
     {:status :success}))
 
+(defn some-step-waiting-to-be-killed [_ ctx]
+  (loop []
+    (step-support/if-not-killed ctx (recur))))
+
 (with-private-fns [lambdacd.internal.execution [merge-two-step-results]]
   (deftest step-result-merge-test
     (testing "merging without collisions"
@@ -143,7 +149,16 @@
             {:build-number 5 :step-id [0 0] :step-result {:status :running :out "hello"} }
             {:build-number 5 :step-id [0 0] :step-result {:status :running :out "hello world"} }
             {:build-number 5 :step-id [0 0] :step-result {:status :running :some-value 42 :out "hello world"} }
-            {:build-number 5 :step-id [0 0] :step-result {:status :success :some-value 42 :out "hello world"} }] (slurp-chan step-results-channel))))))
+            {:build-number 5 :step-id [0 0] :step-result {:status :success :some-value 42 :out "hello world"} }] (slurp-chan step-results-channel)))))
+  (testing "that a running step can be killed"
+    (let [is-killed (atom false)
+          ctx (some-ctx-with :step-id [3 2 1]
+                             :build-number 3
+                             :is-killed is-killed)
+          future-step-result (start-waiting-for (execute-step {} [ctx some-step-waiting-to-be-killed]))]
+      (Thread/sleep 100) ; make sure the step is running
+      (kill-step ctx 3 [3 2 1])
+      (is (map-containing {:status :killed} (get-or-timeout future-step-result))))))
 
 (deftest context-for-steps-test
   (testing "that we can generate proper contexts for steps and keep other context info as it is"

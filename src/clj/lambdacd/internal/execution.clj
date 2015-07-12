@@ -6,7 +6,8 @@
             [lambdacd.internal.step-id :as step-id]
             [lambdacd.internal.step-results :as step-results]
             [lambdacd.steps.status :as status]
-            [clojure.repl :as repl])
+            [clojure.repl :as repl]
+            [lambdacd.event-bus :as event-bus])
   (:import (java.io StringWriter)))
 
 (defn- step-output [step-id step-result]
@@ -59,17 +60,38 @@
       (assoc old-result :retrigger-mock-for-build-number build-number-to-resuse))
     result))
 
+(defn kill-step-handling [ctx]
+  (let [is-killed     (:is-killed ctx)
+        step-id       (:step-id ctx)
+        build-number  (:build-number ctx)
+        subscription  (event-bus/subscribe ctx :kill-step)
+        kill-payloads (event-bus/only-payload subscription)]
+    (async/go-loop []
+      (if-let [kill-payload (async/<! kill-payloads)]
+        (do
+          (if (and
+                (= step-id (:step-id kill-payload))
+                (= build-number (:build-number kill-payload)))
+            (reset! is-killed true)
+            (recur)))))
+    subscription))
+
+(defn clean-up-kill-handling [ctx subscription]
+  (event-bus/unsubscribe ctx :kill-step subscription))
+
 (defn execute-step [args [ctx step]]
  (let [_ (step-results/send-step-result ctx {:status :running})
        step-id (:step-id ctx)
        result-ch (async/chan)
        ctx-with-result-ch (assoc ctx :result-channel result-ch)
        processed-async-result-ch (process-channel-result-async result-ch ctx)
+       kill-subscription (kill-step-handling ctx)
        immediate-step-result (execute-or-catch step args ctx-with-result-ch)
        step-result-or-history (reuse-from-history-if-required ctx immediate-step-result)
        processed-async-result (async/<!! processed-async-result-ch)
        complete-step-result (merge processed-async-result step-result-or-history)]
    (log/debug (str "executed step " step-id complete-step-result))
+   (clean-up-kill-handling ctx kill-subscription)
    (step-results/send-step-result ctx complete-step-result)
    (step-output step-id complete-step-result)))
 
@@ -222,3 +244,7 @@
     (async/thread
       (retrigger pipeline context build-number step-id-to-run next-build-number ))
     next-build-number))
+
+(defn kill-step [ctx build-number step-id]
+  (event-bus/publish ctx :kill-step {:step-id      step-id
+                                     :build-number build-number}))

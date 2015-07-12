@@ -23,14 +23,21 @@
         build-state (get pipeline-state build-number-as-int)]
     (util/json (unified/unified-presentation pipeline-def build-state))))
 
+(defn- to-internal-step-id [dash-seperated-step-id]
+  (map util/parse-int (string/split dash-seperated-step-id #"-")))
+
 (defn- rest-api [{pipeline-def :pipeline-def pipeline-state :state ctx :context}]
   (ring-json/wrap-json-params
     (routes
       (GET "/builds/" [] (util/json (state-presentation/history-for @pipeline-state)))
       (GET "/builds/:buildnumber/" [buildnumber] (build-infos pipeline-def @pipeline-state buildnumber))
       (POST "/builds/:buildnumber/:step-id/retrigger" [buildnumber step-id]
-            (let [new-buildnumber (core/retrigger pipeline-def ctx (util/parse-int buildnumber) (map util/parse-int (string/split step-id #"-")))]
+            (let [new-buildnumber (core/retrigger pipeline-def ctx (util/parse-int buildnumber) (to-internal-step-id step-id))]
               (util/json {:build-number new-buildnumber})))
+      (POST "/builds/:buildnumber/:step-id/kill" [buildnumber step-id]
+            (do
+              (core/kill-step ctx (util/parse-int buildnumber) (to-internal-step-id step-id))
+              "OK"))
       (POST "/dynamic/:id" {{id :id } :params data :json-params} (do
                                                                        (manualtrigger/post-id ctx id (w/keywordize-keys data))
                                                                        (util/json {:status :success}))))))

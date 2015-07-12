@@ -17,6 +17,7 @@
                 "success" "fa fa-check"
                 "running" "fa fa-cog fa-spin"
                 "waiting" "fa fa-pause"
+                "killed"  "fa fa-bug"
                 "fa fa-question")]
     [:div {:class "history-item-status-icon" } [:i {:class class}]]))
 

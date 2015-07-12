@@ -94,3 +94,16 @@
 (defn buffered [ch]
   (let [result-ch (async/chan 100)]
     (async/pipe ch result-ch)))
+
+
+(defmacro start-waiting-for [body]
+  `(async/go
+     ~body))
+
+(defn start-waiting-for-result [key result-channel]
+  (async/go-loop []
+    (let [result (async/<! result-channel)
+          actual-key (first result)]
+      (if (= key actual-key)
+        (second result)
+        (recur)))))

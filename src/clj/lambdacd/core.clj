@@ -20,6 +20,9 @@
 (defn retrigger [pipeline context build-number step-id-to-retrigger]
   (execution/retrigger-async pipeline context build-number step-id-to-retrigger))
 
+(defn kill-step [ctx build-number step-id]
+  (execution/kill-step ctx build-number step-id))
+
 (defn execute-steps [steps args ctx & opts]
   (apply execution/execute-steps steps args ctx opts))
 

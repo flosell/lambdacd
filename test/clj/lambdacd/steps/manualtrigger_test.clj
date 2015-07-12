@@ -5,18 +5,6 @@
             [lambdacd.testsupport.test-util :refer :all]
             [lambdacd.testsupport.data :refer :all]))
 
-(defmacro start-waiting-for [body]
-  `(async/go
-    ~body))
-
-(defn- start-waiting-for-result [key result-channel]
-  (async/go-loop []
-    (let [result (async/<! result-channel)
-          actual-key (first result)]
-      (if (= key actual-key)
-        (second result)
-        (recur)))))
-
 (deftest manualtrigger-test
   (testing "that the trigger is released after it was notified by something"
     (let [result-channel (async/chan 100)
