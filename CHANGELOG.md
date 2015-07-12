@@ -10,6 +10,7 @@ The official release will have a defined and more stable API. If you are already
 * Improvements:
   * Increased time between git-polls in `git/wait-for-git` and `git/wait-for-details` to 10 seconds and
     made that value configurable with an optional parameter `:ms-between-polls`, e.g.
+
     ```clojure
     (git/wait-with-details ctx some-repo-uri "master" :ms-between-polls 60000)
     ```
