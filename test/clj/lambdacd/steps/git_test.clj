@@ -2,6 +2,7 @@
   (:import (java.io File))
   (:require [clojure.test :refer :all]
             [lambdacd.testsupport.matchers :refer :all]
+            [lambdacd.testsupport.test-util :refer :all]
             [lambdacd.steps.git :refer :all]
             [clojure.core.async :as async]
             [clojure.string :as string]
@@ -48,10 +49,7 @@
   (str "file://" git-src-dir))
 
 (defn get-value-or-timeout-from [c]
-  (async/go
-    (async/<! (async/timeout 60000))
-    (async/>! c {:status :timeout :current-revision "timeout"}))
-  (async/<!! c))
+  (get-or-timeout c :timeout 60000))
 
 (defn- some-context-with [last-seen-revision result-channel is-killed]
  (some-ctx-with

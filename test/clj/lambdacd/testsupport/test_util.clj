@@ -84,3 +84,13 @@
   (-> m
       (without-key :most-recent-update-at)
       (without-key :first-updated-at)))
+
+(defn get-or-timeout [c & {:keys [timeout]
+                           :or   {timeout 10000}}]
+  (async/alt!!
+    c ([result] result)
+    (async/timeout timeout) {:status :timeout}))
+
+(defn buffered [ch]
+  (let [result-ch (async/chan 100)]
+    (async/pipe ch result-ch)))

@@ -32,7 +32,7 @@
             (let [new-buildnumber (core/retrigger pipeline-def ctx (util/parse-int buildnumber) (map util/parse-int (string/split step-id #"-")))]
               (util/json {:build-number new-buildnumber})))
       (POST "/dynamic/:id" {{id :id } :params data :json-params} (do
-                                                                       (manualtrigger/post-id id (w/keywordize-keys data))
+                                                                       (manualtrigger/post-id ctx id (w/keywordize-keys data))
                                                                        (util/json {:status :success}))))))
 (defn- ui []
   (routes

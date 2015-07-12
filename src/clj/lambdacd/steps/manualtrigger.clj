@@ -1,27 +1,29 @@
 (ns lambdacd.steps.manualtrigger
   (:require [clojure.core.async :as async]
             [clojure.tools.logging :as log]
+            [lambdacd.event-bus :as event-bus]
             [lambdacd.steps.support :as support])
   (:import (java.util UUID)))
 
-(def ids-posted-to (atom {}))
-
-(defn post-id [id trigger-parameters]
+(defn post-id [ctx id trigger-parameters]
   (log/info "received parameterized trigger with id " id " with data " trigger-parameters)
-  (swap! ids-posted-to #(assoc %1 id trigger-parameters)))
-
-(defn- was-posted? [id]
-  (get @ids-posted-to id))
+  (event-bus/publish ctx :manual-trigger-received {:trigger-id id
+                                                   :trigger-parameters trigger-parameters}))
 
 (defn- wait-for-trigger [id ctx]
   (async/>!! (:result-channel ctx) [:out (str "Waiting for trigger..." )])
-  (loop []
-    (let [trigger-parameters (was-posted? id)]
-      (support/if-not-killed ctx
-        (if trigger-parameters
-          (assoc trigger-parameters :status :success)
-          (do (Thread/sleep 1000)
-              (recur)))))))
+  (let [subscription   (event-bus/subscribe ctx :manual-trigger-received)
+        trigger-events (event-bus/only-payload subscription)
+        wait-result (loop []
+                      (let [[result _] (async/alts!! [trigger-events
+                                               (async/timeout 1000)] :priority true)]
+                        (support/if-not-killed ctx
+                                               (if (and result (= id (:trigger-id result)))
+                                                 (assoc (:trigger-parameters result) :status :success)
+                                                 (do
+                                                   (recur))))))]
+    (event-bus/unsubscribe ctx :manual-trigger-received subscription)
+    wait-result))
 
 (defn wait-for-manual-trigger
   "build step that waits for someone to trigger the build by POSTing to the url indicated by a random trigger id.
