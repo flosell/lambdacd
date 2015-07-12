@@ -6,8 +6,7 @@ However, as this is still an experimental library, breaking changes may occur wi
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
 ## 0.4.2
-* New Clojure version
-  * LambdaCD now needs Clojure 1.7.0
+
 * Improvements:
   * Increased time between git-polls in `git/wait-for-git` and `git/wait-for-details` to 10 seconds and
     made that value configurable with an optional parameter `:ms-between-polls`, e.g.
@@ -15,10 +14,6 @@ The official release will have a defined and more stable API. If you are already
     (git/wait-with-details ctx some-repo-uri "master" :ms-between-polls 60000)
     ```
   * Added a feature to kill running steps (#31) on user request
-* API changes:
-  * function `update` in protocol `PipelineStateComponent` renamed to `update-step-result` to not conflict with
-    `clojure.core/update` introduced in Clojure 1.7
-
 ## 0.4.1
 * Improvements:
   * Added `junction` control flow step that adds a way to model if-then-else logic in a pipeline (#28,#32)

@@ -63,7 +63,7 @@
 
 (defrecord DefaultPipelineState [state-atom home-dir]
   pipeline-state-protocol/PipelineStateComponent
-  (update-step-result [self build-number step-id step-result]
+  (update [self build-number step-id step-result]
     (update-legacy build-number step-id step-result home-dir state-atom))
   (get-all [self]
     @state-atom)
@@ -78,7 +78,7 @@
       (let [step-result (:step-result step-result-update)
             build-number (:build-number step-result-update)
             step-id (:step-id step-result-update)]
-        (pipeline-state-protocol/update-step-result instance build-number step-id step-result)
+        (pipeline-state-protocol/update instance build-number step-id step-result)
         (recur)))))
 
 (defn new-default-pipeline-state [state-atom config step-results-channel]
