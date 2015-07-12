@@ -13,7 +13,7 @@ The official release will have a defined and more stable API. If you are already
     ```clojure
     (git/wait-with-details ctx some-repo-uri "master" :ms-between-polls 60000)
     ```
-  * Added a feature to kill running steps (#31) on user request
+  * Added a feature to kill running steps on user request (#31)
 ## 0.4.1
 * Improvements:
   * Added `junction` control flow step that adds a way to model if-then-else logic in a pipeline (#28,#32)
