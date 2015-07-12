@@ -14,8 +14,8 @@
                       [:a {:class "step-link" :href (route/for-build-and-step-id build-number step-id)}
                         [:span {:class "build-step"} name]]] children))
 
-(defn container-build-step-component [{children :children :as build-step } ul-or-ol retrigger-elem build-number]
-  (step-component-with build-step build-number [retrigger-elem
+(defn container-build-step-component [{children :children :as build-step } ul-or-ol retrigger-elem kill-elem build-number]
+  (step-component-with build-step build-number [retrigger-elem kill-elem
                                                [ul-or-ol (map #(build-step-component % build-number) children)]]))
 
 (defn ask-for [parameters]
@@ -67,10 +67,11 @@
       [:i {:class "fa fa-play trigger" :on-click (click-handler #(manual-trigger result))}])))
 
 (defn build-step-component [build-step build-number]
-  (let [retrigger-elem (retrigger-component build-number build-step)]
+  (let [retrigger-elem (retrigger-component build-number build-step)
+        kill-elem      (kill-component build-number build-step)]
     (case (:type build-step)
-      "parallel"  (container-build-step-component build-step :ul retrigger-elem build-number)
-      "container" (container-build-step-component build-step :ol retrigger-elem build-number)
+      "parallel"  (container-build-step-component build-step :ul retrigger-elem kill-elem build-number)
+      "container" (container-build-step-component build-step :ol retrigger-elem kill-elem build-number)
       (step-component-with build-step build-number
                            [(manualtrigger-component build-step)
                             retrigger-elem

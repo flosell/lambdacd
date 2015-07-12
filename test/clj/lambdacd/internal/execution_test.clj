@@ -78,8 +78,16 @@
     {:status :success}))
 
 (defn some-step-waiting-to-be-killed [_ ctx]
-  (loop []
-    (step-support/if-not-killed ctx (recur))))
+  (loop [counter 0]
+    (step-support/if-not-killed ctx
+                                (if (< counter 100) ;; make sure the step always eventually finishes
+                                  (do
+                                    (Thread/sleep 100)
+                                    (recur (inc counter)))
+                                  {:status :waited-too-long}))))
+
+(defn some-step-flipping-the-kill-switch [_ {is-killed :is-killed}]
+  (reset! is-killed true))
 
 (with-private-fns [lambdacd.internal.execution [merge-two-step-results]]
   (deftest step-result-merge-test
@@ -158,7 +166,12 @@
           future-step-result (start-waiting-for (execute-step {} [ctx some-step-waiting-to-be-killed]))]
       (Thread/sleep 100) ; make sure the step is running
       (kill-step ctx 3 [3 2 1])
-      (is (map-containing {:status :killed} (get-or-timeout future-step-result))))))
+      (is (map-containing {:status :killed} (get-or-timeout future-step-result)))))
+  (testing "that a step using the kill-switch does not bubble up to the parents passing in the kill-switch"
+    (let [is-killed (atom false)
+          ctx (some-ctx-with :is-killed is-killed)]
+      (execute-step {} [ctx some-step-flipping-the-kill-switch])
+      (is (= false @is-killed)))))
 
 (deftest context-for-steps-test
   (testing "that we can generate proper contexts for steps and keep other context info as it is"

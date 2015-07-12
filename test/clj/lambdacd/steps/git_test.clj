@@ -10,7 +10,8 @@
             [lambdacd.testsupport.reporter]
             [lambdacd.util :as utils]
             [lambdacd.testsupport.data :refer [some-ctx some-ctx-with]]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [lambdacd.steps.support :as step-support]))
 
 (defn- git-commits [cwd]
   (reverse (string/split-lines (:out (util/bash cwd "git log --pretty=format:%H")))))
@@ -149,6 +150,15 @@
 (defn some-step-that-returns-a-global-value [& _]
   {:status :success :global {:some :value}})
 
+(defn some-step-waiting-to-be-killed [_ ctx]
+  (loop [counter 0]
+    (step-support/if-not-killed ctx
+                                (if (< counter 100) ;; make sure the step always eventually finishes
+                                  (do
+                                    (Thread/sleep 100)
+                                    (recur (inc counter)))
+                                  {:status :waited-too-long}))))
+
 (deftest checkout-and-execute-test
   (let [some-parent-folder (util/create-temp-dir)
         create-output (create-test-repo)
@@ -161,10 +171,20 @@
     (testing "that global values can be returned from any step and will be part of the final result"
       (is (map-containing {:global {:some :value}} (checkout-and-execute repo-uri "HEAD" args (some-ctx) [some-step-that-returns-a-global-value some-step-that-returns-42]))))
     (testing "that the git repo is checked out somewhere within the home folder"
-      (is (= some-parent-folder (.getParent (.getParentFile (io/file (:thecwd (checkout-and-execute repo-uri "HEAD" args ctx [some-step-that-returns-the-cwd]))))))))))
+      (is (= some-parent-folder (.getParent (.getParentFile (io/file (:thecwd (checkout-and-execute repo-uri "HEAD" args ctx [some-step-that-returns-the-cwd]))))))))
+    (testing "that the children can be killed"
+      (let [is-killed (atom false)
+            ctx (some-ctx-with :config {:home-dir some-parent-folder}
+                               :step-id [0]
+                               :is-killed is-killed)
+            future-result (start-waiting-for (checkout-and-execute repo-uri "HEAD" args ctx [some-step-waiting-to-be-killed]))]
+      (Thread/sleep 200) ; wait for git checkout
+      (reset! is-killed true)
+      (is (map-containing {:status :killed
+                           :outputs {[1 0] {:status :killed}}} (get-or-timeout future-result)))))))
 
 
-(deftest with-commit-details-test
+  (deftest with-commit-details-test
   (testing "that we can get the details between two commits and whatever we put in"
     (let [test-repo (create-test-repo)
           old-revision (last (:commits test-repo))

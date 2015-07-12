@@ -12,26 +12,30 @@
         merged-step-results (support/merge-step-results outputs)]
     (merge merged-step-results result {:global globals})))
 
-(defn- wait-for-success-on [channels]
+(defn- is-finished [{status :status}]
+  (or
+    (= :success status)
+    (= :killed status)))
+
+(defn- wait-for-finished-on [channels]
   (let [merged (async/merge channels)
-        filtered-by-success (async/filter< #(= :success (:status %)) merged)]
+        filtered-by-success (async/filter< is-finished merged)]
     (async/<!! filtered-by-success)))
 
 (defn- step-producer-returning-with-first-successful [args steps-and-ids]
   (let [step-result-channels (map #(async/go (core/execute-step args %)) steps-and-ids)
-        result (wait-for-success-on step-result-channels)]
+        result (wait-for-finished-on step-result-channels)]
     (if (nil? result)
       [{:status :failure}]
       [result])))
 
 (defn ^{:display-type :parallel} either [& steps]
   (fn [args ctx]
-    (let [kill-switch (atom false)
+    (let [parent-kill-switch (:is-killed ctx)
           execute-output (core/execute-steps steps args ctx
-                                                     :is-killed kill-switch
+                                                     :is-killed parent-kill-switch
                                                      :step-result-producer step-producer-returning-with-first-successful
                                                      :unify-status-fn status/successful-when-one-successful)]
-      (reset! kill-switch true)
       (if (= :success (:status execute-output))
         (first (vals (:outputs execute-output)))
         execute-output))))
@@ -42,7 +46,8 @@
 (defn- execute-steps-in-parallel [steps args ctx]
   (core/execute-steps steps args ctx
                       :step-result-producer parallel-step-result-producer
-                      :unify-status-fn status/successful-when-all-successful))
+                      :unify-status-fn status/successful-when-all-successful
+                      :is-killed (:is-killed ctx)))
 
 (defn ^{:display-type :parallel} in-parallel [& steps]
   (fn [args ctx]
@@ -60,7 +65,8 @@
   (fn [args ctx]
     (post-process-container-results
       (core/execute-steps steps args ctx
-                          :unify-status-fn status/successful-when-all-successful))))
+                          :unify-status-fn status/successful-when-all-successful
+                          :is-killed (:is-killed ctx)))))
 
 (defn- child-context [ctx child-number]
   (assoc ctx :step-id (step-id/child-id (:step-id ctx) child-number)))

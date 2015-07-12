@@ -5,7 +5,8 @@
             [lambdacd.testsupport.matchers :refer [map-containing]]
             [lambdacd.testsupport.data :refer [some-ctx-with some-ctx]]
             [lambdacd.steps.control-flow :refer :all]
-            [clojure.core.async :as async]))
+            [clojure.core.async :as async]
+            [lambdacd.steps.support :as step-support]))
 
 (defn some-step [arg & _]
   {:foo :baz :status :undefined})
@@ -60,6 +61,15 @@
 (defn some-step-that-returns-bar [args ctx]
   {:status :success :message :bar})
 
+(defn some-step-waiting-to-be-killed [_ ctx]
+  (loop [counter 0]
+    (step-support/if-not-killed ctx
+                                (if (< counter 100) ;; make sure the step always eventually finishes
+                                  (do
+                                    (Thread/sleep 100)
+                                    (recur (inc counter)))
+                                  {:status :waited-too-long}))))
+
 (deftest in-parallel-test
   (testing "that it collects all the outputs together correctly"
     (is (map-containing {:outputs { [1 0 0] {:foo :baz :status :undefined} [2 0 0] {:foo :baz :status :undefined}} :status :undefined} ((in-parallel some-step some-step) {} (some-ctx-with :step-id [0 0])))))
@@ -77,7 +87,14 @@
       ((in-parallel some-step-sending-waiting-on-channel some-step-sending-running-then-waiting-then-finished-on-channel) {} ctx)
       (is (= [[:status :running]
               [:status :waiting]
-              [:status :success]] (slurp-chan result-ch))))))
+              [:status :success]] (slurp-chan result-ch)))))
+  (testing "that it kills all children if it is killed"
+    (let [is-killed (atom true)
+          ctx       (some-ctx-with :is-killed is-killed
+                                   :step-id [0])]
+      (is (map-containing {:status :killed
+                           :outputs {[1 0] {:status :killed}
+                                     [2 0] {:status :killed}}} ((in-parallel some-step-waiting-to-be-killed some-step-waiting-to-be-killed) {} ctx))))))
 
 (deftest in-cwd-test
   (testing "that it collects all the outputs together correctly and passes cwd to steps"
@@ -96,7 +113,13 @@
                         ((run some-successful-step some-other-step) {} (some-ctx-with :step-id [0 0])))))
   (testing "that it stops after the first failure"
     (is (map-containing {:outputs { [1 0 0] {:status :success} [2 0 0] {:status :failure}} :status :failure}
-                        ((run some-successful-step some-failing-step some-other-step) {} (some-ctx-with :step-id [0 0]))))))
+                        ((run some-successful-step some-failing-step some-other-step) {} (some-ctx-with :step-id [0 0])))))
+  (testing "that it kills all children if it is killed"
+    (let [is-killed (atom true)
+          ctx       (some-ctx-with :is-killed is-killed
+                                   :step-id [0])]
+      (is (map-containing {:status :killed
+                           :outputs {[1 0] {:status :killed}}} ((run some-step-waiting-to-be-killed some-failing-step) {} ctx))))))
 
 (deftest either-test
   (testing "that it succeeds whenever one step finishes successfully"
@@ -115,7 +138,26 @@
       ((either some-step-sending-waiting-on-channel some-step-sending-running-then-waiting-then-finished-on-channel) {} ctx)
       (is (= [[:status :running]
               [:status :waiting]
-              [:status :success]] (slurp-chan result-ch))))))
+              [:status :success]] (slurp-chan result-ch)))))
+  (testing "that it kills all children if it was already killed in the beginning"
+    (let [is-killed (atom true)
+          ctx       (some-ctx-with :is-killed is-killed
+                                   :step-id [0])]
+      (is (map-containing {:status :killed} ((either some-step-waiting-to-be-killed some-step-waiting-to-be-killed) {} ctx)))))
+  (testing "that it kills all children if it being killed later"
+    (let [is-killed (atom false)
+          ctx       (some-ctx-with :is-killed is-killed
+                                   :step-id [0])
+          foo (start-waiting-for ((either some-step-waiting-to-be-killed some-step-waiting-to-be-killed) {} ctx))]
+      (Thread/sleep 200)
+      (reset! is-killed true)
+      (is (map-containing {:status :killed} (async/<!! foo)))))
+  (testing "that it doesn't kill it's parents after killing remaining children"
+    (let [is-killed (atom false)
+          ctx       (some-ctx-with :is-killed is-killed
+                                   :step-id [0])]
+      ((either some-successful-step some-step-waiting-to-be-killed) {} ctx)
+      (is (= false @is-killed)))))
 
 (deftest junction-test
   (testing "that it executes the success-step if the condition is a success"
@@ -123,4 +165,10 @@
                         ((junction some-successful-step some-step-that-returns-foo some-step-that-returns-bar) {} (some-ctx-with :step-id [0 0])))))
   (testing "that it executes the success-step if the condition is a success"
     (is (map-containing {:outputs {[3 0 0] {:status :success :message :bar}}}
-                        ((junction some-failing-step some-step-that-returns-foo some-step-that-returns-bar) {} (some-ctx-with :step-id [0 0]))))))
+                        ((junction some-failing-step some-step-that-returns-foo some-step-that-returns-bar) {} (some-ctx-with :step-id [0 0])))))
+  (testing "that it kills all children if it is killed"
+    (let [is-killed (atom true)
+          ctx       (some-ctx-with :is-killed is-killed
+                                   :step-id [0])]
+      (is (map-containing {:status :killed
+                           :outputs {[2 0] {:status :killed}}} ((junction some-successful-step some-step-waiting-to-be-killed some-step-waiting-to-be-killed) {} ctx))))))

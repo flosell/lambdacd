@@ -8,7 +8,8 @@
             [lambdacd.steps.status :as status]
             [clojure.repl :as repl]
             [lambdacd.event-bus :as event-bus])
-  (:import (java.io StringWriter)))
+  (:import (java.io StringWriter)
+           (java.util UUID)))
 
 (defn- step-output [step-id step-result]
   {:outputs { step-id step-result}
@@ -83,15 +84,22 @@
  (let [_ (step-results/send-step-result ctx {:status :running})
        step-id (:step-id ctx)
        result-ch (async/chan)
-       ctx-with-result-ch (assoc ctx :result-channel result-ch)
+       child-kill-switch (atom false)
+       parent-kill-switch (:is-killed ctx)
+       watch-key (UUID/randomUUID)
+       _ (add-watch parent-kill-switch watch-key (fn [key reference old new] (reset! child-kill-switch new)))
+       _ (reset! child-kill-switch @parent-kill-switch) ; make sure kill switch has the parents state in the beginning and is updated through the watch
+       ctx-for-child (assoc ctx :result-channel result-ch
+                                :is-killed child-kill-switch)
        processed-async-result-ch (process-channel-result-async result-ch ctx)
-       kill-subscription (kill-step-handling ctx)
-       immediate-step-result (execute-or-catch step args ctx-with-result-ch)
+       kill-subscription (kill-step-handling ctx-for-child)
+       immediate-step-result (execute-or-catch step args ctx-for-child)
        step-result-or-history (reuse-from-history-if-required ctx immediate-step-result)
        processed-async-result (async/<!! processed-async-result-ch)
        complete-step-result (merge processed-async-result step-result-or-history)]
    (log/debug (str "executed step " step-id complete-step-result))
-   (clean-up-kill-handling ctx kill-subscription)
+   (clean-up-kill-handling ctx-for-child kill-subscription)
+   (remove-watch parent-kill-switch watch-key)
    (step-results/send-step-result ctx complete-step-result)
    (step-output step-id complete-step-result)))
 

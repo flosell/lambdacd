@@ -11,6 +11,7 @@
     (let [ctx (initialize-event-bus (some-ctx))]
       (publish ctx :test-messages {:message-number 1})
       (let [subscription (subscribe ctx :test-messages)]
+        (Thread/sleep 200) ; make sure really subscribed
         (publish ctx :test-messages {:message-number 2})
         (publish ctx :other-topic {:other-message "hello"})
         (unsubscribe ctx :test-messages subscription)
