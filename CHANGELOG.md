@@ -16,8 +16,8 @@ The official release will have a defined and more stable API. If you are already
     ```
   * Added a feature to kill running steps (#31) on user request
 * API changes:
-* function `update` in protocol `PipelineStateComponent` renamed to `update-step-result` to not conflict with
-  `clojure.core/update` introduced in Clojure 1.7
+  * function `update` in protocol `PipelineStateComponent` renamed to `update-step-result` to not conflict with
+    `clojure.core/update` introduced in Clojure 1.7
 
 ## 0.4.1
 * Improvements:
