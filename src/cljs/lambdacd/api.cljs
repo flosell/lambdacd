@@ -11,6 +11,8 @@
   (let [result (ajax/GET (str "api/builds/" build-number "/"))]
     result))
 
+(defn- nop [response])
+
 (defn- confirm-triggered [response]
   (js/alert "triggered"))
 
@@ -24,3 +26,6 @@
 
 (defn retrigger [build-number step-id]
   (ajax/POST (str "api/builds/" build-number "/" step-id "/retrigger") {} after-retriggered))
+
+(defn kill [build-number step-id]
+  (ajax/POST (str "api/builds/" build-number "/" step-id "/kill") {} nop))

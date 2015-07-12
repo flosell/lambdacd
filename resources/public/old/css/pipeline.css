@@ -67,7 +67,7 @@ li[data-status=waiting] {
   background:lightyellow;
 }
 
-.trigger,.retrigger {
+.trigger, .retrigger, .kill {
   margin-left:5px;
   cursor:pointer;
 }

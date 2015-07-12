@@ -32,15 +32,33 @@
         is-finished (or (= "success" status) (= "failure" status) (= "killed" status))]
     is-finished))
 
+(defn- is-waiting [step]
+  (let [status (:status (:result step))]
+    (= "waiting" status)))
+
+(defn- has-status [step]
+  (let [status (:status (:result step))]
+    (not (nil? status))))
+
 (defn can-be-retriggered? [step]
   (is-finished step))
 
-(defn retrigger [build-number build-step]
-  (api/retrigger build-number (string/join "-" (:step-id build-step))))
+(defn- step-id-for [build-step]
+  (string/join "-" (:step-id build-step)))
 
 (defn retrigger-component [build-number build-step]
   (if (can-be-retriggered? build-step)
-    [:i {:class "fa fa-repeat retrigger" :on-click (click-handler #(retrigger build-number build-step))}]))
+    [:i {:class "fa fa-repeat retrigger" :on-click (click-handler #(api/retrigger build-number (step-id-for build-step)))}]))
+
+(defn- can-be-killed? [step]
+  (and
+    (has-status step)
+    (not (is-finished step))
+    (not (is-waiting step))))
+
+(defn kill-component [build-number build-step]
+  (if (can-be-killed? build-step)
+    [:i {:class "fa fa-times kill" :on-click (click-handler #(api/kill build-number (step-id-for build-step)))}]))
 
 (defn manualtrigger-component [build-step]
   (let [result (:result build-step)
@@ -55,7 +73,8 @@
       "container" (container-build-step-component build-step :ol retrigger-elem build-number)
       (step-component-with build-step build-number
                            [(manualtrigger-component build-step)
-                            retrigger-elem] ))))
+                            retrigger-elem
+                            (kill-component build-number build-step)] ))))
 
 
 (defn pipeline-component [build-number build-state-atom]
