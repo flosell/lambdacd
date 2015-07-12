@@ -14,6 +14,7 @@ The official release will have a defined and more stable API. If you are already
     ```clojure
     (git/wait-with-details ctx some-repo-uri "master" :ms-between-polls 60000)
     ```
+  * Added a feature to kill running steps (#31) on user request
 * API changes:
 * function `update` in protocol `PipelineStateComponent` renamed to `update-step-result` to not conflict with
   `clojure.core/update` introduced in Clojure 1.7
