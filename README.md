@@ -18,7 +18,7 @@ And if you notice something, please open bug reports, feature requests or just g
 ## Usage
 
 * `lein new lambdacd <NAME>` will create a new pipeline-project
-* `lein ring server` from the project folder starts the server and opens the the UI for your pipeline
+* `lein run` from the project folder starts the server and opens the the UI for your pipeline
 * your pipeline is defined in `src/<NAME>/`. Have a look around, change some steps or add some steps on your own.
 
 
