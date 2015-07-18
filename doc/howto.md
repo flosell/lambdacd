@@ -86,5 +86,26 @@ As LambdaCD pipelines are little more than nested lists, you can easily inline o
      common-tests))
 ```
 
+## How do I implement authentication and authorization?
 
+The usual way to interact with a pipeline (apart from committing to a repository the pipeline watches) is through the
+web interface so if you want to prevent unauthorized users from triggering actions on your build or from even viewing it,
+you must restrict access to the underlying HTTP endpoints.
 
+Since the the `lambdacd.ui-server/ui-for` function returns a normal ring handler, any ring-middleware can be wrapped
+around it.
+
+For example, to implement simple HTTP Basic Auth password protection, you can use [ring-basic-authentication]([https://github.com/remvee/ring-basic-authentication):
+```clojure
+(defn authenticated? [name pass]
+  (and (= name "some-user")
+       (= pass "some-pass")))
+
+(defn -main [& args]
+  (let [;; ...
+        ring-handler (ui/ui-for pipeline)]
+    (ring-server/serve (wrap-basic-authentication ring-handler authenticated?))))
+```
+
+For more advanced security, use [friend](https://github.com/cemerick/friend), [clj-ldap](https://github.com/pauldorman/clj-ldap)
+or any other clojure library that works as a ring middleware.
