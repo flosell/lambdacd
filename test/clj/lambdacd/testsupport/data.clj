@@ -1,7 +1,8 @@
 (ns lambdacd.testsupport.data
   (:require [lambdacd.util :as utils]
             [lambdacd.event-bus :as event-bus]
-            [clojure.core.async :as async]))
+            [clojure.core.async :as async]
+            [lambdacd.internal.default-pipeline-state :as default-pipeline-state]))
 
 
 (defn- some-ctx-template []
@@ -21,9 +22,9 @@
 (defn- add-pipeline-state-component [template]
   (if (nil? (:pipeline-state-component template))
     (assoc template :pipeline-state-component
-                    (lambdacd.internal.default-pipeline-state/new-default-pipeline-state (atom (:initial-pipeline-state template))
-                                                                                         (:config template)
-                                                                                         (:step-results-channel template)))
+                    (default-pipeline-state/new-default-pipeline-state (atom (:initial-pipeline-state template))
+                                                                       (:config template)
+                                                                       template))
     template))
 
 (defn some-ctx []

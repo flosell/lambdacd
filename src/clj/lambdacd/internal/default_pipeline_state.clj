@@ -4,7 +4,8 @@
   (:require [lambdacd.internal.default-pipeline-state-persistence :as persistence]
             [clj-time.core :as t]
             [clojure.core.async :as async]
-            [lambdacd.internal.pipeline-state :as pipeline-state-protocol]))
+            [lambdacd.internal.pipeline-state :as pipeline-state-protocol]
+            [lambdacd.event-bus :as event-bus]))
 
 (def clean-pipeline-state {})
 
@@ -54,17 +55,23 @@
   (next-build-number [self]
     (next-build-number-legacy state-atom)))
 
-(defn start-pipeline-state-updater [instance step-results-channel] ; TODO: only public for test-purposes
-  (async/go-loop []
-    (if-let [step-result-update (async/<! step-results-channel)]
-      (let [step-result (:step-result step-result-update)
-            build-number (:build-number step-result-update)
-            step-id (:step-id step-result-update)]
-        (pipeline-state-protocol/update instance build-number step-id step-result)
-        (recur)))))
+(defn thebuffered [ch]
+  (let [result-ch (async/chan 100)]
+    (async/pipe ch result-ch)))
 
-(defn new-default-pipeline-state [state-atom config step-results-channel]
+(defn- start-pipeline-state-updater [instance ctx] ; TODO could be generalized for others to use
+  (let [subscription (event-bus/subscribe ctx :step-result-updated)
+        step-updates-channel (thebuffered (event-bus/only-payload subscription))]
+    (async/go-loop []
+      (if-let [step-result-update (async/<! step-updates-channel)]
+        (let [step-result (:step-result step-result-update)
+              build-number (:build-number step-result-update)
+              step-id (:step-id step-result-update)]
+          (pipeline-state-protocol/update instance build-number step-id step-result)
+          (recur))))))
+
+(defn new-default-pipeline-state [state-atom config ctx]
   (let [home-dir (:home-dir config)
         instance (->DefaultPipelineState state-atom home-dir)]
-    (start-pipeline-state-updater instance step-results-channel)
+    (start-pipeline-state-updater instance ctx)
     instance))

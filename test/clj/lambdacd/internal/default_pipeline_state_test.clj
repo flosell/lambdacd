@@ -7,10 +7,11 @@
             [clojure.data.json :as json]
             [clj-time.core :as t]
             [lambdacd.testsupport.test-util :as tu]
-            [lambdacd.testsupport.data :refer [some-ctx-with]]
+            [lambdacd.testsupport.data :refer [some-ctx-with some-ctx]]
             [clojure.java.io :as io]
             [clojure.core.async :as async]
-            [lambdacd.util :as util]))
+            [lambdacd.util :as util]
+            [lambdacd.event-bus :as event-bus]))
 
 (defn- after-update [build id newstate]
   (let [state (atom clean-pipeline-state)]
@@ -46,15 +47,15 @@
                               "first-updated-at" "1970-01-01T00:00:00.000Z"}}] (json/read-str (slurp (str home-dir "/build-10/pipeline-state.json"))))))))
 
 (deftest initialize-pipeline-persistence-test
-  (testing "that we tap into a pipelines step-results-channel and update the pipeline state with its information"
-    (let [step-results-channel (async/chan 10)
-          pipeline-state (new-default-pipeline-state (atom {}) {:home-dir (util/create-temp-dir)} step-results-channel)]
-      (async/>!! step-results-channel {:build-number 1 :step-id [1 2] :step-result {:status :running}})
-      (async/>!! step-results-channel {:build-number 2 :step-id [1 2] :step-result {:status :success}})
-      (async/>!! step-results-channel {:build-number 1 :step-id [1 2] :step-result {:status :running :foo :bar}})
+  (testing "that we tap into the event bus update the pipeline state with its information"
+    (let [ctx (some-ctx)
+          pipeline-state (new-default-pipeline-state (atom {}) {:home-dir (util/create-temp-dir)} ctx)]
 
-      (async/close! step-results-channel)
-      (async/<!! (start-pipeline-state-updater pipeline-state step-results-channel))
+      (event-bus/publish ctx :step-result-updated {:build-number 1 :step-id [1 2] :step-result {:status :running}})
+      (event-bus/publish ctx :step-result-updated {:build-number 2 :step-id [1 2] :step-result {:status :success}})
+      (event-bus/publish ctx :step-result-updated {:build-number 1 :step-id [1 2] :step-result {:status :running :foo :bar}})
+
+      (Thread/sleep 200) ;; make sure all events received TODO: improve
       (is (= {1 { [1 2] {:status :running :foo :bar}}
               2 { [1 2] {:status :success}}} (tu/without-ts (pipeline-state/get-all pipeline-state)))))))
 

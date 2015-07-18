@@ -5,15 +5,20 @@
             [lambdacd.event-bus :as event-bus]
             [clojure.core.async :as async]))
 
+(defn- initialize-default-pipeline-state [ctx]
+  (let [config (:config ctx)
+        state (atom (default-pipeline-state/initial-pipeline-state config))
+        pipeline-state-component (default-pipeline-state/new-default-pipeline-state state config ctx)]
+    (assoc ctx :pipeline-state-component pipeline-state-component
+               :_state state)))
+
 (defn assemble-pipeline [pipeline-def config]
-  (let [state (atom (default-pipeline-state/initial-pipeline-state config))
-        step-results-channel (async/chan)
-        pipeline-state-component (default-pipeline-state/new-default-pipeline-state state config step-results-channel)
+  (let [step-results-channel (async/chan (async/dropping-buffer 100))
         context (-> {:config                   config
-                     :step-results-channel     step-results-channel
-                     :pipeline-state-component pipeline-state-component}
-                    (event-bus/initialize-event-bus))]
-    {:state        state
+                     :step-results-channel     step-results-channel}
+                    (event-bus/initialize-event-bus)
+                    (initialize-default-pipeline-state))]
+    {:state        (:_state context) ;; FIXME: this is only temporary, nothing should access the state directly but the ui does
      :context      context
      :pipeline-def pipeline-def}))
 

@@ -269,9 +269,7 @@
                                    [1 1] {:status :success :out "I am nested"}
                                    [2] { :status :failure }}}
           pipeline `((some-control-flow some-step) some-successful-step)
-          step-results-channel (async/chan)
-          context (some-ctx-with :initial-pipeline-state initial-state
-                                 :step-results-channel step-results-channel)]
+          context (some-ctx-with :initial-pipeline-state initial-state)]
       (retrigger pipeline context 0 [2] 1)
       (Thread/sleep 200)
       (is (= {0 {[1] { :status :success }
@@ -282,8 +280,7 @@
                  [2] { :status :success }}} (tu/without-ts (ps/get-all (:pipeline-state-component context)))))))
   (testing "that we can retrigger a pipeline from the initial step as well"
     (let [pipeline `(some-successful-step some-other-step some-failing-step)
-          step-results-channel (async/chan)
-          context (some-ctx-with :step-results-channel step-results-channel)]
+          context (some-ctx)]
       (retrigger pipeline context 0 [1] 1)
       (Thread/sleep 200)
       (is (= {1 {[1] { :status :success}
@@ -294,8 +291,7 @@
                              [1 1] {:status :success :out "I am nested"}
                              [2 1] {:status :unknown :out "this will be retriggered"}}}
           pipeline `((some-control-flow-thats-called some-step-that-fails-if-retriggered some-step-to-retrigger) some-successful-step)
-          step-results-channel (async/chan)
-          context (some-ctx-with :initial-pipeline-state initial-state :step-results-channel step-results-channel)]
+          context (some-ctx-with :initial-pipeline-state initial-state)]
       (retrigger pipeline context 0 [2 1] 1)
       (Thread/sleep 200)
       (is (= {0 {[1] { :status :success }
