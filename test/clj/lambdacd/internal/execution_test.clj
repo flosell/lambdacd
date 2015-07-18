@@ -10,7 +10,8 @@
             [lambdacd.testsupport.test-util :as tu]
             [lambdacd.internal.execution :as execution]
             [lambdacd.testsupport.noop-pipeline-state :as noop-pipeline-state]
-            [lambdacd.internal.pipeline-state :as ps])
+            [lambdacd.internal.pipeline-state :as ps]
+            [lambdacd.event-bus :as event-bus])
   (:import java.lang.IllegalStateException))
 
 (defn some-step-processing-input [arg & _]
@@ -158,6 +159,29 @@
             {:build-number 5 :step-id [0 0] :step-result {:status :running :out "hello world"} }
             {:build-number 5 :step-id [0 0] :step-result {:status :running :some-value 42 :out "hello world"} }
             {:build-number 5 :step-id [0 0] :step-result {:status :success :some-value 42 :out "hello world"} }] (slurp-chan step-results-channel)))))
+  (testing "that the accumulated step-result is sent over the event-bus"
+    (let [ctx (some-ctx-with :step-id [0 0]
+                             :build-number 5
+                             :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state))
+          step-results-channel (-> (event-bus/subscribe ctx :step-result-updated)
+                                   (event-bus/only-payload)
+                                   (buffered))]
+      (execute-step {} [ctx some-step-building-up-result-state-incrementally])
+    (is (= [{:build-number 5 :step-id [0 0] :step-result {:status :running } }
+            {:build-number 5 :step-id [0 0] :step-result {:status :running :out "hello"} }
+            {:build-number 5 :step-id [0 0] :step-result {:status :running :out "hello world"} }
+            {:build-number 5 :step-id [0 0] :step-result {:status :running :some-value 42 :out "hello world"} }
+            {:build-number 5 :step-id [0 0] :step-result {:status :success :some-value 42 :out "hello world"} }] (slurp-chan step-results-channel)))))
+  (testing "that the event bus is notified when a step finishes"
+    (let [ctx (some-ctx-with :build-number 3
+                             :step-id [1 2 3])
+          step-finished-events (-> (event-bus/subscribe ctx :step-finished)
+                                   (event-bus/only-payload)
+                                   (buffered))]
+      (execute-step {} [ctx some-other-step])
+      (is (= [{:build-number 3
+               :step-id [1 2 3]
+               :final-result {:status :success :foo :baz}}] (slurp-chan step-finished-events)))))
   (testing "that a running step can be killed"
     (let [is-killed (atom false)
           ctx (some-ctx-with :step-id [3 2 1]

@@ -101,6 +101,9 @@
    (clean-up-kill-handling ctx-for-child kill-subscription)
    (remove-watch parent-kill-switch watch-key)
    (step-results/send-step-result ctx complete-step-result)
+   (event-bus/publish ctx :step-finished {:step-id      step-id
+                                          :build-number (:build-number ctx)
+                                          :final-result complete-step-result})
    (step-output step-id complete-step-result)))
 
 (defn- merge-status [s1 s2]
