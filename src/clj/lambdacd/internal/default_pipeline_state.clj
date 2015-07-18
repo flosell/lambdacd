@@ -36,24 +36,6 @@
 (defn next-build-number-legacy [state]
   (inc (most-recent-build-number-in-state @state)))
 
-(defn- is-active? [step-result]
-  (let [status (:status step-result)]
-    (or (= status :running) (= status :waiting))))
-
-(defn- active-first-steps [state]
-  (let [first-steps (map #(get % [1]) (vals state))
-        active-first-steps (filter is-active? first-steps)]
-    active-first-steps))
-
-(defn- call-callback-when-no-first-step-is-active [callback key reference old new]
-  (let [active-first-steps-new (active-first-steps new)
-        active-first-steps-old (active-first-steps old)]
-    (if (and (empty? active-first-steps-new) (not (empty? active-first-steps-old)))
-      (callback))))
-
-(defn notify-when-no-first-step-is-active [{component :pipeline-state-component} callback]
-  (add-watch (pipeline-state-protocol/get-internal-state component) :notify-most-recent-build-running (partial call-callback-when-no-first-step-is-active callback)))
-
 (defn update-legacy
   [build-number step-id step-result home-dir state]
   (if (not (nil? state)) ; convenience for tests: if no state exists we just do nothing
@@ -82,8 +64,7 @@
         (recur)))))
 
 (defn new-default-pipeline-state [state-atom config step-results-channel]
-  (let [;state-atom (atom (initial-pipeline-state config)) ;; state-atom passed in at the moment until nothing relies directly on this atom any more
-        home-dir (:home-dir config)
+  (let [home-dir (:home-dir config)
         instance (->DefaultPipelineState state-atom home-dir)]
     (start-pipeline-state-updater instance step-results-channel)
     instance))

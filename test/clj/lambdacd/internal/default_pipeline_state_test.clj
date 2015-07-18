@@ -77,39 +77,4 @@
       (is (= {1 { [0]   {:foo "bar"}}
               2 { [1 2] {:bar "baz"}}} (initial-pipeline-state config))))))
 
-(deftest notify-when-most-recent-build-running-test
-  (testing "that we are being notified when the first step of the pipeline is finished"
-    (let [pipeline-state (atom {0 {}})
-          call-counter (atom 0)
-          callback (fn [& _] (swap! call-counter inc))
-          component (new-default-pipeline-state pipeline-state {:home-dir (utils/create-temp-dir)} (async/chan (async/dropping-buffer 0)))]
-      (notify-when-no-first-step-is-active { :pipeline-state-component component} callback)
-      (is (= 0 @call-counter))
-      (update-legacy 0 [1] {:status :running} nil pipeline-state)
-      (is (= 0 @call-counter))
-      (update-legacy 0 [1] {:status :success} nil pipeline-state)
-      (is (= 1 @call-counter))
-      (update-legacy 0 [2] {:status :success} nil pipeline-state)
-      (is (= 1 @call-counter))
-      (update-legacy 1 [1] {:status :waiting} nil pipeline-state)
-      (is (= 1 @call-counter))
-      (update-legacy 1 [1] {:status :running} nil pipeline-state)
-      (is (= 1 @call-counter))
-      (update-legacy 1 [1] {:status :failure} nil pipeline-state)
-      (is (= 2 @call-counter))
-      (update-legacy 1 [1] {:status :failure} nil pipeline-state)
-      (is (= 2 @call-counter))
-      (update-legacy 2 [2] {:status :ok :retrigger-mock-for-build-number 1 } nil pipeline-state)
-      (is (= 2 @call-counter))
-      (update-legacy 3 [2] {:status :ok } nil pipeline-state)
-      (is (= 2 @call-counter))))
-  (testing "that we are not notified if there is already a build waiting"
-    (let [pipeline-state (atom {0 { [1] {:status :waiting}}
-                                1 { [1] {:status :waiting}}})
-          call-counter (atom 0)
-          callback (fn [& _] (swap! call-counter inc))
-          component (new-default-pipeline-state pipeline-state {:home-dir (utils/create-temp-dir)} (async/chan (async/dropping-buffer 0)))]
-      (notify-when-no-first-step-is-active { :pipeline-state-component component } callback)
-      (is (= 0 @call-counter))
-      (update-legacy 1 [1] {:status :success} nil pipeline-state)
-      (is (= 0 @call-counter)))))
+
