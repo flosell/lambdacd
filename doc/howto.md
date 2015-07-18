@@ -95,7 +95,7 @@ you must restrict access to the underlying HTTP endpoints.
 Since the the `lambdacd.ui-server/ui-for` function returns a normal ring handler, any ring-middleware can be wrapped
 around it.
 
-For example, to implement simple HTTP Basic Auth password protection, you can use [ring-basic-authentication]([https://github.com/remvee/ring-basic-authentication):
+For example, to implement simple HTTP Basic Auth password protection, you can use [ring-basic-authentication](https://github.com/remvee/ring-basic-authentication):
 ```clojure
 (defn authenticated? [name pass]
   (and (= name "some-user")
