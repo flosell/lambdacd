@@ -4,7 +4,6 @@
             [lambdacd.internal.pipeline-state :as pipeline-state]
             [clojure.tools.logging :as log]
             [lambdacd.internal.step-id :as step-id]
-            [lambdacd.internal.step-results :as step-results]
             [lambdacd.steps.status :as status]
             [clojure.repl :as repl]
             [lambdacd.event-bus :as event-bus])
@@ -23,6 +22,11 @@
     (assoc result :has-been-waiting true)
     result))
 
+(defn- send-step-result [{step-id :step-id build-number :build-number ch :step-results-channel :as ctx } step-result]
+  (let [payload {:build-number build-number :step-id step-id :step-result step-result}]
+    (event-bus/publish ctx :step-result-updated payload)
+    (async/>!! ch payload)))
+
 (defn process-channel-result-async [c ctx]
   (async/go
     (loop [cur-result {:status :running}]
@@ -33,7 +37,7 @@
         (if (and (nil? key) (nil? value))
           cur-result
           (do
-            (step-results/send-step-result ctx new-result)
+            (send-step-result ctx new-result)
             (recur new-result)))))))
 
 (defmacro with-err-str
@@ -81,7 +85,7 @@
   (event-bus/unsubscribe ctx :kill-step subscription))
 
 (defn execute-step [args [ctx step]]
- (let [_ (step-results/send-step-result ctx {:status :running})
+ (let [_ (send-step-result ctx {:status :running})
        step-id (:step-id ctx)
        result-ch (async/chan)
        child-kill-switch (atom false)
@@ -100,7 +104,7 @@
    (log/debug (str "executed step " step-id complete-step-result))
    (clean-up-kill-handling ctx-for-child kill-subscription)
    (remove-watch parent-kill-switch watch-key)
-   (step-results/send-step-result ctx complete-step-result)
+   (send-step-result ctx complete-step-result)
    (event-bus/publish ctx :step-finished {:step-id      step-id
                                           :build-number (:build-number ctx)
                                           :final-result complete-step-result})
@@ -205,7 +209,7 @@
 (defn- add-result [new-build-number retriggered-build-number initial-ctx [step-id result]]
   (let [ctx (assoc initial-ctx :build-number new-build-number :step-id step-id)
         result-with-annotation (assoc result :retrigger-mock-for-build-number retriggered-build-number)]
-    (step-results/send-step-result ctx result-with-annotation)))
+    (send-step-result ctx result-with-annotation)))
 
 (defn- to-be-duplicated? [step-id-retriggered [cur-step-id _]]
   (let [result (step-id/before? cur-step-id step-id-retriggered)]
