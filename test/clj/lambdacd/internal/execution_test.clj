@@ -244,11 +244,11 @@
 (deftest execute-steps-inheritance-test
   (testing "that the step-results channel passed in contains the step-results of all childrens"
     (let [step-results-channel (async/chan 100)]
-      (execute-steps [some-other-step some-step-faking-events-from-build-3 some-failing-step ] {} (some-ctx-with
-                                                               :step-results-channel step-results-channel
-                                                               :step-id [0]
-                                                               :build-number 2
-                                                               :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state)))
+      (execute-steps [some-other-step some-step-faking-events-from-build-3 some-failing-step]
+                     {}
+                     (some-ctx-with :step-results-channel step-results-channel
+                                    :step-id [0]
+                                    :build-number 2))
       (is (= [{:build-number 2 :step-id [1 0] :step-result {:status :running}}
               {:build-number 2 :step-id [1 0] :step-result {:foo :baz :status :success}}
               {:build-number 2 :step-id [2 0] :step-result {:status :running}}

@@ -11,7 +11,9 @@ The official release will have a defined and more stable API. If you are already
   * Now providing events `:step-result-updated` and `:step-finished` on event-bus for use by other components like
     runners and persistence components
 * API changes:
-  * removed `default-pipeline-state/notify-when-no-first-step-is-active`.
+  * The `:step-results-channel` is now DEPRECATED, unsupported and will be removed in subsequent releases.
+    Use the new `:step-result-updated` event and filter on `:step-id` to receive updates from child-steps while they run.
+  * Removed `default-pipeline-state/notify-when-no-first-step-is-active`.
     Use the new events (see above) to be notified about changes to the state of the pipeline
 
 ## 0.4.2

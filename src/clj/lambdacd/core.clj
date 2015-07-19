@@ -13,9 +13,8 @@
                :_state state)))
 
 (defn assemble-pipeline [pipeline-def config]
-  (let [step-results-channel (async/chan (async/dropping-buffer 100))
-        context (-> {:config                   config
-                     :step-results-channel     step-results-channel}
+  (let [context (-> {:config                   config
+                     :step-results-channel     (async/chan (async/dropping-buffer 100))}
                     (event-bus/initialize-event-bus)
                     (initialize-default-pipeline-state))]
     {:state        (:_state context) ;; FIXME: this is only temporary, nothing should access the state directly but the ui does
