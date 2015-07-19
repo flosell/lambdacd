@@ -3,3 +3,6 @@ before_script:
 language: clojure
 script: ./go testall
 sudo: false
+cache:
+  directories:
+  - $HOME/.m2
