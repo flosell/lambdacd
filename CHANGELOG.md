@@ -8,7 +8,7 @@ The official release will have a defined and more stable API. If you are already
 ## 0.4.3
 
 Housekeeping release: Contains mostly cleanup under the hood and changes to APIs for advanced users.
- If you were using custom control-flow steps, runners, persistence mechanisms or other advanced features, make sure you
+ If you are using custom control-flow steps, runners, persistence mechanisms or other advanced features, make sure you
  look through the changes and upgrade as future releases will remove deprecated functionality.
 
 * Improvements:
