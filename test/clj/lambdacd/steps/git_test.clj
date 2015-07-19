@@ -139,7 +139,7 @@
           with-git-function (with-git "some-unknown-uri" [])
           with-git-result (with-git-function with-git-args (some-ctx))]
       (is (=  :failure (:status with-git-result)))
-      (is (.endsWith (:out with-git-result) "fatal: repository 'some-unknown-uri' does not exist\n" )))))
+      (is (.contains (:out with-git-result) "some-unknown-uri" )))))
 
 (defn some-step-that-returns-42 [args ctx]
   {:status :success :the-number 42})
