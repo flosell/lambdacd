@@ -68,12 +68,15 @@
                           :unify-status-fn status/successful-when-all-successful
                           :is-killed (:is-killed ctx)))))
 
-(defn- child-context [ctx child-number]
-  (assoc ctx :step-id (step-id/child-id (:step-id ctx) child-number)))
+(defn- child-context [parent-ctx child-number]
+  (let [parent-step-id (:step-id parent-ctx)
+        child-step-id  (step-id/child-id parent-step-id child-number)]
+    (assoc parent-ctx :step-id child-step-id)))
 
 (defn ^{:display-type :parallel} junction [condition-step success-step failiure-step]
   (fn [args ctx]
     (post-process-container-results
-      (if (= :success (:status (core/execute-step args [(child-context ctx 1) condition-step])))
-        (core/execute-step args [(child-context ctx 2) success-step])
-        (core/execute-step args [(child-context ctx 3) failiure-step])))))
+      (let [condition-step-result (core/execute-step args (child-context ctx 1) condition-step)]
+        (if (= :success (:status condition-step-result))
+          (core/execute-step args (child-context ctx 2) success-step)
+          (core/execute-step args (child-context ctx 3) failiure-step))))))

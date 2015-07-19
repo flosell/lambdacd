@@ -10,6 +10,7 @@ The official release will have a defined and more stable API. If you are already
 * Improvements:
   * Now providing events `:step-result-updated` and `:step-finished` on event-bus for use by other components like
     runners and persistence components
+  * Clarified interface for `core/execute-step`
 * API changes:
   * The `:step-results-channel` is now deprecated, unsupported and will be removed in subsequent releases.
     Use the new `:step-result-updated` event and filter on `:step-id` to receive updates from child-steps while they run.
