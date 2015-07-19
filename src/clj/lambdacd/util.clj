@@ -10,7 +10,8 @@
             [cheshire.core :as ch]
             [cheshire.generate :as chg]
             [me.raynes.fs :as fs]
-            [clj-time.format :as f]))
+            [clj-time.format :as f]
+            [clojure.core.async :as async]))
 
 (defn range-from [from len] (range (inc from) (+ (inc from) len)))
 
@@ -70,6 +71,10 @@
 
 (defn to-json [v]
   (ch/generate-string v))
+
+(defn buffered [ch]
+  (let [result-ch (async/chan 100)]
+    (async/pipe ch result-ch)))
 
 (defn json [data]
   {:headers { "Content-Type" "application/json"}

@@ -5,7 +5,8 @@
             [clj-time.core :as t]
             [clojure.core.async :as async]
             [lambdacd.internal.pipeline-state :as pipeline-state-protocol]
-            [lambdacd.event-bus :as event-bus]))
+            [lambdacd.event-bus :as event-bus]
+            [lambdacd.util :as util]))
 
 (def clean-pipeline-state {})
 
@@ -55,13 +56,9 @@
   (next-build-number [self]
     (next-build-number-legacy state-atom)))
 
-(defn thebuffered [ch]
-  (let [result-ch (async/chan 100)]
-    (async/pipe ch result-ch)))
-
 (defn- start-pipeline-state-updater [instance ctx] ; TODO could be generalized for others to use
   (let [subscription (event-bus/subscribe ctx :step-result-updated)
-        step-updates-channel (thebuffered (event-bus/only-payload subscription))]
+        step-updates-channel (util/buffered (event-bus/only-payload subscription))]
     (async/go-loop []
       (if-let [step-result-update (async/<! step-updates-channel)]
         (let [step-result (:step-result step-result-update)

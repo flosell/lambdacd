@@ -91,9 +91,7 @@
     c ([result] result)
     (async/timeout timeout) {:status :timeout}))
 
-(defn buffered [ch]
-  (let [result-ch (async/chan 100)]
-    (async/pipe ch result-ch)))
+
 
 
 (defmacro start-waiting-for [body]

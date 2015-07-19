@@ -3,6 +3,7 @@
   (:require [clojure.test :refer :all]
             [lambdacd.internal.execution :refer :all]
             [lambdacd.testsupport.test-util :refer :all]
+            [lambdacd.util :refer [buffered]]
             [lambdacd.testsupport.matchers :refer :all]
             [clojure.core.async :as async]
             [lambdacd.steps.support :as step-support]
