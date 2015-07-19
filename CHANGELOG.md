@@ -11,8 +11,13 @@ The official release will have a defined and more stable API. If you are already
   * Now providing events `:step-result-updated` and `:step-finished` on event-bus for use by other components like
     runners and persistence components
 * API changes:
-  * The `:step-results-channel` is now DEPRECATED, unsupported and will be removed in subsequent releases.
+  * The `:step-results-channel` is now deprecated, unsupported and will be removed in subsequent releases.
     Use the new `:step-result-updated` event and filter on `:step-id` to receive updates from child-steps while they run.
+  * `(ui-server/ui-for pipeline-def pipeline-state ctx)`  is now deprecated and will be removed in subsequent releases.
+    Use `(ui-server/ui-for pipeline)` instead.
+  * Direct access to the pipeline-state atom, e.g. through `:state` in the result of assemble-pipeline is now deprecated
+    and will be removed in subsequent releases. Use the event-bus or access the state through the `PipelineStateComponent`
+    protocol instead.
   * Removed `default-pipeline-state/notify-when-no-first-step-is-active`.
     Use the new events (see above) to be notified about changes to the state of the pipeline
 

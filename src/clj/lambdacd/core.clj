@@ -17,7 +17,7 @@
                      :step-results-channel     (async/chan (async/dropping-buffer 100))}
                     (event-bus/initialize-event-bus)
                     (initialize-default-pipeline-state))]
-    {:state        (:_state context) ;; FIXME: this is only temporary, nothing should access the state directly but the ui does
+    {:state        (:_state context) ;; this is deprecated, TODO: remove in next release
      :context      context
      :pipeline-def pipeline-def}))
 

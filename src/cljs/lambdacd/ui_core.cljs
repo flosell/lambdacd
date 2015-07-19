@@ -8,8 +8,7 @@
             [lambdacd.route :as route]
             [lambdacd.history :as history]
             [lambdacd.commons :as commons]
-            [lambdacd.output :as output]
-            [lambdacd.state :as state])
+            [lambdacd.output :as output])
   )
 
 (enable-console-print!)
