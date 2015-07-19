@@ -188,16 +188,32 @@
           new-result
           (recur (cons step-result result) (rest remaining-steps-with-id) new-args))))))
 
+(defn- inherit-message-from-parent? [parent-ctx]
+  (fn [msg]
+    (let [msg-step-id          (:step-id msg)
+          parent-step-id       (:step-id parent-ctx)
+          msg-build            (:build-number msg)
+          parent-build         (:build-number parent-ctx)
+          msg-from-child?      (step-id/parent-of? parent-step-id msg-step-id)
+          msg-from-same-build? (= parent-build msg-build)]
+      (and msg-from-child? msg-from-same-build?))))
+
 (defn execute-steps [steps args ctx & {:keys [step-result-producer is-killed unify-status-fn]
                                        :or   {step-result-producer serial-step-result-producer
                                               is-killed            (atom false)
                                               unify-status-fn      status/successful-when-all-successful}}]
   (let [base-ctx-with-kill-switch (assoc ctx :is-killed is-killed)
-        children-step-results-channel (async/chan)
-        step-contexts (contexts-for-steps steps base-ctx-with-kill-switch children-step-results-channel)
-        _ (inherit-from children-step-results-channel (:result-channel ctx) (:step-results-channel ctx) unify-status-fn)
-        step-results (step-result-producer args step-contexts)]
-    (reduce merge-two-step-results step-results)))
+        subscription (event-bus/subscribe ctx :step-result-updated)
+        step-results-channel (:step-results-channel ctx)
+        children-step-results-channel (->> subscription
+                                           (event-bus/only-payload)
+                                           (async/filter< (inherit-message-from-parent? ctx)))
+        step-contexts (contexts-for-steps steps base-ctx-with-kill-switch (async/chan (async/dropping-buffer 0))) ; TODO: remove dropping buffer when removing children step-results-channel
+        _ (inherit-from children-step-results-channel (:result-channel ctx) step-results-channel unify-status-fn)
+        step-results (step-result-producer args step-contexts)
+        result (reduce merge-two-step-results step-results)]
+    (event-bus/unsubscribe ctx :step-result-updated subscription)
+    result))
 
 (defn run [pipeline context]
   (let [build-number (pipeline-state/next-build-number (:pipeline-state-component context))]

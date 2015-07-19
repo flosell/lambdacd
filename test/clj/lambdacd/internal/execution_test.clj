@@ -23,6 +23,10 @@
 (defn some-other-step [arg & _]
   {:foo :baz :status :success})
 
+(defn some-step-faking-events-from-build-3 [arg ctx]
+  (event-bus/publish ctx :step-result-updated {:step-id [1 0] :build-number 3 :step-result {:message-from "other build"}})
+  {:status :success})
+
 (defn some-step-returning-foobar-value [& _]
   {:foobar 42 :status :success})
 (defn some-step-returning-ten-as-foobar-value [& _]
@@ -240,7 +244,7 @@
 (deftest execute-steps-inheritance-test
   (testing "that the step-results channel passed in contains the step-results of all childrens"
     (let [step-results-channel (async/chan 100)]
-      (execute-steps [some-other-step some-failing-step ] {} (some-ctx-with
+      (execute-steps [some-other-step some-step-faking-events-from-build-3 some-failing-step ] {} (some-ctx-with
                                                                :step-results-channel step-results-channel
                                                                :step-id [0]
                                                                :build-number 2
@@ -248,7 +252,9 @@
       (is (= [{:build-number 2 :step-id [1 0] :step-result {:status :running}}
               {:build-number 2 :step-id [1 0] :step-result {:foo :baz :status :success}}
               {:build-number 2 :step-id [2 0] :step-result {:status :running}}
-              {:build-number 2 :step-id [2 0] :step-result {:status :failure}}] (slurp-chan step-results-channel))))))
+              {:build-number 2 :step-id [2 0] :step-result {:status :success}}
+              {:build-number 2 :step-id [3 0] :step-result {:status :running}}
+              {:build-number 2 :step-id [3 0] :step-result {:status :failure}}] (slurp-chan step-results-channel))))))
 
 (defn some-control-flow [&] ; just a mock, we don't actually execute this
   (throw (IllegalStateException. "This shouldn't be called")))
