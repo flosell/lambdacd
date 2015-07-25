@@ -93,7 +93,7 @@ Call it without arguments to see all the options.
 * ClojureScript code needs to be compiled into JS before being useful
 * In two terminals, run `./go serve` to start an example pipeline (if you want it to be green, follow the environment
   setup above) and `./go serve-cljs` to start a ClojureScript REPL and automatic code-reloading using
-  (Figwheel)[https://github.com/bhauman/lein-figwheel]
+  [Figwheel](https://github.com/bhauman/lein-figwheel)
 * Run `./go test-cljs` to run frontend-tests or `./go test-cljs-auto` to start autotest
 
 
