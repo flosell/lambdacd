@@ -46,7 +46,7 @@
                               "most-recent-update-at" "1970-01-01T00:00:00.000Z"
                               "first-updated-at" "1970-01-01T00:00:00.000Z"}}] (json/read-str (slurp (str home-dir "/build-10/pipeline-state.json"))))))))
 
-(deftest initialize-pipeline-persistence-test
+(deftest pipeline-state-integration-test
   (testing "that we tap into the event bus update the pipeline state with its information"
     (let [ctx (some-ctx)
           pipeline-state (new-default-pipeline-state (atom {}) {:home-dir (util/create-temp-dir)} ctx)]

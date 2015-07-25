@@ -92,7 +92,11 @@
     (async/timeout timeout) {:status :timeout}))
 
 
-
+(defmacro wait-for [predicate]
+  `(loop []
+     (if (not ~predicate)
+       (Thread/sleep 50)
+       (recur))))
 
 (defmacro start-waiting-for [body]
   `(async/go

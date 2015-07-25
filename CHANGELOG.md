@@ -5,6 +5,12 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
+## 0.4.4
+
+* Improvements:
+  * Extracted common functions from `internal.default-pipeline-state` so they can be reused in other persistence components
+
+
 ## 0.4.3
 
 Housekeeping release: Contains mostly cleanup under the hood and changes to APIs for advanced users.
