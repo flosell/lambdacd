@@ -45,8 +45,8 @@
                                                                      (util/json {:status :success})))))))
 (defn- ui []
   (routes
-    (route/resources "/" {:root "public/old"})
-    (GET "/" [] (resp/resource-response "index.html" {:root "public/old"}))))
+    (route/resources "/" {:root "public"})
+    (GET "/" [] (resp/resource-response "index.html" {:root "public"}))))
 
 (defn ui-for
   ([pipeline]

@@ -33,11 +33,11 @@
             [lein-kibit "0.0.8"]
             [lein-marginalia "0.8.0"]
             [quickie "0.3.6"]]
-  :clean-targets ^{:protect false} [:target-path :compile-path "resources/public/old/js-gen"]
+  :clean-targets ^{:protect false} [:target-path :compile-path "resources/public/js-gen"]
 
   :cljsbuild {:builds {:app {:source-paths ["src/cljs" "env/prod/cljs"]
-                             :compiler {:output-to     "resources/public/old/js-gen/app.js"
-                                        :output-dir    "resources/public/old/js-gen/out"
+                             :compiler {:output-to     "resources/public/js-gen/app.js"
+                                        :output-dir    "resources/public/js-gen/out"
                                         :main "lambdacd.prod"
                                         :asset-path   "js-gen/out"
                                         :jar true
@@ -74,7 +74,7 @@
 
                         :figwheel     {:http-server-root "public"
                                        :server-port      3449
-                                       :css-dirs         ["resources/public/old/css"]}
+                                       :css-dirs         ["resources/public/css"]}
 
                         :env          {:dev? true}
 
