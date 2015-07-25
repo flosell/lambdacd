@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [lambdacd.internal.execution :as execution]
             [clojure.core.async :as async]
-            [clojure.walk :as w]))
+            [clojure.walk :as w])
+  (:import (java.util.concurrent TimeoutException)))
 
 (defmacro my-time
   "measure the time a function took to execute"
@@ -93,10 +94,13 @@
 
 
 (defmacro wait-for [predicate]
-  `(loop []
+  `(loop [time-slept# 0]
+     (if (> time-slept# 60000)
+       (throw (TimeoutException. "waited for too long")))
      (if (not ~predicate)
-       (Thread/sleep 50)
-       (recur))))
+       (do
+         (Thread/sleep 50)
+         (recur (+ time-slept# 50))))))
 
 (defmacro start-waiting-for [body]
   `(async/go
