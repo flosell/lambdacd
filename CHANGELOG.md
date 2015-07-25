@@ -19,7 +19,7 @@ Housekeeping release: Contains mostly cleanup under the hood and changes to APIs
 
 * Improvements:
   * Now providing events `:step-result-updated` and `:step-finished` on event-bus for use by other components like
-    runners and persistence components
+    runners and persistence components (#38)
   * Clarified interface for `core/execute-step`
 * API changes:
   * The `:step-results-channel` is now deprecated, unsupported and will be removed in subsequent releases.
