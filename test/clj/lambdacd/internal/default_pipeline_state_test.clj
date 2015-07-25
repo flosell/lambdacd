@@ -2,16 +2,12 @@
   (:use [lambdacd.testsupport.test-util])
   (:require [clojure.test :refer :all]
             [lambdacd.internal.default-pipeline-state :refer :all]
-            [lambdacd.internal.pipeline-state :as pipeline-state]
             [lambdacd.util :as utils]
             [clojure.data.json :as json]
             [clj-time.core :as t]
             [lambdacd.testsupport.test-util :as tu]
             [lambdacd.testsupport.data :refer [some-ctx-with some-ctx]]
-            [clojure.java.io :as io]
-            [clojure.core.async :as async]
-            [lambdacd.util :as util]
-            [lambdacd.event-bus :as event-bus]))
+            [clojure.java.io :as io]))
 
 (defn- after-update [build id newstate]
   (let [state (atom clean-pipeline-state)]
@@ -41,23 +37,10 @@
     (let [home-dir (utils/create-temp-dir)
           step-result { :foo :bar }]
       (t/do-at (t/epoch) (update-legacy 10 [0] step-result home-dir (atom {})))
-      (is (= [{ "step-id" "0"
+      (is (= [{"step-id" "0"
                "step-result" {"foo" "bar"
                               "most-recent-update-at" "1970-01-01T00:00:00.000Z"
                               "first-updated-at" "1970-01-01T00:00:00.000Z"}}] (json/read-str (slurp (str home-dir "/build-10/pipeline-state.json"))))))))
-
-(deftest pipeline-state-integration-test
-  (testing "that we tap into the event bus update the pipeline state with its information"
-    (let [ctx (some-ctx)
-          pipeline-state (new-default-pipeline-state (atom {}) {:home-dir (util/create-temp-dir)} ctx)]
-
-      (event-bus/publish ctx :step-result-updated {:build-number 1 :step-id [1 2] :step-result {:status :running}})
-      (event-bus/publish ctx :step-result-updated {:build-number 2 :step-id [1 2] :step-result {:status :success}})
-      (event-bus/publish ctx :step-result-updated {:build-number 1 :step-id [1 2] :step-result {:status :running :foo :bar}})
-
-      (Thread/sleep 200) ;; make sure all events received TODO: improve
-      (is (= {1 { [1 2] {:status :running :foo :bar}}
-              2 { [1 2] {:status :success}}} (tu/without-ts (pipeline-state/get-all pipeline-state)))))))
 
 (defn- write-pipeline-state [home-dir build-number state]
   (let [dir (str home-dir "/" "build-" build-number)
