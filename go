@@ -35,10 +35,13 @@ testunit() {
   lein test
 }
 
-release() {
-  testall && lein clean && lein with-profile +release release $1 && scripts/github-release.sh
+clean() {
+  lein clean
 }
 
+release() {
+  testall && clean && lein with-profile +release release $1 && scripts/github-release.sh
+}
 releaseLocal() {
   lein with-profile +release install
 }
@@ -59,7 +62,9 @@ repl-server() {
   lein repl :headless :port 58488
 }
 
-if [ "$1" == "setup" ]; then
+if [ "$1" == "clean" ]; then
+    clean
+elif [ "$1" == "setup" ]; then
     setup
 elif [ "$1" == "testall" ]; then
     testall
@@ -85,6 +90,7 @@ else
     echo "usage: $0 <goal>
 
 goal:
+    clean         -- clear all build artifacts
     setup         -- to set up your environment
     test          -- run unit tests
     testall       -- run all tests
