@@ -112,15 +112,6 @@
 (defn some-pipeline-state []
   (atom {}))
 
-(defn- step-status [{build-number :build-number step-id :step-id pipeline-state-component :pipeline-state-component}]
-  (-> (ps/get-all pipeline-state-component)
-      (get build-number)
-      (get step-id)
-      :status))
-
-(defn- step-running? [ctx]
-  (= :running (step-status ctx)))
-
 (deftest execute-step-test
   (testing "that executing returns the step result added to the input args"
     (is (= {:outputs { [0 0] {:foo :baz :x :y :status :success}} :status :success} (execute-step {:x :y} [(some-ctx-with :step-id [0 0]) some-step-processing-input]))))
@@ -202,7 +193,7 @@
                              :build-number 3
                              :is-killed is-killed)
           future-step-result (start-waiting-for (execute-step {} [ctx some-step-waiting-to-be-killed]))]
-      (wait-for (step-running? ctx))
+      (wait-for (tu/step-running? ctx))
       (kill-step ctx 3 [3 2 1])
       (is (map-containing {:status :killed} (get-or-timeout future-step-result)))))
   (testing "that a step using the kill-switch does not bubble up to the parents passing in the kill-switch"
@@ -279,13 +270,6 @@
 (defn some-step-to-retrigger [args _]
   {:status :success :the-some (:some args)})
 
-(defn- step-success? [ctx build-number step-id]
-  (= :success (step-status (assoc ctx :build-number build-number
-                                      :step-id step-id))))
-(defn- step-failure? [ctx build-number step-id]
-  (= :failure (step-status (assoc ctx :build-number build-number
-                                      :step-id step-id))))
-
 (deftest retrigger-test
   (testing "that retriggering results in a completely new pipeline-run where not all the steps are executed"
     (let [initial-state { 0 {[1] { :status :success }
@@ -294,7 +278,7 @@
           pipeline `((some-control-flow some-step) some-successful-step)
           context (some-ctx-with :initial-pipeline-state initial-state)]
       (retrigger pipeline context 0 [2] 1)
-      (wait-for (step-success? context 1 [2]))
+      (wait-for (tu/step-success? context 1 [2]))
       (is (= {0 {[1] { :status :success }
                  [1 1] {:status :success :out "I am nested"}
                  [2] { :status :failure }}
@@ -305,7 +289,7 @@
     (let [pipeline `(some-successful-step some-other-step some-failing-step)
           context (some-ctx)]
       (retrigger pipeline context 0 [1] 1)
-      (wait-for (step-failure? context 1 [3]))
+      (wait-for (tu/step-failure? context 1 [3]))
       (is (= {1 {[1] { :status :success}
                  [2] {:status :success :foo :baz}
                  [3] { :status :failure }}} (tu/without-ts (ps/get-all (:pipeline-state-component context)))))))
@@ -316,7 +300,7 @@
           pipeline `((some-control-flow-thats-called some-step-that-fails-if-retriggered some-step-to-retrigger) some-successful-step)
           context (some-ctx-with :initial-pipeline-state initial-state)]
       (retrigger pipeline context 0 [2 1] 1)
-      (wait-for (step-success? context 1 [2]))
+      (wait-for (tu/step-success? context 1 [2]))
       (is (= {0 {[1] { :status :success }
                  [1 1] {:status :success :out "I am nested"}
                  [2 1] {:status :unknown :out "this will be retriggered"}}

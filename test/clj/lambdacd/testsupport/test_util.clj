@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [lambdacd.internal.execution :as execution]
             [clojure.core.async :as async]
-            [clojure.walk :as w])
+            [clojure.walk :as w]
+            [lambdacd.internal.pipeline-state :as ps])
   (:import (java.util.concurrent TimeoutException)))
 
 (defmacro my-time
@@ -95,7 +96,7 @@
 
 (defmacro wait-for [predicate]
   `(loop [time-slept# 0]
-     (if (> time-slept# 60000)
+     (if (> time-slept# 10000)
        (throw (TimeoutException. "waited for too long")))
      (if (not ~predicate)
        (do
@@ -113,3 +114,20 @@
       (if (= key actual-key)
         (second result)
         (recur)))))
+
+
+(defn step-status [{build-number :build-number step-id :step-id pipeline-state-component :pipeline-state-component}]
+  (-> (ps/get-all pipeline-state-component)
+      (get build-number)
+      (get step-id)
+      :status))
+
+(defn step-running? [ctx]
+  (= :running (step-status ctx)))
+
+(defn step-success? [ctx build-number step-id]
+  (= :success (step-status (assoc ctx :build-number build-number
+                                      :step-id step-id))))
+(defn step-failure? [ctx build-number step-id]
+  (= :failure (step-status (assoc ctx :build-number build-number
+                                      :step-id step-id))))

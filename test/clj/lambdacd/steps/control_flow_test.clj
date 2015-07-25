@@ -145,13 +145,15 @@
                                    :step-id [0])]
       (is (map-containing {:status :killed} ((either some-step-waiting-to-be-killed some-step-waiting-to-be-killed) {} ctx)))))
   (testing "that it kills all children if it being killed later"
-    (let [is-killed (atom false)
-          ctx       (some-ctx-with :is-killed is-killed
-                                   :step-id [0])
-          foo (start-waiting-for ((either some-step-waiting-to-be-killed some-step-waiting-to-be-killed) {} ctx))]
-      (Thread/sleep 200)
+    (let [is-killed     (atom false)
+          ctx           (some-ctx-with :is-killed is-killed
+                                       :step-id [0])
+          child-ctx     (assoc ctx :step-id [2 0])
+          either-result (start-waiting-for ((either some-step-waiting-to-be-killed some-step-waiting-to-be-killed) {} ctx))]
+      (wait-for (step-running? child-ctx))
+
       (reset! is-killed true)
-      (is (map-containing {:status :killed} (async/<!! foo)))))
+      (is (map-containing {:status :killed} (async/<!! either-result)))))
   (testing "that it doesn't kill it's parents after killing remaining children"
     (let [is-killed (atom false)
           ctx       (some-ctx-with :is-killed is-killed
