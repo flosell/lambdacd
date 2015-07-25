@@ -66,13 +66,15 @@ if [ "$1" == "clean" ]; then
     clean
 elif [ "$1" == "setup" ]; then
     setup
-elif [ "$1" == "testall" ]; then
-    testall
 elif [ "$1" == "test" ]; then
+    testall
+elif [ "$1" == "test-clj" ]; then
+    testallClojure
+elif [ "$1" == "test-clj-unit" ]; then
     testunit
 elif [ "$1" == "test-cljs" ]; then
     testallClojureScript
-elif [ "$1" == "autotest-cljs" ]; then
+elif [ "$1" == "test-cljs-auto" ]; then
     autotestClojureScript
 elif [ "$1" == "release" ]; then
     release $2
@@ -90,17 +92,18 @@ else
     echo "usage: $0 <goal>
 
 goal:
-    clean         -- clear all build artifacts
-    setup         -- to set up your environment
-    test          -- run unit tests
-    testall       -- run all tests
-    testcljs      -- run all ClojureScript tests (i.e. unit tests for frontend)
-    autotest-cljs -- starts autotest-session for frontend
-    serve         -- start a server with a demo-pipeline
-    serve-cljs    -- compile clojurescript and watch for changes
-    push          -- run all tests and push current state
-    release       -- release current version
-    release-local -- install current version in local repository
-    repl-server   -- start a repl cursive can use to run tests in"
+    clean          -- clear all build artifacts
+    setup          -- to set up your environment
+    test           -- run all tests
+    test-clj       -- run all tests for the clojure-part
+    test-clj-unit  -- run only unit tests for the clojure-part
+    test-cljs      -- run all ClojureScript tests (i.e. unit tests for frontend)
+    test-cljs-auto -- starts autotest-session for frontend
+    serve          -- start a server with a demo-pipeline
+    serve-cljs     -- compile clojurescript and watch for changes
+    push           -- run all tests and push current state
+    release        -- release current version
+    release-local  -- install current version in local repository
+    repl-server    -- start a repl cursive can use to run tests in"
     exit 1
 fi
