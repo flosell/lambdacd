@@ -43,6 +43,15 @@
   (async/close! c)
   (async/<!! (async/into [] c)))
 
+(defn slurp-chan-with-size [size ch]
+  (async/<!!
+    (async/go-loop [collector []]
+      (if-let [item (async/<! ch)]
+        (let [new-collector (conj collector item)]
+          (if (= size (count new-collector))
+            new-collector
+            (recur new-collector)))))))
+
 (defn result-channel->map [ch]
   (async/<!!
     (async/go-loop [last {}]
