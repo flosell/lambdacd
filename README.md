@@ -70,13 +70,32 @@ And if you notice something, please open bug reports, feature requests or just g
 
 ## Development
 
-* `./go` is your starting point. Run it without arguments to see all the options, e.g.:
-  * `./go testall` runs all tests
-  * `./go serve` starts a server and opens pipeline-view showing the example-pipeline in your browser.
-* if you want to run the example-pipeline contained in the code successfully, you first need to setup a mock-deployment environment on your machine (two VMs where we deploy a TodoMVC client and server):
+LambdaCD is built in Clojure and ClojureScript with [Leiningen](http://leiningen.org) as a build-tool.
+The `./go` script is your main entry-point that wraps all important development tasks.
+Call it without arguments to see all the options.
+
+### Core Development
+
+* Sources for the core of LambdaCD can be found in `src/clj`, tests in `test/clj`.
+* Run tests with `./go test-clj`
+* To run a sample-pipeline (see `example/clj`), run `./go serve`. You may have to run `./go serve-cljs` occasionally to
+  generate the frontend JS code from ClojureScript.
+* If you want the example pipeline to be green (which is not necessary for all development), you first need to setup a
+  mock-deployment environment on your machine (two VMs where we deploy a TodoMVC client and server):
   * install [Vagrant](http://www.vagrantup.com/downloads.html)
   * have github-access set up (you need to be able to clone with ssh)
   * `./go setup` starts up two VMs in vagrant where we deploy to and exports the ssh-config for them so that it can be used by the deployment scripts
+
+### Frontend Development
+
+* The frontend is written in ClojureScript using [Reagent](https://github.com/reagent-project/reagent)
+* Frontend resources can be found in `resources/public`, ClojureScript code in `src/cljs`, tests in `test/cljs`.
+* ClojureScript code needs to be compiled into JS before being useful
+* In two terminals, run `./go serve` to start an example pipeline (if you want it to be green, follow the environment
+  setup above) and `./go serve-cljs` to start a ClojureScript REPL and automatic code-reloading using
+  (Figwheel)[https://github.com/bhauman/lein-figwheel]
+* Run `./go test-cljs` to run frontend-tests or `./go test-cljs-auto` to start autotest
+
 
 
 ## Contribute
