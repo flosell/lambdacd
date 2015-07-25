@@ -316,7 +316,7 @@
           pipeline `((some-control-flow-thats-called some-step-that-fails-if-retriggered some-step-to-retrigger) some-successful-step)
           context (some-ctx-with :initial-pipeline-state initial-state)]
       (retrigger pipeline context 0 [2 1] 1)
-      (Thread/sleep 200)
+      (wait-for (step-success? context 1 [2]))
       (is (= {0 {[1] { :status :success }
                  [1 1] {:status :success :out "I am nested"}
                  [2 1] {:status :unknown :out "this will be retriggered"}}
