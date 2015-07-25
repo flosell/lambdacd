@@ -14,9 +14,15 @@
 
 (deftest map-if-test
   (testing "that is applies a function to all elements that match a predicate"
-    (is (= [] (map-if (identity true) inc [])))
+    (is (= []      (map-if (identity true) inc [])))
     (is (= [4 3 5] (map-if #(< % 5) inc [3 2 4])))
     (is (= [3 2 5] (map-if #(= 4 %) inc [3 2 4])))))
+
+(deftest put-if-not-present-test
+  (testing "that it adds a value to a map only of no value exists for this key"
+    (is (= {:foo :bar}       (put-if-not-present {:foo :bar} :foo :baz)))
+    (is (= {:foo :baz}       (put-if-not-present {} :foo :baz)))
+    (is (= {:a :b :foo :baz} (put-if-not-present {:a :b} :foo :baz)))))
 
 (deftest create-temp-dir-test
   (testing "creating in default tmp folder"

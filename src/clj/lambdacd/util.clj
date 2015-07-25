@@ -59,6 +59,12 @@
          (f %)
          %) coll))
 
+(defn put-if-not-present [m k v]
+  (if (contains? m k)
+    m
+    (assoc m k v)))
+
+
 (defn parse-int [int-str]
   (Integer/parseInt int-str))
 
