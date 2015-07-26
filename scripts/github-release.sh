@@ -12,6 +12,8 @@ cd ${SCRIPT_DIR}/..
 
 VERSION=$(chag latest)
 CHANGELOG=$(chag contents)
+USER="flosell"
+REPO="lambdacd"
 
 echo "Publishing Release to GitHub: "
 echo "Version ${VERSION}"
@@ -19,8 +21,8 @@ echo "${CHANGELOG}"
 echo
 
 github-release release \
-    --user flosell \
-    --repo lambdacd \
+    --user ${USER} \
+    --repo ${REPO} \
     --tag ${VERSION} \
     --name ${VERSION} \
     --description "${CHANGELOG}"
