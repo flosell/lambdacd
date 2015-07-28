@@ -33,12 +33,25 @@
                                  :step-id [1 1]
                                  :result {:status "success" :out "hello from successful step"}
                                  :children: []}])
+(def some-successful-build-state-with-details [{:name "do-other-stuff"
+                                                :step-id [1 1]
+                                                :result {:status "success"
+                                                         :details [{:label "some details"
+                                                                    :href "http://some-url.com"
+                                                                    :details [{:label "some nested details"}]}]}
+                                                :children: []}])
+
 (def some-failed-build-state [{:name "do-other-stuff"
                                  :step-id [1 1]
                                  :result {:status "failure" :out "hello from successful child"}
                                  :children: []}])
 
 (deftest output-test
+         (testing "that a help message is shown when no step selected"
+                  (tu/with-mounted-component
+                    (output/output-component some-running-build-state nil (atom true))
+                    (fn [c div]
+                      (is (dom/found-in div #"to display details")))))
          (testing "that we can display the :out output of a step"
                   (tu/with-mounted-component
                     (output/output-component some-running-build-state [1 1] (atom true))
@@ -76,7 +89,7 @@
                   (tu/with-mounted-component
                     (output/output-component some-running-build-state [1 1] (atom true))
                     (fn [c div]
-                      (is (dom/found-in (sel1 div :button) #"-"))
+                      (is (dom/found-in (sel1 div :button) #"hide"))
                       (is (dom/found-in div #"some-key"))
                       (is (dom/found-in div #"some-value")))))
          (testing "that we can hide the other attributes of the output map"
@@ -84,6 +97,13 @@
                     (output/output-component some-running-build-state [1 1] (atom false))
                     (fn [c div]
                       (dom/fire! (sel1 div :button) :click)
-                      (is (dom/found-in (sel1 div :button) #"\+"))
+                      (is (dom/found-in (sel1 div :button) #"show"))
                       (is (dom/not-found-in div #"some-key"))
-                      (is (dom/not-found-in div #"some-value"))))))
+                      (is (dom/not-found-in div #"some-value")))))
+         (testing "that the details are displayed if present"
+                  (tu/with-mounted-component
+                    (output/output-component some-successful-build-state-with-details [1 1] (atom false))
+                    (fn [c div]
+                      (is (dom/found-in div #"some details"))
+                      (is (dom/containing-link-to div "http://some-url.com"))
+                      (is (dom/found-in div #"nested details"))))))

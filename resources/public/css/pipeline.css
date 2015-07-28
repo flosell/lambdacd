@@ -29,7 +29,7 @@
   overflow-y: scroll;
 }
 
-#currentBuild ol {
+#currentBuild #pipeline ol {
   display:-ms-flexbox;
   display:-webkit-box;
   display:-webkit-flex;
@@ -41,7 +41,7 @@ ul,ol {
   padding-left:0;
 }
 
-#currentBuild li {
+#currentBuild #pipeline li {
   display:-ms-flexbox;
   display:-webkit-box;
   display:-webkit-flex;
@@ -122,4 +122,12 @@ li[data-status=waiting] {
 
 .history-item-detail {
   margin: 0;
+}
+
+.details-container ul {
+  padding-left: 40px;
+}
+
+.details-container {
+  display: block;
 }

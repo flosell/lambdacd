@@ -41,6 +41,7 @@
     (in-parallel
       ;; these child steps do some actual work with the checked out git repo
       (with-frontend-git
+        create-some-details
         client-package)
       (with-backend-git
         server-test

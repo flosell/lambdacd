@@ -8,10 +8,30 @@
     (swap! a not)
     nil))
 
-(defn- details-component [details-visible result]
-  (if @details-visible
+(defn- raw-step-results-component [visible result]
+  (if @visible
     [:pre (js/JSON.stringify (clj->js result) nil 2)]
     [:pre]))
+
+(declare details-component)
+
+(defn- detail-component [detail]
+  [:li {:key (:label detail)}
+   (if (:href detail)
+     [:a {:href (:href detail)
+          :target "_blank"} (:label detail)]
+     [:span (:label detail)])
+   (if (:details detail)
+     (details-component (:details detail)))])
+
+(defn- details-component [details]
+  [:ul (map detail-component details)])
+
+(defn- details-wrapper-component [result]
+  (if (:details result)
+    [:div {:class "details-container"}
+     [:h3 "Details"]
+     (details-component (:details result))]))
 
 (defn- scroll-to-bottom []
   (js/window.scrollTo 0 js/document.body.scrollHeight ))
@@ -43,15 +63,21 @@
      output
      (str output "\n\n" "Step is finished: " (status-to-string status))))
 
-(defn- plain-output-component [build-state step-id-to-display details-visible]
+(defn- plain-output-component [build-state step-id-to-display raw-step-results-visible]
   (let [step (state/find-by-step-id build-state step-id-to-display)
         result (:result step )
         output (enhanced-output result)]
     [:div {:class "results"}
-     [:button {:on-click (negate details-visible)} (if @details-visible "-" "+")]
-     [details-component details-visible result]
+
+     [details-wrapper-component result]
+     [:h3 "Complete Step Result"]
+     [:button {:on-click (negate raw-step-results-visible)} (if @raw-step-results-visible "hide" "show")]
+     [raw-step-results-component raw-step-results-visible result]
+     [:h3 "Console Output"]
      [:pre output]]))
 
 
 (defn output-component [build-state step-id-to-display details-visible]
-  (scroll-wrapper (partial plain-output-component build-state step-id-to-display details-visible)))
+  (if step-id-to-display
+    (scroll-wrapper (partial plain-output-component build-state step-id-to-display details-visible))
+    [:pre "Click on a build step to display details."]))

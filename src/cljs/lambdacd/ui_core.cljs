@@ -38,7 +38,6 @@
     [:div {:key build-number :class "blocked"}
      [:h2 (str "Current Build " build-number)]
      [pipeline/pipeline-component build-number build-state-atom]
-     [:h2 "Output"]
      [output/output-component @build-state-atom @step-id-to-display-atom output-details-visible]]
     [commons/loading-screen]))
 
