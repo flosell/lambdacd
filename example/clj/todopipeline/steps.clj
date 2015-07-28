@@ -46,7 +46,7 @@
   {:status :success
    :details [{:label "Some Links"
               :details [{:label "Builds API"
-                         :href "/api/builds"}
+                         :href "/api/builds/"}
                         {:label "Github"
                          :href "https://github.com/flosell/lambdacd"}]}
              {:label "Mock test results"
