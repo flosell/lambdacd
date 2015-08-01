@@ -9,16 +9,14 @@
   (let [config (:config ctx)
         state (atom (default-pipeline-state/initial-pipeline-state config))
         pipeline-state-component (default-pipeline-state/new-default-pipeline-state state config ctx)]
-    (assoc ctx :pipeline-state-component pipeline-state-component
-               :_state state)))
+    (assoc ctx :pipeline-state-component pipeline-state-component)))
 
 (defn assemble-pipeline [pipeline-def config]
   (let [context (-> {:config                   config
                      :step-results-channel     (async/chan (async/dropping-buffer 100))}
                     (event-bus/initialize-event-bus)
                     (initialize-default-pipeline-state))]
-    {:state        (:_state context) ;; this is deprecated, TODO: remove in next release
-     :context      context
+    {:context      context
      :pipeline-def pipeline-def}))
 
 (defn retrigger [pipeline context build-number step-id-to-retrigger]

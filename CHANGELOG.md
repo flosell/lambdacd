@@ -5,11 +5,12 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
-## 0.4.4
+## 0.5.0
 
 * Improvements:
   * Extracted common functions from `internal.default-pipeline-state` so they can be reused in other persistence components
-
+* API changes: 
+  * Remove deprecated access to the internal pipeline-state through `:state` in the result of assemble-pipeline
 
 ## 0.4.3
 
