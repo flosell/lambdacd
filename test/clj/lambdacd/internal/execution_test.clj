@@ -250,13 +250,12 @@
                      (some-ctx-with :step-results-channel step-results-channel
                                     :step-id [0]
                                     :build-number 2))
-      (Thread/sleep 500) ; result-channel is now filled async, wait a bit to make sure it's filled
       (is (= [{:build-number 2 :step-id [1 0] :step-result {:status :running}}
               {:build-number 2 :step-id [1 0] :step-result {:foo :baz :status :success}}
               {:build-number 2 :step-id [2 0] :step-result {:status :running}}
               {:build-number 2 :step-id [2 0] :step-result {:status :success}}
               {:build-number 2 :step-id [3 0] :step-result {:status :running}}
-              {:build-number 2 :step-id [3 0] :step-result {:status :failure}}] (slurp-chan step-results-channel))))))
+              {:build-number 2 :step-id [3 0] :step-result {:status :failure}}] (slurp-chan-with-size 6 step-results-channel))))))
 
 (defn some-control-flow [&] ; just a mock, we don't actually execute this
   (throw (IllegalStateException. "This shouldn't be called")))
