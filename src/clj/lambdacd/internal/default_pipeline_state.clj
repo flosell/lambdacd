@@ -49,8 +49,8 @@
   (next-build-number [self]
     (next-build-number-legacy state-atom)))
 
-(defn new-default-pipeline-state [state-atom config ctx]
-  (let [home-dir (:home-dir config)
-        instance (->DefaultPipelineState state-atom home-dir)]
-    (pipeline-state/start-pipeline-state-updater instance ctx)
+(defn new-default-pipeline-state [config & {:keys [initial-state-for-testing]}] ; TODO: remove this!
+  (let [state-atom (atom (or initial-state-for-testing (initial-pipeline-state config)))
+        home-dir   (:home-dir config)
+        instance   (->DefaultPipelineState state-atom home-dir)]
     instance))

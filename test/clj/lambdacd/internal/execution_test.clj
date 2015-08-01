@@ -12,7 +12,8 @@
             [lambdacd.internal.execution :as execution]
             [lambdacd.testsupport.noop-pipeline-state :as noop-pipeline-state]
             [lambdacd.internal.pipeline-state :as ps]
-            [lambdacd.event-bus :as event-bus])
+            [lambdacd.event-bus :as event-bus]
+            [lambdacd.internal.pipeline-state :as pipeline-state])
   (:import java.lang.IllegalStateException))
 
 (defn some-step-processing-input [arg & _]
@@ -192,6 +193,7 @@
           ctx (some-ctx-with :step-id [3 2 1]
                              :build-number 3
                              :is-killed is-killed)
+          _ (pipeline-state/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
           future-step-result (start-waiting-for (execute-step {} [ctx some-step-waiting-to-be-killed]))]
       (wait-for (tu/step-running? ctx))
       (kill-step ctx 3 [3 2 1])
@@ -277,6 +279,7 @@
                                    [2] { :status :failure }}}
           pipeline `((some-control-flow some-step) some-successful-step)
           context (some-ctx-with :initial-pipeline-state initial-state)]
+      (pipeline-state/start-pipeline-state-updater (:pipeline-state-component context) context)
       (retrigger pipeline context 0 [2] 1)
       (wait-for (tu/step-success? context 1 [2]))
       (is (= {0 {[1] { :status :success }
@@ -288,6 +291,7 @@
   (testing "that we can retrigger a pipeline from the initial step as well"
     (let [pipeline `(some-successful-step some-other-step some-failing-step)
           context (some-ctx)]
+      (pipeline-state/start-pipeline-state-updater (:pipeline-state-component context) context)
       (retrigger pipeline context 0 [1] 1)
       (wait-for (tu/step-failure? context 1 [3]))
       (is (= {1 {[1] { :status :success}
@@ -299,6 +303,7 @@
                              [2 1] {:status :unknown :out "this will be retriggered"}}}
           pipeline `((some-control-flow-thats-called some-step-that-fails-if-retriggered some-step-to-retrigger) some-successful-step)
           context (some-ctx-with :initial-pipeline-state initial-state)]
+      (pipeline-state/start-pipeline-state-updater (:pipeline-state-component context) context)
       (retrigger pipeline context 0 [2 1] 1)
       (wait-for (tu/step-success? context 1 [2]))
       (is (= {0 {[1] { :status :success }
