@@ -9,6 +9,8 @@ The official release will have a defined and more stable API. If you are already
 
 * Improvements:
   * Extracted common functions from `internal.default-pipeline-state` so they can be reused in other persistence components
+  * UI: add support for :details field in step-results to display details about a build step result and link to more 
+    detailed information (e.g. test reports) (#37) 
 * API changes: 
   * Remove deprecated access to the internal pipeline-state through `:state` in the result of assemble-pipeline
 
