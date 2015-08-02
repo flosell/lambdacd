@@ -1,20 +1,3 @@
-/* #builds {
-  margin-right:10px;
-
-  flex-shrink:0;
-  border-right: thin black solid;
-  width: 120px;
-} */
-
-.title {
-  margin-bottom:10px;
-}
-
-div.blocked {
-  display:block;
-  width:100%;
-}
-
 .step-link {
   color: inherit;
   text-decoration: none;
