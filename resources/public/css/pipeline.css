@@ -25,30 +25,9 @@
   margin-bottom:10px;
 }
 
-#pipeline {
-  overflow-y: scroll;
-}
-
-#pipeline ol {
-  display:-ms-flexbox;
-  display:-webkit-box;
-  display:-webkit-flex;
-  display:flex;
-}
-
 ul,ol {
   /* reset browser default */
   padding-left:0;
-}
-
-#pipeline li {
-  display:-ms-flexbox;
-  display:-webkit-box;
-  display:-webkit-flex;
-  display:flex;
-  flex-shrink:0;
-  margin-left:10px;
-  border: thin black solid;
 }
 
 div {
@@ -63,44 +42,15 @@ div.blocked {
   width:100%;
 }
 
-li[data-status=waiting] {
-  background:lightyellow;
-}
-
-.trigger, .retrigger, .kill {
-  margin-left:5px;
-  cursor:pointer;
-}
-
 .step-link {
   color: inherit;
   text-decoration: none;
 }
 
-#pipeline li[data-status=running] {
-  background:lightblue;
-}
-
-#pipeline li[data-status=success]  {
-  background:lightgreen;
-}
-
-#pipeline li[data-status=failure]  {
-  background:tomato;
-}
-
-#pipeline li[data-status=killed] {
-  background:lightgrey;
-}
-
-#pipeline li:not([data-status]) {
-  background:white;
-}
 
 .results {
   display:inline-block;
 }
-
 
 .history-item {
   padding-top: 5px;
@@ -131,3 +81,63 @@ li[data-status=waiting] {
 .details-container {
   display: block;
 }
+
+
+/* cleaned up CSS below */
+
+
+/* Pipeline START */
+.pipeline__step-container {
+  display:-ms-flexbox;
+  display:-webkit-box;
+  display:-webkit-flex;
+  display:flex;
+}
+
+.pipeline__step-container--sequential {
+  flex-direction: row;
+}
+
+.pipeline__step-container--parallel {
+  flex-direction: column;
+}
+
+.pipeline {
+  overflow-y: scroll;
+}
+
+.pipeline__step {
+  display:-ms-flexbox;
+  display:-webkit-box;
+  display:-webkit-flex;
+  display:flex;
+
+  flex-shrink:0;
+  margin-left:10px;
+  border: thin black solid;
+}
+
+.pipeline__step--running {
+    background:lightblue;
+}
+.pipeline__step--waiting {
+  background:lightyellow;
+}
+.pipeline__step--success {
+    background:lightgreen;
+}
+.pipeline__step--failure {
+  background:tomato;
+}
+.pipeline__step--killed {
+  background:lightgrey;
+}
+.pipeline__step--no-status {
+  background:white;
+}
+
+.pipeline__step__action-button {
+  margin-left:5px;
+  cursor:pointer;
+}
+/* Pipeline END */

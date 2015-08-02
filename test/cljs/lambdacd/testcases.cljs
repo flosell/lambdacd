@@ -10,7 +10,7 @@
   [:div "here is current build"])
 
 (defn render [component]
-  (reagent/render-component component (.getElementById js/document "app")))
+  (reagent/render-component component (.getElementById js/document "content")))
 
 (defn main []
   (let [build-number           (atom 0)
@@ -39,7 +39,10 @@
                                              :result {:status "success"}}
                                             {:name "wait-for-manual-trigger"
                                              :step-id [2 1]
-                                             :result {:status "killed"}}]}
+                                             :result {:status "killed"}}
+                                            {:name "always-waiting"
+                                             :step-id [3 1]
+                                             :result {:status "waiting"}}]}
                                 {:name "build"
                                  :step-id [2]
                                  :result {:status "success"}}
@@ -69,4 +72,4 @@
                                                          :result {:status "failure"}}]}]}])
         build-number     1]
     (render
-      (pipeline/pipeline-component build-number build-state-atom))))
+      [#'pipeline/pipeline-component build-number build-state-atom])))
