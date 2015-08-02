@@ -45,7 +45,7 @@
   (let [build-number @build-number-atom]
     (if build-number
       (do
-        [:div (if @connection-lost {:class "connection-lost"})
+        [:div (if @connection-lost {:class "app--connection-lost"})
          [:div {:id "builds"} [history-component @history]]
           [:div {:id "currentBuild"} [current-build-component state build-number step-id-to-display-atom output-details-visible]]])
       [:div {:id "loading"}

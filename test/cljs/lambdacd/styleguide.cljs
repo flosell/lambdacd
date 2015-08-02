@@ -11,6 +11,7 @@
 (defn- initialize-testcase [testcase]
   (case testcase
     "main" (testcases/main)
+    "main-connection-lost" (testcases/main-connection-lost)
     "normal-pipeline" (testcases/normal-pipeline)))
 
 (defn initialize-styleguide []

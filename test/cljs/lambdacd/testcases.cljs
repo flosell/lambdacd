@@ -28,6 +28,22 @@
 
                             fake-history-component
                             fake-current-build-component])))
+(defn main-connection-lost []
+  (let [build-number           (atom 0)
+        step-id                (atom [42])
+        history                (atom [])
+        state                  (atom {})
+        output-details-visible (atom false)
+        connection-lost        (atom true)]
+    (render [#'ui-core/root build-number
+                            step-id
+                            history
+                            state
+                            output-details-visible
+                            connection-lost
+
+                            fake-history-component
+                            fake-current-build-component])))
 
 (defn normal-pipeline []
   (let [build-state-atom (atom [{:type "parallel"

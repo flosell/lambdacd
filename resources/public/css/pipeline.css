@@ -1,8 +1,3 @@
-
-#app .connection-lost * {
-  opacity: 0.8;
-}
-
 #app {
   display:-ms-flexbox;
   display:-webkit-box;
@@ -23,11 +18,6 @@
 
 .title {
   margin-bottom:10px;
-}
-
-ul,ol {
-  /* reset browser default */
-  padding-left:0;
 }
 
 div {
@@ -82,8 +72,20 @@ div.blocked {
   display: block;
 }
 
-
 /* cleaned up CSS below */
+
+/* Resets START */
+ul,ol {
+  /* reset browser default */
+  padding-left:0;
+}
+/* Resets END */
+
+/* Connection-Lost START */
+.app--connection-lost * {
+  opacity: 0.8;
+}
+/* Connection-Lost END */
 
 
 /* Pipeline START */
