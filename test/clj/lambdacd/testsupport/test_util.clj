@@ -37,6 +37,11 @@
      ~body
      @history-atom#))
 
+(defn get-or-timeout [c & {:keys [timeout]
+                           :or   {timeout 10000}}]
+  (async/alt!!
+    c ([result] result)
+    (async/timeout timeout) {:status :timeout}))
 
 (defn slurp-chan [c]
   (Thread/sleep 200) ; FIXME: hack
@@ -44,7 +49,7 @@
   (async/<!! (async/into [] c)))
 
 (defn slurp-chan-with-size [size ch]
-  (async/<!!
+  (get-or-timeout
     (async/go-loop [collector []]
       (if-let [item (async/<! ch)]
         (let [new-collector (conj collector item)]
@@ -95,12 +100,6 @@
   (-> m
       (without-key :most-recent-update-at)
       (without-key :first-updated-at)))
-
-(defn get-or-timeout [c & {:keys [timeout]
-                           :or   {timeout 10000}}]
-  (async/alt!!
-    c ([result] result)
-    (async/timeout timeout) {:status :timeout}))
 
 
 (defmacro wait-for [predicate]
