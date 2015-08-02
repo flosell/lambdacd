@@ -55,8 +55,8 @@
 
          [:div {:class "app__header"} [header-component]]
          [:div {:class "l-vertical app__content"}
-           [:div {:id "builds"} [history-component @history]]
-           [:div {:id "currentBuild"} [current-build-component state build-number step-id-to-display-atom output-details-visible]]]])
+           [:div {:id "builds" :class "app__history l-vertical"} [history-component @history]]
+           [:div {:id "currentBuild" :class "app__current-build l-vertical"} [current-build-component state build-number step-id-to-display-atom output-details-visible]]]])
       [:div {:id "loading"}
        [:h1 "Loading..."]]
     )))

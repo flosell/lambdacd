@@ -1,6 +1,7 @@
 (ns lambdacd.testcases
   (:require [reagent.core :as reagent :refer [atom]]
             [lambdacd.ui-core :as ui-core]
+            [lambdacd.history :as history]
             [lambdacd.pipeline :as pipeline]))
 (defn- background [color]
   {:style {:background-color color}})
@@ -14,10 +15,6 @@
 (defn fake-header-component [& _]
   [:div (background "lightyellow") "some header"])
 
-
-(defn render [component]
-  (reagent/render-component component (.getElementById js/document "content")))
-
 (defn main []
   (let [build-number           (atom 0)
         step-id                (atom [42])
@@ -25,7 +22,7 @@
         state                  (atom {})
         output-details-visible (atom false)
         connection-lost        (atom false)]
-    (render [#'ui-core/root build-number
+    [#'ui-core/root build-number
                             step-id
                             history
                             state
@@ -34,7 +31,7 @@
 
                             fake-history-component
                             fake-current-build-component
-                            fake-header-component])))
+                            fake-header-component]))
 (defn main-connection-lost []
   (let [build-number           (atom 0)
         step-id                (atom [42])
@@ -42,7 +39,7 @@
         state                  (atom {})
         output-details-visible (atom false)
         connection-lost        (atom true)]
-    (render [#'ui-core/root build-number
+    [#'ui-core/root build-number
                             step-id
                             history
                             state
@@ -51,7 +48,7 @@
 
                             fake-history-component
                             fake-current-build-component
-                            fake-header-component])))
+                            fake-header-component]))
 
 (defn normal-pipeline []
   (let [build-state-atom (atom [{:type "parallel"
@@ -95,5 +92,30 @@
                                                          :step-id [2 2 3]
                                                          :result {:status "failure"}}]}]}])
         build-number     1]
-    (render
-      [#'pipeline/pipeline-component build-number build-state-atom])))
+      [#'pipeline/pipeline-component build-number build-state-atom]))
+
+(defn normal-history []
+  [:div {:style {:display "flex"}}
+    [#'history/build-history-component [{:build-number 1
+                                         :status "killed"
+                                         :most-recent-update-at "2015-08-02T13:49:50.671Z"
+                                         :first-updated-at "2015-08-02T11:37:31.272Z"}
+                                        {:build-number 2
+                                         :status "failure"
+                                         :most-recent-update-at "2015-08-02T11:38:40.671Z"
+                                         :first-updated-at "2015-08-02T11:37:31.272Z"}
+                                        {:build-number 3
+                                         :status "running"
+                                         :most-recent-update-at "2015-08-02T11:37:40.671Z"
+                                         :first-updated-at "2015-08-02T11:37:31.272Z"}
+                                        {:build-number 4
+                                         :status "waiting"
+                                         :most-recent-update-at nil
+                                         :first-updated-at nil}
+                                        {:build-number 5
+                                         :status "success"
+                                         :most-recent-update-at "2015-08-02T11:40:40.671Z"
+                                         :first-updated-at "2015-08-02T11:37:31.272Z"}]]
+   [:div {:style {:border "solid yellow"
+                  :display "flex"
+                  :width "100000px"}} "neighboring content eating up all space"]])

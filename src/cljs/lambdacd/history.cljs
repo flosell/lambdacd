@@ -19,23 +19,23 @@
                 "waiting" "fa fa-pause"
                 "killed"  "fa fa-bug"
                 "fa fa-question")]
-    [:div {:class "history-item-status-icon" } [:i {:class class}]]))
+    [:div {:class "history--item--status-icon" } [:i {:class class}]]))
 
 (defn history-item-component [{build-number :build-number
                                status :status
                                most-recent-update-at :most-recent-update-at
                                first-updated-at :first-updated-at}]
-  [:li {:key build-number :class "history-item"}
+  [:li {:key build-number :class "history--item"}
    [status-icon status]
    [:div {:class "history-item-content"}
      [:a {:href (route/for-build-number build-number) :class "history-item-header"} (str "Build " build-number)]
-     [:p {:class "history-item-detail"} status]
-     [:i {:class "history-item-detail"} (time/format-duration first-updated-at most-recent-update-at)]
+     [:p {:class "history--item--detail-line"} status]
+     [:i {:class "history--item--detail-line"} (time/format-duration first-updated-at most-recent-update-at)]
     ]
    ])
 
 (defn build-history-component [history]
-  [:div {:class "blocked"}
+  [:div {:class "history"}
    [:h2 "Builds"]
    (if (not (nil? history))
      (let [history-to-display (sort-by :build-number > history)]
