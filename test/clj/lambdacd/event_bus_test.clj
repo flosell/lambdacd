@@ -25,5 +25,5 @@
       (publish ctx :test-messages {:message-number 1})
       (publish ctx :test-messages {:message-number 2})
 
-      (is (= [{:message-number 1} {:message-number 2}] (slurp-chan-with-size 1 payloads-1)))
+      (is (= [{:message-number 1} {:message-number 2}] (slurp-chan-with-size 2 payloads-1)))
       (is (= [{:message-number 1} {:message-number 2}] (slurp-chan-with-size 2 payloads-2))))))
