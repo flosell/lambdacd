@@ -29,7 +29,7 @@
   overflow-y: scroll;
 }
 
-#currentBuild #pipeline ol {
+#pipeline ol {
   display:-ms-flexbox;
   display:-webkit-box;
   display:-webkit-flex;
@@ -41,7 +41,7 @@ ul,ol {
   padding-left:0;
 }
 
-#currentBuild #pipeline li {
+#pipeline li {
   display:-ms-flexbox;
   display:-webkit-box;
   display:-webkit-flex;

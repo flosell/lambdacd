@@ -10,7 +10,8 @@
 
 (defn- initialize-testcase [testcase]
   (case testcase
-    "main" (testcases/main)))
+    "main" (testcases/main)
+    "normal-pipeline" (testcases/normal-pipeline)))
 
 (defn initialize-styleguide []
   (let [testcase (testcase (query))]
