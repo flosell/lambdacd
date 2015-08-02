@@ -1,13 +1,3 @@
-#app {
-  display:-ms-flexbox;
-  display:-webkit-box;
-  display:-webkit-flex;
-  display:flex;
-  border-top: thin black solid;
-  height:100%;
-  width:100%;
-}
-
 #builds {
   margin-right:10px;
 
@@ -20,12 +10,12 @@
   margin-bottom:10px;
 }
 
-div {
+/*div {
   display:-ms-flexbox;
   display:-webkit-box;
   display:-webkit-flex;
   display:flex;
-}
+}*/
 
 div.blocked {
   display:block;
@@ -81,11 +71,34 @@ ul,ol {
 }
 /* Resets END */
 
-/* Connection-Lost START */
+/* Layout START */
+.l-horizontal {
+  display: flex;
+  flex-direction: column;
+}
+
+.l-vertical {
+  display: flex;
+  flex-direction: row;
+}
+/* Layout END */
+
+/* App START */
+
+.app {
+  height:100%;
+  width:100%;
+}
+
+.app__content {
+  flex: 1;
+  border-top: thin black solid;
+}
+
 .app--connection-lost * {
   opacity: 0.8;
 }
-/* Connection-Lost END */
+/* App END */
 
 
 /* Pipeline START */

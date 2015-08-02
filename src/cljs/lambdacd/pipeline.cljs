@@ -1,16 +1,12 @@
 (ns lambdacd.pipeline
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [reagent.core :as reagent :refer [atom]]
-            [lambdacd.utils :refer [click-handler]]
-            [lambdacd.utils :refer [append-components]]
+            [lambdacd.utils :refer [click-handler classes append-components]]
             [lambdacd.api :as api]
             [lambdacd.route :as route]
             [clojure.string :as string]))
 
 (declare build-step-component) ;; mutual recursion
-
-(defn classes [& cs]
-  (string/join " " cs))
 
 (defn step-component-with [{step-id :step-id {status :status} :result name :name } build-number children]
   (let [status-class (str  "pipeline__step--" (or status "no-status"))

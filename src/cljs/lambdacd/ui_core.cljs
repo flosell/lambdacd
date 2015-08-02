@@ -2,7 +2,7 @@
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [reagent.core :as reagent :refer [atom]]
             [cljs.core.async :as async]
-            [lambdacd.utils :as utils]
+            [lambdacd.utils :as utils :refer [classes]]
             [lambdacd.api :as api]
             [lambdacd.pipeline :as pipeline]
             [lambdacd.route :as route]
@@ -40,14 +40,23 @@
      [output/output-component @build-state-atom @step-id-to-display-atom output-details-visible]]
     [commons/loading-screen]))
 
+(defn header []
+  [:div
+   [:h1 "LambdaCD"]])
 
-(defn root [build-number-atom step-id-to-display-atom history state output-details-visible connection-lost history-component current-build-component]
-  (let [build-number @build-number-atom]
+(defn root [build-number-atom step-id-to-display-atom history state output-details-visible connection-lost history-component current-build-component header-component]
+  (let [build-number @build-number-atom
+        container-classes (if @connection-lost
+                            ["app" "l-horizontal" "app--connection-lost"]
+                            ["app" "l-horizontal"] )]
     (if build-number
       (do
-        [:div (if @connection-lost {:class "app--connection-lost"})
-         [:div {:id "builds"} [history-component @history]]
-          [:div {:id "currentBuild"} [current-build-component state build-number step-id-to-display-atom output-details-visible]]])
+        [:div {:class (classes container-classes)}
+
+         [:div {:class "app__header"} [header-component]]
+         [:div {:class "l-vertical app__content"}
+           [:div {:id "builds"} [history-component @history]]
+           [:div {:id "currentBuild"} [current-build-component state build-number step-id-to-display-atom output-details-visible]]]])
       [:div {:id "loading"}
        [:h1 "Loading..."]]
     )))
@@ -64,6 +73,6 @@
     (poll-state state-atom build-number-atom connection-lost-atom)
     (route/hook-browser-navigation! build-number-atom step-id-to-display-atom state-atom)
     ; #' is necessary so that fighweel can update: https://github.com/reagent-project/reagent/issues/94
-    (reagent/render-component [#'root build-number-atom step-id-to-display-atom history-atom state-atom output-details-visible connection-lost-atom history/build-history-component current-build-component] (.getElementById js/document "app"))))
+    (reagent/render-component [#'root build-number-atom step-id-to-display-atom history-atom state-atom output-details-visible connection-lost-atom history/build-history-component current-build-component header] (.getElementById js/document "app"))))
 
 

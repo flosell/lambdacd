@@ -2,12 +2,18 @@
   (:require [reagent.core :as reagent :refer [atom]]
             [lambdacd.ui-core :as ui-core]
             [lambdacd.pipeline :as pipeline]))
+(defn- background [color]
+  {:style {:background-color color}})
 
 (defn fake-history-component [& _]
-  [:div "here is history"])
+  [:div (background "lightblue") "here is history"])
 
 (defn fake-current-build-component [& _]
-  [:div "here is current build"])
+  [:div (background "lightgreen") "here is current build"])
+
+(defn fake-header-component [& _]
+  [:div (background "lightyellow") "some header"])
+
 
 (defn render [component]
   (reagent/render-component component (.getElementById js/document "content")))
@@ -27,7 +33,8 @@
                             connection-lost
 
                             fake-history-component
-                            fake-current-build-component])))
+                            fake-current-build-component
+                            fake-header-component])))
 (defn main-connection-lost []
   (let [build-number           (atom 0)
         step-id                (atom [42])
@@ -43,7 +50,8 @@
                             connection-lost
 
                             fake-history-component
-                            fake-current-build-component])))
+                            fake-current-build-component
+                            fake-header-component])))
 
 (defn normal-pipeline []
   (let [build-state-atom (atom [{:type "parallel"
