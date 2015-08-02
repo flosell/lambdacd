@@ -14,7 +14,10 @@
             [lambdacd.ui.ui-server :as ui]
             [lambdacd.runners :as runners]
             [clojure.tools.logging :as log]
-            [clojure.core.async :as async])
+
+            [compojure.core :refer [routes GET]]
+            [ring.util.response :as resp]
+            [compojure.route :as route])
   (:use [lambdacd.steps.control-flow]
         [todopipeline.steps]))
 
@@ -57,6 +60,13 @@
     some-step-that-cant-be-reached
   ))
 
+(defn- visual-styleguide []
+  (routes
+    (route/resources "/styleguide/" {:root "public"})
+    (GET "/" [] (resp/redirect "/styleguide/"))
+    (GET "" [] (resp/redirect "/styleguide/"))
+    (GET "/styleguide/" [] (resp/resource-response "visualStyleguide.html" {:root "public"}))))
+
 (defn -main [& args]
   (let [home-dir (utils/create-temp-dir)
         ;; # The Configuration.
@@ -72,4 +82,7 @@
     (log/info "LambdaCD Home Directory is " home-dir)
     (runners/start-new-run-after-first-step-finished pipeline)
     (ring-server/serve ring-handler {:open-browser? false
-                            :port 8080})))
+                                     :port 8080})
+    ;; visual styleguide for ui development. you don't need this in production
+    (ring-server/serve (visual-styleguide) {:open-browser? false
+                                     :port 8081})))

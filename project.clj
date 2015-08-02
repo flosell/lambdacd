@@ -78,7 +78,7 @@
 
                         :env          {:dev? true}
 
-                        :cljsbuild    {:builds        {:app  {:source-paths ["env/dev/cljs"]
+                        :cljsbuild    {:builds        {:app  {:source-paths ["env/dev/cljs" "test/cljs"]
                                                               :compiler     {:main          "lambdacd.dev"
                                                                              :optimizations :none
                                                                              :source-map    true}}

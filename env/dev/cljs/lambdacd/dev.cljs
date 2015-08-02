@@ -2,6 +2,8 @@
   (:require [lambdacd.ui-core :as core]
             [figwheel.client :as figwheel :include-macros true]
             [weasel.repl :as weasel]
+            [lambdacd.testutils :refer [path]]
+            [lambdacd.styleguide :as styleguide]
             [reagent.core :as r]))
 
 (enable-console-print!)
@@ -11,4 +13,13 @@
   :jsload-callback (fn []
                      (r/force-update-all)))
 
-(core/init!)
+(defn- contains [s substr]
+  (not= -1 (.indexOf s substr)))
+
+(defn initialize-app []
+  (core/init!))
+
+(if (contains (path) "styleguide")
+  (styleguide/initialize-styleguide)
+  (initialize-app))
+

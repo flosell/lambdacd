@@ -8,8 +8,7 @@
             [lambdacd.route :as route]
             [lambdacd.history :as history]
             [lambdacd.commons :as commons]
-            [lambdacd.output :as output])
-  )
+            [lambdacd.output :as output]))
 
 (enable-console-print!)
 
@@ -42,17 +41,16 @@
     [commons/loading-screen]))
 
 
-(defn root [build-number-atom step-id-to-display-atom history state output-details-visible connection-lost]
+(defn root [build-number-atom step-id-to-display-atom history state output-details-visible connection-lost history-component current-build-component]
   (let [build-number @build-number-atom]
     (if build-number
       (do
         [:div (if @connection-lost {:class "connection-lost"})
-         [:div {:id "builds"} [history/build-history-component @history]]
+         [:div {:id "builds"} [history-component @history]]
           [:div {:id "currentBuild"} [current-build-component state build-number step-id-to-display-atom output-details-visible]]])
       [:div {:id "loading"}
-       :h1 "Loading..."]
+       [:h1 "Loading..."]]
     )))
-
 
 
 (defn init! []
@@ -66,6 +64,6 @@
     (poll-state state-atom build-number-atom connection-lost-atom)
     (route/hook-browser-navigation! build-number-atom step-id-to-display-atom state-atom)
     ; #' is necessary so that fighweel can update: https://github.com/reagent-project/reagent/issues/94
-    (reagent/render-component [#'root build-number-atom step-id-to-display-atom history-atom state-atom output-details-visible connection-lost-atom] (.getElementById js/document "app"))))
+    (reagent/render-component [#'root build-number-atom step-id-to-display-atom history-atom state-atom output-details-visible connection-lost-atom history/build-history-component current-build-component] (.getElementById js/document "app"))))
 
 

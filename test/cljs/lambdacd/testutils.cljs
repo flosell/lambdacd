@@ -19,3 +19,8 @@
         (reagent/flush)
         (.removeChild (.-body js/document) div)))))
 
+(defn path []
+  (.-pathname (.-location js/window)))
+
+(defn query []
+  (.-search (.-location js/window)))
