@@ -32,13 +32,19 @@
 (defn poll-state [state-atom build-number-atom connection-lost-atom]
   (poll state-atom connection-lost-atom #(api/get-build-state @build-number-atom)))
 
-(defn current-build-component [build-state-atom build-number step-id-to-display-atom output-details-visible]
+(defn current-build-header-component [build-number]
+  [:h2 (str "Current Build " build-number)])
+
+(defn current-build-component [build-state-atom build-number step-id-to-display-atom output-details-visible pipeline-component output-component header-component]
   (if (not (nil? @build-state-atom))
-    [:div {:key build-number}
-     [:h2 (str "Current Build " build-number)]
-     [pipeline/pipeline-component build-number build-state-atom]
-     [output/output-component @build-state-atom @step-id-to-display-atom output-details-visible]]
+    [:div {:class "build" :key build-number}
+     [header-component build-number]
+     [pipeline-component build-number build-state-atom]
+     [output-component @build-state-atom @step-id-to-display-atom output-details-visible]]
     [commons/loading-screen]))
+
+(defn wired-current-build-component [build-state-atom build-number step-id-to-display-atom output-details-visible]
+  [current-build-component build-state-atom build-number step-id-to-display-atom output-details-visible pipeline/pipeline-component output/output-component current-build-header-component])
 
 (defn header []
   [:div
@@ -58,8 +64,7 @@
            [:div {:id "builds" :class "app__history l-vertical"} [history-component @history]]
            [:div {:id "currentBuild" :class "app__current-build l-vertical"} [current-build-component state build-number step-id-to-display-atom output-details-visible]]]])
       [:div {:id "loading"}
-       [:h1 "Loading..."]]
-    )))
+       [:h1 "Loading..."]])))
 
 
 (defn init! []
@@ -73,6 +78,6 @@
     (poll-state state-atom build-number-atom connection-lost-atom)
     (route/hook-browser-navigation! build-number-atom step-id-to-display-atom state-atom)
     ; #' is necessary so that fighweel can update: https://github.com/reagent-project/reagent/issues/94
-    (reagent/render-component [#'root build-number-atom step-id-to-display-atom history-atom state-atom output-details-visible connection-lost-atom history/build-history-component current-build-component header] (.getElementById js/document "app"))))
+    (reagent/render-component [#'root build-number-atom step-id-to-display-atom history-atom state-atom output-details-visible connection-lost-atom history/build-history-component wired-current-build-component header] (.getElementById js/document "app"))))
 
 

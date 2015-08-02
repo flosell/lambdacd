@@ -119,3 +119,18 @@
    [:div {:style {:border "solid yellow"
                   :display "flex"
                   :width "100000px"}} "neighboring content eating up all space"]])
+
+
+(defn fake-pipeline [& _]
+  [:div (background "lightsteelblue") "here is pipeline"])
+
+(defn fake-output [& _]
+  [:div (background "lightcyan") "here is output"])
+
+
+(defn current-build-wrapper []
+  (let [build-number           (atom 0)
+        step-id                (atom [42])
+        state                  (atom {})
+        output-details-visible (atom false)]
+    [#'ui-core/current-build-component state build-number step-id output-details-visible fake-pipeline fake-output fake-header-component]))

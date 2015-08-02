@@ -17,7 +17,8 @@
     "main" (render [#'testcases/main])
     "main-connection-lost" (render [#'testcases/main-connection-lost])
     "normal-pipeline" (render [#'testcases/normal-pipeline])
-    "normal-history" (render [#'testcases/normal-history])))
+    "normal-history" (render [#'testcases/normal-history])
+    "current-build-wrapper" (render [#'testcases/current-build-wrapper])))
 
 (defn initialize-styleguide []
   (let [testcase (testcase (query))]

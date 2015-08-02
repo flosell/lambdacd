@@ -1,18 +1,5 @@
-.step-link {
-  color: inherit;
-  text-decoration: none;
-}
-
-.results {
-  display:inline-block;
-}
-
 .details-container ul {
   padding-left: 40px;
-}
-
-.details-container {
-  display: block;
 }
 
 /* cleaned up CSS below */
@@ -28,6 +15,11 @@ html {
 }
 *, *:before, *:after {
   box-sizing: inherit;
+}
+
+.step-link {
+  color: inherit;
+  text-decoration: none;
 }
 
 /* Resets END */
@@ -67,6 +59,12 @@ html {
 }
 
 /* App END */
+
+/* Current Build Start */
+.build {
+  padding-left: 10px;
+}
+/* Current Build End */
 
 /* History Start */
 .history {
