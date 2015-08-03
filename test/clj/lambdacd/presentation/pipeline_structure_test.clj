@@ -6,7 +6,7 @@
             [lambdacd.presentation.pipeline-structure :refer :all]))
 
 (defn do-stuff [] {})
-(defn do-other-stuff [] {})
+(defn ^{:depends-on [do-stuff]} do-other-stuff [] {})
 (defn do-more-stuff [] {})
 (defn do-even-more-stuff [] {})
 
@@ -35,7 +35,7 @@
        do-stuff)
      (in-cwd "bar"
         do-other-stuff))))
-(with-private-fns [lambdacd.presentation.pipeline-structure [display-type display-name]]
+(with-private-fns [lambdacd.presentation.pipeline-structure [display-type display-name has-dependencies? ]]
   (deftest display-type-test
     (testing "that in-parallel gets detected"
       (is (= :parallel (display-type `in-parallel)))
@@ -52,16 +52,20 @@
     (testing "that a sequence is a step" ; TODO: display-representation expects it this way. not entirely sure this is correct..
       (is (= :step (display-type `(do-stuff do-more-stuff))))
       (is (= :step (display-type simple-pipeline)))))
-                  (deftest display-name-test
+  (deftest display-name-test
     (testing "that the display-name for a step is just the function-name"
       (is (= "do-even-more-stuff" (display-name `do-even-more-stuff)))
       (is (= "do-even-more-stuff" (display-name (last (second pipeline))))))
     (testing "that the display-name for a parallel is just the function-name"
       (is (= "in-parallel" (display-name `in-parallel)))
-      (is (= "in-parallel" (display-name (first (first pipeline))))))))
-
-
-
+      (is (= "in-parallel" (display-name (first (first pipeline)))))))
+  (deftest dependencies-of-test
+    (testing "that normal steps don't depend on anything"
+      (is (= false (has-dependencies? `do-stuff)))
+      (is (= false (has-dependencies? (first simple-pipeline)))))
+    (testing "that it returns the step-ids of steps that declare dependencies"
+      (is (= true (has-dependencies? `do-other-stuff )))
+      (is (= true (has-dependencies? (second simple-pipeline)))))))
 
 (deftest display-representation-test
   (testing "that the display-representation of a step is the display-name and display-type"

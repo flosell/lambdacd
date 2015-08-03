@@ -29,6 +29,11 @@
 (defn- display-name [fun]
   (clear-namespace (str fun)))
 
+(defn- has-dependencies? [f]
+  (let [metadata      (meta (find-var f))
+        dependant-fns (:depends-on metadata)]
+    (not (nil? dependant-fns))))
+
 (declare display-representation) ; display-representation and display-representation-for-seq are mutually recursive
 
 (defn- do-some-stuff [part id]
