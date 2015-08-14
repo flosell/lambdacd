@@ -113,6 +113,17 @@
 (defn some-pipeline-state []
   (atom {}))
 
+
+(defn- step-finished-events-for [ctx]
+  (-> (event-bus/subscribe ctx :step-finished)
+      (event-bus/only-payload)
+      (buffered)))
+
+(defn step-result-updates-for [ctx]
+  (-> (event-bus/subscribe ctx :step-result-updated)
+      (event-bus/only-payload)
+      (buffered)))
+
 (deftest execute-step-test
   (testing "that executing returns the step result added to the input args"
     (is (= {:outputs { [0 0] {:foo :baz :x :y :status :success}} :status :success} (execute-step {:x :y} [(some-ctx-with :step-id [0 0]) some-step-processing-input]))))
@@ -132,19 +143,19 @@
   (testing "that the context data is being passed on to the step"
     (is (= {:outputs { [0 0] {:status :success :context-info "foo"}} :status :success} (execute-step {} [(some-ctx-with :step-id [0 0] :the-info "foo") some-step-consuming-the-context]))))
   (testing "that the final pipeline-state is properly set for a step returning a static result"
-    (let [step-results-channel (async/chan 100)]
-      (execute-step {} [(some-ctx-with :step-id [0 0]
-                                       :build-number 5
-                                       :step-results-channel step-results-channel
-                                       :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state)) some-successful-step])
+    (let [ctx                  (some-ctx-with :step-id [0 0]
+                                              :build-number 5
+                                              :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state))
+          step-results-channel (step-result-updates-for ctx)]
+      (execute-step {} [ctx some-successful-step])
       (is (= [{ :build-number 5 :step-id [0 0] :step-result {:status :running } }
               { :build-number 5 :step-id [0 0] :step-result {:status :success } }] (slurp-chan step-results-channel)))))
   (testing "that the final pipeline-state is properly set for a step returning a static and an async result"
-    (let [step-results-channel (async/chan 100)]
-      (execute-step {} [(some-ctx-with :step-id [0 0]
-                                       :build-number 5
-                                       :step-results-channel step-results-channel
-                                       :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state)) some-step-that-sends-failure-on-ch-returns-success])
+    (let [ctx                  (some-ctx-with :step-id [0 0]
+                                              :build-number 5
+                                              :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state))
+          step-results-channel (step-result-updates-for ctx)]
+      (execute-step {} [ctx some-step-that-sends-failure-on-ch-returns-success])
       (is (= [{ :build-number 5 :step-id [0 0] :step-result {:status :running } }
               { :build-number 5 :step-id [0 0] :step-result {:status :failure } }
               { :build-number 5 :step-id [0 0] :step-result {:status :success } }] (slurp-chan step-results-channel)))))
@@ -155,11 +166,11 @@
     (is (= {:outputs {[0 0] {:status :success } } :status :success }
            (execute-step {} [(some-ctx-with :step-id [0 0]) some-step-that-sends-failure-on-ch-returns-success]))))
   (testing "that we can pass in a step-results-channel that receives messages with the complete, accumulated step result"
-    (let [step-results-channel (async/chan 100)]
-      (execute-step {} [(some-ctx-with :step-id [0 0]
-                                       :build-number 5
-                                       :step-results-channel step-results-channel
-                                       :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state)) some-step-building-up-result-state-incrementally])
+    (let [ctx                  (some-ctx-with :step-id [0 0]
+                                              :build-number 5
+                                              :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state))
+          step-results-channel (step-result-updates-for ctx)]
+      (execute-step {} [ctx some-step-building-up-result-state-incrementally])
     (is (= [{:build-number 5 :step-id [0 0] :step-result {:status :running } }
             {:build-number 5 :step-id [0 0] :step-result {:status :running :out "hello"} }
             {:build-number 5 :step-id [0 0] :step-result {:status :running :out "hello world"} }
@@ -169,9 +180,7 @@
     (let [ctx (some-ctx-with :step-id [0 0]
                              :build-number 5
                              :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state))
-          step-results-channel (-> (event-bus/subscribe ctx :step-result-updated)
-                                   (event-bus/only-payload)
-                                   (buffered))]
+          step-results-channel (step-result-updates-for ctx)]
       (execute-step {} [ctx some-step-building-up-result-state-incrementally])
     (is (= [{:build-number 5 :step-id [0 0] :step-result {:status :running } }
             {:build-number 5 :step-id [0 0] :step-result {:status :running :out "hello"} }
@@ -181,9 +190,7 @@
   (testing "that the event bus is notified when a step finishes"
     (let [ctx (some-ctx-with :build-number 3
                              :step-id [1 2 3])
-          step-finished-events (-> (event-bus/subscribe ctx :step-finished)
-                                   (event-bus/only-payload)
-                                   (buffered))]
+          step-finished-events (step-finished-events-for ctx)]
       (execute-step {} [ctx some-other-step])
       (is (= [{:build-number 3
                :step-id [1 2 3]
@@ -246,12 +253,13 @@
 
 (deftest execute-steps-inheritance-test
   (testing "that the step-results channel passed in contains the step-results of all childrens"
-    (let [step-results-channel (async/chan 100)]
+    (let [step-results-channel (async/chan 100)
+          ctx (some-ctx-with   :step-results-channel step-results-channel
+                               :step-id [0]
+                               :build-number 2)]
       (execute-steps [some-other-step some-step-faking-events-from-build-3 some-failing-step]
                      {}
-                     (some-ctx-with :step-results-channel step-results-channel
-                                    :step-id [0]
-                                    :build-number 2))
+                     ctx)
       (is (= [{:build-number 2 :step-id [1 0] :step-result {:status :running}}
               {:build-number 2 :step-id [1 0] :step-result {:foo :baz :status :success}}
               {:build-number 2 :step-id [2 0] :step-result {:status :running}}
