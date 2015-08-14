@@ -16,6 +16,7 @@ The official release will have a defined and more stable API. If you are already
   * support alternative pipeline-state component in `assemble-pipeline` (#40)  
 * API changes: 
   * Remove deprecated access to the internal pipeline-state through `:state` in the result of assemble-pipeline
+  * Remove deprecated `:step-results-channel`
   * `pipeline-state-updater` now started by assemble-pipeline (see above), pipeline-state component should no longer 
     start their own update mechanism (#38)
 
