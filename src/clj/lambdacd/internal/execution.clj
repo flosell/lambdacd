@@ -134,13 +134,12 @@
                               :step-results-channel step-results-channel)]
     [step-ctx step])))
 
-(defn- process-inheritance [step-results-channel own-step-results-channel unify-status-fn]
+(defn- process-inheritance [step-results-channel unify-status-fn]
   (let [out-ch (async/chan)]
     (async/go
       (loop [statuses {}]
         (if-let [step-result-update (async/<! step-results-channel)]
           (do
-            (async/>! own-step-results-channel step-result-update)
             (let [step-status (get-in step-result-update [:step-result :status])
                   new-statuses (assoc statuses (:step-id step-result-update) step-status)
                   old-unified (unify-status-fn (vals statuses))
@@ -151,8 +150,8 @@
           (async/close! out-ch))))
     out-ch))
 
-(defn- inherit-from [step-results-channel own-result-channel own-step-results-channel unify-status-fn]
-  (let [status-channel (process-inheritance step-results-channel own-step-results-channel unify-status-fn)]
+(defn- inherit-from [step-results-channel own-result-channel unify-status-fn]
+  (let [status-channel (process-inheritance step-results-channel unify-status-fn)]
     (async/pipe status-channel own-result-channel)))
 
 (defn contexts-for-steps
@@ -204,12 +203,11 @@
                                               unify-status-fn      status/successful-when-all-successful}}]
   (let [base-ctx-with-kill-switch (assoc ctx :is-killed is-killed)
         subscription (event-bus/subscribe ctx :step-result-updated)
-        step-results-channel (:step-results-channel ctx)
         children-step-results-channel (->> subscription
                                            (event-bus/only-payload)
                                            (async/filter< (inherit-message-from-parent? ctx)))
         step-contexts (contexts-for-steps steps base-ctx-with-kill-switch (async/chan (async/dropping-buffer 0))) ; TODO: remove dropping buffer when removing children step-results-channel
-        _ (inherit-from children-step-results-channel (:result-channel ctx) step-results-channel unify-status-fn)
+        _ (inherit-from children-step-results-channel (:result-channel ctx)  unify-status-fn)
         step-results (step-result-producer args step-contexts)
         result (reduce merge-two-step-results step-results)]
     (event-bus/unsubscribe ctx :step-result-updated subscription)
