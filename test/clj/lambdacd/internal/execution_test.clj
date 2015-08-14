@@ -25,10 +25,6 @@
 (defn some-other-step [arg & _]
   {:foo :baz :status :success})
 
-(defn some-step-faking-events-from-build-3 [arg ctx]
-  (event-bus/publish ctx :step-result-updated {:step-id [1 0] :build-number 3 :step-result {:message-from "other build"}})
-  {:status :success})
-
 (defn some-step-returning-foobar-value [& _]
   {:foobar 42 :status :success})
 (defn some-step-returning-ten-as-foobar-value [& _]
