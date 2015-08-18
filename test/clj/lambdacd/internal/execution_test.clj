@@ -209,16 +209,13 @@
 
 (deftest context-for-steps-test
   (testing "that we can generate proper contexts for steps and keep other context info as it is"
-    (let [step-results-channel (async/chan 42)
-          result (contexts-for-steps [some-step some-step] (some-ctx-with :some-value 42 :step-id [0]) step-results-channel)]
+    (let [result (contexts-for-steps [some-step some-step] (some-ctx-with :some-value 42 :step-id [0]))]
       (is (= some-step (second (first result))))
       (is (= some-step (second (second result))))
       (is (= 42 (:some-value (first (first result)))))
       (is (= 42 (:some-value (first (second result)))))
-      (is (= step-results-channel (:step-results-channel (first (first result)))))
       (is (= [1 0] (:step-id (first (first result)))))
-      (is (= [2 0] (:step-id (first (second result)))))
-      (is (= step-results-channel (:step-results-channel (first (second result))))))))
+      (is (= [2 0] (:step-id (first (second result))))))))
 
 (deftest execute-steps-test
   (testing "that executing steps returns outputs of both steps with different step ids"

@@ -11,8 +11,7 @@
   ([pipeline-def config]
    (assemble-pipeline pipeline-def config (default-pipeline-state/new-default-pipeline-state config)))
   ([pipeline-def config pipeline-state-component]
-    (let [context (-> {:config                   config
-                       :step-results-channel     (async/chan (async/dropping-buffer 100))}
+    (let [context (-> {:config                   config}
                       (event-bus/initialize-event-bus)
                       (assoc :pipeline-state-component pipeline-state-component))]
       (pipeline-state/start-pipeline-state-updater (:pipeline-state-component context) context)

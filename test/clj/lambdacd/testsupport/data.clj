@@ -6,12 +6,10 @@
 
 
 (defn- some-ctx-template []
-  (let [config {:home-dir    (utils/create-temp-dir)}
-        step-results-channel (async/chan (async/dropping-buffer 100))]
+  (let [config {:home-dir    (utils/create-temp-dir)}]
     (-> {:initial-pipeline-state   {} ;; only used to assemble pipeline-state, not in real life
          :step-id                  [42]
          :result-channel           (async/chan (async/dropping-buffer 100))
-         :step-results-channel     step-results-channel
          :pipeline-state-component nil ;; set later
          :config                   config
          :is-killed                (atom false)

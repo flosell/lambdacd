@@ -22,10 +22,10 @@
     (assoc result :has-been-waiting true)
     result))
 
-(defn- send-step-result [{step-id :step-id build-number :build-number ch :step-results-channel :as ctx } step-result]
-  (let [payload {:build-number build-number :step-id step-id :step-result step-result}]
-    (event-bus/publish ctx :step-result-updated payload)
-    (async/>!! ch payload)))
+(defn- send-step-result [{step-id :step-id build-number :build-number :as ctx } step-result]
+  (let [payload {:build-number build-number
+                 :step-id step-id :step-result step-result}]
+    (event-bus/publish ctx :step-result-updated payload)))
 
 (defn process-channel-result-async [c ctx]
   (async/go
@@ -126,13 +126,12 @@
 (defn merge-two-step-results [r1 r2]
   (merge-with merge-entry r1 r2))
 
-(defn- to-context-and-step [ctx step-results-channel]
+(defn- to-context-and-step [ctx]
   (fn [idx step]
     (let [parent-step-id (:step-id ctx)
           new-step-id (step-id/child-id parent-step-id (inc idx))
-          step-ctx (assoc ctx :step-id new-step-id
-                              :step-results-channel step-results-channel)]
-    [step-ctx step])))
+          step-ctx (assoc ctx :step-id new-step-id)]
+      [step-ctx step])))
 
 (defn- process-inheritance [step-results-channel unify-status-fn]
   (let [out-ch (async/chan)]
@@ -156,8 +155,8 @@
 
 (defn contexts-for-steps
   "creates contexts for steps"
-  [steps base-context step-results-channel]
-  (map-indexed (to-context-and-step base-context step-results-channel) steps))
+  [steps base-context]
+  (map-indexed (to-context-and-step base-context) steps))
 
 (defn keep-globals [step-result old-args]
   (let [existing-globals (:global old-args)
@@ -206,7 +205,7 @@
         children-step-results-channel (->> subscription
                                            (event-bus/only-payload)
                                            (async/filter< (inherit-message-from-parent? ctx)))
-        step-contexts (contexts-for-steps steps base-ctx-with-kill-switch (async/chan (async/dropping-buffer 0))) ; TODO: remove dropping buffer when removing children step-results-channel
+        step-contexts (contexts-for-steps steps base-ctx-with-kill-switch)
         _ (inherit-from children-step-results-channel (:result-channel ctx)  unify-status-fn)
         step-results (step-result-producer args step-contexts)
         result (reduce merge-two-step-results step-results)]
