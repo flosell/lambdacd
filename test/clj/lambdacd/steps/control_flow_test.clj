@@ -62,6 +62,19 @@
 (defn some-step-that-returns-bar [args ctx]
   {:status :success :message :bar})
 
+(defn some-step-indicating-killed [was-killed]
+  (fn [_ ctx]
+    (loop [counter 0]
+      (if (step-support/killed? ctx)
+        (do
+          (reset! was-killed true))
+        (do
+          (if (< counter 1000) ;; make sure the step always eventually finishes
+            (do
+              (Thread/sleep 10)
+              (recur (inc counter)))
+            {:status :waited-too-long}))))))
+
 (defn some-step-waiting-to-be-killed [_ ctx]
   (loop [counter 0]
     (step-support/if-not-killed ctx
@@ -156,6 +169,11 @@
 
       (reset! is-killed true)
       (is (map-containing {:status :killed} (async/<!! either-result)))))
+  (testing "that it kills its children in the end"
+    (let [was-killed (atom false)]
+      ((either some-successful-step (some-step-indicating-killed was-killed)) {} (some-ctx))
+      (Thread/sleep 50)
+      (is (= true @was-killed))))
   (testing "that it doesn't kill it's parents after killing remaining children"
     (let [is-killed (atom false)
           ctx       (some-ctx-with :is-killed is-killed

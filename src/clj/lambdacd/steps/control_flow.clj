@@ -4,7 +4,8 @@
             [clojure.core.async :as async]
             [lambdacd.steps.support :as support]
             [lambdacd.internal.step-id :as step-id]
-            [lambdacd.steps.status :as status]))
+            [lambdacd.steps.status :as status])
+  (:import (java.util UUID)))
 
 (defn- post-process-container-results [result]
   (let [outputs (vals (:outputs result))
@@ -29,13 +30,23 @@
       [{:status :failure}]
       [result])))
 
+(defn synchronize-atoms [source target]
+  (let [key (UUID/randomUUID)]
+    (add-watch source key #(reset! target %4))
+    key))
+
 (defn ^{:display-type :parallel} either [& steps]
   (fn [args ctx]
     (let [parent-kill-switch (:is-killed ctx)
+          kill-switch (atom false)
+          watch-ref (synchronize-atoms parent-kill-switch kill-switch)
+          _ (reset! kill-switch @parent-kill-switch)
           execute-output (core/execute-steps steps args ctx
-                                                     :is-killed parent-kill-switch
+                                                     :is-killed kill-switch
                                                      :step-result-producer step-producer-returning-with-first-successful
                                                      :unify-status-fn status/successful-when-one-successful)]
+      (reset! kill-switch true)
+      (remove-watch parent-kill-switch watch-ref)
       (if (= :success (:status execute-output))
         (first (vals (:outputs execute-output)))
         execute-output))))

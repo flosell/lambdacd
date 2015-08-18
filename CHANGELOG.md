@@ -15,6 +15,7 @@ The official release will have a defined and more stable API. If you are already
     component that is configured (#38)
   * support alternative pipeline-state component in `assemble-pipeline` (#40)
   * packaged icon font for UI instead of relying on external CDN
+  * fixed bug where either didn't kill remaining steps after finishing
 * API changes: 
   * Remove deprecated access to the internal pipeline-state through `:state` in the result of assemble-pipeline
   * Remove deprecated `:step-results-channel`
