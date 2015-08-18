@@ -13,7 +13,8 @@ The official release will have a defined and more stable API. If you are already
   * Extracted common functions from `internal.default-pipeline-state` so they can be reused in other persistence components (#38)
   * Generalized pipeline-state-updater to be started by `assemble-pipeline` and pushes updates to any pipeline-state 
     component that is configured (#38)
-  * support alternative pipeline-state component in `assemble-pipeline` (#40)  
+  * support alternative pipeline-state component in `assemble-pipeline` (#40)
+  * packaged icon font for UI instead of relying on external CDN
 * API changes: 
   * Remove deprecated access to the internal pipeline-state through `:state` in the result of assemble-pipeline
   * Remove deprecated `:step-results-channel`
