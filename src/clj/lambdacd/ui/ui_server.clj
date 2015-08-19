@@ -22,7 +22,9 @@
 (defn- build-infos [pipeline-def pipeline-state buildnumber]
   (let [build-number-as-int (util/parse-int buildnumber)
         build-state (get pipeline-state build-number-as-int)]
-    (util/json (unified/unified-presentation pipeline-def build-state))))
+    (if build-state
+      (util/json (unified/unified-presentation pipeline-def build-state))
+      (resp/not-found (str "build " buildnumber " does not exist")))))
 
 (defn- to-internal-step-id [dash-seperated-step-id]
   (map util/parse-int (string/split dash-seperated-step-id #"-")))
