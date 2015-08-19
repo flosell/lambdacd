@@ -12,3 +12,5 @@ pom.xml.asc
 .vagrant
 js-gen
 figwheel_server.log
+node_modules
+resources/public/css/pipeline.css

@@ -10,12 +10,13 @@ The official release will have a defined and more stable API. If you are already
 * Improvements:
   * UI: add support for :details field in step-results to display details about a build step result and link to more 
     detailed information (e.g. test reports) (#37)
+  * UI: packaged icon font instead of relying on external CDN
+  * UI: added vendor prefixes in CSS to improve browser support (esp. Firefox and Safari) 
   * Extracted common functions from `internal.default-pipeline-state` so they can be reused in other persistence components (#38)
   * Generalized pipeline-state-updater to be started by `assemble-pipeline` and pushes updates to any pipeline-state 
     component that is configured (#38)
   * support alternative pipeline-state component in `assemble-pipeline` (#40)
-  * packaged icon font for UI instead of relying on external CDN
-  * fixed bug where either didn't kill remaining steps after finishing
+  * fixed bug where `either` didn't kill remaining steps after finishing
   * REST api endpoint `/api/builds/<buildnumber>/` now returns status 404 in case the build does not exist instead of
     returning a half empty data-structure (#42)
 * API changes: 

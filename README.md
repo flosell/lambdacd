@@ -93,11 +93,12 @@ Call it without arguments to see all the options.
 ### Frontend Development
 
 * The frontend is written in ClojureScript using [Reagent](https://github.com/reagent-project/reagent)
-* Frontend resources can be found in `resources/public`, ClojureScript code in `src/cljs`, tests in `test/cljs`.
+* Frontend resources can be found in `resources/public`, ClojureScript code in `src/cljs`, tests in `test/cljs`, 
+  CSS is in `src/css` and is autoprefixed
 * ClojureScript code needs to be compiled into JS before being useful
-* In two terminals, run `./go serve` to start an example pipeline (if you want it to be green, follow the environment
-  setup above) and `./go serve-cljs` to start a ClojureScript REPL and automatic code-reloading using
-  [Figwheel](https://github.com/bhauman/lein-figwheel)
+* In three terminals, run `./go serve` to start an example pipeline (if you want it to be green, follow the environment
+  setup above), `./go serve-cljs` to start a ClojureScript REPL and automatic code-reloading using
+  [Figwheel](https://github.com/bhauman/lein-figwheel) and `./go serve-css` to run the css autoprefixer watch
 * Run `./go test-cljs` to run frontend-tests or `./go test-cljs-auto` to start autotest
 
 

@@ -11,6 +11,10 @@ setup() {
   vagrant ssh-config backend_ci >> /tmp/lambdacd-dev-env-ssh-config
 
   mkdir -p /tmp/mockrepo
+
+  npm install
+  buildCss
+
   echo "[SUCCESS] You are good to go"
 }
 
@@ -37,13 +41,14 @@ testunit() {
 
 clean() {
   lein clean
+  rm -f resources/public/css/*.css
 }
 
 release() {
-  testall && clean && lein with-profile +release release $1 && scripts/github-release.sh
+  testall && clean && buildCss && lein with-profile +release release $1 && scripts/github-release.sh
 }
 releaseLocal() {
-  lein with-profile +release install
+  buildCss && lein with-profile +release install
 }
 
 push() {
@@ -56,6 +61,14 @@ serve() {
 
 serveClojureScript() {
   lein figwheel app
+}
+
+serveCss() {
+  npm run build:watch
+}
+
+buildCss() {
+  npm run build
 }
 
 repl-server() {
@@ -86,6 +99,8 @@ elif [ "$1" == "serve" ]; then
     serve
 elif [ "$1" == "serve-cljs" ]; then
     serveClojureScript
+elif [ "$1" == "serve-css" ]; then
+    serveCss
 elif [ "$1" == "repl-server" ]; then
     repl-server
 else

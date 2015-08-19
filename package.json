@@ -1,0 +1,26 @@
+{
+  "name": "lambdacd",
+  "version": "0.5.0",
+  "description": "build pipelines in code",
+  "main": "index.js",
+  "devDependencies": {
+    "watch":"latest",
+    "postcss-cli": "latest",
+    "autoprefixer": "latest"
+  },
+  "scripts": {
+    "build:css": "node_modules/postcss-cli/bin/postcss --use autoprefixer src/css/pipeline.css -d resources/public/css",
+    "build": "npm run build:css",
+    "build:watch": "watch 'npm run build' src/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flosell/lambdacd.git"
+  },
+  "author": "Florian Sellmayr",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/flosell/lambdacd/issues"
+  },
+  "homepage": "https://github.com/flosell/lambdacd#readme"
+}
