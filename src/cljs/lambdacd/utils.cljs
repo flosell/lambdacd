@@ -13,7 +13,7 @@
     (.stopPropagation evt)))
 
 (defn append-components [a b]
-  (into [] (concat a b)))
+  (vec (concat a b)))
 
 (defn classes [& cs]
   (if (vector? (first cs))

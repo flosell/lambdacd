@@ -15,7 +15,7 @@
   (reset! step-id-atom step-id))
 
 (defn- parse-step-id [step-id-string]
-  (into [] (map js/parseInt (string/split step-id-string #"-"))))
+  (vec (map js/parseInt (string/split step-id-string #"-"))))
 
 (defn dispatch-route [build-number-atom step-id-to-display-atom state-atom path]
   (let [{handler :handler params :route-params } (bidi/match-route route path)]

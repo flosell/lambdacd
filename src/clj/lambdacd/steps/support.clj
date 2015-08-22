@@ -46,7 +46,7 @@
 
 (defmacro chain [args ctx & forms]
   "a bit of syntactic sugar for chaining steps. Basically the threading-macro for LambdaCD"
-  (let [fns (into [] (map to-fn forms))]
+  (let [fns (vec (map to-fn forms))]
     `(apply chain-steps ~args ~ctx ~fns)))
 
 (defn- append-output [msg]
