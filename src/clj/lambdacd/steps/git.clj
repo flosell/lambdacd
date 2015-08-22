@@ -89,7 +89,7 @@
         repo-location (:cwd checkout-result)
         checkout-exit-code (:exit checkout-result)]
     (utils/with-temp repo-location
-      (if (= 0 checkout-exit-code)
+      (if (zero? checkout-exit-code)
         (let [execute-steps-result (core/execute-steps steps (assoc args :cwd repo-location) ctx
                                                        :unify-status-fn status/successful-when-all-successful
                                                        :is-killed (:is-killed ctx))
