@@ -64,7 +64,7 @@ releaseLocal() {
 }
 
 push() {
-  testall && git push
+  testall && check-style && git push
 }
 
 serve() {
