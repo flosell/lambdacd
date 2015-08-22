@@ -2,6 +2,12 @@
 
 set -e
 
+bold=$(tput bold)
+normal=$(tput sgr0)
+
+echob() {
+  echo "${bold}$*${normal}"
+}
 setup() {
   if [ "$(vagrant status | grep running)" == "" ]; then 
     vagrant up 
@@ -19,10 +25,12 @@ setup() {
 }
 
 testallClojure() {
+  echob "Running tests for clojure code..."
   lein test :all
 }
 
 testallClojureScript() {
+  echob "Running tests for clojure script code..."
   lein cljsbuild test
 }
 
@@ -32,13 +40,17 @@ autotestClojureScript() {
 
 
 testall() {
-    testallClojure && testallClojureScript
+  testallClojure && testallClojureScript
 }
 
 testunit() {
   lein test
 }
 
+check-style() {
+  echob "Running code-style checks..."
+  lein kibit
+}
 clean() {
   lein clean
   rm -f resources/public/css/*.css
@@ -89,6 +101,8 @@ elif [ "$1" == "test-cljs" ]; then
     testallClojureScript
 elif [ "$1" == "test-cljs-auto" ]; then
     autotestClojureScript
+elif [ "$1" == "check-style" ]; then
+    check-style
 elif [ "$1" == "release" ]; then
     release $2
 elif [ "$1" == "release-local" ]; then
@@ -114,6 +128,7 @@ goal:
     test-clj-unit  -- run only unit tests for the clojure-part
     test-cljs      -- run all ClojureScript tests (i.e. unit tests for frontend)
     test-cljs-auto -- starts autotest-session for frontend
+    check-style    -- runs code-style checks
     serve          -- start a server with a demo-pipeline
     serve-cljs     -- compile clojurescript and watch for changes
     push           -- run all tests and push current state

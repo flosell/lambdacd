@@ -30,7 +30,7 @@
   :plugins [
             [lein-cljsbuild "1.0.5"]
             [lein-environ "1.0.0"]
-            [lein-kibit "0.0.8"]
+            [lein-kibit "0.1.2"]
             [lein-marginalia "0.8.0"]
             [quickie "0.3.6"]]
   :clean-targets ^{:protect false} [:target-path :compile-path "resources/public/js-gen"]
