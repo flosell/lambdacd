@@ -21,7 +21,7 @@
         sec-str (str-if-not-zero (t/second dt) "sec")
         min-str (str-if-not-zero (t/minute dt) "min")
         h-str (str-if-not-zero (t/hour dt) "h")
-        all (filter (complement s/blank?) [h-str min-str sec-str])]
+        all (remove s/blank? [h-str min-str sec-str])]
     (s/join " " all)))
 
 
