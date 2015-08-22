@@ -20,8 +20,7 @@
                         (support/if-not-killed ctx
                                                (if (and result (= id (:trigger-id result)))
                                                  (assoc (:trigger-parameters result) :status :success)
-                                                 (do
-                                                   (recur))))))]
+                                                 (recur)))))]
     (event-bus/unsubscribe ctx :manual-trigger-received subscription)
     wait-result))
 

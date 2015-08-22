@@ -73,12 +73,11 @@
         kill-payloads (event-bus/only-payload subscription)]
     (async/go-loop []
       (if-let [kill-payload (async/<! kill-payloads)]
-        (do
-          (if (and
-                (= step-id (:step-id kill-payload))
-                (= build-number (:build-number kill-payload)))
-            (reset! is-killed true)
-            (recur)))))
+        (if (and
+              (= step-id (:step-id kill-payload))
+              (= build-number (:build-number kill-payload)))
+          (reset! is-killed true)
+          (recur))))
     subscription))
 
 (defn clean-up-kill-handling [ctx subscription]
@@ -138,14 +137,13 @@
     (async/go
       (loop [statuses {}]
         (if-let [step-result-update (async/<! step-results-channel)]
-          (do
-            (let [step-status (get-in step-result-update [:step-result :status])
-                  new-statuses (assoc statuses (:step-id step-result-update) step-status)
-                  old-unified (unify-status-fn (vals statuses))
-                  new-unified (unify-status-fn (vals new-statuses))]
-              (if (not= old-unified new-unified)
-                (async/>!! out-ch [:status new-unified]))
-              (recur new-statuses)))
+          (let [step-status (get-in step-result-update [:step-result :status])
+                new-statuses (assoc statuses (:step-id step-result-update) step-status)
+                old-unified (unify-status-fn (vals statuses))
+                new-unified (unify-status-fn (vals new-statuses))]
+            (if (not= old-unified new-unified)
+              (async/>!! out-ch [:status new-unified]))
+            (recur new-statuses))
           (async/close! out-ch))))
     out-ch))
 
