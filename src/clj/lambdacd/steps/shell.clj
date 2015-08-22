@@ -38,10 +38,9 @@
         printer (support/new-printer)]
     (loop []
       (let [line (safe-read-line out-reader)]
-        (if line
-          (do
-            (support/print-to-output ctx printer line)
-            (recur)))))
+        (when line
+          (support/print-to-output ctx printer line)
+          (recur))))
     (support/printed-output printer)))
 
 (defn- execte-shell-command [cwd shell-script ctx env]

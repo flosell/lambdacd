@@ -29,9 +29,8 @@
       {:status :failure :out (:out revision-output)}
       (do
         (log/debug "waiting for new revision. current revision" revision-output "last seen" last-seen-revision)
-        (if (not= last-seen-revision new-revision-output)
-          {:status :success :revision new-revision-output :old-revision last-seen-revision}
-          nil)))))
+        (when (not= last-seen-revision new-revision-output)
+          {:status :success :revision new-revision-output :old-revision last-seen-revision})))))
 
 (defn- wait-for-revision-changed-from [last-seen-revision repo-uri branch ctx ms-between-polls]
   (let [initial-output (str "Last seen revision: " (or last-seen-revision "None") ". Waiting for new commit...")]
