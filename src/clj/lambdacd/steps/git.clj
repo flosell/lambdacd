@@ -82,7 +82,7 @@
     (assoc sh-result :cwd checkout-folder-name)))
 
 (defn- last-step-id-of [step-ids]
-  (last (sort-by #(first %) step-ids)))
+  (last (sort-by first step-ids)))
 
 (defn checkout-and-execute [repo-uri revision args ctx steps]
   (let [checkout-result (checkout ctx repo-uri revision)
