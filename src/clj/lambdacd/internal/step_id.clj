@@ -4,7 +4,7 @@
 (defn parent-of? [a b]
   (let [cut-off-b (take-last (count a) b)]
     (and
-      (not (= a b))
+      (not= a b)
       (= a cut-off-b))))
 
 (defn later-than? [a b]
@@ -22,7 +22,7 @@
 
 (defn before? [a b]
   (and
-    (not (= a b))
+    (not= a b)
     (not (later-than? a b))))
 
 (defn child-id [parent-step-id child-number]

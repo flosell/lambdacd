@@ -40,7 +40,7 @@
 
 (defn- navigate [build-number-atom step-id-to-display-atom state-atom token]
   (let [nav-result (dispatch-route build-number-atom step-id-to-display-atom state-atom token)]
-    (if (not (= :ok (:routing nav-result)))
+    (if (not= :ok (:routing nav-result))
       (.setToken history (:redirect-to nav-result))
       )))
 
