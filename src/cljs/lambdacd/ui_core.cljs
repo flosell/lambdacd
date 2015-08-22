@@ -36,7 +36,7 @@
   [:h2 (str "Current Build " build-number)])
 
 (defn current-build-component [build-state-atom build-number step-id-to-display-atom output-details-visible pipeline-component output-component header-component]
-  (if (not (nil? @build-state-atom))
+  (if-not (nil? @build-state-atom)
     [:div {:class "build" :key build-number}
      [header-component build-number]
      [pipeline-component build-number build-state-atom]

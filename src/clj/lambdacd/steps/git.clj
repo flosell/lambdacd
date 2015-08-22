@@ -49,7 +49,7 @@
 (defn- last-seen-revision-for-this-step [ctx repo-uri branch]
   (let [last-step-result (pipeline-state/most-recent-step-result-with :_git-last-seen-revision ctx)
         last-seen-revision-in-history (:_git-last-seen-revision last-step-result)]
-    (if (not (nil? last-seen-revision-in-history))
+    (if-not (nil? last-seen-revision-in-history)
       last-seen-revision-in-history
       (:revision (current-revision repo-uri branch)))))
 

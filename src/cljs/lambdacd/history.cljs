@@ -37,7 +37,7 @@
 (defn build-history-component [history]
   [:div {:class "history"}
    [:h2 "Builds"]
-   (if (not (nil? history))
+   (if-not (nil? history)
      (let [history-to-display (sort-by :build-number > history)]
        [:ul (map history-item-component history-to-display)])
      [commons/loading-screen])])
