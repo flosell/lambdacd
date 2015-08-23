@@ -5,11 +5,13 @@
   (:require [clojure.test :refer :all]
             [lambdacd.presentation.pipeline-structure :refer :all]))
 
-(defn do-stuff [] {})
+(defn do-stuff [& ] {})
 (defn ^{:depends-on [do-stuff]} do-other-stuff [] {})
 (defn do-more-stuff [] {})
 (defn do-even-more-stuff [] {})
 
+(defn container-without-display-type [& steps]
+  (fn [args ctx]))
 
 (def pipeline
   `(
@@ -35,23 +37,35 @@
        do-stuff)
      (in-cwd "bar"
         do-other-stuff))))
+
+(def pipeline-with-container-without-display-type
+  `((container-without-display-type
+      do-stuff)))
+
+(defn mk-pipeline [some-param]
+  `((in-cwd "foo"
+            (do-stuff ~some-param))))
 (with-private-fns [lambdacd.presentation.pipeline-structure [display-type display-name has-dependencies? ]]
   (deftest display-type-test
     (testing "that in-parallel gets detected"
-      (is (= :parallel (display-type `in-parallel)))
-      (is (= :parallel (display-type (first (first pipeline))))))
+      (is (= :parallel (display-type `(in-parallel do-stuff))))
+      (is (= :parallel (display-type (first pipeline)))))
     (testing "that container types get detected"
-      (is (= :container (display-type `in-cwd)))
-      (is (= :container (display-type (first (second pipeline))))))
+      (is (= :container (display-type `(in-cwd "foo" do-stuff))))
+      (is (= :container (display-type (second pipeline)))))
     (testing "that normal steps get detected"
       (is (= :step (display-type `do-stuff)))
       (is (= :step (display-type (first simple-pipeline)))))
     (testing "that a string is unknown type"
       (is (= :unknown (display-type "foo")))
       (is (= :unknown (display-type (second (second (first pipeline)))))))
-    (testing "that a sequence is a step" ; TODO: display-representation expects it this way. not entirely sure this is correct..
-      (is (= :step (display-type `(do-stuff do-more-stuff))))
-      (is (= :step (display-type simple-pipeline)))))
+    (testing "that a sequence with child-steps is a container"
+      (is (= :container (display-type `(do-stuff do-more-stuff))))
+      (is (= :container (display-type simple-pipeline))))
+    (testing "that a sequence with only parameters is a step"
+      (is (= :step (display-type `(do-stuff "hello world")))))
+    (testing "that a sequence with no parameters is a step"
+      (is (= :step (display-type `(do-stuff))))))
   (deftest display-name-test
     (testing "that the display-name for a step is just the function-name"
       (is (= "do-even-more-stuff" (display-name `do-even-more-stuff)))
@@ -69,14 +83,14 @@
 
 (deftest display-representation-test
   (testing "that the display-representation of a step is the display-name and display-type"
-    (is (= {:name "do-even-more-stuff" :type :step :step-id '()} (display-representation (last (second pipeline))))))
+    (is (= {:name "do-even-more-stuff" :type :step :step-id '()} (step-display-representation (last (second pipeline)) '()))))
   (testing "that the display-representation of a step with children has name, type and children"
     (is (= {:name "in-cwd"
             :type :container
             :step-id '()
-            :children [{:name "do-even-more-stuff" :type :step :step-id '(1)}]} (display-representation (second pipeline)))))
+            :children [{:name "do-even-more-stuff" :type :step :step-id '(1)}]} (step-display-representation (second pipeline) '()))))
   (testing "that a display-representation of a sequence of only steps works"
-    (is (= [{:name "do-stuff" :type :step :step-id '(1)} {:name "do-other-stuff" :type :step :step-id '(2)}] (display-representation simple-pipeline))))
+    (is (= [{:name "do-stuff" :type :step :step-id '(1)} {:name "do-other-stuff" :type :step :step-id '(2)}] (pipeline-display-representation simple-pipeline))))
   (testing "that foo-pipeline works"
     (is (= [{:name "in-parallel"
              :type :parallel
@@ -89,4 +103,15 @@
                {:name "in-cwd"
                 :type :container
                 :step-id '(2 1)
-                :children [{:name "do-other-stuff" :type :step :step-id '(1 2 1)}]}]}] (display-representation foo-pipeline)))) )
+                :children [{:name "do-other-stuff" :type :step :step-id '(1 2 1)}]}]}] (pipeline-display-representation foo-pipeline))))
+  (testing "that display type defaults to :container for container-steps"
+    (is (= [{:name "container-without-display-type"
+             :step-id '(1)
+             :type :container
+             :children [{:name "do-stuff" :type :step :step-id '(1 1)}]}]
+           (pipeline-display-representation pipeline-with-container-without-display-type))))
+  (testing "that we support parameterized functions returning pipelines"
+    (is (= [{:name "in-cwd"
+             :type :container
+             :step-id '(1)
+             :children [{:name "do-stuff" :type :step :step-id '(1 1)}]}] (pipeline-display-representation (mk-pipeline "foo"))))))

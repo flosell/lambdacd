@@ -5,6 +5,21 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
+## 0.5.1
+* Improvements:
+  * Made `:display-type :container` the default for container steps, no longer throwing incomprehensible exceptions
+    when display-type declarations are forgotten (#43)
+  * Now supporting steps with parameters in the pipeline:
+   
+    ```clojure
+    (defn mk-pipeline-def [{repo-uri :repo-uri test-command :test-command}]
+      `(
+         wait-for-manual-trigger
+         (with-repo ~repo-uri
+                    (run-tests ~test-command)
+                    publish)))
+    ```
+
 ## 0.5.0
 
 * Improvements:

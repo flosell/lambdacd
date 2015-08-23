@@ -11,5 +11,5 @@
     with-children))
 
 (defn unified-presentation [pipeline-def build-state]
-  (let [structure (pipeline-structure/display-representation pipeline-def)]
+  (let [structure (pipeline-structure/pipeline-display-representation pipeline-def)]
     (map #(unify % build-state) structure)))

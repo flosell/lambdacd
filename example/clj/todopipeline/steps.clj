@@ -30,11 +30,11 @@
 ;; repository checked out. The steps get executed with the folder where the repo
 ;; is checked out as :cwd argument.
 ;; The ```^{:display-type :container}``` is a hint for the UI to display the child-steps as well.
-(defn ^{:display-type :container} with-frontend-git [& steps]
+(defn with-frontend-git [& steps]
   (fn [args ctx]
     (git/checkout-and-execute frontend-repo (:frontend-revision args) args ctx steps)))
 
-(defn ^{:display-type :container} with-backend-git [& steps]
+(defn with-backend-git [& steps]
   (fn [args ctx]
     (git/checkout-and-execute backend-repo (:backend-revision args) args ctx steps)))
 

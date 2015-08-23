@@ -17,7 +17,7 @@
             [clojure.string :as string]))
 
 (defn- pipeline [pipeline-def]
-  (presentation/display-representation pipeline-def))
+  (presentation/pipeline-display-representation pipeline-def))
 
 (defn- build-infos [pipeline-def pipeline-state buildnumber]
   (let [build-number-as-int (util/parse-int buildnumber)
