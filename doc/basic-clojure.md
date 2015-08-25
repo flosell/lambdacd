@@ -4,7 +4,7 @@ To try out LambdaCD, here's what you need to know:
 
 * How to install [Leiningen](http://leiningen.org/#install) (this is the build-tool we are using, like Maven in Java)
 * Syntax
-  * `(foo "bar" 5)`: this executes the function `foo` with the arguments `"foo"` (which is a string) and `bar` (an integer)
+  * `(foo "bar" 5)`: this executes the function `foo` with the arguments `"bar"` (which is a string) and `5` (an integer)
   * `{ :foo "bar" }`: this is a map with a key `:foo` mapping to a value `"bar"`
   * `(defn add [a b] (+ a b))`: this defines a function `add` with two parameters `a` and `b` that returns the sum of `a` and `b`
 
