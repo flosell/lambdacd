@@ -7,7 +7,7 @@
             [clojure.core.async :as async]))
 
 
-(deftest event-buffer-test
+(deftest event-bus-test
   (testing "that we can publish and subscribe to events"
     (let [ctx (initialize-event-bus (some-ctx))]
       (let [subscription (subscribe ctx :test-messages)]

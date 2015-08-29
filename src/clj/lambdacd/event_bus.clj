@@ -3,7 +3,7 @@
 
 (defn initialize-event-bus [ctx]
   (let [publisher-ch (async/chan)
-        publication (async/pub publisher-ch :topic (fn [_] (async/buffer 10)))]
+        publication (async/pub publisher-ch :topic)]
     (assoc ctx :event-publisher   publisher-ch
                :event-publication publication)))
 
