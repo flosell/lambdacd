@@ -50,6 +50,9 @@
   (and a b))
 
 (defn- parameter-values [fun params]
+  ;; not supported at the moment:
+  ;; * declare variable arguments as hidden
+  ;; * declare arguments as hidden in function with more than one argument list (first one is always taken)
   (let [visible-args     (visible-args-bitmap fun)
         displayable-args (map displayable-parameter? params)
         ; pad to make sure varargs don't cause problems
