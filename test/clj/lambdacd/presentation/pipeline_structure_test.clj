@@ -9,6 +9,7 @@
 (defn ^{:depends-on [do-stuff]} do-other-stuff [] {})
 (defn do-more-stuff [] {})
 (defn do-even-more-stuff [] {})
+(defn do-stuff-with-hidden-params [^:hide a b])
 
 (defn container-without-display-type [& steps]
   (fn [args ctx]))
@@ -85,7 +86,9 @@
           (is (= "do-stuff :foo" (display-name `(do-stuff ~some-value))))))
       (testing "steps with parameters and child-steps"
         (is (= "in-cwd some-cwd" (display-name `(in-cwd "some-cwd" do-stuff do-more-stuff))))
-        (is (= "in-cwd some-cwd" (display-name `(in-cwd "some-cwd" do-stuff (do-stuff "foo"))))))))
+        (is (= "in-cwd some-cwd" (display-name `(in-cwd "some-cwd" do-stuff (do-stuff "foo"))))))
+      (testing "hiding parameters"
+        (is (= "do-stuff-with-hidden-params visible" (display-name `(do-stuff-with-hidden-params "hidden" "visible")))))))
   (deftest dependencies-of-test
     (testing "that normal steps don't depend on anything"
       (is (= false (has-dependencies? `do-stuff)))

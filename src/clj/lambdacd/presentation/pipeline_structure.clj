@@ -34,16 +34,37 @@
 (defn- clear-namespace [s]
   (clojure.string/replace s #"[^/]+/" ""))
 
-(defn display-parameter [x]
+(defn displayable-parameter? [x]
   (not (or (symbol? x)
            (sequential? x))))
 
+(defn pad [coll val]
+  (concat coll (repeat val)))
+
+(defn- visible-args-bitmap [fun]
+  (let [arglist (first (:arglists (meta (find-var fun))))
+        bitmap (map #(not (:hide (meta %))) arglist)]
+    bitmap))
+
+(defn- both-true? [a b]
+  (and a b))
+
+(defn- parameter-values [fun params]
+  (let [visible-args     (visible-args-bitmap fun)
+        displayable-args (map displayable-parameter? params)
+        ; pad to make sure varargs don't cause problems
+        args-to-display  (map both-true? (pad visible-args true) displayable-args)
+        parameter-values (->> (map vector args-to-display params)
+                              (filter first)
+                              (map second))]
+    parameter-values))
+
 (defn- display-name [x]
   (if (sequential? x)
-    (let [function-name (display-name (first x))
-          parameter-values (filter display-parameter (rest x))
-          parameters (s/join " " parameter-values)]
-      (s/trim (str function-name " " parameters)))
+    (let [fun    (first x)
+          params (rest x)
+          parts  (concat [(display-name fun)] (parameter-values fun params))]
+      (s/join " " parts))
     (clear-namespace (str x))))
 
 (defn- has-dependencies? [f]
