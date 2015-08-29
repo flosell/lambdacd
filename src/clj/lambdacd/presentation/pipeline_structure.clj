@@ -1,11 +1,17 @@
 (ns lambdacd.presentation.pipeline-structure
   "this namespace is responsible for converting the pipeline
   into a nice, map-format that we can use to display the pipeline
-  in a UI")
+  in a UI"
+  (:require [clojure.string :as s]))
 
 
 (defn- is-fn? [fun]
-  (not (or (string? fun) (map? fun) (sequential? fun)))) ; hackedyhack...
+  (not (or (string? fun)
+           (map? fun)
+           (sequential? fun)
+           (integer? fun)
+           (keyword? fun)
+           (float? fun)))) ; hackedyhack...
 
 (defn- display-type-by-metadata [fun]
   (:display-type (meta (find-var fun))))
@@ -28,9 +34,16 @@
 (defn- clear-namespace [s]
   (clojure.string/replace s #"[^/]+/" ""))
 
+(defn display-parameter [x]
+  (not (or (symbol? x)
+           (sequential? x))))
+
 (defn- display-name [x]
   (if (sequential? x)
-    (display-name (first x))
+    (let [function-name (display-name (first x))
+          parameter-values (filter display-parameter (rest x))
+          parameters (s/join " " parameter-values)]
+      (s/trim (str function-name " " parameters)))
     (clear-namespace (str x))))
 
 (defn- has-dependencies? [f]
@@ -59,12 +72,11 @@
    :step-id id})
 
 (defn- container-step-representation [part id]
-  (let [f (first part)
-        r (filter is-child? (rest part))]
-    {:name (display-name f)
+  (let [children (filter is-child? (rest part))]
+    {:name (display-name part)
      :type (display-type part)
      :step-id id
-     :children (seq-to-display-representations r id)}))
+     :children (seq-to-display-representations children id)}))
 
 (defn step-display-representation [part id]
   (if (is-simple-step? part)

@@ -43,7 +43,7 @@
       do-stuff)))
 
 (defn mk-pipeline [some-param]
-  `((in-cwd "foo"
+  `((in-cwd "bar"
             (do-stuff ~some-param))))
 (with-private-fns [lambdacd.presentation.pipeline-structure [display-type display-name has-dependencies? ]]
   (deftest display-type-test
@@ -72,7 +72,20 @@
       (is (= "do-even-more-stuff" (display-name (last (second pipeline))))))
     (testing "that the display-name for a parallel is just the function-name"
       (is (= "in-parallel" (display-name `in-parallel)))
-      (is (= "in-parallel" (display-name (first (first pipeline)))))))
+      (is (= "in-parallel" (display-name (first (first pipeline))))))
+    (testing "that the display-name for parameterized step is the function name and the parameter"
+      (testing "no parameters"
+        (is (= "do-stuff" (display-name `(do-stuff)))))
+      (testing "values as parameters"
+        (is (= "do-stuff hello world" (display-name `(do-stuff "hello world"))))
+        (is (= "do-stuff :foo" (display-name `(do-stuff :foo))))
+        (is (= "do-stuff 42 1.3" (display-name `(do-stuff 42 1.3)))))
+      (testing "actual parameters"
+        (let [some-value :foo]
+          (is (= "do-stuff :foo" (display-name `(do-stuff ~some-value))))))
+      (testing "steps with parameters and child-steps"
+        (is (= "in-cwd some-cwd" (display-name `(in-cwd "some-cwd" do-stuff do-more-stuff))))
+        (is (= "in-cwd some-cwd" (display-name `(in-cwd "some-cwd" do-stuff (do-stuff "foo"))))))))
   (deftest dependencies-of-test
     (testing "that normal steps don't depend on anything"
       (is (= false (has-dependencies? `do-stuff)))
@@ -85,7 +98,7 @@
   (testing "that the display-representation of a step is the display-name and display-type"
     (is (= {:name "do-even-more-stuff" :type :step :step-id '()} (step-display-representation (last (second pipeline)) '()))))
   (testing "that the display-representation of a step with children has name, type and children"
-    (is (= {:name "in-cwd"
+    (is (= {:name "in-cwd some-path"
             :type :container
             :step-id '()
             :children [{:name "do-even-more-stuff" :type :step :step-id '(1)}]} (step-display-representation (second pipeline) '()))))
@@ -96,11 +109,11 @@
              :type :parallel
              :step-id '(1)
              :children
-               [{:name "in-cwd"
+               [{:name "in-cwd foo"
                  :type :container
                  :step-id '(1 1)
                  :children [{:name "do-stuff" :type :step :step-id '(1 1 1)}]}
-               {:name "in-cwd"
+               {:name "in-cwd bar"
                 :type :container
                 :step-id '(2 1)
                 :children [{:name "do-other-stuff" :type :step :step-id '(1 2 1)}]}]}] (pipeline-display-representation foo-pipeline))))
@@ -111,7 +124,7 @@
              :children [{:name "do-stuff" :type :step :step-id '(1 1)}]}]
            (pipeline-display-representation pipeline-with-container-without-display-type))))
   (testing "that we support parameterized functions returning pipelines"
-    (is (= [{:name "in-cwd"
+    (is (= [{:name "in-cwd bar"
              :type :container
              :step-id '(1)
-             :children [{:name "do-stuff" :type :step :step-id '(1 1)}]}] (pipeline-display-representation (mk-pipeline "foo"))))))
+             :children [{:name "do-stuff foo" :type :step :step-id '(1 1)}]}] (pipeline-display-representation (mk-pipeline "foo"))))))
