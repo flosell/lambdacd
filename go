@@ -131,6 +131,7 @@ goal:
     check-style    -- runs code-style checks
     serve          -- start a server with a demo-pipeline
     serve-cljs     -- compile clojurescript and watch for changes
+    serve-css      -- autocompile and autoprefix css
     push           -- run all tests and push current state
     release        -- release current version
     release-local  -- install current version in local repository
