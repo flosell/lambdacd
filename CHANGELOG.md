@@ -19,7 +19,7 @@ The official release will have a defined and more stable API. If you are already
                     (run-tests ~test-command)
                     publish)))
     ```
-  * Polished the UI a bit
+  * Polished the UI
 
 ## 0.5.0
 

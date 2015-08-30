@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build:css": "node_modules/less/bin/lessc src/less/main.less | node_modules/postcss-cli/bin/postcss --use autoprefixer -o resources/public/css/main.css",
+    "build": "npm run build:css",
     "build:watch": "watch 'npm run build:css' src/less"
   }
 }
