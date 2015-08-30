@@ -39,7 +39,7 @@
   (if-not (nil? @build-state-atom)
     [:div {:class "build" :key build-number}
      [header-component build-number]
-     [pipeline-component build-number build-state-atom]
+     [pipeline-component build-number build-state-atom @step-id-to-display-atom]
      [output-component @build-state-atom @step-id-to-display-atom output-details-visible]]
     [commons/loading-screen]))
 
@@ -60,7 +60,7 @@
 
        [:div {:class "app__header"} [header-component]]
        [:div {:class "l-vertical app__content"}
-         [:div {:id "builds" :class "app__history l-vertical"} [history-component @history]]
+         [:div {:id "builds" :class "app__history l-vertical"} [history-component @history build-number]]
          [:div {:id "currentBuild" :class "app__current-build l-vertical"} [current-build-component state build-number step-id-to-display-atom output-details-visible]]]]
       [:div {:id "loading"}
        [:h1 "Loading..."]])))

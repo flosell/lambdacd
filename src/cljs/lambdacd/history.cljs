@@ -9,7 +9,9 @@
             [lambdacd.commons :as commons]
             [lambdacd.route :as route]
             [lambdacd.time :as time]
-            [lambdacd.state :as state]))
+            [lambdacd.state :as state]
+            [goog.string :as gstring]
+            [clojure.string :as s]))
 
 (defn- status-icon [status]
   (let [class (case status
@@ -21,23 +23,30 @@
                 "fa fa-question")]
     [:div {:class "history--item--status-icon" } [:i {:class class}]]))
 
-(defn history-item-component [{build-number :build-number
-                               status :status
-                               most-recent-update-at :most-recent-update-at
-                               first-updated-at :first-updated-at}]
-  [:li {:key build-number :class "history--item"}
-   [status-icon status]
-   [:div {:class "history-item-content"}
-     [:a {:href (route/for-build-number build-number) :class "history-item-header"} (str "Build " build-number)]
-     [:p {:class "history--item--detail-line"} status]
-     [:i {:class "history--item--detail-line"} (time/format-duration first-updated-at most-recent-update-at)]
-    ]
-   ])
+(defn- content-or-nbsp [c]
+  (if (s/blank? c)
+    (gstring/unescapeEntities "&nbsp;")
+    c))
 
-(defn build-history-component [history]
+(defn history-item-component [build-number-to-display
+                              {build-number          :build-number
+                               status                :status
+                               most-recent-update-at :most-recent-update-at
+                               first-updated-at      :first-updated-at}]
+  [:li {:key build-number :class (str "history--item" (if (= build-number build-number-to-display) " history--item--active"))}
+   [:a {:href (route/for-build-number build-number) :class "history--item--container"}
+     [status-icon status]
+     [:div {:class "history-item-content"}
+       [:span { :class "history-item-header"} (str "Build " build-number)]
+       [:p {:class "history--item--detail-line"} status]
+       [:i {:class "history--item--detail-line"} (content-or-nbsp
+                                                   (time/format-duration first-updated-at most-recent-update-at))]
+      ]]])
+
+(defn build-history-component [history build-number]
   [:div {:class "history"}
    [:h2 "Builds"]
    (if-not (nil? history)
      (let [history-to-display (sort-by :build-number > history)]
-       [:ul (map history-item-component history-to-display)])
+       [:ul (map #(history-item-component build-number %) history-to-display)])
      [commons/loading-screen])])

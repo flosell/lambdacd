@@ -1,8 +1,24 @@
 // Colors:
 
-@step-running-color:  lightblue;
-@step-waiting-color:  lightyellow;
-@step-success-color:  lightgreen;
-@step-failure-color:  tomato;
+
+@base-red: rgba(206, 64, 75,  1);
+@base-orange: rgba(221, 158, 90, 1);
+@base-violet: rgba(53, 26, 91,  1);
+@base-blue: rgba(44, 125, 165,  1);
+@base-green: rgba(169, 219, 149, 1);
+
+@base-foreground-opacity: 0.7;
+@base-foreground-color: rgba(0, 0, 0, @base-foreground-opacity);
+@border-color: lighten(@base-foreground-color,20%);
+@foreground-color: @base-foreground-color;
+
+@history-background-color: rgba(0,0,0,0.1);
+@header-background-color: @history-background-color;
+
+
+@step-running-color:  @base-blue;
+@step-waiting-color:  @base-orange;
+@step-success-color:  @base-green;
+@step-failure-color:  @base-red;
 @step-killed-color:   lightgrey;
 @step-nostatus-color: white;
