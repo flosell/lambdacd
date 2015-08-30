@@ -1,0 +1,56 @@
+@import "_variables";
+
+.pipeline__step-container {
+    display:-ms-flexbox;
+    display:-webkit-box;
+    display:-webkit-flex;
+    display:flex;
+}
+
+.pipeline__step-container--sequential {
+    flex-direction: row;
+}
+
+.pipeline__step-container--parallel {
+    flex-direction: column;
+}
+
+.pipeline {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.pipeline__step {
+    display:-ms-flexbox;
+    display:-webkit-box;
+    display:-webkit-flex;
+    display:flex;
+
+    flex-shrink:0;
+    margin-left:10px;
+    border: thin black solid;
+}
+
+.pipeline__step--running {
+    background:@step-running-color;
+}
+.pipeline__step--waiting {
+    background: @step-waiting-color;
+}
+.pipeline__step--success {
+    background: @step-success-color;
+}
+.pipeline__step--failure {
+    background: @step-failure-color;
+}
+.pipeline__step--killed {
+    background: @step-killed-color;
+}
+.pipeline__step--no-status {
+    background: @step-nostatus-color;
+}
+
+.pipeline__step__action-button {
+    margin-left:5px;
+    cursor:pointer;
+}
