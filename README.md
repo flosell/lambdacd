@@ -55,6 +55,11 @@ And if you notice something, please open bug reports, feature requests or just g
 
 ```
 
+## Screenshot
+
+![Screenshot](doc/img/readme-screenshot.png)
+
+
 ## Resources
 
 * [FAQ](doc/FAQ.md)
