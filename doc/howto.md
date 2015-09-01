@@ -43,7 +43,7 @@ Usually, the next step in your build pipeline would be executing some build step
 ```
 
 ```clojure
-(defn ^{:display-type :container} with-frontend-git [& steps]
+(defn with-frontend-git [& steps]
   (fn [args ctx]
     (git/checkout-and-execute "git@github.com:user/project.git" (:revision args) args ctx steps)))
 ```
@@ -51,7 +51,7 @@ Usually, the next step in your build pipeline would be executing some build step
 There's also a shorthand for this relying on the revision in `:revision`:
 
 ```clojure
-(defn ^{ :display-type :container } with-repo [& steps]
+(defn with-repo [& steps]
   (git/with-git "git@github.com:user/project.git" steps))
 ```
 
