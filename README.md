@@ -50,9 +50,7 @@ And if you notice something, please open bug reports, feature requests or just g
        wait-for-repo)
      (with-repo
        run-tests
-       compile-and-deploy)
-   ))
-
+       compile-and-deploy)))
 ```
 
 ## Screenshot
