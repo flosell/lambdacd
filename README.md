@@ -75,6 +75,22 @@ And if you notice something, please open bug reports, feature requests or just g
 * [lambdacd-rest](https://github.com/SimonMonecke/lambdacd-rest): Alternative persistence backend for LambdaCD, delegating to a REST-service to take care of persistence
 * [lambdacd-state-controller](https://github.com/SimonMonecke/lambdacd-state-controller): Aggregator service for several instances of LambdaCD, backend for [lambdacd-rest](https://github.com/SimonMonecke/lambdacd-rest)
 
+
+## Contribute
+
+I'd love to hear from you! If you have a question, a bug report or feature request please reach out.
+
+The preferred way at the moment is to open issues on the [Github Issue Tracker](https://github.com/flosell/lambdacd/issues)
+
+If you want to contribute improvements to the LambdaCD codebase, open a pull request.
+
+If you are building a new feature, consider if this needs to go into the core of LambdaCD. Lots of features
+(like support for another version control system, reusable build steps, nicer syntactic sugar, a different user interface
+and many others) can easily be maintained as a separate library.
+Have a look at [lambdacd-artifacts](https://github.com/flosell/lambdacd-artifacts) or [lambdacd-cctray](https://github.com/flosell/lambdacd-cctray)
+as an example. If in doubt, open an issue and ask.
+
+
 ## Development
 
 LambdaCD is built in Clojure and ClojureScript with [Leiningen](http://leiningen.org) as a build-tool.
@@ -104,12 +120,6 @@ Call it without arguments to see all the options.
   [Figwheel](https://github.com/bhauman/lein-figwheel) and `./go serve-css` to run the css autoprefixer watch
 * Run `./go test-cljs` to run frontend-tests or `./go test-cljs-auto` to start autotest
 
-
-
-## Contribute
-
-* File bug reports, give feedback
-* Send Pull Requests, or if you are missing features (support for a different version control system, nicer syntactic sugar, ...) consider creating an extension library.
 
 ## License
 
