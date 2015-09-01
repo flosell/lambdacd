@@ -58,6 +58,49 @@ There's also a shorthand for this relying on the revision in `:revision`:
 Both will check out the specified revision into a new temporary workspace and then execute the given steps.
 The steps receive the workspace path as an argument under the `:cwd` key.
 
+## How do I generate several pipelines with the same structure?
+
+You might have several pipelines that look pretty much the same. Maybe they check out a repository, run tests and build
+an artifact. Duplicating the whole pipeline really seems unnecessary. That's where parameterized pipelines come in.
+
+First of all, you need build steps that can be parameterized. Maybe you'll want a build step that's executing a given script:
+
+```clojure
+(defn run-custom-test [test-command]
+  (fn [args ctx]
+    (shell/bash ctx "/some/working/directory" test-command)))
+```
+
+So what happened there? A function returning a function? Yes. The outer function will be evaluated when the pipeline is
+initialized and returns the build step (the inner function) that will be executed in the pipeline. Control flow functions
+ like `in-parallel` work exactly the same way.
+
+So now we need to get it into the pipeline:
+
+```clojure
+(def pipeline-def
+ `(
+     wait-for-manual-trigger
+     (with-repo "some-repo-uri"
+       (run-tests "./test-script")
+                  publish))
+```
+
+Now you have a build step that you can use in more than one pipeline. If your pipelines look different, that's maybe all
+you need. But maybe your pipelines all look the same. You wouldn't want to dupliate it all the time, right? So instead
+of defining a pipeline statically, let's create a function to generate the pipeline structure:
+
+```clojure
+(defn mk-pipeline-def [repo-uri test-command]
+  `(
+     wait-for-manual-trigger
+     (with-repo ~repo-uri
+                (run-tests ~test-command)
+                publish)))
+```
+
+Here's a full example: https://github.com/flosell/lambdacd-cookie-cutter-pipeline-example/tree/master/src/pipeline_templates
+
 ## How do I use fragments of a pipeline in more than one pipeline?
 
 As you start building a bigger project, you might feel the need to have some build steps into more than one pipeline.
