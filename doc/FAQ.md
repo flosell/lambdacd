@@ -36,7 +36,7 @@ build-pipeline is code, lots of things should be straightforward to implement as
 
 ## Can I display build results on my information radiator?
 
-There is a separate library to provide expose your build pipeline in cctray.xml format: [lambdacd-cctray](https://github.com/flosell/lambdacd-cctray)
+There is a separate library to expose your build pipeline in cctray.xml format: [lambdacd-cctray](https://github.com/flosell/lambdacd-cctray)
 Most build pipeline monitors can read this format so you should be able to plug LambdaCD right in.
 
 ## Does LambdaCD support more than one pipeline?
