@@ -1,20 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
+<head>
 
   {% include head.html %}
 
-  <body>
+  <body id="page-top" class="{% if page.landingpage %} landingpage {% else %} page {% endif %}">
 
     {% include header.html %}
 
-    <div class="page-content">
-      <div class="wrapper">
-        {{ content }}
-      </div>
-    </div>
+    {{ content }}
 
     {% include footer.html %}
-
+    {% include foot.html %}
   </body>
 
 </html>

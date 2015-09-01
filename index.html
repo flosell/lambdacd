@@ -1,23 +1,142 @@
 ---
 layout: default
+landingpage: true
 ---
 
-<div class="home">
 
-  <h1 class="page-heading">Posts</h1>
+<header>
+  <div class="header-content">
+    <div class="header-content-inner">
+      <h1>Build Pipelines as Code</h1>
+      <hr>
+      <p>
+        Abandon your build servers, build your own!
+        With LambdaCD you develop build pipelines just like your applications:
 
-  <ul class="post-list">
-    {% for post in site.posts %}
-      <li>
-        <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
+        In code, in version control, with tests and refactorings
+      </p>
+      <a href="#about" class="btn btn-primary btn-xl page-scroll">Find Out More</a>
+    </div>
+  </div>
+</header>
 
-        <h2>
-          <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
-        </h2>
-      </li>
-    {% endfor %}
-  </ul>
+<section class="bg-primary" id="about">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 text-center">
+        <h2 class="section-heading">A toolbox to build your own build server</h2>
+        <hr class="light">
+        <p class="text-faded">
+          LambdaCD is a toolbox to enable you to build your own buildserver.
+          It's got you covered, whether you need ten simple builds or one hugely complex delivery pipeline.
+        </p>
+        <a href="{{ "/getting-started" | prepend: site.baseurl }}" class="btn btn-default btn-xl">Get Started!</a>
+      </div>
+    </div>
+  </div>
+</section>
 
-  <p class="rss-subscribe">subscribe <a href="{{ "/feed.xml" | prepend: site.baseurl }}">via RSS</a></p>
+<section id="features">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12 text-center">
+        <h2 class="section-heading">Features</h2>
+        <hr class="primary">
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-3 col-md-6 text-center">
+        <div class="service-box">
+          <i class="fa fa-4x fa-file-code-o wow bounceIn text-primary"></i>
+          <h3>In Code</h3>
+          <p class="text-muted">You define your build pipeline in Clojure Code, with all the tools and libraries you are used to</p>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 text-center">
+        <div class="service-box">
+          <i class="fa fa-4x fa-code-fork wow bounceIn text-primary" data-wow-delay=".1s"></i>
+          <h3>In Version Control</h3>
+          <p class="text-muted">Your build pipeline is easily stored in version control, you can branch, revert, rebase or blame as much as you want</p>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 text-center">
+        <div class="service-box">
+          <i class="fa fa-4x fa-puzzle-piece wow bounceIn text-primary" data-wow-delay=".2s"></i>
+          <h3>Reusable</h3>
+          <p class="text-muted">Share pieces of your pipeline with others, pull our libraries with ease</p>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 text-center">
+        <div class="service-box">
+          <i class="fa fa-4x fa-cubes wow bounceIn text-primary" data-wow-delay=".3s"></i>
+          <h3>Parameterized</h3>
+          <p class="text-muted">You have more than one pipeline? Set up one parameterized pipeline and instantiate multiple pipelines from it</p>
+        </div>
+      </div>
+    </div>
+    <!--<div class="row">-->
+      <!--<div class="col-lg-3 col-md-6 text-center">-->
+        <!--<div class="service-box">-->
+          <!--<i class="fa fa-4x fa-check-circle wow bounceIn text-primary" data-wow-delay=".4s"></i>-->
+          <!--<h3>Tested</h3>-->
+          <!--<p class="text-muted">No longer break the pipeline with your changes. Create tests for your pipeline</p>-->
+        <!--</div>-->
+      <!--</div>-->
+    <!--</div>-->
+  </div>
+</section>
 
-</div>
+<section class="no-padding" id="example">
+  <div class="container">
+    <div class="row no-gutter">
+      <div class="row">
+        <div class="col-lg-12 text-center">
+          <h2 class="section-heading">Example</h2>
+          <hr class="primary">
+        </div>
+      </div>
+    </div>
+
+    <div class="row no-gutter">
+      <div class="col-lg-5">
+
+{% highlight clojure %}
+;; buildsteps
+(def some-repo "git@github.com:flosell/somerepo")
+
+(defn wait-for-repo [_ ctx]
+  (git/wait-for-git ctx some-repo "master"))
+
+(defn ^{:display-type :container} with-repo [& steps]
+  (git/with-git some-repo steps))
+
+(defn run-tests [{cwd :cwd} ctx]
+  (shell/bash ctx cwd
+    "lein test"))
+
+(defn compile-and-deploy [{cwd :cwd} ctx]
+  (shell/bash ctx cwd
+    "./buildscripts/compile-and-deploy.sh"))
+
+;; the pipeline
+(def pipeline
+  `(
+    (either
+      wait-for-manual-trigger
+      wait-for-repo)
+    (with-repo
+      run-tests
+      compile-and-deploy)))
+{% endhighlight %}
+      </div>
+      <div class="col-lg-2 text-center">
+        <i class="fa fa-4x fa-arrow-right"></i>
+      </div>
+      <div class="col-lg-5">
+        <img style="width:100%" src="img/example-screenshot-2.png"/>
+      </div>
+    </div>
+  </div>
+</section>
