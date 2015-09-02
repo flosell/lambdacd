@@ -61,7 +61,7 @@ p {
 }
 
 .text-faded {
-    color: fade-in(white, 0.7);
+    color: fade-out(white, 0.3);
 }
 
 section {
@@ -80,7 +80,7 @@ aside {
 
 .navbar-default {
     background-color: white;
-    border-color: fade-in($theme-dark, 0.05);
+    border-color: fade-out($theme-dark, 0.05);
     @include sans-serif-font;
     @include transition-all;
     .navbar-header .navbar-brand {
@@ -119,9 +119,9 @@ aside {
     }
     @media (min-width: 768px) {
         background-color: transparent;
-        border-color: fade-in(white, 0.3);
+        border-color: fade-out(white, 0.7);
         .navbar-header .navbar-brand {
-            color: fade-in(white, 0.7);
+            color: fade-out(white, 0.3);
             &:hover,
             &:focus {
                 color: white;
@@ -129,7 +129,7 @@ aside {
         }
         .nav > li > a,
         .nav > li > a:focus {
-            color: fade-in(white, .7);
+            color: fade-out(white, .3);
             &:hover {
                 color: white;
             }
@@ -162,12 +162,12 @@ header {
     position: relative;
     width: 100%;
     min-height: auto;
-    @include background-cover;
-    background-position: center;
-
-    background:linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), url(../img/lambdacd3.png);
     text-align: center;
     color: white;
+    @include background-cover;
+    background:linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), url(../img/lambdacd3.png);
+    background-position: center;
+
     .header-content {
         position: relative;
         text-align: center;
@@ -185,7 +185,7 @@ header {
             }
             p {
                 font-weight: 300;
-                color: fade-in(white, 0.7);
+                color: fade-out(white, 0.3);
                 font-size: 16px;
                 margin-bottom: 50px;
             }
