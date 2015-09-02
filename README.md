@@ -15,8 +15,9 @@ Also, things might change along the way so when you upgrade, make sure you check
 However, people do use LambdaCD in their day to day work and are happy it, so give it a try!
 And if you notice something, please open bug reports, feature requests or just give feedback!
 
-## Usage
+## Setup
 
+* *You'll need [Leiningen](http://leiningen.org) and a [JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) for this*
 * `lein new lambdacd <NAME>` will create a new pipeline-project
 * `lein run` from the project folder starts the server and opens the the UI for your pipeline
 * your pipeline is defined in `src/<NAME>/`. Have a look around, change some steps or add some steps on your own.
