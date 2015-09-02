@@ -159,3 +159,71 @@ just doing the most obvious thing to do in a build pipeline. We execute some she
                   "echo \"i am going to fail now...\""
                   "exit 1"))
 {% endhighlight %}
+
+
+## Checking out a git repo and doing some real work
+
+Most build pipelines need to touch version control at some point. So let's see how we can wait for commits, check out a
+repository and run some tests.
+
+So let's create a new pipeline structure first:
+
+{% highlight clojure %}
+(def pipeline-def
+  `(
+    (either
+      wait-for-manual-trigger
+      wait-for-repo)
+    (with-repo
+          run-some-tests)))
+{% endhighlight %}
+
+A couple of things aren't there yet:
+* `wait-for-repo` to wait for commits on a repository
+* `with-repo` to check out the repository and run other steps on the checked out repository
+* `run-some-tests` actually run some tests.
+
+Let's get started!
+
+First, let's pull in LambdaCDs Git support:
+
+{% highlight clojure %}
+(ns my-first-pipeline.steps
+  (:require [lambdacd.steps.shell :as shell]
+            [lambdacd.steps.git :as git]))
+{% endhighlight %}
+
+Also, let's put the repository information into a constant so we can use them in both git-related steps we are going to
+build. We'll use LambdaCDs own repository here as an example:
+
+{% highlight clojure %}
+(def repo-uri "https://github.com/flosell/lambdacd.git")
+(def repo-branch "master")
+{% endhighlight %}
+
+Now that we have everything we need set up, let's create the build steps:
+
+{% highlight clojure %}
+(defn wait-for-repo [args ctx]
+  (git/wait-for-git ctx repo-uri repo-branch))
+
+(defn with-repo [& steps]
+  (git/with-git repo-uri steps))
+{% endhighlight %}
+
+`wait-for-repo` is more or less straightforward stuff you already know, `with-repo` looks a bit odd, right? Didn't I say
+that every build-steps needs to have two parameters, `args` and `ctx`? Yes, but then `with-repo` isn't a normal build-step
+when you look at how it's being used in the pipeline structure: It's being called within the pipeline structure, takes
+any number of build steps and returns a build step that'll run it's children within the git repository context.
+
+Now, all that's left is how to get the tests running. The first step is easy, you have seen how to call something on the
+shell before. But where to find the git repository `with-git` checked out for us? Well remember I mentioned before that
+`args` is how build steps communicate with each other? `with-git` does just that. It puts the working directory into the
+childs `args` under the key `:cwd`.
+
+{% highlight clojure %}
+(defn run-some-tests [args ctx]
+  (shell/bash ctx (:cwd args) "./go test-clj"))
+{% endhighlight %}
+
+And that's all you need. `lein run` your pipeline again and see the it all work.
