@@ -8,7 +8,7 @@ To try out LambdaCD, here's what you need to know:
   * `{ :foo "bar" }`: this is a map with a key `:foo` mapping to a value `"bar"`
   * `(defn add [a b] (+ a b))`: this defines a function `add` with two parameters `a` and `b` that returns the sum of `a` and `b`
 
-* You'll also need an editor. [LightTable](http://www.lighttable.com/) is very popular at the moment, but you can really use anything. If you are used to IntelliJ, try out the [Cursive](https://cursiveclojure.com/) (look for the Early Access Program)
+* You'll also need an editor. [LightTable](http://www.lighttable.com/) is very popular at the moment, but you can really use anything. If you are used to IntelliJ, try out the [Cursive](https://cursiveclojure.com/userguide/)
 
 ## References
 
