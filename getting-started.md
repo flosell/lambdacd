@@ -179,6 +179,7 @@ So let's create a new pipeline structure first:
 {% endhighlight %}
 
 A couple of things aren't there yet:
+
 * `wait-for-repo` to wait for commits on a repository
 * `with-repo` to check out the repository and run other steps on the checked out repository
 * `run-some-tests` actually run some tests.
