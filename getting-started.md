@@ -12,7 +12,7 @@ need some tools:
 * A recent [JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html){:target="_blank"}
 * [Leiningen](http://leiningen.org){:target="_blank"} as a build tool
 * A decent editor. To get started, whatever you are comfortable with is fine. If you want to really dive in, consider
-something with good Clojure support. [Cursive](https://cursiveclojure.com/){:target="_blank"} and
+something with good Clojure support. [Cursive](https://cursiveclojure.com/userguide/){:target="_blank"} and
 [Light Table](http://lighttable.com/){:target="_blank"} are popular choices, as are general purpose editors with Clojure
 support.
 
