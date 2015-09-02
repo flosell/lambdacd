@@ -355,7 +355,13 @@ body {
 
 // arrow right goes down in breakpoint where columns break
 @media (max-width: 1200px) {
-    .fa-arrow-right {
+    .arrowbetweenimages i {
         transform: rotate(90deg);
+    }
+}
+// dirty hack to kind of center the arrow between example and screenshot
+@media (min-width: 1200px) {
+    .arrowbetweenimages {
+        padding-top:200px
     }
 }
