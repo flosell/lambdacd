@@ -21,7 +21,7 @@ And if you notice something, please open bug reports, feature requests or just g
   [JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) installed
 * `lein new lambdacd <NAME>` will create a new pipeline-project
 * `cd <NAME>`
-* `lein run` downloads all dependencies and starts the server; the UI is then served on on http://localhost:8080
+* `lein run` downloads all dependencies and starts the server; the UI is then served on on [http://localhost:8080](http://localhost:8080)
 * your pipeline is defined in `src/<NAME>/`. Have a look around, change some steps or add some steps on your own.
 
 
