@@ -17,7 +17,8 @@ And if you notice something, please open bug reports, feature requests or just g
 
 ## Setup
 
-* *You'll need [Leiningen](http://leiningen.org) and a [JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) for this*
+* Make sure you have [Leiningen](http://leiningen.org) and a recent version of 
+  [JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) installed
 * `lein new lambdacd <NAME>` will create a new pipeline-project
 * `lein run` from the project folder starts the server and opens the the UI for your pipeline
 * your pipeline is defined in `src/<NAME>/`. Have a look around, change some steps or add some steps on your own.
