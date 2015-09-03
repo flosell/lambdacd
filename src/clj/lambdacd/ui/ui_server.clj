@@ -47,29 +47,31 @@
         (POST "/dynamic/:id" {{id :id } :params data :json-params} (do
                                                                      (manualtrigger/post-id ctx id (w/keywordize-keys data))
                                                                      (util/json {:status :success})))))))
-(defn- ui []
-  (routes
-    (route/resources "/" {:root "public"})
-    (GET "/" [] (h/html
-                  [:html
-                    [:head
-                     [:title "LambdaCD"]
-                     ; include the apps css (this should be provided by LambdaCD instead of hardcoded here)
-                     (p/include-css "css/thirdparty/normalize.css")
-                     (p/include-css "css/main.css")
-                     (p/include-css "css/thirdparty/font-awesome-4.4.0/css/font-awesome.min.css")]
-                    [:body
-                      ;[:div {:class "app l-horizontal" }
-                       ;[:div {:class "app__header"} [:h1 "Custom Header"]]
-                       [:div {:id "app" }]
-                     ; include the apps js (this should be provided by LambdaCD instead of hardcoded here)
-                     (p/include-js "js-gen/app.js")]]))))
+(defn- ui [pipeline]
+  (let [pipeline-name (get-in pipeline [:context :config :name])]
+    (routes
+      (route/resources "/" {:root "public"})
+      (GET "/" [] (h/html
+                    [:html
+                      [:head
+                       [:title "LambdaCD"]
+                       (p/include-css "css/thirdparty/normalize.css")
+                       (p/include-css "css/main.css")
+                       (p/include-css "css/thirdparty/font-awesome-4.4.0/css/font-awesome.min.css")]
+                      [:body
+                        [:div {:class "app l-horizontal" }
+                         [:div {:class "app__header"}
+                          [:h1 {:class "app__header__lambdacd"} "LambdaCD"]
+                          (if pipeline-name
+                            [:span {:class "app__header__pipeline-name" } pipeline-name])]
+                         [:div {:id "app" }]]
+                       (p/include-js "js-gen/app.js")]])))))
 
 (defn ui-for
   ([pipeline]
    (routes
      (context "/api" [] (rest-api pipeline))
-     (context "" [] (ui))))
+     (context "" [] (ui pipeline))))
   ([pipeline-def pipeline-state ctx] ; this is deprecated and will be removed in subsequent releases
    (ui-for {:pipeline-def pipeline-def
             :context ctx})))

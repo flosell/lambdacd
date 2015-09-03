@@ -7,6 +7,7 @@ The official release will have a defined and more stable API. If you are already
 
 ## 0.5.2
 * Improvements:
+  * UI: display the name of the pipeline if config contains a value for `:name`
   * UI: make sure build history doesn't shrink when pipeline content is very long
   * UI: make sure long pipeline output doesn't spill over the visible width
   * UI: remove alert after clicking the manual trigger
