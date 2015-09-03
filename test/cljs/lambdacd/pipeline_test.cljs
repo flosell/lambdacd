@@ -51,11 +51,12 @@
 (defn step-label [step]
   (sel1 step :span))
 
+(def some-step-id-to-display 10)
 
 (deftest build-step-test
   (testing "rendering of a single build-step"
     (tu/with-mounted-component
-      (pipeline/build-step-component some-build-step  1)
+      (pipeline/build-step-component some-build-step 1 some-step-id-to-display)
       (fn [c div]
         (is (dom/found-in div #"some-step"))
         (is (dom/having-class "build-step" (step-label (first (steps div)))))
@@ -63,7 +64,7 @@
         (is (dom/containing-link-to div (route/for-build-and-step-id 1 [1 2 3]))))))
   (testing "rendering of a container build-step"
     (tu/with-mounted-component
-      (pipeline/build-step-component some-container-build-step  1)
+      (pipeline/build-step-component some-container-build-step 1 some-step-id-to-display)
       (fn [c div]
         (is (dom/found-in div #"some-container"))
         (is (dom/found-in (first (steps div)) #"some-step"))
@@ -72,7 +73,7 @@
         (is (dom/containing-ordered-list (first (steps div)))))))
   (testing "rendering of a parallel build-step"
     (tu/with-mounted-component
-      (pipeline/build-step-component some-parallel-build-step  1)
+      (pipeline/build-step-component some-parallel-build-step 1 some-step-id-to-display)
       (fn [c div]
         (is (dom/found-in div #"some-parallel-step"))
         (is (dom/found-in (first (steps div)) #"some-other-step"))
