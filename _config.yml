@@ -5,7 +5,7 @@ description: > # this means to ignore newlines until "baseurl:"
   LambdaCD is a toolbox to enable you to build your own buildserver.
   It's it's a continuous delivery pipeline, in code
   It's your own custom built Jenkins/Go/TeamCity/..., in Clojure
-baseurl: "/lambdacd" # the subpath of your site, e.g. /blog/
+baseurl: "" # the subpath of your site, e.g. /blog/
 url: "https://flosell.github.io" # the base hostname & protocol for your site
 twitter_username: jekyllrb
 github_username:  jekyll
