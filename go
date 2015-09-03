@@ -5,11 +5,28 @@ set -e
 bold=$(tput bold)
 normal=$(tput sgr0)
 
+checkmark="\xe2\x98\x91"
+cross="\xe2\x98\x92"
+
+startred='\033[0;31m'
+endcolor='\033[0m'
+startgreen='\033[0;32m'
+
+echoCheck() {
+  echo -e "$startgreen $checkmark $1 $endcolor"
+}
+
+echoError() {
+ echo -e "$startred $cross $1 $endcolor"
+}
+
 echob() {
-  echo "${bold}$*${normal}"
+  echo -e "${bold}$*${normal}"
 }
 
 setupTodopipelineEnv() {
+  check "vagrant"
+  
   if [ "$(vagrant status | grep running)" == "" ]; then
     vagrant up
   fi
@@ -23,20 +40,38 @@ setupTodopipelineEnv() {
 }
 
 setupNPM() {
-  echob "Install NPM dependencies"
+  echob "Installing NPM dependencies..."
   npm install
 }
 
 buildCljsOnce() {
  lein cljsbuild once
 }
+
+check() {
+  if ! type "$1" > /dev/null 2>&1; then
+    echoError "$2 not installed"
+    exit 1
+  else
+    echoCheck "$2 installed"
+  fi
+}
+
+checkRequirement() {
+  check "lein" "Leiningen"
+  check "npm" "NPM"
+  echo
+}
 setup() {
+  checkRequirement
+
   setupNPM
   buildCss
   buildCljsOnce
 
   echo
-  echob "[SUCCESS] You are good to go"
+  echob "[SUCCESS] You are good to go!"
+  echo "Call ./go serve to start a demo pipeline."
 }
 
 testallClojure() {
@@ -95,7 +130,7 @@ serveCss() {
 }
 
 buildCss() {
-  echob "Build CSS"
+  echob "Building CSS from LESS..."
   npm run build
 }
 
