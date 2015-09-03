@@ -28,7 +28,7 @@
                    :smoke :smoke
                    :all (constantly true)}
   :plugins [
-            [lein-cljsbuild "1.0.5"]
+            [lein-cljsbuild "1.1.0"]
             [lein-environ "1.0.0"]
             [lein-kibit "0.1.2"]
             [quickie "0.3.6"]]
@@ -41,7 +41,14 @@
                                         :asset-path   "js-gen/out"
                                         :jar true
                                         :optimizations :advanced
-                                        :pretty-print  false}}}}
+                                        :pretty-print  false}
+                             :warning-handlers [(fn [warning-type env extra]
+                                                  (when-let [s (cljs.analyzer/error-message warning-type extra)]
+                                                    (binding [*out* *err*]
+                                                      (if (= :fn-arity warning-type)
+                                                        (do (println "ERROR: " s)
+                                                            (System/exit 1))
+                                                        (cljs.analyzer/message env s)))))]}}}
   :profiles {:release  {:hooks [leiningen.cljsbuild]}
              ;; the namespace for all the clojurescript-dependencies,
              ;; we don't want them as dependencies of the final library as cljs is already compiled then
