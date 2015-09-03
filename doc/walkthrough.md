@@ -204,7 +204,7 @@ To put it all together:
 ```clojure
 (defn ^{:display-type :container} our-own-in-cwd [cwd & steps]
   (fn [args ctx]
-        (core/execute-steps steps (assoc args :cwd cwd) (core/new-base-context-for ctx))))
+        (core/execute-steps steps (assoc args :cwd cwd) ctx)))
 ```
 
 
