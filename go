@@ -26,7 +26,7 @@ echob() {
 
 setupTodopipelineEnv() {
   check "vagrant"
-  
+
   if [ "$(vagrant status | grep running)" == "" ]; then
     vagrant up
   fi
@@ -50,16 +50,16 @@ buildCljsOnce() {
 
 check() {
   if ! type "$1" > /dev/null 2>&1; then
-    echoError "$2 not installed"
+    echoError "$2"
     exit 1
   else
-    echoCheck "$2 installed"
+    echoCheck "$3"
   fi
 }
 
 checkRequirement() {
-  check "lein" "Leiningen"
-  check "npm" "NPM"
+  check "lein" "Leiningen not installed, go to http://leiningen.org/ for details" "Leiningen installed"
+  check "npm" "NPM not installed, go to https://nodejs.org/en/ for details" "NPM installed"
   echo
 }
 setup() {
