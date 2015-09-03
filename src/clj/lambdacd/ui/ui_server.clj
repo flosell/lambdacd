@@ -12,6 +12,8 @@
             [clojure.core.async :as async]
             [lambdacd.util :as util]
             [compojure.route :as route]
+            [hiccup.core :as h]
+            [hiccup.page :as p]
             [lambdacd.internal.pipeline-state :as pipeline-state]
             [lambdacd.core :as core]
             [clojure.string :as string]))
@@ -48,7 +50,20 @@
 (defn- ui []
   (routes
     (route/resources "/" {:root "public"})
-    (GET "/" [] (resp/resource-response "index.html" {:root "public"}))))
+    (GET "/" [] (h/html
+                  [:html
+                    [:head
+                     [:title "LambdaCD"]
+                     ; include the apps css (this should be provided by LambdaCD instead of hardcoded here)
+                     (p/include-css "css/thirdparty/normalize.css")
+                     (p/include-css "css/main.css")
+                     (p/include-css "css/thirdparty/font-awesome-4.4.0/css/font-awesome.min.css")]
+                    [:body
+                      ;[:div {:class "app l-horizontal" }
+                       ;[:div {:class "app__header"} [:h1 "Custom Header"]]
+                       [:div {:id "app" }]
+                     ; include the apps js (this should be provided by LambdaCD instead of hardcoded here)
+                     (p/include-js "js-gen/app.js")]]))))
 
 (defn ui-for
   ([pipeline]
