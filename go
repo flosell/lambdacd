@@ -8,9 +8,10 @@ normal=$(tput sgr0)
 echob() {
   echo "${bold}$*${normal}"
 }
-setup() {
-  if [ "$(vagrant status | grep running)" == "" ]; then 
-    vagrant up 
+
+setupTodopipelineEnv() {
+  if [ "$(vagrant status | grep running)" == "" ]; then
+    vagrant up
   fi
 
   vagrant ssh-config frontend_ci >> /tmp/lambdacd-dev-env-ssh-config
@@ -18,10 +19,24 @@ setup() {
 
   mkdir -p /tmp/mockrepo
 
-  npm install
-  buildCss
+  setup
+}
 
-  echo "[SUCCESS] You are good to go"
+setupNPM() {
+  echob "Install NPM dependencies"
+  npm install
+}
+
+buildCljsOnce() {
+ lein cljsbuild once
+}
+setup() {
+  setupNPM
+  buildCss
+  buildCljsOnce
+
+  echo
+  echob "[SUCCESS] You are good to go"
 }
 
 testallClojure() {
@@ -80,6 +95,7 @@ serveCss() {
 }
 
 buildCss() {
+  echob "Build CSS"
   npm run build
 }
 
@@ -117,24 +133,27 @@ elif [ "$1" == "serve-css" ]; then
     serveCss
 elif [ "$1" == "repl-server" ]; then
     repl-server
+elif [ "$1" == "setupTodopipelineEnv" ]; then
+    setupTodopipelineEnv
 else
     echo "usage: $0 <goal>
 
 goal:
-    clean          -- clear all build artifacts
-    setup          -- to set up your environment
-    test           -- run all tests
-    test-clj       -- run all tests for the clojure-part
-    test-clj-unit  -- run only unit tests for the clojure-part
-    test-cljs      -- run all ClojureScript tests (i.e. unit tests for frontend)
-    test-cljs-auto -- starts autotest-session for frontend
-    check-style    -- runs code-style checks
-    serve          -- start a server with a demo-pipeline
-    serve-cljs     -- compile clojurescript and watch for changes
-    serve-css      -- autocompile and autoprefix css
-    push           -- run all tests and push current state
-    release        -- release current version
-    release-local  -- install current version in local repository
-    repl-server    -- start a repl cursive can use to run tests in"
+    clean                -- clear all build artifacts
+    setup                -- to set up your environment
+    test                 -- run all tests
+    test-clj             -- run all tests for the clojure-part
+    test-clj-unit        -- run only unit tests for the clojure-part
+    test-cljs            -- run all ClojureScript tests (i.e. unit tests for frontend)
+    test-cljs-auto       -- starts autotest-session for frontend
+    check-style          -- runs code-style checks
+    serve                -- start a server with a demo-pipeline
+    serve-cljs           -- compile clojurescript and watch for changes
+    serve-css            -- autocompile and autoprefix css
+    push                 -- run all tests and push current state
+    release              -- release current version
+    release-local        -- install current version in local repository
+    repl-server          -- start a repl cursive can use to run tests in
+    setupTodopipelineEnv -- setup everything you need to make the demo pipeline green"
     exit 1
 fi

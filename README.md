@@ -100,6 +100,10 @@ LambdaCD is built in Clojure and ClojureScript with [Leiningen](http://leiningen
 The `./go` script is your main entry-point that wraps all important development tasks.
 Call it without arguments to see all the options.
 
+### General Setup 
+
+* Call `./go setup` to install necessary dependencies and build everything once. 
+
 ### Core Development
 
 * Sources for the core of LambdaCD can be found in `src/clj`, tests in `test/clj`.
@@ -110,7 +114,7 @@ Call it without arguments to see all the options.
   mock-deployment environment on your machine (two VMs where we deploy a TodoMVC client and server):
   * install [Vagrant](http://www.vagrantup.com/downloads.html)
   * have github-access set up (you need to be able to clone with ssh)
-  * `./go setup` starts up two VMs in vagrant where we deploy to and exports the ssh-config for them so that it can be used by the deployment scripts
+  * `./go setupTodopipelineEnv` starts up two VMs in vagrant where we deploy to and exports the ssh-config for them so that it can be used by the deployment scripts
 
 ### Frontend Development
 
