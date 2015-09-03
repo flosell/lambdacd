@@ -228,3 +228,11 @@ childs `args` under the key `:cwd`.
 {% endhighlight %}
 
 And that's all you need. `lein run` your pipeline again and see the it all work.
+
+
+# Where to go from here?
+
+* Find out [how to do implement some common, more advanced use cases](https://github.com/flosell/lambdacd/blob/master/doc/howto.md)
+* Read the [FAQs](https://github.com/flosell/lambdacd/blob/master/doc/FAQ.md)
+* Go through a [comprehensive walkthrough](https://github.com/flosell/lambdacd/blob/master/doc/walkthrough.md),
+  implementing a complete delivery pipeline and going deeper into the details of LambdaCD
