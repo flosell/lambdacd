@@ -13,8 +13,7 @@
 
 (defn- nop [response])
 
-(defn- confirm-triggered [response]
-  (js/alert "triggered"))
+(defn- confirm-triggered [response])
 
 (defn- after-retriggered [response]
   (let [build-number (get response "build-number")]
