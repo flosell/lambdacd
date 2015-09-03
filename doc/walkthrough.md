@@ -25,8 +25,8 @@ So let's get started.
 * Make sure you have [Vagrant](http://www.vagrantup.com/downloads.html) installed
 * Make sure you have [Leiningen 2.x](http://leiningen.org/#install) installed
 * Clone the [LambdaCD repo](https://github.com/flosell/lambdacd). You normally don't need to do this to create a pipeline, it just so happens that the Vagrant setup is there at the moment.
-* in the cloned repo, run `./go setup`. This will run for a while to start your two Vagrant boxes you can deploy to.
-* You should now have a fully functioning setup. You can run the example pipeline using `lein ring server` just to make sure.
+* in the cloned repo, run `./go setupTodopipelineEnv`. This will run for a while to start your two Vagrant boxes you can deploy to.
+* You should now have a fully functioning setup. You can run the example pipeline using `lein run` just to make sure.
 
 
 ## Your first pipeline - The template
@@ -71,7 +71,7 @@ Build steps are normal functions. They have this contract
 * the second parameter `context` contains lower-level details you'll need if you are planning to implement your own control-flow operations and other lower level functionality. For now, just ignore it.
 * They return a map of key-value parts. This is the data you pass on to the next step as `args`. Most of it can be arbitrary but one you need to have: `:status` needs to be `:success` if you want the pipeline to go on. Pretty much anything else is a failure but `:failure` is convention for this case.
 
-In our example the steps are defined in `src/pipeline_tutorial/steps.clj`. As those steps are so simple, they don't care much about anything so they just ignore any input (`[& _]` is a good shorthand for this) and either return immediately or pass on the "hard" work to the terminal, using the `bash` function. It takes the working directory and an arbitrary number of commands. Change something simple and restart your `lein ring server` to see some changes.
+In our example the steps are defined in `src/pipeline_tutorial/steps.clj`. As those steps are so simple, they don't care much about anything so they just ignore any input (`[& _]` is a good shorthand for this) and either return immediately or pass on the "hard" work to the terminal, using the `bash` function. It takes the working directory and an arbitrary number of commands. Change something simple and restart your `lein run` to see some changes.
 
 ### Some wiring
 
