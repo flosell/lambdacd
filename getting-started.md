@@ -51,6 +51,7 @@ $ tree
   ├── project.clj
   └── src
       └── my_first_pipeline
+          ├── core.clj
           ├── pipeline.clj
           └── steps.clj
 {% endhighlight %}
@@ -75,53 +76,26 @@ Like any other clojure code file, it starts with the namespace declaration and i
 {% highlight clojure %}
 (ns my-first-pipeline.pipeline
   (:use [lambdacd.steps.control-flow]
-        [lambdacd.steps.manualtrigger]
         [my-first-pipeline.steps])
-  (:require
-        [ring.server.standalone :as ring-server]
-        [lambdacd.ui.ui-server :as ui]
-        [lambdacd.runners :as runners]
-        [lambdacd.util :as util]
-        [lambdacd.core :as lambdacd]
-        [clojure.tools.logging :as log])
-  (:gen-class))
+  (:require [lambdacd.steps.manualtrigger :as manualtrigger]))
 {% endhighlight %}
 
 More importantly, we define a constant `pipeline-def` which holds your pipelines structure:
 {% highlight clojure %}
-
 (def pipeline-def
   `(
-    wait-for-manual-trigger
+    manualtrigger/wait-for-manual-trigger
     some-step-that-does-nothing
     (in-parallel
       some-step-that-echos-foo
       some-step-that-echos-bar)
-    wait-for-manual-trigger
+    manualtrigger/wait-for-manual-trigger
     some-failing-step))
 {% endhighlight %}
 
-
-It also includes the `-main` entrypoint to your application lives, taking care of wiring everything together,
-setting up configuration and starting pipeline and server:
-
-{% highlight clojure %}
-(defn -main [& args]
-      (let [home-dir (util/create-temp-dir)
-            config { :home-dir home-dir :dont-wait-for-completion false}
-            pipeline (lambdacd/assemble-pipeline pipeline-def config)
-            app (ui/ui-for pipeline)]
-           (log/info "LambdaCD Home Directory is " home-dir)
-           (runners/start-one-run-after-another pipeline)
-           (ring-server/serve app {:open-browser? false
-                                   :port 8080})))
-{% endhighlight %}
-
-
-
 ### `steps.clj`
 
-This file contains your custom build steps that were referenced in the pipeline structure you just saw.
+This file contains the custom build steps that were referenced in the pipeline structure you just saw.
 
 Again, we start with the namespace header. Specifically, we import the `lambdacd.steps.shell` namespace under the name
 `shell`. This provides LambdaCD support for executing commands on the shell.
@@ -159,6 +133,33 @@ just doing the most obvious thing to do in a build pipeline. We execute some she
                   "echo \"i am going to fail now...\""
                   "exit 1"))
 {% endhighlight %}
+
+
+### `core.clj`
+
+This namespace includes the `-main` entrypoint to your application, taking care of wiring everything together,
+setting up configuration and starting pipeline and server:
+
+{% highlight clojure %}
+(defn -main [& args]
+      (let [;; the home dir is where LambdaCD saves all data.
+            ;; point this to a particular directory to keep builds around after restarting
+            home-dir (util/create-temp-dir)
+            config {:home-dir home-dir
+                    :name "my first pipeline"}
+            ;; initialize and wire everything together
+            pipeline (lambdacd/assemble-pipeline pipeline/pipeline-def config)
+            ;; create a Ring handler for the UI
+            app (ui/ui-for pipeline)]
+           (log/info "LambdaCD Home Directory is " home-dir)
+           ;; this starts the pipeline and runs one build after the other.
+           ;; there are other runners and you can define your own as well.
+           (runners/start-one-run-after-another pipeline)
+           ;; start the webserver to serve the UI
+           (ring-server/serve app {:open-browser? false
+                                   :port 8080})))
+{% endhighlight %}
+
 
 
 ## Checking out a git repo and doing some real work
