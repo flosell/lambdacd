@@ -63,6 +63,7 @@ And if you notice something, please open bug reports, feature requests or just g
 
 ## Resources
 
+* [Getting Started](http://www.lambda.cd/getting-started/)
 * [FAQ](doc/FAQ.md)
 * [How to do ...](doc/howto.md)
 * Detailed Tutorial: [doc/walkthrough.md](doc/walkthrough.md)
