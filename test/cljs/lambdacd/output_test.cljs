@@ -29,6 +29,11 @@
                                 :result {:status nil :out "waiting..."}
                                 :children: []}])
 
+(def some-build-state-without-out [{:name "do-other-stuff"
+                                    :step-id [1 1]
+                                    :result {:status :success}
+                                    :children: []}])
+
 (def some-successful-build-state [{:name "do-other-stuff"
                                  :step-id [1 1]
                                  :result {:status "success" :out "hello from successful step"}
@@ -76,6 +81,11 @@
                     (output/output-component some-waiting-build-state [1 1] (atom true))
                     (fn [c div]
                       (is (dom/not-found-in div #"Step is finished")))))
+         (testing "that the console output does not appear if no :out is there"
+                  (tu/with-mounted-component
+                    (output/output-component some-build-state-without-out [1 1] (atom true))
+                    (fn [c div]
+                      (is (dom/not-found-in div #"Output")))))
          (testing "that the finished message does not appear if the step is still running"
                   (tu/with-mounted-component
                     (output/output-component some-running-build-state [1 1] (atom true))

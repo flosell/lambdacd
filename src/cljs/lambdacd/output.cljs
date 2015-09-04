@@ -65,16 +65,17 @@
 
 (defn- plain-output-component [build-state step-id-to-display raw-step-results-visible]
   (let [step (state/find-by-step-id build-state step-id-to-display)
-        result (:result step )
-        output (enhanced-output result)]
+        result (:result step)]
     [:div {:class "results"}
 
      [details-wrapper-component result]
      [:h3 "Complete Step Result"]
      [:button {:on-click (negate raw-step-results-visible)} (if @raw-step-results-visible "hide" "show")]
      [raw-step-results-component raw-step-results-visible result]
-     [:h3 "Console Output"]
-     [:pre output]]))
+     (if (not (nil? (:out result)))
+       [:div
+        [:h3 "Console Output"]
+        [:pre (enhanced-output result)]])]))
 
 
 (defn output-component [build-state step-id-to-display details-visible]
