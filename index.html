@@ -100,7 +100,7 @@ landingpage: true
 (defn wait-for-repo [_ ctx]
   (git/wait-for-git ctx some-repo "master"))
 
-(defn ^{:display-type :container} with-repo [& steps]
+(defn with-repo [& steps]
   (git/with-git some-repo steps))
 
 (defn run-tests [{cwd :cwd} ctx]
