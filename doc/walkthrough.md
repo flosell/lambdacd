@@ -120,11 +120,9 @@ Now we can use it:
 ```clojure
 (def frontend-repo "git@github.com:flosell/todo-backend-client.git")
 
-(defn ^{:display-type :container} with-frontend-git [& steps]
+(defn with-frontend-git [& steps]
   (git/with-git frontend-repo steps))
 ```
-
-The `^{:display-type :container}` adds some metadata, telling LambdaCD that this is a step that's nesting and it should be displayed with its children.
 
 So let's use the whole thing in our first complete pipeline:
 
@@ -141,7 +139,7 @@ Well, now, if this works, the backend part pretty much works the same:
 ```clojure
 (def backend-repo "git@github.com:flosell/todo-backend-compojure.git")
 
-(defn ^{:display-type :container} with-backend-git [& steps]
+(defn with-backend-git [& steps]
   (git/with-git backend-repo steps))
 
 (defn server-test [{cwd :cwd} ctx]
@@ -189,7 +187,7 @@ LambdaCD just execute the elements in the pipeline one by one. If it is a functi
 So to implement `our-own-in-cwd`, we need a function that takes the location of the working directory and a number of functions and returns a function that matches the step-contract. So far so good:
 
 ```clojure
-(defn ^{:display-type :container} our-own-in-cwd [cwd & steps]
+(defn our-own-in-cwd [cwd & steps]
   (fn [args ctx]
     {:status :success}))
 ```
@@ -202,7 +200,7 @@ which (in a very simplified way) makes sure that LambdaCD can identify the steps
 To put it all together:
 
 ```clojure
-(defn ^{:display-type :container} our-own-in-cwd [cwd & steps]
+(defn our-own-in-cwd [cwd & steps]
   (fn [args ctx]
         (core/execute-steps steps (assoc args :cwd cwd) ctx)))
 ```
