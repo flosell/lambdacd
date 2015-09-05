@@ -31,6 +31,12 @@ landingpage: true
           It's got you covered, whether you need ten simple builds or one hugely complex delivery pipeline.
         </p>
         <a href="{{ "/getting-started" | prepend: site.baseurl }}" class="btn btn-default btn-xl">Get Started!</a>
+        <div class="col-lg-8 col-lg-offset-2 text-center getting-started-or"><p>or just run</p></div>
+        <div class="lein-new-command col-lg-6 col-lg-offset-3">
+          {% highlight bash %}
+          $ lein new lambdacd my-first-pipeline
+          {% endhighlight %}
+        </div>
       </div>
     </div>
   </div>
