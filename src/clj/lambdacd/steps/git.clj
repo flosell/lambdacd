@@ -107,10 +107,14 @@
 
 (defn with-git
   "creates a container-step that checks out a given revision from a repository.
-   the revision number is passed on as the :revision value in the arguments-map"
-  [repo-uri steps]
-  (fn [args ctx]
-    (checkout-and-execute repo-uri (:revision args) args ctx steps)))
+   the revision number is passed on as the :revision value in the arguments-map or,
+   if a repo-branch is supplied, the current revision of the branch given is passed on."
+  ([repo-uri steps]
+   (fn [args ctx]
+     (checkout-and-execute repo-uri (:revision args) args ctx steps)))
+  ([repo-uri repo-branch steps]
+   (fn [args ctx]
+     (checkout-and-execute repo-uri (:revision (current-revision repo-uri repo-branch)) args ctx steps))))
 
 (defn- parse-log-lines [l]
   (let [[hash & msg-parts] (s/split l #" ")
