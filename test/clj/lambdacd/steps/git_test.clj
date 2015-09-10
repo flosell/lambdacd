@@ -32,6 +32,21 @@
     {:dir dir
      :commits (git-commits dir)}))
 
+(defn create-test-repo-with-branch []
+  (let [dir (util/create-temp-dir)]
+    (util/bash dir
+               "git init"
+               "echo \"hello\" > foo"
+               "git add -A"
+               "git commit -m \"some message\""
+               "git branch develop"
+               "git checkout develop"
+               "echo \"world\" > bar"
+               "git add -A"
+               "git commit -m \"some other message\"")
+    {:dir dir
+     :commits (git-commits dir)}))
+
 (defn- commit-to
   ([git-dir]
    (commit-to git-dir "new commit"))
@@ -140,6 +155,29 @@
           with-git-result (with-git-function with-git-args (some-ctx))]
       (is (=  :failure (:status with-git-result)))
       (is (.contains (:out with-git-result) "some-unknown-uri" )))))
+
+(deftest with-git-branch-test
+  (testing "that it checks out the head revision for a given branch and then returns, indicating the location of the checked out repo as :cwd value and that the cloned repo is in a directory named like the repo that was cloned"
+    (let [create-output (create-test-repo-with-branch)
+          git-src-dir (:dir create-output)
+          commits (:commits create-output)
+          lastest-commit (last commits)
+          with-git-function (with-git-branch (repo-uri-for git-src-dir) "develop" [step-that-returns-the-current-cwd-head])
+          with-git-result (with-git-function {} (some-ctx))]
+      (is (= lastest-commit (:current-head (get (:outputs with-git-result ) [1 42]))))
+      (is (.startsWith (:out with-git-result) "Cloning"))))
+  (testing "that it fails when it couldn't check out a repository"
+    (let [with-git-function (with-git-branch "some-unknown-uri" "some-unknown-branch" [])
+          with-git-result (with-git-function {} (some-ctx))]
+      (is (=  :failure (:status with-git-result)))
+      (is (.contains (:out with-git-result) "some-unknown-uri" ))))
+  (testing "that it fails when it couldn't check out a branch"
+    (let [create-output (create-test-repo-with-branch)
+          git-src-dir (:dir create-output)
+          with-git-function (with-git-branch (repo-uri-for git-src-dir) "some-unknown-branch" [])
+          with-git-result (with-git-function {} (some-ctx))]
+      (is (=  :failure (:status with-git-result)))
+      (is (.contains (:out with-git-result) "some-unknown-branch" )))))
 
 (defn some-step-that-returns-42 [args ctx]
   {:status :success :the-number 42})
