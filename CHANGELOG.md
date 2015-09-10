@@ -5,6 +5,12 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
+## 0.5.3
+* Improvements:
+  * Adding `with-git-branch` that always checks out the latest commit on a particular branch (as opposed to `with-git`
+    which checks out a revision given in `args` or the `master` branch in case nothing is given) (#46) (thanks @exload
+    for this)
+
 ## 0.5.2
 * Improvements:
   * UI: display the name of the pipeline if config contains a value for `:name`
