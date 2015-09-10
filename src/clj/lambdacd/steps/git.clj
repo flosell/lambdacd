@@ -112,6 +112,13 @@
   (fn [args ctx]
     (checkout-and-execute repo-uri (:revision args) args ctx steps)))
 
+(defn with-git-branch
+  "creates a container-step that checks out the latest revision from a repository with the
+  given branch."
+  [repo-uri repo-branch steps]
+  (fn [args ctx]
+    (checkout-and-execute repo-uri repo-branch args ctx steps)))
+
 (defn- parse-log-lines [l]
   (let [[hash & msg-parts] (s/split l #" ")
         msg (s/join " " msg-parts)]
