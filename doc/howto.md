@@ -87,7 +87,7 @@ So now we need to get it into the pipeline:
 ```
 
 Now you have a build step that you can use in more than one pipeline. If your pipelines look different, that's maybe all
-you need. But maybe your pipelines all look the same. You wouldn't want to dupliate it all the time, right? So instead
+you need. But maybe your pipelines all look the same. You wouldn't want to duplicate it all the time, right? So instead
 of defining a pipeline statically, let's create a function to generate the pipeline structure:
 
 ```clojure
