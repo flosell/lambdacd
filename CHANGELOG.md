@@ -10,6 +10,9 @@ The official release will have a defined and more stable API. If you are already
   * Adding `with-git-branch` that always checks out the latest commit on a particular branch (as opposed to `with-git`
     which checks out a revision given in `args` or the `master` branch in case nothing is given) (#46) (thanks @exload
     for this)
+* Bug fixes: 
+  * Fix a bug that lead to the fact that container steps that were the only children of another container step would not
+    be shown in the UI (#47)
 
 ## 0.5.2
 * Improvements:

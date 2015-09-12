@@ -66,7 +66,9 @@
     (testing "that a sequence with only parameters is a step"
       (is (= :step (display-type `(do-stuff "hello world")))))
     (testing "that a sequence with no parameters is a step"
-      (is (= :step (display-type `(do-stuff))))))
+      (is (= :step (display-type `(do-stuff)))))
+    (testing "that deeper nesting with mixed display types works (reproduces #47)"
+      (is (= :container (display-type `(run (in-parallel do-stuff)))))))
   (deftest display-name-test
     (testing "that the display-name for a step is just the function-name"
       (is (= "do-even-more-stuff" (display-name `do-even-more-stuff)))
@@ -120,6 +122,8 @@
                 :type :container
                 :step-id '(2 1)
                 :children [{:name "do-other-stuff" :type :step :step-id '(1 2 1)}]}]}] (pipeline-display-representation foo-pipeline))))
+  (testing "that nesting parallel in sequential containers works (reproduces #47)"
+    (is (not (nil? (:children (first (pipeline-display-representation `((run (in-parallel do-stuff))))))))))
   (testing "that display type defaults to :container for container-steps"
     (is (= [{:name "container-without-display-type"
              :step-id '(1)

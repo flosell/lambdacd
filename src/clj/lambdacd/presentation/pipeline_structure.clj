@@ -21,12 +21,15 @@
 (defn- has-child-steps? [x]
   (some is-child? (rest x)))
 
+(defn- is-nested-with-children [x]
+  (and
+    (sequential? x)
+    (has-child-steps? x)))
+
 (defn- display-type [x]
   (cond
     (is-fn? x) :step
-    (and
-      (sequential? x)
-      (has-child-steps? x)) (or (display-type-by-metadata (first x)) :container)
+    (is-nested-with-children x) (or (display-type-by-metadata (first x)) :container)
     (sequential? x) :step
     :else :unknown))
 
@@ -88,7 +91,7 @@
     (or (= :container dt) (= :parallel x))))
 
 (defn- is-child? [x]
-  (or (is-container-step? x) (is-simple-step? x)))
+  (or (is-container-step? x) (is-simple-step? x) (is-nested-with-children x)))
 
 (defn- simple-step-representation [part id]
   {:name (display-name part)
