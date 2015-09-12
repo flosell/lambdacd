@@ -8,10 +8,11 @@
 (deftest current-build-component-test
          (testing "a normally rendered pipeline"
                   (tu/with-mounted-component
-                    (core/wired-current-build-component (atom [{:name "do-other-stuff"
+                    [:div
+                     (core/wired-current-build-component (atom [{:name "do-other-stuff"
                                                                 :step-id [0 1 2]
                                                                 :result {:status "success" :out "hello from successful step"}
-                                                                :children: []}]) 3 (atom [0 1 2]) (atom false))
+                                                                :children: []}]) 3 (atom [0 1 2]) (atom false))]
                     (fn [c div]
                       (is (dom/found-in div #"Current Build 3"))
                       (is (dom/found-in div #"Output")))))

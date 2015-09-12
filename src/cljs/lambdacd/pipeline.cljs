@@ -86,6 +86,6 @@
                            step-id-to-display))))
 
 (defn pipeline-component [build-number build-state-atom step-id-to-display]
-  [:div {:class "pipeline"}
+  [:div {:class "pipeline" :key "build-pipeline"}
    [:ol {:class "pipeline__step-container pipeline__step-container--sequential"}
     (map #(build-step-component % build-number step-id-to-display) @build-state-atom)]])

@@ -81,4 +81,4 @@
 (defn output-component [build-state step-id-to-display details-visible]
   (if step-id-to-display
     (scroll-wrapper (partial plain-output-component build-state step-id-to-display details-visible))
-    [:pre "Click on a build step to display details."]))
+    [:pre {:key "build-output"} "Click on a build step to display details."]))

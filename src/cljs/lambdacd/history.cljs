@@ -40,13 +40,12 @@
        [:span { :class "history-item-header"} (str "Build " build-number)]
        [:p {:class "history--item--detail-line"} status]
        [:i {:class "history--item--detail-line"} (content-or-nbsp
-                                                   (time/format-duration first-updated-at most-recent-update-at))]
-      ]]])
+                                                   (time/format-duration first-updated-at most-recent-update-at))]]]])
 
 (defn build-history-component [history build-number]
-  [:div {:class "history"}
-   [:h2 "Builds"]
+  (list
+   [:h2 {:key "history-builds"} "Builds"]
    (if-not (nil? history)
      (let [history-to-display (sort-by :build-number > history)]
-       [:ul (map #(history-item-component build-number %) history-to-display)])
-     [commons/loading-screen])])
+       [:ul {:key "history-items"} (map #(history-item-component build-number %) history-to-display)])
+     (commons/loading-screen))))

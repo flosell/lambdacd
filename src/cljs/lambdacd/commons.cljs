@@ -1,5 +1,5 @@
 (ns lambdacd.commons)
 
 (defn loading-screen []
-  [:div
+  [:div {:key "loading-screen"}
    [:span "Loading..."]])

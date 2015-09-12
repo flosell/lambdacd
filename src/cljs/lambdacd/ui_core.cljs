@@ -33,18 +33,18 @@
   (poll state-atom connection-lost-atom #(api/get-build-state @build-number-atom)))
 
 (defn current-build-header-component [build-number]
-  [:h2 (str "Current Build " build-number)])
+  [:h2 {:key "build-header"} (str "Current Build " build-number)])
 
 (defn current-build-component [build-state-atom build-number step-id-to-display-atom output-details-visible pipeline-component output-component header-component]
   (if-not (nil? @build-state-atom)
-    [:div {:class "build" :key build-number}
-     [header-component build-number]
-     [pipeline-component build-number build-state-atom @step-id-to-display-atom]
-     [output-component @build-state-atom @step-id-to-display-atom output-details-visible]]
+    (list
+     (header-component build-number)
+     (pipeline-component build-number build-state-atom @step-id-to-display-atom)
+     (output-component @build-state-atom @step-id-to-display-atom output-details-visible))
     [commons/loading-screen]))
 
 (defn wired-current-build-component [build-state-atom build-number step-id-to-display-atom output-details-visible]
-  [current-build-component build-state-atom build-number step-id-to-display-atom output-details-visible pipeline/pipeline-component output/output-component current-build-header-component])
+  (current-build-component build-state-atom build-number step-id-to-display-atom output-details-visible pipeline/pipeline-component output/output-component current-build-header-component))
 
 (defn header []
   [:div
@@ -58,8 +58,8 @@
     (if build-number
       [:div {:class (classes container-classes)}
        [:div {:class "l-vertical app__content"}
-         [:div {:id "builds" :class "app__history l-vertical"} [history-component @history build-number]]
-         [:div {:id "currentBuild" :class "app__current-build l-vertical"} [current-build-component state build-number step-id-to-display-atom output-details-visible]]]]
+         [:div {:id "builds" :class "app__history history l-horizontal"} (history-component @history build-number)]
+         [:div {:id "currentBuild" :class "app__current-build l-horizontal"} (current-build-component state build-number step-id-to-display-atom output-details-visible)]]]
       [:div {:id "loading"}
        [:h1 "Loading..."]])))
 
