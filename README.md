@@ -12,7 +12,7 @@
 This project is still under active development so don't rely on everything working flawlessly out of the box.
 Also, things might change along the way so when you upgrade, make sure you check out the [changelog](CHANGELOG.md)
 
-However, people do use LambdaCD in their day to day work and are happy it, so give it a try!
+However, people do use LambdaCD in their day to day work and are happy with it, so give it a try!
 And if you notice something, please open bug reports, feature requests or just give feedback!
 
 ## Setup
