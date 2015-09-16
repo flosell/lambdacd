@@ -54,7 +54,9 @@
       (GET "/" [] (h/html
                     [:html
                       [:head
-                       [:title "LambdaCD"]
+                       (if pipeline-name
+                         [:title (str pipeline-name " - LambdaCD")]
+                         [:title "LambdaCD"])
                        (p/include-css "css/thirdparty/normalize.css")
                        (p/include-css "css/main.css")
                        (p/include-css "css/thirdparty/font-awesome-4.4.0/css/font-awesome.min.css")]

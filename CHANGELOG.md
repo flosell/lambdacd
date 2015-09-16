@@ -5,6 +5,10 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
+## 0.5.4
+* Improvements
+  * Display Pipeline-Name in `title` tag of UI if configured.
+
 ## 0.5.3
 * Improvements:
   * Adding `with-git-branch` that always checks out the latest commit on a particular branch (as opposed to `with-git`
