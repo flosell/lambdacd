@@ -1,6 +1,7 @@
-<img src="doc/img/lambdacd-logo.png" style="float:right;width:125px"/>
+<img src="doc/img/lambdacd-logo.png" width="125px"/>
 
 # LambdaCD
+
 
 * it's a continuous delivery pipeline, in code
 * it's your own custom built Jenkins/Go/TeamCity/..., in clojure
