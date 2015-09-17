@@ -57,9 +57,9 @@
                        (if pipeline-name
                          [:title (str pipeline-name " - LambdaCD")]
                          [:title "LambdaCD"])
-                       [:link {:rel "icon" :type "image/png" :sizes "32x32" :href "/favicon-32x32.png"}]
-                       [:link {:rel "icon" :type "image/png" :sizes "96x96" :href "/favicon-96x96.png"}]
-                       [:link {:rel "icon" :type "image/png" :sizes "16x16" :href "/favicon-16x16.png"}]
+                       [:link {:rel "icon" :type "image/png" :sizes "32x32" :href "favicon-32x32.png"}]
+                       [:link {:rel "icon" :type "image/png" :sizes "96x96" :href "favicon-96x96.png"}]
+                       [:link {:rel "icon" :type "image/png" :sizes "16x16" :href "favicon-16x16.png"}]
                        (p/include-css "css/thirdparty/normalize.css")
                        (p/include-css "css/main.css")
                        (p/include-css "css/thirdparty/font-awesome-4.4.0/css/font-awesome.min.css")]
