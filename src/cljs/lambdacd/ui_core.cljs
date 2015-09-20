@@ -38,9 +38,9 @@
 (defn current-build-component [build-state-atom build-number step-id-to-display-atom output-details-visible pipeline-component output-component header-component]
   (if-not (nil? @build-state-atom)
     (list
-     (header-component build-number)
-     (pipeline-component build-number build-state-atom @step-id-to-display-atom)
-     (output-component @build-state-atom @step-id-to-display-atom output-details-visible))
+     [header-component build-number]
+     [pipeline-component build-number build-state-atom @step-id-to-display-atom]
+     [output-component @build-state-atom @step-id-to-display-atom output-details-visible])
     [commons/loading-screen]))
 
 (defn wired-current-build-component [build-state-atom build-number step-id-to-display-atom output-details-visible]
