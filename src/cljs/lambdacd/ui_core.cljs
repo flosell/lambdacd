@@ -12,8 +12,7 @@
     [re-frame.core :as re-frame]
     [lambdacd.output :as output]
     ; require those to make sure everything is initialized before we get going
-    [lambdacd.subs]
-    [lambdacd.handlers]))
+    [lambdacd.db]))
 
 (enable-console-print!)
 
