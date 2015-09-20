@@ -22,9 +22,9 @@
   (reaction (:pipeline-state @db)))
 
 
-(re-frame/register-handler :history-updated history-updated-handler)
-(re-frame/register-handler :initialize-db initialize-db-handler)
-(re-frame/register-handler :pipeline-state-updated pipeline-state-updated-handler)
+(re-frame/register-handler ::history-updated history-updated-handler)
+(re-frame/register-handler ::initialize-db initialize-db-handler)
+(re-frame/register-handler ::pipeline-state-updated pipeline-state-updated-handler)
 
-(re-frame/register-sub :history history-subscription)
-(re-frame/register-sub :pipeline-state pipeline-state-subscription)
+(re-frame/register-sub ::history history-subscription)
+(re-frame/register-sub ::pipeline-state pipeline-state-subscription)

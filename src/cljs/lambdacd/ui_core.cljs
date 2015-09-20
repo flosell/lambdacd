@@ -12,7 +12,7 @@
     [re-frame.core :as re-frame]
     [lambdacd.output :as output]
     ; require those to make sure everything is initialized before we get going
-    [lambdacd.db]))
+    [lambdacd.db :as db]))
 
 (enable-console-print!)
 
@@ -45,10 +45,10 @@
       (route/set-build-number (most-recent-build-number state)))))
 
 (defn poll-history [build-number-atom connection-lost-atom]
-  (poll-and-dispatch :history-updated connection-lost-atom api/get-build-history (set-build-number-if-missing build-number-atom)))
+  (poll-and-dispatch ::db/history-updated connection-lost-atom api/get-build-history (set-build-number-if-missing build-number-atom)))
 
 (defn poll-state [build-number-atom connection-lost-atom]
-  (poll-and-dispatch :pipeline-state-updated connection-lost-atom #(api/get-build-state @build-number-atom) noop))
+  (poll-and-dispatch ::db/pipeline-state-updated connection-lost-atom #(api/get-build-state @build-number-atom) noop))
 
 (defn current-build-header-component [build-number]
   [:h2 {:key "build-header"} (str "Current Build " build-number)])
@@ -80,9 +80,9 @@
 
 
 (defn init! []
-  (re-frame/dispatch-sync [:initialize-db])
-  (let [history-atom (re-frame/subscribe [:history])
-        state-atom (re-frame/subscribe [:pipeline-state])
+  (re-frame/dispatch-sync [::db/initialize-db])
+  (let [history-atom (re-frame/subscribe [::db/history])
+        state-atom (re-frame/subscribe [::db/pipeline-state])
         build-number-atom (atom nil)
         step-id-to-display-atom (atom nil)
         output-details-visible (atom false)
