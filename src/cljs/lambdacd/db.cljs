@@ -2,6 +2,7 @@
   (:require-macros [reagent.ratom :refer [reaction]])
   (:require [re-frame.core :as re-frame]))
 
+
 (def default-db
   {:history []
    :pipeline-state []
@@ -11,16 +12,22 @@
 (defn initialize-db-handler [_ _]
   default-db)
 
+
+(defn- set-connection-state-active [db]
+  (assoc db :connection-state :active))
+
 (defn history-updated-handler [db [_ new-history]]
-  (assoc db :history new-history
-            :connection-state :active))
+  (-> db
+      (assoc :history new-history)
+      (set-connection-state-active)))
 
 (defn history-subscription [db _]
   (reaction (:history @db)))
 
 (defn pipeline-state-updated-handler [db [_ new-history]]
-  (assoc db :pipeline-state new-history
-            :connection-state :active))
+  (-> db
+      (assoc :pipeline-state new-history)
+      (set-connection-state-active)))
 
 (defn pipeline-state-subscription [db _]
   (reaction (:pipeline-state @db)))
