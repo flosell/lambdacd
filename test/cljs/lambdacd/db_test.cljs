@@ -46,3 +46,12 @@
                   (let [db (r/atom db/default-db)]
                     (reset! db (db/build-number-update-handler @db [nil 42]))
                     (is (= 42 @(db/build-number-subscription db nil))))))
+
+(deftest step-id-test
+         (testing "that initially the step-id is not set"
+                  (let [db (r/atom db/default-db)]
+                    (is (nil? @(db/step-id-subscription db nil)))))
+         (testing "that the step-id can be updated"
+                  (let [db (r/atom db/default-db)]
+                    (reset! db (db/step-id-update-handler @db [nil [2 1]]))
+                    (is (= [2 1] @(db/step-id-subscription db nil))))))

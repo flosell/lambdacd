@@ -83,12 +83,12 @@
   (let [history-atom (re-frame/subscribe [::db/history])
         state-atom (re-frame/subscribe [::db/pipeline-state])
         build-number-atom (re-frame/subscribe [::db/build-number])
-        step-id-to-display-atom (atom nil)
+        step-id-to-display-atom (re-frame/subscribe [::db/step-id])
         output-details-visible (atom false)
         connection-state (re-frame/subscribe [::db/connection-state])]
     (poll-history build-number-atom)
     (poll-state build-number-atom)
-    (route/hook-browser-navigation! step-id-to-display-atom state-atom)
+    (route/hook-browser-navigation! state-atom)
     ; #' is necessary so that fighweel can update: https://github.com/reagent-project/reagent/issues/94
     (reagent/render-component [#'root build-number-atom step-id-to-display-atom history-atom state-atom output-details-visible connection-state history/build-history-component wired-current-build-component header] (.getElementById js/document "app"))))
 
