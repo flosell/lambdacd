@@ -20,19 +20,6 @@
 
 (def poll-frequency 1000)
 
-(defn poll [atom connection-lost-atom fn callback]
-  (go-loop []
-    (let [new-val (async/<! (fn))]
-      (if new-val
-        (do
-          (reset! connection-lost-atom false)
-          (reset! atom new-val)
-          (callback new-val))
-        (reset! connection-lost-atom true))
-      )
-    (async/<! (utils/timeout poll-frequency))
-    (recur)))
-
 (defn poll-and-dispatch [kw connection-lost-atom fn callback]
   (go-loop []
     (let [new-val (async/<! (fn))]
@@ -46,7 +33,6 @@
     (async/<! (utils/timeout poll-frequency))
     (recur)))
 
-
 (defn- most-recent-build-number [state]
   (->> state
        (map :build-number)
@@ -58,10 +44,10 @@
     (if (nil? @build-number-atom)
       (route/set-build-number (most-recent-build-number state)))))
 
-(defn poll-history [history-atom build-number-atom connection-lost-atom]
+(defn poll-history [build-number-atom connection-lost-atom]
   (poll-and-dispatch :history-updated connection-lost-atom api/get-build-history (set-build-number-if-missing build-number-atom)))
 
-(defn poll-state [state-atom build-number-atom connection-lost-atom]
+(defn poll-state [build-number-atom connection-lost-atom]
   (poll-and-dispatch :pipeline-state-updated connection-lost-atom #(api/get-build-state @build-number-atom) noop))
 
 (defn current-build-header-component [build-number]
@@ -99,11 +85,10 @@
         state-atom (re-frame/subscribe [:pipeline-state])
         build-number-atom (atom nil)
         step-id-to-display-atom (atom nil)
-        ;history-atom (atom nil)
         output-details-visible (atom false)
         connection-lost-atom (atom false)]
-    (poll-history history-atom build-number-atom connection-lost-atom)
-    (poll-state state-atom build-number-atom connection-lost-atom)
+    (poll-history build-number-atom connection-lost-atom)
+    (poll-state build-number-atom connection-lost-atom)
     (route/hook-browser-navigation! build-number-atom step-id-to-display-atom state-atom)
     ; #' is necessary so that fighweel can update: https://github.com/reagent-project/reagent/issues/94
     (reagent/render-component [#'root build-number-atom step-id-to-display-atom history-atom state-atom output-details-visible connection-lost-atom history/build-history-component wired-current-build-component header] (.getElementById js/document "app"))))
