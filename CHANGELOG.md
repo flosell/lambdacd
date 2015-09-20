@@ -11,6 +11,7 @@ The official release will have a defined and more stable API. If you are already
   * Prettier favicon (thanks @alphaone for this)
 * Bug fixes:
   * Fix bug that led to wrong `first-updated-at` timestamps when retriggering children of container-steps (#56, flosell/lambdacd-cctray#3)
+  * UI: fix bug that led to console output being refreshed all the time, making selecting text hard (#53)
 
 ## 0.5.3
 * Improvements:
