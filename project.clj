@@ -49,6 +49,7 @@
              ;; we don't want them as dependencies of the final library as cljs is already compiled then
              :provided {:dependencies [[bidi "1.18.7"]
                                        [cljs-ajax "0.3.10"]
+                                       [re-frame "0.4.1"]
                                        [reagent "0.5.1"]
                                        [reagent-utils "0.1.5"]
                                        [com.andrewmcveigh/cljs-time "0.3.5"]

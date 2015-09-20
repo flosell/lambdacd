@@ -1,14 +1,19 @@
 (ns lambdacd.ui-core
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [reagent.core :as reagent :refer [atom]]
-            [cljs.core.async :as async]
-            [lambdacd.utils :as utils :refer [classes]]
-            [lambdacd.api :as api]
-            [lambdacd.pipeline :as pipeline]
-            [lambdacd.route :as route]
-            [lambdacd.history :as history]
-            [lambdacd.commons :as commons]
-            [lambdacd.output :as output]))
+  (:require
+    [reagent.core :as reagent :refer [atom]]
+    [cljs.core.async :as async]
+    [lambdacd.utils :as utils :refer [classes]]
+    [lambdacd.api :as api]
+    [lambdacd.pipeline :as pipeline]
+    [lambdacd.route :as route]
+    [lambdacd.history :as history]
+    [lambdacd.commons :as commons]
+    [re-frame.core :as re-frame]
+    [lambdacd.output :as output]
+    ; require those to make sure everything is initialized before we get going
+    [lambdacd.subs]
+    [lambdacd.handlers]))
 
 (enable-console-print!)
 
@@ -29,6 +34,19 @@
     (async/<! (utils/timeout poll-frequency))
     (recur)))
 
+(defn poll-and-dispatch [kw connection-lost-atom fn callback]
+  (go-loop []
+    (let [new-val (async/<! (fn))]
+      (if new-val
+        (do
+          (reset! connection-lost-atom false)
+          (re-frame/dispatch [kw new-val])
+          (callback new-val))
+        (reset! connection-lost-atom true))
+      )
+    (async/<! (utils/timeout poll-frequency))
+    (recur)))
+
 
 (defn- most-recent-build-number [state]
   (->> state
@@ -42,7 +60,7 @@
       (route/set-build-number (most-recent-build-number state)))))
 
 (defn poll-history [history-atom build-number-atom connection-lost-atom]
-  (poll history-atom connection-lost-atom api/get-build-history (set-build-number-if-missing build-number-atom)))
+  (poll-and-dispatch :history-updated connection-lost-atom api/get-build-history (set-build-number-if-missing build-number-atom)))
 
 (defn poll-state [state-atom build-number-atom connection-lost-atom]
   (poll state-atom connection-lost-atom #(api/get-build-state @build-number-atom) noop))
@@ -77,9 +95,11 @@
 
 
 (defn init! []
-  (let [build-number-atom (atom nil)
+  (re-frame/dispatch-sync [:initialize-db])
+  (let [history-atom (re-frame/subscribe [:history])
+        build-number-atom (atom nil)
         step-id-to-display-atom (atom nil)
-        history-atom (atom nil)
+        ;history-atom (atom nil)
         state-atom (atom nil)
         output-details-visible (atom false)
         connection-lost-atom (atom false)]
