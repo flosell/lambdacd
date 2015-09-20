@@ -34,7 +34,7 @@
     (let [build-number-atom (atom nil)
           step-id-to-display (atom nil)
           state-atom (atom nil)]
-      (is (= {:routing :failed :redirect-to "/builds/1" } (route/dispatch-route build-number-atom step-id-to-display state-atom "/i/dont/know")))
+      (is (= {:routing :failed } (route/dispatch-route build-number-atom step-id-to-display state-atom "/i/dont/know")))
       (is (= nil @build-number-atom)))))
 
 
