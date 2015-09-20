@@ -20,15 +20,14 @@
 
 (def poll-frequency 1000)
 
-(defn poll-and-dispatch [kw connection-lost-atom fn callback]
+(defn poll-and-dispatch [kw fn callback]
   (go-loop []
     (let [new-val (async/<! (fn))]
       (if new-val
         (do
-          (reset! connection-lost-atom false)
           (re-frame/dispatch [kw new-val])
           (callback new-val))
-        (reset! connection-lost-atom true))
+        (re-frame/dispatch [::db/connection-lost]))
       )
     (async/<! (utils/timeout poll-frequency))
     (recur)))
@@ -44,11 +43,11 @@
     (if (nil? @build-number-atom)
       (route/set-build-number (most-recent-build-number state)))))
 
-(defn poll-history [build-number-atom connection-lost-atom]
-  (poll-and-dispatch ::db/history-updated connection-lost-atom api/get-build-history (set-build-number-if-missing build-number-atom)))
+(defn poll-history [build-number-atom]
+  (poll-and-dispatch ::db/history-updated api/get-build-history (set-build-number-if-missing build-number-atom)))
 
-(defn poll-state [build-number-atom connection-lost-atom]
-  (poll-and-dispatch ::db/pipeline-state-updated connection-lost-atom #(api/get-build-state @build-number-atom) noop))
+(defn poll-state [build-number-atom]
+  (poll-and-dispatch ::db/pipeline-state-updated #(api/get-build-state @build-number-atom) noop))
 
 (defn current-build-header-component [build-number]
   [:h2 {:key "build-header"} (str "Current Build " build-number)])
@@ -68,9 +67,9 @@
   [:div
    [:h1 "LambdaCD"]])
 
-(defn root [build-number-atom step-id-to-display-atom history state output-details-visible connection-lost history-component current-build-component header-component]
+(defn root [build-number-atom step-id-to-display-atom history state output-details-visible connection-state history-component current-build-component header-component]
   (let [build-number @build-number-atom
-        container-classes (if @connection-lost
+        container-classes (if (= @connection-state :lost)
                             ["app" "l-horizontal" "app--connection-lost"]
                             ["app" "l-horizontal"] )]
       [:div {:class (classes container-classes)}
@@ -86,11 +85,11 @@
         build-number-atom (atom nil)
         step-id-to-display-atom (atom nil)
         output-details-visible (atom false)
-        connection-lost-atom (atom false)]
-    (poll-history build-number-atom connection-lost-atom)
-    (poll-state build-number-atom connection-lost-atom)
+        connection-state (re-frame/subscribe [::db/connection-state])]
+    (poll-history build-number-atom)
+    (poll-state build-number-atom)
     (route/hook-browser-navigation! build-number-atom step-id-to-display-atom state-atom)
     ; #' is necessary so that fighweel can update: https://github.com/reagent-project/reagent/issues/94
-    (reagent/render-component [#'root build-number-atom step-id-to-display-atom history-atom state-atom output-details-visible connection-lost-atom history/build-history-component wired-current-build-component header] (.getElementById js/document "app"))))
+    (reagent/render-component [#'root build-number-atom step-id-to-display-atom history-atom state-atom output-details-visible connection-state history/build-history-component wired-current-build-component header] (.getElementById js/document "app"))))
 
 
