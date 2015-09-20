@@ -62,7 +62,7 @@
   (poll-and-dispatch :history-updated connection-lost-atom api/get-build-history (set-build-number-if-missing build-number-atom)))
 
 (defn poll-state [state-atom build-number-atom connection-lost-atom]
-  (poll state-atom connection-lost-atom #(api/get-build-state @build-number-atom) noop))
+  (poll-and-dispatch :pipeline-state-updated connection-lost-atom #(api/get-build-state @build-number-atom) noop))
 
 (defn current-build-header-component [build-number]
   [:h2 {:key "build-header"} (str "Current Build " build-number)])
@@ -96,10 +96,10 @@
 (defn init! []
   (re-frame/dispatch-sync [:initialize-db])
   (let [history-atom (re-frame/subscribe [:history])
+        state-atom (re-frame/subscribe [:pipeline-state])
         build-number-atom (atom nil)
         step-id-to-display-atom (atom nil)
         ;history-atom (atom nil)
-        state-atom (atom nil)
         output-details-visible (atom false)
         connection-lost-atom (atom false)]
     (poll-history history-atom build-number-atom connection-lost-atom)
