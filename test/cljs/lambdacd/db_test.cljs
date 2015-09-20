@@ -37,3 +37,12 @@
                     ; then loose connection
                     (reset! db (db/lost-connection-handler @db [nil]))
                     (is (= :lost @(db/connection-state-subscription db nil))))))
+
+(deftest build-number-test
+         (testing "that initially the build number is not set"
+                  (let [db (r/atom db/default-db)]
+                    (is (nil? @(db/build-number-subscription db nil)))))
+         (testing "that the build-number can be updated"
+                  (let [db (r/atom db/default-db)]
+                    (reset! db (db/build-number-update-handler @db [nil 42]))
+                    (is (= 42 @(db/build-number-subscription db nil))))))

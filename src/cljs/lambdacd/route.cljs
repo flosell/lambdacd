@@ -2,6 +2,8 @@
   (:require [bidi.bidi :as bidi]
             [goog.history.EventType :as EventType]
             [goog.events :as events]
+            [re-frame.core :as re-frame]
+            [lambdacd.db :as db]
             [clojure.string :as string])
   (:import goog.History))
 
@@ -10,22 +12,22 @@
     {[:buildnumber ] :build
      [:buildnumber "/" :step-id] :build-and-step-id}])
 
-(defn- set-state [build-number-atom step-id-atom build-number step-id]
-  (reset! build-number-atom build-number)
+(defn- set-state [step-id-atom build-number step-id]
+  (re-frame/dispatch [::db/build-number-updated build-number])
   (reset! step-id-atom step-id))
 
 (defn- parse-step-id [step-id-string]
   (vec (map js/parseInt (string/split step-id-string #"-"))))
 
-(defn dispatch-route [build-number-atom step-id-to-display-atom state-atom path]
+(defn dispatch-route [step-id-to-display-atom state-atom path]
   (let [{handler :handler params :route-params } (bidi/match-route route path)]
     (case handler
           :build             (do
                                (reset! state-atom nil)
-                               (set-state build-number-atom step-id-to-display-atom (js/parseInt (:buildnumber params)) nil)
+                               (set-state step-id-to-display-atom (js/parseInt (:buildnumber params)) nil)
                                {:routing :ok})
           :build-and-step-id (do
-                               (set-state build-number-atom step-id-to-display-atom (js/parseInt (:buildnumber params)) (parse-step-id (:step-id params)))
+                               (set-state step-id-to-display-atom (js/parseInt (:buildnumber params)) (parse-step-id (:step-id params)))
                                {:routing :ok})
           {:routing :failed })))
 
@@ -38,19 +40,18 @@
 ; TODO: hacky global variable...
 (def history (History.))
 
-(defn- navigate [build-number-atom step-id-to-display-atom state-atom token]
-  (let [nav-result (dispatch-route build-number-atom step-id-to-display-atom state-atom token)]
+(defn- navigate [step-id-to-display-atom state-atom token]
+  (let [nav-result (dispatch-route step-id-to-display-atom state-atom token)]
     (if (not= :ok (:routing nav-result))
-      (.setToken history (:redirect-to nav-result))
-      )))
+      (.setToken history (:redirect-to nav-result)))))
 
 
-(defn hook-browser-navigation! [build-number-atom step-id-to-display-atom state-atom]
+(defn hook-browser-navigation! [step-id-to-display-atom state-atom]
   (doto history
     (events/listen
       EventType/NAVIGATE
       (fn [event]
-        (navigate build-number-atom step-id-to-display-atom state-atom (.-token event))))
+        (navigate step-id-to-display-atom state-atom (.-token event))))
     (.setEnabled true)))
 
 (defn set-build-number [build-number]
