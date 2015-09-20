@@ -9,6 +9,7 @@
             [lambdacd.steps.support :as step-support]
             [lambdacd.testsupport.data :refer [some-ctx-with some-ctx]]
             [lambdacd.testsupport.test-util :as tu]
+            [clj-time.core :as t]
             [lambdacd.internal.execution :as execution]
             [lambdacd.testsupport.noop-pipeline-state :as noop-pipeline-state]
             [lambdacd.internal.pipeline-state :as ps]
@@ -296,8 +297,19 @@
                  [2 1] {:status :unknown :out "this will be retriggered"}}
               1 {[1] {:status :success
                       :outputs {[1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0 }
-                                [2 1] {:the-some :val :status :success }}
-                      :retrigger-mock-for-build-number 0 }
+                                [2 1] {:the-some :val :status :success }}}
                  [1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0}
                  [2 1] {:the-some :val :status :success}
-                 [2] { :status :success }}} (tu/without-ts (ps/get-all (:pipeline-state-component context))))))))
+                 [2] { :status :success }}} (tu/without-ts (ps/get-all (:pipeline-state-component context)))))))
+  (testing "that retriggering updates timestamps of container steps (#56)"
+    (let [initial-state { 0 {[1] { :status :unknown :first-updated-at (t/date-time 1970) }
+                             [1 1] {:status :success :out "I am nested"}
+                             [2 1] {:status :unknown :out "this will be retriggered"}}}
+          pipeline `((some-control-flow-thats-called some-step-that-fails-if-retriggered some-step-to-retrigger) some-successful-step)
+          context (some-ctx-with :initial-pipeline-state initial-state)]
+      (pipeline-state/start-pipeline-state-updater (:pipeline-state-component context) context)
+      (retrigger pipeline context 0 [2 1] 1)
+      (wait-for (tu/step-success? context 1 [2]))
+      (let [new-container-step-result (get-in (ps/get-all (:pipeline-state-component context)) [1 [1]])]
+        (is (= :success (:status new-container-step-result)))
+        (is (not= 1970 (t/year (:first-updated-at new-container-step-result))))))))

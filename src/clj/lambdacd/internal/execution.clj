@@ -222,9 +222,10 @@
         result-with-annotation (assoc result :retrigger-mock-for-build-number retriggered-build-number)]
     (send-step-result ctx result-with-annotation)))
 
-(defn- to-be-duplicated? [step-id-retriggered [cur-step-id _]]
-  (let [result (step-id/before? cur-step-id step-id-retriggered)]
-    result))
+(defn- to-be-duplicated? [step-id-retriggered [step-id _]]
+  (and
+    (step-id/before? step-id step-id-retriggered)
+    (not (step-id/parent-of? step-id step-id-retriggered))))
 
 (defn- duplicate-step-results-not-running-again [new-build-number retriggered-build-number pipeline-history context step-id-to-run]
   (let [do-add-result (partial add-result new-build-number retriggered-build-number context)
@@ -235,7 +236,6 @@
   (fn [& _]
     {:reuse-from-build-number build-number :status :to-be-overwritten}))
 
-
 (defn- with-step-id [parent-step-id]
   (fn [idx step]
     [(cons (inc idx) parent-step-id) step]))
@@ -244,9 +244,7 @@
 (defn- replace-with-mock-or-recur [step-id-to-retrigger build-number]
   (fn [[step-id step]]
     (cond
-      (and
-        (step-id/before? step-id step-id-to-retrigger)
-        (not (step-id/parent-of? step-id step-id-to-retrigger))) (cons mock-step [build-number])
+      (to-be-duplicated? step-id-to-retrigger [step-id step]) (cons mock-step [build-number])
       (step-id/parent-of? step-id step-id-to-retrigger) (cons (first step) (mock-for-steps (rest step) step-id step-id-to-retrigger build-number))
       :else step)))
 

@@ -6,8 +6,10 @@ However, as this is still an experimental library, breaking changes may occur wi
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
 ## 0.5.4
-* Improvements
+* Improvements:
   * Display Pipeline-Name in `title` tag of UI if configured.
+* Bug fixes:
+  * Fix bug that led to wrong `first-updated-at` timestamps when retriggering children of container-steps (#56, flosell/lambdacd-cctray#3)
 
 ## 0.5.3
 * Improvements:
