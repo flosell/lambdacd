@@ -27,7 +27,7 @@
           :build-and-step-id (do
                                (set-state build-number-atom step-id-to-display-atom (js/parseInt (:buildnumber params)) (parse-step-id (:step-id params)))
                                {:routing :ok})
-          {:routing :failed :redirect-to (bidi/path-for route :build :buildnumber 1)})))
+          {:routing :failed })))
 
 (defn for-build-number [build-number]
   (str "#" (bidi/path-for route :build :buildnumber build-number)))
