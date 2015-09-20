@@ -89,7 +89,7 @@
                                                                                :optimizations :none
                                                                                :pretty-print  true}
                                                               ;; if you want auto testing uncomment below
-                                                              :notify-command ["phantomjs" "test/bin/runner-none.js" "target/cljs-tests/test" "target/cljs-tests/test.js"
+                                                              :notify-command ["scripts/testwrapper.sh" "phantomjs" "test/bin/runner-none.js" "target/cljs-tests/test" "target/cljs-tests/test.js"
                                                                                "test/vendor/es5-shim.js"
                                                                                "test/vendor/es5-sham.js"
                                                                                "test/vendor/console-polyfill.js"]}}
