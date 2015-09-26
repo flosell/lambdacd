@@ -106,8 +106,14 @@ clean() {
   rm -f resources/public/css/*.css
 }
 
+checkGPG() {
+  if ! echo foo | gpg -ab --batch > /dev/null; then
+    echoError "GPG not set up properly"
+    exit 1
+  fi
+}
 release() {
-  testall && clean && buildCss && lein with-profile +release release $1 && scripts/github-release.sh
+  checkGPG && testall && clean && buildCss && lein with-profile +release release $1 && scripts/github-release.sh
 }
 releaseLocal() {
   buildCss && lein with-profile +release install
