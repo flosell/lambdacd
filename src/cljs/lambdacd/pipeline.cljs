@@ -4,7 +4,9 @@
             [lambdacd.utils :refer [click-handler classes append-components]]
             [lambdacd.api :as api]
             [lambdacd.route :as route]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [lambdacd.db :as db]
+            [re-frame.core :as re-frame]))
 
 (declare build-step-component) ;; mutual recursion
 
@@ -85,7 +87,14 @@
                             (kill-component build-number build-step)]
                            step-id-to-display))))
 
-(defn pipeline-component [build-number build-state-atom step-id-to-display]
+(defn pipeline-renderer [build-number build-state-atom step-id-to-display]
   [:div {:class "pipeline" :key "build-pipeline"}
    [:ol {:class "pipeline__step-container pipeline__step-container--sequential"}
     (map #(build-step-component % build-number step-id-to-display) @build-state-atom)]])
+
+(defn pipeline-component []
+  (let [current-build-number (re-frame/subscribe [::db/build-number])
+        step-id-to-display-atom (re-frame/subscribe [::db/step-id])
+        state-atom (re-frame/subscribe [::db/pipeline-state])]
+    (fn []
+      [pipeline-renderer @current-build-number state-atom @step-id-to-display-atom])))

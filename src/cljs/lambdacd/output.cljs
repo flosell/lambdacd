@@ -86,4 +86,4 @@
   (let [current-step-result (re-frame/subscribe [::db/current-step-result])
         raw-step-results-visible (re-frame/subscribe [::db/raw-step-results-visible])]
     (fn []
-      (output-renderer @current-step-result @raw-step-results-visible))))
+      [output-renderer @current-step-result @raw-step-results-visible])))

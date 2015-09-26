@@ -66,7 +66,7 @@
 (deftest pipeline-test
   (testing "rendering of a complete pipeline"
     (tu/with-mounted-component
-      (pipeline/pipeline-component 1 (atom [some-parallel-build-step]) 42)
+      (pipeline/pipeline-renderer 1 (atom [some-parallel-build-step]) 42)
       (fn [c div]
         (is (dom/found-in div #"some-parallel-step"))
         (is (dom/found-in div #"some-other-step"))))))

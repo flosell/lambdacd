@@ -92,7 +92,7 @@
                                                          :step-id [2 2 3]
                                                          :result {:status "failure"}}]}]}])
         build-number     1]
-      [#'pipeline/pipeline-component build-number build-state-atom 42]))
+      [#'pipeline/pipeline-renderer build-number build-state-atom 42]))
 
 (defn normal-history []
   [:div {:style {:display "flex"}}
