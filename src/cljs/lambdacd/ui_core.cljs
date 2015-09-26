@@ -54,10 +54,10 @@
 
 (defn current-build-component [build-state-atom build-number pipeline-component output-component header-component]
   (if-not (nil? @build-state-atom)
-    (list
+    [:div {:id "currentBuild" :class "app__current-build l-horizontal"}
      [header-component build-number]
      [pipeline-component]
-     [output-component])
+     [output-component]]
     [commons/loading-screen]))
 
 (defn wired-current-build-component [build-state-atom build-number]
@@ -70,8 +70,8 @@
                             ["app" "l-horizontal"] )]
       [:div {:class (classes container-classes)}
        [:div {:class "l-vertical app__content"}
-         [history-component]
-         [:div {:id "currentBuild" :class "app__current-build l-horizontal"} (current-build-component state build-number)]]]))
+        [history-component]
+        [current-build-component state build-number]]]))
 
 
 (defn init! []
