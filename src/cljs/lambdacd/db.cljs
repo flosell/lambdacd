@@ -1,6 +1,7 @@
 (ns lambdacd.db
   (:require-macros [reagent.ratom :refer [reaction]])
-  (:require [re-frame.core :as re-frame]))
+  (:require [re-frame.core :as re-frame]
+            [lambdacd.state :as state]))
 
 
 (def default-db
@@ -58,6 +59,9 @@
   (let [is-visible (:raw-step-results-visible db)]
     (assoc db :raw-step-results-visible (not is-visible))))
 
+(defn current-step-result-subscription [db _]
+  (reaction (state/find-by-step-id (:pipeline-state @db) (:step-id @db))))
+
 
 (re-frame/register-handler ::history-updated history-updated-handler)
 (re-frame/register-handler ::initialize-db initialize-db-handler)
@@ -73,3 +77,4 @@
 (re-frame/register-sub ::build-number build-number-subscription)
 (re-frame/register-sub ::step-id step-id-subscription)
 (re-frame/register-sub ::raw-step-results-visible raw-step-result-visible-subscription)
+(re-frame/register-sub ::current-step-result current-step-result-subscription)

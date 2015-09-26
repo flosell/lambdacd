@@ -57,7 +57,7 @@
     (list
      [header-component build-number]
      [pipeline-component build-number build-state-atom @step-id-to-display-atom]
-     [output-component @build-state-atom @step-id-to-display-atom])
+     [output-component])
     [commons/loading-screen]))
 
 (defn wired-current-build-component [build-state-atom build-number step-id-to-display-atom]

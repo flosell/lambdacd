@@ -1,8 +1,28 @@
 (ns lambdacd.db-test
   (:require
     [cljs.test :refer-macros [deftest is testing run-tests]]
+    [lambdacd.testdata :refer [some-build-step with-name with-type with-output with-children with-step-id]]
     [reagent.core :as r]
     [lambdacd.db :as db]))
+
+(def some-other-step
+  (-> some-build-step
+      (with-step-id [8 9])
+      (with-name "some-other-step")))
+
+(def some-container-build-step
+  (-> some-build-step
+      (with-name "some-container")
+      (with-type "container")
+      (with-children [some-build-step])
+      (with-output "hello from container")))
+
+(def some-parallel-build-step
+  (-> some-container-build-step
+      (with-name "some-parallel-step")
+      (with-type "parallel")
+      (with-children [some-other-step])
+      (with-output "hello from p")))
 
 (deftest get-set-history-test
          (testing "that we can set and update history"
@@ -11,10 +31,10 @@
                     (is (= [:some :history] @(db/history-subscription db nil))))))
 
 (deftest get-set-pipeline-state-test
-         (testing "that we can set and update history"
-                  (let [db (r/atom db/default-db)]
-                    (reset! db (db/pipeline-state-updated-handler @db [nil [:some :state]]))
-                    (is (= [:some :state] @(db/pipeline-state-subscription db nil))))))
+  (testing "that we can set and update history"
+    (let [db (r/atom db/default-db)]
+      (reset! db (db/pipeline-state-updated-handler @db [nil [:some :state]]))
+      (is (= [:some :state] @(db/pipeline-state-subscription db nil))))))
 
 (deftest lost-connection-test
          (testing "that initially there is no connection"
@@ -65,3 +85,15 @@
                     (is (= true @(db/raw-step-result-visible-subscription db nil)))
                     (reset! db (db/toggle-raw-step-results-visible-handler @db nil))
                     (is (= false @(db/raw-step-result-visible-subscription db nil))))))
+
+
+(deftest current-step-result
+  (testing "return the step-result of the current step"
+    (let [db (r/atom db/default-db)]
+      (reset! db (db/pipeline-state-updated-handler @db [nil [some-parallel-build-step]]))
+      (reset! db (db/step-id-update-handler @db [nil [8 9]]))
+      (is (= some-other-step @(db/current-step-result-subscription db nil)))))
+  (testing "return nothing if no step id set"
+    (let [db (r/atom db/default-db)]
+      (reset! db (db/pipeline-state-updated-handler @db [nil [some-parallel-build-step]]))
+      (is (= nil @(db/current-step-result-subscription db nil))))))

@@ -1,31 +1,12 @@
 (ns lambdacd.pipeline-test
   (:require [cljs.test :refer-macros [deftest is testing run-tests]]
+            [lambdacd.testdata :refer [some-build-step with-name with-type with-output with-children]]
             [dommy.core :as dommy]
             [dommy.core :refer-macros [sel sel1]]
             [lambdacd.pipeline :as pipeline]
             [lambdacd.dom-utils :as dom]
             [lambdacd.testutils :as tu]
             [lambdacd.route :as route]))
-
-(def some-build-step
-  {:name "some-step"
-   :type "step"
-   :step-id [1 2 3]
-   :children []
-   :result {:status "success"
-            :out "hello world"}})
-
-(defn with-name [step name]
-  (assoc step :name name))
-
-(defn with-type [step name]
-  (assoc step :type name))
-
-(defn with-output [step output]
-  (assoc step :result {:status "success" :out output}))
-
-(defn with-children [step children]
-  (assoc step :children children))
 
 (def some-other-step
   (-> some-build-step

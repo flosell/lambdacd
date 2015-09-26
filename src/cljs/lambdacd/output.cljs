@@ -11,7 +11,7 @@
     nil))
 
 (defn- raw-step-results-component [visible result]
-  (if @visible
+  (if visible
     [:pre (js/JSON.stringify (clj->js result) nil 2)]
     [:pre]))
 
@@ -65,24 +65,25 @@
      output
      (str output "\n\n" "Step is finished: " (status-to-string status))))
 
-(defn- plain-output-component [build-state step-id-to-display]
-  (let [step (state/find-by-step-id build-state step-id-to-display)
-        result (:result step)
+(defn- plain-output-component [step raw-step-results-visible]
+  (let [result (:result step)]
+    [:div {:class "results"}
+     [details-wrapper-component result]
+     [:h3 "Complete Step Result"]
+     [:button {:on-click #(re-frame/dispatch [::db/toggle-raw-step-results-visible])} (if raw-step-results-visible "hide" "show")]
+     [raw-step-results-component raw-step-results-visible result]
+     (if (not (nil? (:out result)))
+       [:div
+        [:h3 "Console Output"]
+        [:pre (enhanced-output result)]])]))
+
+(defn output-renderer [current-step-result raw-step-results-visible]
+  (if current-step-result
+    (scroll-wrapper (partial plain-output-component current-step-result raw-step-results-visible))
+    [:pre {:key "build-output"} "Click on a build step to display details."]))
+
+(defn output-component []
+  (let [current-step-result (re-frame/subscribe [::db/current-step-result])
         raw-step-results-visible (re-frame/subscribe [::db/raw-step-results-visible])]
     (fn []
-      [:div {:class "results"}
-
-       [details-wrapper-component result]
-       [:h3 "Complete Step Result"]
-       [:button {:on-click #(re-frame/dispatch [::db/toggle-raw-step-results-visible])} (if @raw-step-results-visible "hide" "show")]
-       [raw-step-results-component raw-step-results-visible result]
-       (if (not (nil? (:out result)))
-         [:div
-          [:h3 "Console Output"]
-          [:pre (enhanced-output result)]])])))
-
-
-(defn output-component [build-state step-id-to-display]
-  (if step-id-to-display
-    (scroll-wrapper (partial plain-output-component build-state step-id-to-display))
-    [:pre {:key "build-output"} "Click on a build step to display details."]))
+      (output-renderer @current-step-result @raw-step-results-visible))))
