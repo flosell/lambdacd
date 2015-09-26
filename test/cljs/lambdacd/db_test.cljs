@@ -1,7 +1,6 @@
 (ns lambdacd.db-test
-  (:require-macros
-    [cemerick.cljs.test :refer [is are deftest testing use-fixtures done]])
   (:require
+    [cljs.test :refer-macros [deftest is testing run-tests]]
     [reagent.core :as r]
     [lambdacd.db :as db]))
 
@@ -55,3 +54,14 @@
                   (let [db (r/atom db/default-db)]
                     (reset! db (db/step-id-update-handler @db [nil [2 1]]))
                     (is (= [2 1] @(db/step-id-subscription db nil))))))
+
+(deftest raw-step-results-visible-test
+         (testing "that initially the raw-step-results-visible information is not set"
+                  (let [db (r/atom db/default-db)]
+                    (is (= false @(db/raw-step-result-visible-subscription db nil)))))
+         (testing "that the visibility can be updated"
+                  (let [db (r/atom db/default-db)]
+                    (reset! db (db/toggle-raw-step-results-visible-handler @db nil))
+                    (is (= true @(db/raw-step-result-visible-subscription db nil)))
+                    (reset! db (db/toggle-raw-step-results-visible-handler @db nil))
+                    (is (= false @(db/raw-step-result-visible-subscription db nil))))))

@@ -6,7 +6,8 @@
             [lambdacd.route-test]
             [lambdacd.state-test]
             [lambdacd.time-test]
-            [lambdacd.ui-core-test]))
+            [lambdacd.ui-core-test]
+            [lambdacd.db-test]))
 
 (doo-tests 'lambdacd.history-test
            'lambdacd.output-test
@@ -14,4 +15,5 @@
            'lambdacd.route-test
            'lambdacd.state-test
            'lambdacd.time-test
-           'lambdacd.ui-core-test)
+           'lambdacd.ui-core-test
+           'lambdacd.db-test)

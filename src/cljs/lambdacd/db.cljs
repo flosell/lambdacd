@@ -7,7 +7,8 @@
   {:history []
    :pipeline-state []
    :connection-state :lost
-   :displayed-build-number nil})
+   :displayed-build-number nil
+   :raw-step-results-visible false})
 
 (defn initialize-db-handler [_ _]
   default-db)
@@ -50,6 +51,13 @@
 (defn step-id-update-handler [db [_ new-buildnumber]]
   (assoc db :step-id new-buildnumber))
 
+(defn raw-step-result-visible-subscription [db _]
+  (reaction (:raw-step-results-visible @db)))
+
+(defn toggle-raw-step-results-visible-handler [db [_ _]]
+  (let [is-visible (:raw-step-results-visible db)]
+    (assoc db :raw-step-results-visible (not is-visible))))
+
 
 (re-frame/register-handler ::history-updated history-updated-handler)
 (re-frame/register-handler ::initialize-db initialize-db-handler)
@@ -57,9 +65,11 @@
 (re-frame/register-handler ::connection-lost lost-connection-handler)
 (re-frame/register-handler ::build-number-updated build-number-update-handler)
 (re-frame/register-handler ::step-id-updated step-id-update-handler)
+(re-frame/register-handler ::toggle-raw-step-results-visible toggle-raw-step-results-visible-handler)
 
 (re-frame/register-sub ::history history-subscription)
 (re-frame/register-sub ::pipeline-state pipeline-state-subscription)
 (re-frame/register-sub ::connection-state connection-state-subscription)
 (re-frame/register-sub ::build-number build-number-subscription)
 (re-frame/register-sub ::step-id step-id-subscription)
+(re-frame/register-sub ::raw-step-results-visible raw-step-result-visible-subscription)
