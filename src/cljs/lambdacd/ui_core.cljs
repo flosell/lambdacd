@@ -63,21 +63,20 @@
 (defn wired-current-build-component [build-state-atom build-number step-id-to-display-atom]
   (current-build-component build-state-atom build-number step-id-to-display-atom pipeline/pipeline-component output/output-component current-build-header-component))
 
-(defn root [build-number-atom step-id-to-display-atom history state connection-state history-component current-build-component]
+(defn root [build-number-atom step-id-to-display-atom state connection-state history-component current-build-component]
   (let [build-number @build-number-atom
         container-classes (if (= @connection-state :lost)
                             ["app" "l-horizontal" "app--connection-lost"]
                             ["app" "l-horizontal"] )]
       [:div {:class (classes container-classes)}
        [:div {:class "l-vertical app__content"}
-         [:div {:id "builds" :class "app__history history l-horizontal"} (history-component @history build-number)]
+         [history-component]
          [:div {:id "currentBuild" :class "app__current-build l-horizontal"} (current-build-component state build-number step-id-to-display-atom)]]]))
 
 
 (defn init! []
   (re-frame/dispatch-sync [::db/initialize-db])
-  (let [history-atom (re-frame/subscribe [::db/history])
-        state-atom (re-frame/subscribe [::db/pipeline-state])
+  (let [state-atom (re-frame/subscribe [::db/pipeline-state])
         build-number-atom (re-frame/subscribe [::db/build-number])
         step-id-to-display-atom (re-frame/subscribe [::db/step-id])
         connection-state (re-frame/subscribe [::db/connection-state])]
@@ -85,6 +84,6 @@
     (poll-state build-number-atom)
     (route/hook-browser-navigation! state-atom)
     ; #' is necessary so that fighweel can update: https://github.com/reagent-project/reagent/issues/94
-    (reagent/render-component [#'root build-number-atom step-id-to-display-atom history-atom state-atom connection-state history/build-history-component wired-current-build-component] (.getElementById js/document "app"))))
+    (reagent/render-component [#'root build-number-atom step-id-to-display-atom state-atom connection-state history/build-history-component wired-current-build-component] (.getElementById js/document "app"))))
 
 

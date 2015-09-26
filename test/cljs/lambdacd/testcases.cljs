@@ -96,7 +96,7 @@
 
 (defn normal-history []
   [:div {:style {:display "flex"}}
-    [#'history/build-history-component [{:build-number 1
+    [#'history/build-history-renderer [{:build-number 1
                                          :status "killed"
                                          :most-recent-update-at "2015-08-02T13:49:50.671Z"
                                          :first-updated-at "2015-08-02T11:37:31.272Z"}
