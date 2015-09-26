@@ -1,5 +1,5 @@
 (ns lambdacd.output-test
-  (:require [cemerick.cljs.test :refer-macros [is are deftest testing use-fixtures done]]
+  (:require [cljs.test :refer-macros [deftest is testing run-tests]]
             [lambdacd.dom-utils :as dom]
             [dommy.core :refer-macros [sel sel1]]
             [lambdacd.testutils :as tu]
@@ -9,7 +9,7 @@
   {:name "do-other-stuff"
    :step-id [1 1]
    :result {:status "running" :some-key :some-value :out "hello from child"}
-   :children: []})
+   :children []})
 
 (def root-step
   {:name "in-parallel"
@@ -23,33 +23,33 @@
 (def some-waiting-build-state [{:name "do-other-stuff"
                                    :step-id [1 1]
                                    :result {:status "waiting" :out "waiting..."}
-                                   :children: []}])
+                                   :children []}])
 (def some-unknown-build-state [{:name "do-other-stuff"
                                 :step-id [1 1]
                                 :result {:status nil :out "waiting..."}
-                                :children: []}])
+                                :children []}])
 
 (def some-build-state-without-out [{:name "do-other-stuff"
                                     :step-id [1 1]
                                     :result {:status :success}
-                                    :children: []}])
+                                    :children []}])
 
 (def some-successful-build-state [{:name "do-other-stuff"
                                  :step-id [1 1]
                                  :result {:status "success" :out "hello from successful step"}
-                                 :children: []}])
+                                 :children []}])
 (def some-successful-build-state-with-details [{:name "do-other-stuff"
                                                 :step-id [1 1]
                                                 :result {:status "success"
                                                          :details [{:label "some details"
                                                                     :href "http://some-url.com"
                                                                     :details [{:label "some nested details"}]}]}
-                                                :children: []}])
+                                                :children []}])
 
 (def some-failed-build-state [{:name "do-other-stuff"
                                  :step-id [1 1]
                                  :result {:status "failure" :out "hello from successful child"}
-                                 :children: []}])
+                                 :children []}])
 
 (deftest output-test
          (testing "that a help message is shown when no step selected"

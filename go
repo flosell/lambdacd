@@ -81,11 +81,11 @@ testallClojure() {
 
 testallClojureScript() {
   echob "Running tests for clojure script code..."
-  lein cljsbuild test
+  lein doo phantom test once
 }
 
 autotestClojureScript() {
-  lein cljsbuild auto test
+  lein doo phantom test auto
 }
 
 

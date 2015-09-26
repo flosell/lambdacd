@@ -1,5 +1,5 @@
 (ns lambdacd.time-test
-  (:require [cemerick.cljs.test :refer-macros [is are deftest testing use-fixtures done]]
+  (:require [cljs.test :refer-macros [deftest is testing run-tests]]
             [dommy.core :refer-macros [sel sel1]]
             [cljs-time.core :as cljs-time]
             [cljs-time.extend] ; this makes equality-comparisons work

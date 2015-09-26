@@ -9,7 +9,7 @@
   :source-paths ["src/clj" "src/cljs"]
   :test-paths ["test/clj" "example/clj"]
   :jar-exclusions [#"logback.xml"]
-  :dependencies [[org.clojure/clojure "1.6.0"]
+  :dependencies [[org.clojure/clojure "1.7.0"]
                  [hiccup "1.0.5"]
                  [org.clojure/data.json "0.2.5"]
                  [me.raynes/conch "0.8.0"]
@@ -30,6 +30,7 @@
                    :all (constantly true)}
   :plugins [
             [lein-cljsbuild "1.1.0"]
+            [lein-doo "0.1.4"]
             [lein-environ "1.0.0"]
             [lein-kibit "0.1.2"]
             [quickie "0.3.6"]]
@@ -47,12 +48,11 @@
              ;; the namespace for all the clojurescript-dependencies,
              ;; we don't want them as dependencies of the final library as cljs is already compiled then
              :provided {:dependencies [[bidi "1.18.7"]
-                                       [cljsjs/react "0.12.2-5"]
                                        [cljs-ajax "0.3.10"]
-                                       [reagent "0.5.0-alpha3"]
-                                       [reagent-utils "0.1.2"]
+                                       [reagent "0.5.1"]
+                                       [reagent-utils "0.1.5"]
                                        [com.andrewmcveigh/cljs-time "0.3.5"]
-                                       [org.clojure/clojurescript "0.0-2850"]]}
+                                       [org.clojure/clojurescript "1.7.48"]]}
              :dev      {:main         todopipeline.pipeline
                         :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
                         :dependencies [[ring-mock "0.1.5"]
@@ -60,13 +60,14 @@
                                        [http-kit "2.1.16"]
                                        [ring/ring-devel "1.3.2"]
                                        [leiningen "2.5.1"]
-                                       [figwheel "0.2.5"]
-                                       [weasel "0.6.0-SNAPSHOT"]
-                                       [com.cemerick/piggieback "0.1.6-SNAPSHOT"]
+                                       [figwheel "0.4.0"]
+                                       [weasel "0.7.0"]
+                                       [com.cemerick/piggieback "0.2.1"]
+                                       [org.clojure/tools.nrepl "0.2.10"]
                                        [pjstadig/humane-test-output "0.6.0"]]
 
                         :source-paths ["env/dev/clj"]
-                        :plugins      [[lein-figwheel "0.2.5"]
+                        :plugins      [[lein-figwheel "0.4.0"]
                                        [com.cemerick/clojurescript.test "0.3.3"]]
 
                         :injections   [(require 'pjstadig.humane-test-output)
@@ -78,22 +79,16 @@
 
                         :env          {:dev? true}
 
-                        :cljsbuild    {:builds        {:app  {:source-paths ["env/dev/cljs" "test/cljs"]
-                                                              :compiler     {:main          "lambdacd.dev"
-                                                                             :optimizations :none
-                                                                             :source-map    true}}
+                        :cljsbuild    {:builds        {:app {:source-paths ["env/dev/cljs"]
+                                                             :compiler     {:main          "lambdacd.dev"
+                                                                            :optimizations :none
+                                                                            :source-map    true}}
                                                        :test {:source-paths   ["src/cljs" "test/cljs"]
-                                                              :compiler       {:output-to     "target/cljs-tests/test.js"
-                                                                               :source-map    "target/cljs-tests/test.js.map"
-                                                                               :output-dir    "target/cljs-tests/test"
+                                                              :compiler       {
                                                                                :optimizations :none
-                                                                               :pretty-print  true}
-                                                              ;; if you want auto testing uncomment below
-                                                              :notify-command ["scripts/testwrapper.sh" "phantomjs" "test/bin/runner-none.js" "target/cljs-tests/test" "target/cljs-tests/test.js"
-                                                                               "test/vendor/es5-shim.js"
-                                                                               "test/vendor/es5-sham.js"
-                                                                               "test/vendor/console-polyfill.js"]}}
-                                       :test-commands {"unit" ["phantomjs" "test/bin/runner-none.js" "target/cljs-tests/test" "target/cljs-tests/test.js"
-                                                               "test/vendor/es5-shim.js"
-                                                               "test/vendor/es5-sham.js"
-                                                               "test/vendor/console-polyfill.js"]}}}})
+                                                                               :main "lambdacd.runner"
+                                                                               :pretty-print  true
+                                                                               }
+                                                              }
+                                                       }
+                                       }}})

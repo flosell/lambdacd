@@ -1,5 +1,5 @@
 (ns lambdacd.history-test
-  (:require [cemerick.cljs.test :refer-macros [is are deftest testing use-fixtures done]]
+  (:require [cljs.test :refer-macros [deftest is testing run-tests]]
             [lambdacd.dom-utils :as dom]
             [dommy.core :refer-macros [sel sel1]]
             [lambdacd.history :as history]

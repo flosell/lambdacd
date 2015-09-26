@@ -1,5 +1,5 @@
 (ns lambdacd.state-test
-  (:require [cemerick.cljs.test :refer-macros [is are deftest testing use-fixtures done]]
+  (:require [cljs.test :refer-macros [deftest is testing run-tests]]
             [dommy.core :refer-macros [sel sel1]]
             [lambdacd.state :as state]))
 
@@ -11,7 +11,7 @@
   {:name "do-other-stuff"
    :step-id [1 2 1]
    :result {:status :running :some-key :some-value}
-   :children: []})
+   :children []})
 
 (def parallel-child-a
   {:name "in-cwd"
