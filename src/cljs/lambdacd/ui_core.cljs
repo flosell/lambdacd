@@ -63,11 +63,7 @@
 (defn wired-current-build-component [build-state-atom build-number step-id-to-display-atom]
   (current-build-component build-state-atom build-number step-id-to-display-atom pipeline/pipeline-component output/output-component current-build-header-component))
 
-(defn header []
-  [:div
-   [:h1 "LambdaCD"]])
-
-(defn root [build-number-atom step-id-to-display-atom history state connection-state history-component current-build-component header-component]
+(defn root [build-number-atom step-id-to-display-atom history state connection-state history-component current-build-component]
   (let [build-number @build-number-atom
         container-classes (if (= @connection-state :lost)
                             ["app" "l-horizontal" "app--connection-lost"]
@@ -89,6 +85,6 @@
     (poll-state build-number-atom)
     (route/hook-browser-navigation! state-atom)
     ; #' is necessary so that fighweel can update: https://github.com/reagent-project/reagent/issues/94
-    (reagent/render-component [#'root build-number-atom step-id-to-display-atom history-atom state-atom connection-state history/build-history-component wired-current-build-component header] (.getElementById js/document "app"))))
+    (reagent/render-component [#'root build-number-atom step-id-to-display-atom history-atom state-atom connection-state history/build-history-component wired-current-build-component] (.getElementById js/document "app"))))
 
 
