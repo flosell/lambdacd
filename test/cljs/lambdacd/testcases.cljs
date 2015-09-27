@@ -115,8 +115,9 @@
                                         {:build-number 5
                                          :status "success"
                                          :most-recent-update-at "2015-08-02T22:50:55.671Z"
-                                         :first-updated-at "2015-08-02T11:37:31.272Z"}]]
-   [:div {:style {:border "solid yellow"
+                                         :first-updated-at "2015-08-02T11:37:31.272Z"
+                                         :retriggered 2}]]
+   [:div {:style {:border  "solid yellow"
                   :display "flex"
                   :width "100000px"}} "neighboring content eating up all space"]])
 

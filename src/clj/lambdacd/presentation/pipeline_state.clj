@@ -47,12 +47,16 @@
 (defn- latest-most-recent-update [steps]
   (first-with-key-ordered-by desc :most-recent-update-at steps))
 
+(defn build-that-was-retriggered [step-ids-and-results]
+  (get-in step-ids-and-results [[1] :retrigger-mock-for-build-number]))
+
 (defn- history-entry [[build-number step-ids-and-results]]
   (let [step-results (vals step-ids-and-results)]
     {:build-number build-number
      :status (status-for-steps step-ids-and-results)
      :most-recent-update-at (latest-most-recent-update step-results)
-     :first-updated-at (earliest-first-update step-results)}))
+     :first-updated-at (earliest-first-update step-results)
+     :retriggered (build-that-was-retriggered step-ids-and-results)}))
 
 (defn history-for [state]
   (sort-by :build-number (map history-entry state)))

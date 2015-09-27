@@ -31,7 +31,8 @@
                               {build-number          :build-number
                                status                :status
                                most-recent-update-at :most-recent-update-at
-                               first-updated-at      :first-updated-at}]
+                               first-updated-at      :first-updated-at
+                               retriggered           :retriggered}]
   [:li {:key build-number :class (str "history--item" (if (= build-number active-build-number) " history--item--active"))}
    [:a {:href (route/for-build-number build-number) :class "history--item--container"}
     [:div {:class "history--item--line"}
@@ -46,7 +47,11 @@
      [icon "fa fa-clock-o"]
      [:p {:class "history--item--line--item" } (if first-updated-at
                                                  (str "Duration: " (time/format-duration first-updated-at most-recent-update-at))
-                                                 "Duration: 0sec")]]]])
+                                                 "Duration: 0sec")]]
+    (if retriggered
+      [:div {:class "history--item--line"}
+       [icon "fa fa-repeat"]
+       [:p {:class "history--item--line--item" } (str "Retriggered #" retriggered)]])]])
 
 (defn build-history-renderer [history active-build-number]
   [:div {:id "builds" :class "app__history history l-horizontal"}

@@ -7,7 +7,10 @@ The official release will have a defined and more stable API. If you are already
 
 ## 0.5.5
 * Improvements: 
-  * UI: redesigned build history, added information on when the build was triggered (#52)
+  * UI: redesigned build history:
+    * added information on when the build was triggered (#52)
+    * added information when a build was retriggered
+    
 
 ## 0.5.4
 * Improvements:
