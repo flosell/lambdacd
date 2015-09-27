@@ -99,7 +99,8 @@ testunit() {
 
 check-style() {
   echob "Running code-style checks..."
-  lein kibit
+  # kibit can't handle namespaced keywords, removing this output https://github.com/jonase/kibit/issues/14
+  lein kibit | sed -e '/Check failed -- skipping rest of file/,/java.lang.RuntimeException: Invalid token: ::/d'
 }
 clean() {
   lein clean
