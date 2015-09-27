@@ -116,7 +116,7 @@
                                          :status "success"
                                          :most-recent-update-at "2015-08-02T22:50:55.671Z"
                                          :first-updated-at "2015-08-02T11:37:31.272Z"
-                                         :retriggered 2}]]
+                                         :retriggered 2}] 5]
    [:div {:style {:border  "solid yellow"
                   :display "flex"
                   :width "100000px"}} "neighboring content eating up all space"]])
