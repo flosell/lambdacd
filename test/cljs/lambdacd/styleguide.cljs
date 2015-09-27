@@ -12,13 +12,11 @@
 (defn- initialize-styleguide-overview []
   (println "overview"))
 
-(defn- initialize-testcase [testcase]
-  (case testcase
-    "main" (render [#'testcases/main])
-    "main-connection-lost" (render [#'testcases/main-connection-lost])
-    "normal-pipeline" (render [#'testcases/normal-pipeline])
-    "normal-history" (render [#'testcases/normal-history])
-    "current-build-wrapper" (render [#'testcases/current-build-wrapper])))
+(defn- initialize-testcase [testcase-id]
+  (let [testcases-by-id (group-by :id testcases/tc)
+        testcase        (first (get testcases-by-id testcase-id))
+        component       (:component testcase)]
+    (render component)))
 
 (defn initialize-styleguide []
   (let [testcase (testcase (query))]

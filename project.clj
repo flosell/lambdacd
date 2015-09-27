@@ -79,7 +79,7 @@
                                        :css-dirs         ["resources/public/css"]}
 
                         :env          {:dev? true}
-                        :cljsbuild    {:builds        {:app {:source-paths ["env/dev/cljs"]
+                        :cljsbuild    {:builds        {:app {:source-paths ["env/dev/cljs" "src/cljs"]
                                                              :compiler     {:main          "lambdacd.dev"
                                                                             :optimizations :none
                                                                             :source-map    true}}

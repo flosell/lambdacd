@@ -17,21 +17,14 @@
 
 (defn main []
   (let [build-number           (atom 0)
-        step-id                (atom [42])
-        history                (atom [])
         state                  (atom {})
-        output-details-visible (atom false)
-        connection-lost        (atom false)]
+        connection-not-lost    (atom false)]
     [#'ui-core/root build-number
-                            step-id
-                            history
                             state
-                            output-details-visible
-                            connection-lost
+                            connection-not-lost
 
                             fake-history-component
-                            fake-current-build-component
-                            fake-header-component]))
+                            fake-current-build-component]))
 (defn main-connection-lost []
   (let [build-number           (atom 0)
         step-id                (atom [42])
@@ -40,15 +33,11 @@
         output-details-visible (atom false)
         connection-lost        (atom true)]
     [#'ui-core/root build-number
-                            step-id
-                            history
                             state
-                            output-details-visible
                             connection-lost
 
                             fake-history-component
-                            fake-current-build-component
-                            fake-header-component]))
+                            fake-current-build-component]))
 
 (defn normal-pipeline []
   (let [build-state-atom (atom [{:type "parallel"
@@ -130,7 +119,15 @@
 
 (defn current-build-wrapper []
   (let [build-number           (atom 0)
-        step-id                (atom [42])
-        state                  (atom {})
-        output-details-visible (atom false)]
-    [#'ui-core/current-build-component state build-number step-id output-details-visible fake-pipeline fake-output fake-header-component]))
+        state                  (atom {})]
+    [#'ui-core/current-build-component state build-number fake-pipeline fake-output fake-header-component]))
+
+(def tc
+  [{:id        "main-connection-lost"
+    :component [#'main-connection-lost]}
+   {:id        "normal-pipeline"
+    :component [#'normal-pipeline]}
+   {:id        "normal-history"
+    :component [#'normal-history]}
+   {:id        "current-build-wrapper"
+    :component [#'current-build-wrapper]}])
