@@ -1,7 +1,8 @@
 (ns lambdacd.db
   (:require-macros [reagent.ratom :refer [reaction]])
   (:require [re-frame.core :as re-frame]
-            [lambdacd.state :as state]))
+            [lambdacd.state :as state]
+            [lambdacd.utils :as utils]))
 
 
 (def default-db
@@ -14,13 +15,24 @@
 (defn initialize-db-handler [_ _]
   default-db)
 
+(defn- most-recent-build-number [state]
+  (->> state
+       (map :build-number)
+       (sort)
+       (last)))
 
 (defn- set-connection-state-active [db]
   (assoc db :connection-state :active))
 
+(defn- add-missing-build-number [db new-history]
+  (if (nil? (:displayed-build-number db))
+    (assoc db :displayed-build-number (most-recent-build-number new-history))
+    db))
+
 (defn history-updated-handler [db [_ new-history]]
   (-> db
       (assoc :history new-history)
+      (add-missing-build-number new-history)
       (set-connection-state-active)))
 
 (defn history-subscription [db _]

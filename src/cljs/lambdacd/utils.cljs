@@ -19,3 +19,8 @@
   (if (vector? (first cs))
     (apply string/join " " cs)
     (string/join " " cs)))
+
+(defn put-if-not-present [m k v]
+  (if (contains? m k)
+    m
+    (assoc m k v)))

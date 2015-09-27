@@ -6,9 +6,10 @@
 (defn GET [url]
   (let [ch (async/chan 1)]
     (ac/GET url {:handler (fn [response]
-                              (async/put! ch response)
+                              (async/put! ch {:type :success :response response})
                               (async/close! ch))
                  :error-handler (fn [response]
+                                  (async/put! ch {:type :failure :response response})
                                   (async/close! ch))
                  :keywords? true
                  :response-format :json})

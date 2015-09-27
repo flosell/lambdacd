@@ -2,52 +2,15 @@
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require
     [reagent.core :as reagent :refer [atom]]
-    [cljs.core.async :as async]
-    [lambdacd.utils :as utils :refer [classes]]
-    [lambdacd.api :as api]
+    [lambdacd.utils :refer [classes]]
     [lambdacd.pipeline :as pipeline]
     [lambdacd.route :as route]
     [lambdacd.history :as history]
     [lambdacd.commons :as commons]
     [re-frame.core :as re-frame]
     [lambdacd.output :as output]
-    ; require those to make sure everything is initialized before we get going
+    [lambdacd.logic :as logic]
     [lambdacd.db :as db]))
-
-(enable-console-print!)
-
-(defn noop [& _])
-
-(def poll-frequency 1000)
-
-(defn poll-and-dispatch [kw fn callback]
-  (go-loop []
-    (let [new-val (async/<! (fn))]
-      (if new-val
-        (do
-          (re-frame/dispatch [kw new-val])
-          (callback new-val))
-        (re-frame/dispatch [::db/connection-lost]))
-      )
-    (async/<! (utils/timeout poll-frequency))
-    (recur)))
-
-(defn- most-recent-build-number [state]
-  (->> state
-       (map :build-number)
-       (sort)
-       (last)))
-
-(defn- set-build-number-if-missing [build-number-atom]
-  (fn [state]
-    (if (nil? @build-number-atom)
-      (route/set-build-number (most-recent-build-number state)))))
-
-(defn poll-history [build-number-atom]
-  (poll-and-dispatch ::db/history-updated api/get-build-history (set-build-number-if-missing build-number-atom)))
-
-(defn poll-state [build-number-atom]
-  (poll-and-dispatch ::db/pipeline-state-updated #(api/get-build-state @build-number-atom) noop))
 
 (defn current-build-header-component [build-number]
   [:h2 {:key "build-header"} (str "Current Build " build-number)])
@@ -73,14 +36,12 @@
         [history-component]
         [current-build-component state build-number]]]))
 
-
 (defn init! []
   (re-frame/dispatch-sync [::db/initialize-db])
   (let [state-atom (re-frame/subscribe [::db/pipeline-state])
         build-number-atom (re-frame/subscribe [::db/build-number])
         connection-state (re-frame/subscribe [::db/connection-state])]
-    (poll-history build-number-atom)
-    (poll-state build-number-atom)
+    (logic/start-ticker)
     (route/hook-browser-navigation! state-atom)
     ; #' is necessary so that fighweel can update: https://github.com/reagent-project/reagent/issues/94
     (reagent/render-component [#'root build-number-atom state-atom connection-state history/build-history-component wired-current-build-component] (.getElementById js/document "app"))))

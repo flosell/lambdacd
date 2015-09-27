@@ -7,7 +7,8 @@
             [lambdacd.state-test]
             [lambdacd.time-test]
             [lambdacd.ui-core-test]
-            [lambdacd.db-test]))
+            [lambdacd.db-test]
+            [lambdacd.logic-test]))
 
 (doo-tests 'lambdacd.history-test
            'lambdacd.output-test
@@ -16,4 +17,5 @@
            'lambdacd.state-test
            'lambdacd.time-test
            'lambdacd.ui-core-test
-           'lambdacd.db-test)
+           'lambdacd.db-test
+           'lambdacd.logic-test)

@@ -28,7 +28,15 @@
          (testing "that we can set and update history"
                   (let [db (r/atom db/default-db)]
                     (reset! db (db/history-updated-handler @db [nil [:some :history]]))
-                    (is (= [:some :history] @(db/history-subscription db nil))))))
+                    (is (= [:some :history] @(db/history-subscription db nil)))))
+         (testing "that setting the history does set the current build number to the most recent build if none is set"
+                  (let [db (r/atom db/default-db)]
+                    (reset! db (db/history-updated-handler @db [nil [{:build-number 1} {:build-number 3} {:build-number 2}]]))
+                    (is (= 3 @(db/build-number-subscription db nil)))))
+         (testing "that setting the history does not set the current build number if a different build number is already set"
+                  (let [db (r/atom (assoc db/default-db :displayed-build-number 10))]
+                    (reset! db (db/history-updated-handler @db [nil [{:build-number 1} {:build-number 3} {:build-number 2}]]))
+                    (is (= 10 @(db/build-number-subscription db nil))))))
 
 (deftest get-set-pipeline-state-test
   (testing "that we can set and update history"

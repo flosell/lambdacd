@@ -24,3 +24,6 @@
 
 (defn query []
   (.-search (.-location js/window)))
+
+(defn contains-value? [v coll]
+  (some #(= % v) coll))
