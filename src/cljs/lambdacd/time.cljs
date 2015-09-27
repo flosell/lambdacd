@@ -35,7 +35,6 @@
     (format-duration-in-seconds sec)))
 
 (defn format-ago [s1]
-  (if s1
-    (let [m (js/moment s1)]
-      (.fromNow m))
-    nil))
+  (when s1 (-> s1
+                    (js/moment)
+                    (.fromNow))))
