@@ -16,19 +16,16 @@
             [clojure.string :as s]))
 
 (defn- status-icon [status]
-  (let [class (case status
-                "failure" "fa fa-times"
-                "success" "fa fa-check"
-                "running" "fa fa-cog fa-spin"
-                "waiting" "fa fa-pause"
-                "killed"  "fa fa-bug"
-                "fa fa-question")]
-    [:div {:class "history--item--status-icon" } [:i {:class class}]]))
+  (case status
+    "failure" "fa fa-times failure-red"
+    "success" "fa fa-check success-green"
+    "running" "fa fa-cog fa-spin running-blue"
+    "waiting" "fa fa-pause waiting-yellow"
+    "killed"  "fa fa-bug"
+    "fa fa-question"))
 
-(defn- content-or-nbsp [c]
-  (if (s/blank? c)
-    (gstring/unescapeEntities "&nbsp;")
-    c))
+(defn- icon [class]
+  [:div {:class "history--item--status-icon history--item--line--item" } [:i {:class class}]])
 
 (defn history-item-component [active-build-number
                               {build-number          :build-number
@@ -37,12 +34,19 @@
                                first-updated-at      :first-updated-at}]
   [:li {:key build-number :class (str "history--item" (if (= build-number active-build-number) " history--item--active"))}
    [:a {:href (route/for-build-number build-number) :class "history--item--container"}
-     [status-icon status]
-     [:div {:class "history-item-content"}
-       [:span { :class "history-item-header"} (str "Build " build-number)]
-       [:p {:class "history--item--detail-line"} status]
-       [:i {:class "history--item--detail-line"} (content-or-nbsp
-                                                   (time/format-duration first-updated-at most-recent-update-at))]]]])
+    [:div {:class "history--item--line"}
+     [icon (status-icon status)]
+     [:h3 {:class "history--item--line--item" } (str "Build " build-number)]]
+    [:div {:class "history--item--line"}
+     [icon "fa fa-play"]
+     [:p {:class "history--item--line--item" } (if first-updated-at
+                                                 (str "Started: " (time/format-ago first-updated-at))
+                                                 "Not started yet")]]
+    [:div {:class "history--item--line"}
+     [icon "fa fa-clock-o"]
+     [:p {:class "history--item--line--item" } (if first-updated-at
+                                                 (str "Duration: " (time/format-duration first-updated-at most-recent-update-at))
+                                                 "Duration: 0sec")]]]])
 
 (defn build-history-renderer [history active-build-number]
   [:div {:id "builds" :class "app__history history l-horizontal"}

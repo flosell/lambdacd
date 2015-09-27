@@ -5,6 +5,10 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
+## 0.5.5
+* Improvements: 
+  * UI: redesigned build history, added information on when the build was triggered (#52)
+
 ## 0.5.4
 * Improvements:
   * UI: Display Pipeline-Name in `title` tag of UI if configured.

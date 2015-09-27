@@ -24,16 +24,20 @@
 
 .history--item--container {
   display:flex;
+  flex-direction:column;
 }
 
 .history--item--status-icon {
-  display:block;
   padding-right:5px;
   padding-left:5px;
   padding-top:5px;
   opacity: @base-foreground-opacity;
 }
 
-.history--item--detail-line {
-  margin: 0;
+.history--item--line {
+  display: inline-block;
+}
+
+.history--item--line--item {
+  display: inline;
 }

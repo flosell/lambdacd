@@ -1,12 +1,15 @@
 (ns lambdacd.time
   (:require [cljs-time.format :as format]
             [cljs-time.core :as t]
+            [cljsjs.moment]
             [clojure.string :as s]))
+
+(def formatter (format/formatter "yyyy-MM-dd'T'HH:mm:ss.SSSZ"))
 
 (defn parse-time [s]
   (if (nil? s)
     (t/epoch)
-    (format/parse s)))
+    (format/parse formatter s)))
 
 (defn seconds-between-two-timestamps [t1 t2]
   (t/in-seconds (t/interval t1 t2)))
@@ -30,3 +33,9 @@
         t2 (parse-time s2)
         sec (seconds-between-two-timestamps t1 t2)]
     (format-duration-in-seconds sec)))
+
+(defn format-ago [s1]
+  (if s1
+    (let [m (js/moment s1)]
+      (.fromNow m))
+    nil))

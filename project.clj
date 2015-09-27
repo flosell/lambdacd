@@ -23,6 +23,7 @@
                  [ring-server "0.3.1"]
                  [ring/ring-json "0.3.1"]
                  [cheshire "5.4.0"]
+                 [cljsjs/moment "2.10.6-0"]
                  [clj-time "0.9.0"]
                  ]
   :test-selectors {:default (complement :smoke)

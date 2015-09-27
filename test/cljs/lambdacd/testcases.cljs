@@ -2,7 +2,10 @@
   (:require [reagent.core :as reagent :refer [atom]]
             [lambdacd.ui-core :as ui-core]
             [lambdacd.history :as history]
-            [lambdacd.pipeline :as pipeline]))
+            [cljs-time.format :as format]
+            [lambdacd.pipeline :as pipeline]
+            [cljs-time.core :as t]
+            [lambdacd.time :as time]))
 (defn- background [color]
   {:style {:background-color color}})
 
@@ -83,12 +86,20 @@
         build-number     1]
       [#'pipeline/pipeline-renderer build-number build-state-atom 42]))
 
+(defn formatted-time [t]
+  (format/unparse time/formatter t))
+
+(def a-few-seconds-ago (-> (t/now)
+                           (t/minus (t/seconds 3))))
+
+
+
 (defn normal-history []
   [:div {:style {:display "flex"}}
     [#'history/build-history-renderer [{:build-number 1
                                          :status "killed"
-                                         :most-recent-update-at "2015-08-02T13:49:50.671Z"
-                                         :first-updated-at "2015-08-02T11:37:31.272Z"}
+                                         :most-recent-update-at (formatted-time (t/now))
+                                         :first-updated-at (formatted-time a-few-seconds-ago)}
                                         {:build-number 2
                                          :status "failure"
                                          :most-recent-update-at "2015-08-02T11:38:40.671Z"
@@ -103,7 +114,7 @@
                                          :first-updated-at nil}
                                         {:build-number 5
                                          :status "success"
-                                         :most-recent-update-at "2015-08-02T11:40:40.671Z"
+                                         :most-recent-update-at "2015-08-02T22:50:55.671Z"
                                          :first-updated-at "2015-08-02T11:37:31.272Z"}]]
    [:div {:style {:border "solid yellow"
                   :display "flex"
