@@ -1,4 +1,4 @@
-(defproject lambdacd "0.5.5"
+(defproject lambdacd "0.5.6-SNAPSHOT"
   :description "a library to create a continous delivery pipeline in code"
   :url "http://github.com/flosell/lambdacd"
   :license {:name "Apache License, version 2.0"
