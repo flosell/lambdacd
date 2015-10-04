@@ -1,4 +1,6 @@
 // Variables
+$lambdacd-green: #64b55f;
+$lambdacd-blue: #6284C3;
 
-$theme-primary: #F05F40;
-$theme-dark: #222;
+$theme-primary: lighten($lambdacd-green,5%);
+$theme-dark: darken($lambdacd-blue,20%);
