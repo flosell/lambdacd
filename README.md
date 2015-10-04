@@ -83,7 +83,7 @@ And if you notice something, please open bug reports, feature requests or just g
 * [lambdacd-mongodb](https://github.com/SimonMonecke/lambdacd-mongodb): Alternative persistence backend for LambdaCD, saving the pipeline state into MongoDB instead of the filesystem
 * [lambdacd-rest](https://github.com/SimonMonecke/lambdacd-rest): Alternative persistence backend for LambdaCD, delegating to a REST-service to take care of persistence
 * [lambdacd-state-controller](https://github.com/SimonMonecke/lambdacd-state-controller): Aggregator service for several instances of LambdaCD, backend for [lambdacd-rest](https://github.com/SimonMonecke/lambdacd-rest)
-
+* [machroput](https://github.com/otto-de/machroput): LambdaCD-aware library simplifying deployments into a Mesos Cluster running [Marathon](https://github.com/mesosphere/marathon) or [Chronos](https://github.com/mesos/chronos)
 
 ## Contribute
 
