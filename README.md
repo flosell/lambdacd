@@ -124,9 +124,9 @@ Call it without arguments to see all the options.
 
 ### Frontend Development
 
-* The frontend is written in ClojureScript using [Reagent](https://github.com/reagent-project/reagent)
-* Frontend resources can be found in `resources/public`, ClojureScript code in `src/cljs`, tests in `test/cljs`, 
-  CSS is in `src/css` and is autoprefixed
+* The frontend is written in ClojureScript using [Reagent](https://github.com/reagent-project/reagent) and [re-frame](https://github.com/Day8/re-frame)
+* Frontend resources can be found in `resources/public`, ClojureScript code in `src/cljs`, tests in `test/cljs`
+* Stylesheets are written in are in [Less](http://lesscss.org/) and can be found in `src/less`
 * ClojureScript code needs to be compiled into JS before being useful
 * In three terminals, run `./go serve` to start an example pipeline (if you want it to be green, follow the environment
   setup above), `./go serve-cljs` to start a ClojureScript REPL and automatic code-reloading using
