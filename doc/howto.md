@@ -58,6 +58,28 @@ There's also a shorthand for this relying on the revision in `:revision`:
 Both will check out the specified revision into a new temporary workspace and then execute the given steps.
 The steps receive the workspace path as an argument under the `:cwd` key.
 
+## How do I write to the output so I can see in the UI what my build-step is doing?
+
+The output displayed in the UI is the string under the `:out` key of your steps result. If you want to update this while
+your step is still running, you can do so via the `:result-channel` value of `ctx`.
+
+When you are using any of the built-in helpers in your steps (like `shell/bash`), this is already built in for you.
+Otherwise, you can use functions in the `lambdacd.steps.support` namespace to help you do this:
+
+```clojure
+(:require [lambdacd.steps.support :refer [new-printer print-to-output printed-output]])
+
+(defn some-step [args ctx]
+  ; create a printer that accumulates your output
+  (let [printer (new-printer)]
+    ; do something and write messages to the output
+    (print-to-output ctx printer "Hello")
+    (print-to-output ctx printer "World")
+    ; return your accumulated output in the :out value of your steps result
+    {:status :success
+     :out (printed-output printer)})))
+```
+
 ## How do I generate several pipelines with the same structure?
 
 You might have several pipelines that look pretty much the same. Maybe they check out a repository, run tests and build
