@@ -5,7 +5,8 @@
 (ns todopipeline.steps
   (:require [lambdacd.steps.shell :as shell]
             [lambdacd.steps.git :as git]
-            [lambdacd.steps.manualtrigger :as manualtrigger]))
+            [lambdacd.steps.manualtrigger :as manualtrigger]
+            [lambdacd.steps.support :as support]))
 
 ;; Let's define some constants
 (def backend-repo "git@github.com:flosell/todo-backend-compojure.git")
@@ -56,11 +57,12 @@
 ;; The steps that do the real work testing, packaging, publishing our code.
 ;; They get the :cwd argument from the ```with-*-git steps``` we defined above.
 (defn client-package [{cwd :cwd greeting :greeting} ctx]
-  (shell/bash ctx cwd
-    (str "echo \"This is an optional greeting: " greeting "\"")
-    "bower install"
-    "./package.sh"
-    "./publish.sh"))
+  (support/capture-output ctx
+                          (println "This is an optional greeting: " greeting)
+                          (shell/bash ctx cwd
+                                      "bower install"
+                                      "./package.sh"
+                                      "./publish.sh")))
 
 (defn server-test [{cwd :cwd} ctx]
   (println "server test cwd: " cwd)

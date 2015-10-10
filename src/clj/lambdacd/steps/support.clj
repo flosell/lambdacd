@@ -2,7 +2,9 @@
   (:require [clojure.string :as s]
             [clojure.core.async :as async]
             [lambdacd.internal.execution :as execution]
-            [lambdacd.util :as util]))
+            [lambdacd.util :as util])
+  (:import (java.io PrintWriter Writer StringWriter PrintStream)
+           (org.apache.commons.io.output WriterOutputStream)))
 
 (defn merge-values [a b]
   (cond
@@ -56,9 +58,12 @@
 (defn new-printer []
   (atom ""))
 
+(defn set-output [ctx msg]
+  (async/>!! (:result-channel ctx) [:out msg]))
+
 (defn print-to-output [ctx printer msg]
   (let [new-out (swap! printer (append-output msg))]
-    (async/>!! (:result-channel ctx) [:out new-out])))
+    (set-output ctx new-out)))
 
 (defn printed-output [printer]
   @printer)
@@ -79,3 +84,27 @@
 
 (defn merge-step-results [step-results]
   (reduce execution/merge-two-step-results {} step-results))
+
+; not part of the public interface, just public for the macro
+(defn writer-to-ctx [ctx]
+  (let [buf (StringWriter.)]
+    {:writer (proxy [Writer] []
+              (write [& [x ^Integer off ^Integer len]]
+                (cond
+                  (number? x) (.append buf (char x))
+                  (not off) (.append buf x)
+                  ; the CharSequence overload of append takes an *end* idx, not length!
+                  (instance? CharSequence x) (.append buf ^CharSequence x (int off) (int (+ len off)))
+                  :else (do
+                          (.append buf (String. ^chars x) off len))))
+              (flush []
+                (set-output ctx (.toString (.getBuffer buf)))))
+     :buffer (.getBuffer buf)}))
+
+(defmacro capture-output [ctx & body]
+  `(let [{x#      :writer
+          buffer# :buffer} (writer-to-ctx ~ctx)
+         body-result# (binding [*out* x#]
+                        (do ~@body))]
+     (if (associative? body-result#)
+       (update body-result# :out #(if (nil? %) (str buffer#) (str buffer# "\n" % ))))))

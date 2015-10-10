@@ -173,3 +173,51 @@
     (is (= {:status :unknown} (merge-step-results [{:status :unknown} {:status :success}]))) ; non-success trumps order
     (is (= {:status :unknown} (merge-step-results [{:status :failure} {:status :unknown}]))) ; non-success overwrites in order
     (is (= {:status :failure} (merge-step-results [{:status :failure} {:status :success}]))))) ; non-success trumps order
+
+
+(deftest capture-output-test
+  (testing "that the original step result is kept"
+    (is (map-containing {:foo :bar :status :success}
+                        (capture-output (some-ctx)
+                                        (some-step nil nil)))))
+  (testing "we can deal with static output"
+    (is (map-containing {:foo :bar :status :success}
+                        (capture-output (some-ctx)
+                                        {:foo :bar :status :success}))))
+  (testing "that everything written to stdout is written to the result channel as output"
+    (let [result-channel (async/chan 100)
+          ctx (some-ctx-with :result-channel result-channel)]
+      (capture-output ctx
+                      (println "Hello")
+                      (println "World"))
+      (is (= [[:out "Hello\n"]
+              [:out "Hello\nWorld\n"]] (slurp-chan result-channel)))))
+  (testing "that it returns the accumulated output"
+    (is (map-containing {:out "Hello\nWorld\n"}
+                        (capture-output (some-ctx)
+                                        (println "Hello")
+                                        (println "World")
+                                        {:status :success}))))
+  (testing "that a steps :out is appended to the captured output" ; appending was a more or less random decision,
+    (is (map-containing {:out "Hello\nWorld\n\nFrom Step"}
+                        (capture-output (some-ctx)
+                                        (println "Hello")
+                                        (println "World")
+                                        {:status :success
+                                         :out "From Step"}))))
+  (testing "that hijacking *out* doesn't interfere with other threads"
+    (let [not-stopped (atom true)]
+      (async/thread (while @not-stopped
+                      (print " "))
+                    (println))
+      (is (= "Hello\n" (:out
+                          (capture-output (some-ctx)
+                                          (println "Hello")
+                                          {:status :success}))))
+      (reset! not-stopped false)))
+  (testing "that it can deal with a body that returns nil"
+    (is (= nil (capture-output (some-ctx)
+                               nil))))
+  (testing "that it can deal with a body that returns something that is not a map"
+    (is (= nil (capture-output (some-ctx)
+                               "this is not a map")))))
