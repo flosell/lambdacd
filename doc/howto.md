@@ -74,6 +74,8 @@ LambdaCD comes with a small utility that can rebind `*out*` to pipe the clojure 
     ; return your accumulated output in the :out value of your steps result
     {:status :success}))
 ```
+Note that this utility currently only supports clojure code that is writing to `*out*`. Code that's writing directly to 
+Javas `System.out` is not supported. Feel free to re-open #60 if support for Java Interop is something you urgently need. 
 
 If you need more control over the output, you can write directly to the [result channel](https://github.com/flosell/lambdacd/wiki/Build-Context-\(ctx\))
 or use the printer-utilities: 
