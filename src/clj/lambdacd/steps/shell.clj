@@ -33,15 +33,13 @@
     (.readLine reader)
     (catch IOException e nil)))
 
-(defn- read-and-print-shell-output [proc-result ctx]
-  (let [out-reader (io/reader (:out proc-result))
-        printer (support/new-printer)]
+(defn- read-and-print-shell-output [proc-result]
+  (let [out-reader (io/reader (:out proc-result))]
     (loop []
       (let [line (safe-read-line out-reader)]
         (when line
-          (support/print-to-output ctx printer line)
-          (recur))))
-    (support/printed-output printer)))
+          (println line)
+          (recur))))))
 
 (defn- execte-shell-command [cwd shell-script ctx env]
   (let [x (sh/proc "bash" "-e" shell-script
@@ -53,7 +51,7 @@
         kill-switch (:is-killed ctx)
         watch-ref (UUID/randomUUID)
         _ (add-kill-handling ctx proc was-killed watch-ref)
-        out (read-and-print-shell-output x ctx)
+        out (read-and-print-shell-output x)
         exit-code (sh/exit-code x)
         status (exit-code->status exit-code @was-killed)]
     (remove-watch kill-switch watch-ref)
@@ -70,4 +68,5 @@
         command-lines (string/join "\n" commands)]
     (spit temp-file command-lines)
     (util/with-temp temp-file
-      (execte-shell-command cwd temp-file ctx env))))
+                    (support/capture-output ctx
+                      (execte-shell-command cwd temp-file ctx env)))))
