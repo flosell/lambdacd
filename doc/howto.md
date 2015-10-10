@@ -60,11 +60,23 @@ The steps receive the workspace path as an argument under the `:cwd` key.
 
 ## How do I write to the output so I can see in the UI what my build-step is doing?
 
-The output displayed in the UI is the string under the `:out` key of your steps result. If you want to update this while
-your step is still running, you can do so via the `:result-channel` value of `ctx`.
+LambdaCD comes with a small utility that can rebind `*out*` to pipe the clojure standard out into LambdaCD: 
 
-When you are using any of the built-in helpers in your steps (like `shell/bash`), this is already built in for you.
-Otherwise, you can use functions in the `lambdacd.steps.support` namespace to help you do this:
+```clojure
+(:require [lambdacd.steps.support :refer [capture-output]])
+
+(defn some-step [args ctx]
+  ; create a printer that accumulates your output
+  (capture-output ctx
+    ; do something and write messages to the output
+    (println "Hello")
+    (println "World")
+    ; return your accumulated output in the :out value of your steps result
+    {:status :success}))
+```
+
+If you need more control over the output, you can write directly to the [result channel](https://github.com/flosell/lambdacd/wiki/Build-Context-\(ctx\))
+or use the printer-utilities: 
 
 ```clojure
 (:require [lambdacd.steps.support :refer [new-printer print-to-output printed-output]])
