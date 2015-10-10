@@ -33,6 +33,8 @@
 
 (defn some-step-returning-global-foobar-value [& _]
   {:global {:foobar 42} :status :success})
+(defn some-step-returning-another-global-foobar-value [& _]
+  {:global {:foobar 43} :status :success})
 
 (defn some-step-using-foobar-value [{foobar :foobar} & _]
   {:foobar-times-ten (* 10 foobar) :status :success})
@@ -241,6 +243,12 @@
                       [3 0] {:status :success :foobar-times-ten 420}}
             :status :success}
            (execute-steps [some-step-returning-global-foobar-value some-step-using-global-foobar-value some-step-using-global-foobar-value] {} (some-ctx-with :step-id [0])))))
+  (testing "that a step overrides a :global value"
+    (is (= {:outputs {[1 0] {:status :success :global {:foobar 42}}
+                      [2 0] {:status :success :global {:foobar 43}}
+                      [3 0] {:status :success :foobar-times-ten 430}}
+            :status  :success}
+           (execute-steps [some-step-returning-global-foobar-value some-step-returning-another-global-foobar-value some-step-using-global-foobar-value] {} (some-ctx-with :step-id [0])))))
   (testing "that execute steps injects a kill-switch by default"
     (is (= {:outputs { [1 0] {:status :success} [2 0] {:status :success}} :status :success}
            (execute-steps [some-successful-step step-that-expects-a-kill-switch] {} (some-ctx-with :step-id [0]))))))

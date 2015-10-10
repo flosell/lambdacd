@@ -22,6 +22,8 @@ The official release will have a defined and more stable API. If you are already
     ```
     
     This change also DEPRECATES `lambdacd.steps.support/chain` which will be removed in subsequent releases. 
+* Bug fixes: 
+  * `:global` values can now be overwritten by later stages in the pipeline (#61)
     
 ## 0.5.5
 * Improvements: 

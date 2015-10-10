@@ -156,15 +156,15 @@
   [steps base-context]
   (map-indexed (to-context-and-step base-context) steps))
 
-(defn keep-globals [step-result old-args]
+(defn keep-globals [old-args step-result]
   (let [existing-globals (:global old-args)
         new-globals (:global step-result)
-        merged-globals (merge new-globals existing-globals)
+        merged-globals (merge existing-globals new-globals)
         args-with-old-and-new-globals (assoc step-result :global merged-globals)]
     args-with-old-and-new-globals))
 
 
-(defn- keep-original-args [step-result old-args]
+(defn- keep-original-args [old-args step-result]
   (merge old-args step-result))
 
 (defn- serial-step-result-producer [args s-with-id]
@@ -177,7 +177,7 @@
             step-result (execute-step cur-args ctx-and-step)
             step-output (first (vals (:outputs step-result)))
             new-result (cons step-result result)
-            new-args (-> step-output
+            new-args (->> step-output
                        (keep-globals cur-args)
                        (keep-original-args args))]
         (if (not= :success (:status step-result))
