@@ -9,7 +9,7 @@ The official release will have a defined and more stable API. If you are already
 
 * Improvements: 
   * Added `lambdacd.steps.support/capture-output` to simplify working with stdout in build-steps (#60)
-  * Added `lambdacd.steps.support/chaining`, a more flexible and powerful variant of the existing `chain` macro. 
+  * Added `lambdacd.steps.support/chaining`, a more flexible and powerful variant of the existing `chain` macro. (#39)
     It supports injecting `args` and `ctx` at random places and, together with capture-output, also allows for 
     easy debugging:
      
