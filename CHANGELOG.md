@@ -21,6 +21,8 @@ The official release will have a defined and more stable API. If you are already
       (some-other-step injected-args injected-ctx))
     ```
     
+    This change also DEPRECATES `lambdacd.steps.support/chain` which will be removed in subsequent releases. 
+    
 ## 0.5.5
 * Improvements: 
   * UI: redesigned build history:
