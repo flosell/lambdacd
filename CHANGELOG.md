@@ -5,6 +5,11 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
+## 0.5.6
+
+* Improvements: 
+  * Added `lambdacd.steps.support/capture-output` to simplify working with stdout in build-steps (#60)
+
 ## 0.5.5
 * Improvements: 
   * UI: redesigned build history:
