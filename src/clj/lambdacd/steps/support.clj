@@ -2,7 +2,7 @@
   (:require [clojure.string :as s]
             [clojure.core.async :as async]
             [lambdacd.internal.execution :as execution]
-            [lambdacd.util :as util])
+            [clojure.walk :as walk])
   (:import (java.io PrintWriter Writer StringWriter PrintStream)
            (org.apache.commons.io.output WriterOutputStream)))
 
@@ -27,7 +27,9 @@
       (let [step-result (x args ctx)
             complete-result (merge-with merge-values result step-result)
             next-args (merge args complete-result)]
-        (if (not= :success (:status step-result))
+        (if (and
+              (not= :success (:status step-result))
+              (not= nil step-result))
           complete-result
           (recur (first rest) (next rest) complete-result next-args))))))
 
@@ -46,9 +48,36 @@
       `(fn [& _# ] ~form)
       `(fn [args# ctx#] (~f# args# ctx# ~@r#)))))
 
+;; Placeholders where args and ctx are injected by the chaining-macro.
+(def injected-args)
+(def injected-ctx)
+
+(defn replace-args-and-ctx [args ctx]
+  (fn [x]
+    (case x
+      injected-args args
+      injected-ctx ctx
+      x)))
+
+(defn to-fn-with-args [form]
+  (let [f# (first form)
+        ctx (gensym "ctx")
+        args (gensym "args")
+        r# (walk/postwalk
+             (replace-args-and-ctx args ctx)
+             (next form))]
+    (if (map? form)
+      `(fn [& _# ] ~form)
+      `(fn [~args ~ctx] (~f# ~@r#)))))
+
 (defmacro chain [args ctx & forms]
-  "a bit of syntactic sugar for chaining steps. Basically the threading-macro for LambdaCD"
+  "DEPRECATED: USE chaining instead"
   (let [fns (vec (map to-fn forms))]
+    `(apply chain-steps ~args ~ctx ~fns)))
+
+(defmacro chaining [args ctx & forms]
+  "a bit of syntactic sugar for chaining steps. Basically the threading-macro for LambdaCD. replaces :args and :ctx in calls"
+  (let [fns (vec (map to-fn-with-args forms))]
     `(apply chain-steps ~args ~ctx ~fns)))
 
 (defn- append-output [msg]

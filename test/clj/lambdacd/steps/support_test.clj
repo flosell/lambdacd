@@ -29,8 +29,15 @@
 
 (defn some-step-returning-an-argument-passed-in [args ctx]
   {:status :success :the-arg (:v args)})
+(defn some-step-receiving-only-args [args]
+  {:status :success :the-arg (:v args)})
+
+(defn some-step-receiving-nothing []
+  {:status :success :no-arg :passed-in})
 
 (defn some-step-returning-the-context-passed-in [args ctx]
+  {:status :success :the-ctx-1 ctx})
+(defn some-step-receiving-only-ctx [ctx]
   {:status :success :the-ctx-1 ctx})
 
 (defn some-other-step-returning-the-context-passed-in [args ctx]
@@ -42,6 +49,9 @@
   {:status :success :out "world"})
 
 (defn some-step-with-additional-arguments [args ctx hello world]
+  {:status :success :hello hello :world world})
+
+(defn some-step-with-arbitrary-arguments [hello world]
   {:status :success :hello hello :world world})
 
 (defn step-that-should-never-be-called [args ctx]
@@ -106,7 +116,7 @@
 
 ; Note: if cursive complains about incorrect arity, that's cursive not knowing what the chain-macro does.
 ; as long as the tests are green, you can ignore this...
-(deftest chain-test
+(deftest chain-test ; TOOD: this is DEPRECATED
   (testing "that we can just call a single step"
     (is (= {:status :success :foo :bar} (chain {} {} (some-step)))))
   (testing "that the results of two steps get merged"
@@ -132,6 +142,76 @@
   (testing "that a given context is passed on to the step"
     (is (= {:status :success :the-ctx-1 {:v 42}} (chain {} {:v 42}
                                                  (some-step-returning-the-context-passed-in))))))
+
+(deftest chaining-test
+  (testing "that we can just call a single step"
+    (is (= {:status :success :foo :bar} (chaining {} {} (some-step injected-args injected-ctx)))))
+  (testing "that the results of two steps get merged"
+    (is (= {:status :success :foo :baz}
+           (chaining {} {}
+                     (some-step injected-args injected-ctx)
+                     (some-other-step injected-args injected-ctx)))))
+  (testing "that a failing step stops the execution"
+    (is (= {:status :failure :foo :bar}
+           (chaining {} {}
+                     (some-step injected-args injected-ctx)
+                     (some-failling-step injected-args injected-ctx)
+                     (step-that-should-never-be-called injected-args injected-ctx)))))
+  (testing "that a given argument is passed on to the step"
+    (is (= {:status :success :the-arg 42}
+           (chaining {:v 42} {}
+                     (some-step-returning-an-argument-passed-in injected-args injected-ctx)))))
+  (testing "that we can have more arguments than just args and ctx"
+    (is (= {:status :success :hello "hello" :world "world"}
+           (chaining {} {} (some-step-with-additional-arguments injected-args injected-ctx "hello" "world")))))
+  (testing "that we can also hardcode results at the end of the chain"
+    (is (= {:status :success :this-is :test :foo :bar}
+           (chaining {} {}
+                     (some-step injected-args injected-ctx)
+                     {:status :success :this-is :test}))))
+  (testing "that a given context is passed on to the step"
+    (is (= {:status :success :the-ctx-1 {:v 42}}
+           (chaining {} {:v 42}
+                     (some-step-returning-the-context-passed-in injected-args injected-ctx)))))
+  (testing "that we can pass in only the ctx"
+    (is (= {:status :success :the-ctx-1 {:v 42}}
+           (chaining {} {:v 42}
+                     (some-step-receiving-only-ctx injected-ctx)))))
+  (testing "that we can pass in only the args"
+    (is (= {:status :success :the-arg 42}
+           (chaining {:v 42} {}
+                     (some-step-receiving-only-args injected-args)))))
+  (testing "that we can pass in no params at all"
+    (is (= {:status :success :no-arg :passed-in}
+           (chaining {} {}
+                     (some-step-receiving-nothing)))))
+  (testing "that we can pass in values but nothing else"
+    (is (= {:status :success :hello "hello" :world "world"}
+           (chaining {} {}
+                     (some-step-with-arbitrary-arguments "hello" "world"))))
+    (is (= {:status :success :hello "hello" :world "world"}
+           (let [hello "hello"]
+             (chaining {} {}
+                       (some-step-with-arbitrary-arguments hello "world"))))))
+  (testing "that intermediate steps that return nil are ok and dont interfere"
+    (is (= {:status :success :foo :baz}
+           (chaining {} {}
+                     (some-step injected-args injected-ctx)
+                     (print "")
+                     (some-other-step injected-args injected-ctx)))))
+  (testing "that we can combine chaining and capture-output to debug intermediate results"
+    (is (= {:status :success :foo :baz :out "args: {:status :success, :foo :bar}"}
+           (capture-output (some-ctx)
+             (chaining {} {}
+                       (some-step injected-args injected-ctx)
+                       (print "args:" injected-args)
+                       (some-other-step injected-args injected-ctx)))))
+    (is (= {:status :success :foo :baz :out "foo-value: :bar"}
+           (capture-output (some-ctx)
+             (chaining {} {}
+                       (some-step injected-args injected-ctx)
+                       (print "foo-value:" (:foo injected-args))
+                       (some-other-step injected-args injected-ctx)))))))
 
 (deftest if-not-killed-test
   (testing "that the body will only be executed if step is still alive"

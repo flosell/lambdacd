@@ -9,7 +9,18 @@ The official release will have a defined and more stable API. If you are already
 
 * Improvements: 
   * Added `lambdacd.steps.support/capture-output` to simplify working with stdout in build-steps (#60)
-
+  * Added `lambdacd.steps.support/chaining`, a more flexible and powerful variant of the existing `chain` macro. 
+    It supports injecting `args` and `ctx` at random places and, together with capture-output, also allows for 
+    easy debugging:
+     
+    ```clojure
+    (chaining {} {}
+      (some-step injected-args injected-ctx)
+      ; prints the foo value that's returned by some-step and is injected into some-other-step
+      (print "foo-value:" (:foo injected-args)) 
+      (some-other-step injected-args injected-ctx))
+    ```
+    
 ## 0.5.5
 * Improvements: 
   * UI: redesigned build history:
