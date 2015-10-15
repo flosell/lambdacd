@@ -185,7 +185,7 @@
   (testing "that it executes the success-step if the condition is a success"
     (is (map-containing {:outputs {[2 0 0] {:status :success :message :foo}}}
                         ((junction some-successful-step some-step-that-returns-foo some-step-that-returns-bar) {} (some-ctx-with :step-id [0 0])))))
-  (testing "that it executes the success-step if the condition is a success"
+  (testing "that it executes the failure-step if the condition is a failure"
     (is (map-containing {:outputs {[3 0 0] {:status :success :message :bar}}}
                         ((junction some-failing-step some-step-that-returns-foo some-step-that-returns-bar) {} (some-ctx-with :step-id [0 0])))))
   (testing "that it kills all children if it is killed"
