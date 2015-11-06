@@ -1,6 +1,7 @@
 (ns lambdacd.presentation.pipeline-state
   (:require [lambdacd.util :as util]
-            [lambdacd.internal.pipeline-state :as pipeline-state]))
+            [lambdacd.internal.pipeline-state :as pipeline-state]
+            [clj-time.core :as t]))
 
 (defn- desc [a b]
   (compare b a))
@@ -51,12 +52,16 @@
   (get-in step-ids-and-results [[1] :retrigger-mock-for-build-number]))
 
 (defn- history-entry [[build-number step-ids-and-results]]
-  (let [step-results (vals step-ids-and-results)]
+  (let [step-results (vals step-ids-and-results)
+        most-recent-update-at (latest-most-recent-update step-results)
+        first-updated-at (earliest-first-update step-results)
+        duration (t/in-seconds (t/interval first-updated-at most-recent-update-at))]
     {:build-number build-number
      :status (status-for-steps step-ids-and-results)
-     :most-recent-update-at (latest-most-recent-update step-results)
-     :first-updated-at (earliest-first-update step-results)
-     :retriggered (build-that-was-retriggered step-ids-and-results)}))
+     :most-recent-update-at most-recent-update-at
+     :first-updated-at first-updated-at
+     :retriggered (build-that-was-retriggered step-ids-and-results)
+     :duration-in-sec duration}))
 
 (defn history-for [state]
   (sort-by :build-number (map history-entry state)))
