@@ -24,25 +24,30 @@
   [{:name "in-parallel"
    :type :parallel
    :step-id '(1)
+   :has-dependencies false
    :result {:status :running }
    :children
    [{:name "in-cwd"
      :type :container
      :step-id '(1 1)
+     :has-dependencies false
      :result {}
      :children [{:name "do-stuff"
                  :type :step
                  :step-id '(1 1 1)
+                 :has-dependencies false
                  :children []
                  :result {:status :failure
                           :out "do stuff failed"}}]}
     {:name "in-cwd"
      :type :container
      :step-id '(2 1)
+     :has-dependencies false
      :result {}
      :children [{:name "do-other-stuff"
                  :type :step
                  :step-id '(1 2 1)
+                 :has-dependencies false
                  :children []
                  :result {:status :running :some-key :some-value}}]}]}])
 
