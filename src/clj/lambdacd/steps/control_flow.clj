@@ -44,7 +44,7 @@
           execute-output (core/execute-steps steps args ctx
                                              :is-killed kill-switch
                                              :step-result-producer step-producer-returning-with-first-successful
-                                             :retrigger-predicate (constantly true)
+                                             :retrigger-predicate (constantly :rerun)
                                              :unify-status-fn status/successful-when-one-successful)]
       (reset! kill-switch true)
       (remove-watch parent-kill-switch watch-ref)
@@ -55,10 +55,12 @@
 (defn- parallel-retrigger-predicate [ctx step]
   (let [cur-step-id (:step-id ctx)
         retriggered-step-id (:retriggered-step-id ctx)]
-    (or
-      (step-id/parent-of? cur-step-id retriggered-step-id)
-      (step-id/parent-of? retriggered-step-id cur-step-id)
-      (= cur-step-id retriggered-step-id))))
+    (if (or
+          (step-id/parent-of? cur-step-id retriggered-step-id)
+          (step-id/parent-of? retriggered-step-id cur-step-id)
+          (= cur-step-id retriggered-step-id))
+      :rerun
+      :mock)))
 
 (defn- parallel-step-result-producer [args steps-and-ids]
   (pmap #(core/execute-step args %) steps-and-ids))

@@ -54,7 +54,7 @@
         {:status :failure :out "step did not return any status!"}
         step-result))
     (catch Throwable e
-       {:status :failure :out (with-err-str (repl/pst e))})
+      {:status :failure :out (with-err-str (repl/pst e))})
     (finally
       (async/close! (:result-channel ctx)))))
 
@@ -82,27 +82,27 @@
                                          :final-result complete-step-result}))
 
 (defn execute-step [args [ctx step]]
- (let [_ (send-step-result ctx {:status :running})
-       step-id (:step-id ctx)
-       result-ch (async/chan)
-       child-kill-switch (atom false)
-       parent-kill-switch (:is-killed ctx)
-       watch-key (UUID/randomUUID)
-       _ (add-watch parent-kill-switch watch-key (fn [key reference old new] (reset! child-kill-switch new)))
-       _ (reset! child-kill-switch @parent-kill-switch) ; make sure kill switch has the parents state in the beginning and is updated through the watch
-       ctx-for-child (assoc ctx :result-channel result-ch
-                                :is-killed child-kill-switch)
-       processed-async-result-ch (process-channel-result-async result-ch ctx)
-       kill-subscription (kill-step-handling ctx-for-child)
-       immediate-step-result (execute-or-catch step args ctx-for-child)
-       processed-async-result (async/<!! processed-async-result-ch)
-       complete-step-result (merge processed-async-result immediate-step-result)]
-   (log/debug (str "executed step " step-id complete-step-result))
-   (clean-up-kill-handling ctx-for-child kill-subscription)
-   (remove-watch parent-kill-switch watch-key)
-   (send-step-result ctx complete-step-result)
-   (report-step-finished ctx complete-step-result)
-   (step-output step-id complete-step-result)))
+  (let [_ (send-step-result ctx {:status :running})
+        step-id (:step-id ctx)
+        result-ch (async/chan)
+        child-kill-switch (atom false)
+        parent-kill-switch (:is-killed ctx)
+        watch-key (UUID/randomUUID)
+        _ (add-watch parent-kill-switch watch-key (fn [key reference old new] (reset! child-kill-switch new)))
+        _ (reset! child-kill-switch @parent-kill-switch) ; make sure kill switch has the parents state in the beginning and is updated through the watch
+        ctx-for-child (assoc ctx :result-channel result-ch
+                                 :is-killed child-kill-switch)
+        processed-async-result-ch (process-channel-result-async result-ch ctx)
+        kill-subscription (kill-step-handling ctx-for-child)
+        immediate-step-result (execute-or-catch step args ctx-for-child)
+        processed-async-result (async/<!! processed-async-result-ch)
+        complete-step-result (merge processed-async-result immediate-step-result)]
+    (log/debug (str "executed step " step-id complete-step-result))
+    (clean-up-kill-handling ctx-for-child kill-subscription)
+    (remove-watch parent-kill-switch watch-key)
+    (send-step-result ctx complete-step-result)
+    (report-step-finished ctx complete-step-result)
+    (step-output step-id complete-step-result)))
 
 (defn- merge-status [s1 s2]
   (if (= s1 :success)
@@ -173,8 +173,8 @@
             step-output (first (vals (:outputs step-result)))
             new-result (cons step-result result)
             new-args (->> step-output
-                       (keep-globals cur-args)
-                       (keep-original-args args))]
+                          (keep-globals cur-args)
+                          (keep-original-args args))]
         (if (not= :success (:status step-result))
           new-result
           (recur (cons step-result result) (rest remaining-steps-with-id) new-args))))))
@@ -205,18 +205,27 @@
       (assoc original-step-result
         :retrigger-mock-for-build-number retriggered-build-number))))
 
+(defn- clear-retrigger-data [ctx]
+  (assoc ctx
+    :retriggered-build-number nil
+    :retriggered-step-id nil))
+
 (defn sequential-retrigger-predicate [ctx step]
   (let [cur-step-id (:step-id ctx)
         retriggered-step-id (:retriggered-step-id ctx)]
-    (or
-      (step-id/parent-of? cur-step-id retriggered-step-id)
-      (not (step-id/before? cur-step-id retriggered-step-id)))))
+    (cond
+      (or
+        (step-id/parent-of? cur-step-id retriggered-step-id)
+        (= cur-step-id retriggered-step-id)) :rerun
+      (step-id/later-than? cur-step-id retriggered-step-id) :run
+      :else :mock)))
 
 (defn- replace-step-with-retrigger-mock [retrigger-predicate [ctx step]]
   (let [retriggered-build-number (:retriggered-build-number ctx)]
-    (if (retrigger-predicate ctx step)
-      [ctx step]
-      [ctx (retrigger-mock-step retriggered-build-number)])))
+    (case (retrigger-predicate ctx step)
+      :rerun [ctx step]
+      :run [(clear-retrigger-data ctx) step]
+      :mock [ctx (retrigger-mock-step retriggered-build-number)])))
 
 (defn- add-retrigger-mocks [retrigger-predicate root-ctx step-contexts]
   (if (:retriggered-build-number root-ctx)

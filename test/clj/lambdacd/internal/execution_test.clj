@@ -59,6 +59,9 @@
 (defn some-step-consuming-the-context [arg ctx]
   {:status :success :context-info (:the-info ctx)})
 
+(defn some-step-caring-about-retrigger-metadata [_ {retriggered-build-number :retriggered-build-number retriggered-step-id :retriggered-step-id}]
+  {:status :success :retriggered-build-number retriggered-build-number :retriggered-step-id retriggered-step-id})
+
 (defn some-step-throwing-an-exception [& _]
   (throw (Throwable. "Something went wrong!")))
 
@@ -285,13 +288,29 @@
                  [2] { :status :success }}} (tu/without-ts (ps/get-all (:pipeline-state-component context)))))))
   (testing "that we can retrigger a pipeline from the initial step as well"
     (let [pipeline `(some-successful-step some-other-step some-failing-step)
-          context (some-ctx)]
+          initial-state { 0 {[1] {:status :to-be-retriggered}
+                             [2] {:status :to-be-overwritten-by-next-run}
+                             [3] {:status :to-be-overwritten-by-next-run}}}
+          context (some-ctx-with :initial-pipeline-state initial-state)]
       (pipeline-state/start-pipeline-state-updater (:pipeline-state-component context) context)
       (retrigger pipeline context 0 [1] 1)
       (wait-for (tu/step-failure? context 1 [3]))
-      (is (= {1 {[1] { :status :success}
-                 [2] {:status :success :foo :baz}
-                 [3] { :status :failure }}} (tu/without-ts (ps/get-all (:pipeline-state-component context)))))))
+      (is (map-containing
+            {1 {[1] {:status :success}
+                [2] {:status :success :foo :baz}
+                [3] {:status :failure}}} (tu/without-ts (ps/get-all (:pipeline-state-component context)))))))
+  (testing "that steps after the retriggered step dont get the retrigger-metadata"
+    (let [pipeline `(some-successful-step some-step-caring-about-retrigger-metadata)
+          initial-state { 0 {[1] {:status :to-be-retriggered}
+                             [2] {:status :to-be-overwritten-by-next-run}
+                             [3] {:status :to-be-overwritten-by-next-run}}}
+          context (some-ctx-with :initial-pipeline-state initial-state)]
+      (pipeline-state/start-pipeline-state-updater (:pipeline-state-component context) context)
+      (retrigger pipeline context 0 [1] 1)
+      (wait-for (tu/step-success? context 1 [2]))
+      (is (map-containing
+            {1 {[1] {:status :success}
+                [2] {:status :success :retriggered-build-number nil :retriggered-step-id nil}}} (tu/without-ts (ps/get-all (:pipeline-state-component context)))))))
   (testing "that retriggering works for nested steps"
     (let [initial-state { 0 {[1] { :status :success }
                              [1 1] {:status :success :out "I am nested"}
