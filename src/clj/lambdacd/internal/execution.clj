@@ -79,7 +79,10 @@
 (defn- report-step-finished [ctx complete-step-result]
   (event-bus/publish ctx :step-finished {:step-id      (:step-id ctx)
                                          :build-number (:build-number ctx)
-                                         :final-result complete-step-result}))
+                                         :final-result complete-step-result
+                                         :rerun-for-retrigger (boolean
+                                                                (and (:retriggered-build-number ctx)
+                                                                     (:retriggered-step-id ctx)))}))
 
 (defn execute-step [args [ctx step]]
   (let [_ (send-step-result ctx {:status :running})

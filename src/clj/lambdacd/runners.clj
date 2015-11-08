@@ -7,7 +7,9 @@
   (= (:step-id step-finished-msg) [1]))
 
 (defn- is-not-retriggered? [step-finished-msg]
-  (not (:retrigger-mock-for-build-number (:final-result step-finished-msg))))
+  (and
+    (not (:retrigger-mock-for-build-number (:final-result step-finished-msg)))
+    (not (:rerun-for-retrigger step-finished-msg))))
 
 (def should-trigger-next-build?
   (every-pred is-first-step? is-not-retriggered?))

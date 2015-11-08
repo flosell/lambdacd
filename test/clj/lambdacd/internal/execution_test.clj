@@ -196,7 +196,18 @@
       (execute-step {} [ctx some-other-step])
       (is (= [{:build-number 3
                :step-id [1 2 3]
-               :final-result {:status :success :foo :baz}}] (slurp-chan step-finished-events)))))
+               :final-result {:status :success :foo :baz}
+               :rerun-for-retrigger false}] (slurp-chan step-finished-events))))
+    (let [ctx (some-ctx-with :build-number 3
+                             :step-id [1 2 3]
+                             :retriggered-build-number 1
+                             :retriggered-step-id [0 1 2 3])
+          step-finished-events (step-finished-events-for ctx)]
+      (execute-step {} [ctx some-other-step])
+      (is (= [{:build-number 3
+               :step-id [1 2 3]
+               :final-result {:status :success :foo :baz}
+               :rerun-for-retrigger true}] (slurp-chan step-finished-events)))))
   (testing "that a running step can be killed"
     (let [is-killed (atom false)
           ctx (some-ctx-with :step-id [3 2 1]
