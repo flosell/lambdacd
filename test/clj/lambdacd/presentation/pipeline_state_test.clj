@@ -53,7 +53,10 @@
     (testing "more than one minute"
       (is (= 90 (:duration-in-sec (first
                                     (history-for {7 {'(2) {:status :success :most-recent-update-at after-one-minute-and-30-sec :first-updated-at after-ten-sec}
-                                                     '(1) {:status :success :most-recent-update-at after-ten-sec :first-updated-at start-time}}})))))))
+                                                     '(1) {:status :success :most-recent-update-at after-ten-sec :first-updated-at start-time}}}))))))
+    (testing "can deal with hiccups in timestamps"
+      (is (= 0 (:duration-in-sec (first
+                                    (history-for {7 {'(1) {:status :success :most-recent-update-at start-time :first-updated-at after-ten-sec}}})))))))
   (testing "that the build-status is accumulated correctly"
     (testing "that the status will be running while the pipeline is still active"
       (is (= :running (:status (first

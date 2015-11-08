@@ -1,7 +1,8 @@
 (ns lambdacd.presentation.pipeline-state
   (:require [lambdacd.util :as util]
             [lambdacd.internal.pipeline-state :as pipeline-state]
-            [clj-time.core :as t]))
+            [clj-time.core :as t]
+            [clojure.tools.logging :as log]))
 
 (defn- desc [a b]
   (compare b a))
@@ -51,17 +52,26 @@
 (defn build-that-was-retriggered [step-ids-and-results]
   (get-in step-ids-and-results [[1] :retrigger-mock-for-build-number]))
 
+(defn- build-duration-in-sec [step-results]
+  (try
+    (let [most-recent-update-at (latest-most-recent-update step-results)
+          first-updated-at (earliest-first-update step-results)
+          duration (t/in-seconds (t/interval first-updated-at most-recent-update-at))]
+      duration)
+    (catch IllegalArgumentException e
+      (log/warn (str "Timestamps for build duration dont add up (" (.getMessage e) "), falling back to duration 0. responsible step-result:" step-results))
+      0)))
+
 (defn- history-entry [[build-number step-ids-and-results]]
   (let [step-results (vals step-ids-and-results)
         most-recent-update-at (latest-most-recent-update step-results)
-        first-updated-at (earliest-first-update step-results)
-        duration (t/in-seconds (t/interval first-updated-at most-recent-update-at))]
+        first-updated-at (earliest-first-update step-results)]
     {:build-number build-number
      :status (status-for-steps step-ids-and-results)
      :most-recent-update-at most-recent-update-at
      :first-updated-at first-updated-at
      :retriggered (build-that-was-retriggered step-ids-and-results)
-     :duration-in-sec duration}))
+     :duration-in-sec (build-duration-in-sec step-results)}))
 
 (defn history-for [state]
   (sort-by :build-number (map history-entry state)))
