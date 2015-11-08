@@ -73,10 +73,11 @@
       (s/join " " parts))
     (clear-namespace (str x))))
 
-(defn- has-dependencies? [f]
-  (let [metadata      (meta (find-var f))
-        dependant-fns (:depends-on metadata)]
-    (not (nil? dependant-fns))))
+(defn- has-dependencies? [x]
+  (let [f (if (sequential? x) (first x) x)
+        metadata (meta (find-var f))
+        depends-on-previous-steps (:depends-on-previous-steps metadata)]
+    (boolean depends-on-previous-steps)))
 
 (declare step-display-representation) ; mutual recursion
 
@@ -96,6 +97,7 @@
 (defn- simple-step-representation [part id]
   {:name (display-name part)
    :type (display-type part)
+   :has-dependencies (has-dependencies? part)
    :step-id id})
 
 (defn- container-step-representation [part id]
@@ -103,6 +105,7 @@
     {:name (display-name part)
      :type (display-type part)
      :step-id id
+     :has-dependencies false
      :children (seq-to-display-representations children id)}))
 
 (defn step-display-representation [part id]

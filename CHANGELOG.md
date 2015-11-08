@@ -8,6 +8,16 @@ The official release will have a defined and more stable API. If you are already
 ## 0.5.7
 * Improvements:
   * UI: Displaying duration of each build step (#34)
+  * Prevent retriggering of steps that have dependencies to previous steps by adding `:depends-on-previous-steps true` to metadata:
+  
+    ```clojure
+    (defn ^{:depends-on-previous-steps true} publish-artifact [{cwd :cwd} ctx]
+      (shell/bash ctx cwd
+                  "./publish.sh"))
+    ```
+  
+    This can be useful if several steps work on a workspace created by a nested step (such as `with-git`) and rely on the products of previous steps. 
+    See #36 for details. 
 
 ## 0.5.6
 

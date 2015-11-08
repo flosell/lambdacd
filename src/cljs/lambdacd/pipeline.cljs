@@ -56,6 +56,9 @@
         is-finished (or (= "success" status) (= "failure" status) (= "killed" status))]
     is-finished))
 
+(defn has-dependencies [step]
+  (:has-dependencies step))
+
 (defn- is-waiting [step]
   (let [status (:status (:result step))]
     (= "waiting" status)))
@@ -64,15 +67,14 @@
   (let [status (:status (:result step))]
     (not (nil? status))))
 
-(defn can-be-retriggered? [step]
-  (is-finished step))
-
 (defn- step-id-for [build-step]
   (string/join "-" (:step-id build-step)))
 
 (defn retrigger-component [build-number build-step]
-  (if (can-be-retriggered? build-step)
-    [:i {:class "fa fa-repeat pipeline__step__action-button" :on-click (click-handler #(api/retrigger build-number (step-id-for build-step)))}]))
+  (if (is-finished build-step)
+    (if (has-dependencies build-step)
+      [:i {:class "fa fa-repeat pipeline__step__action-button pipeline__step__action-button--disabled" :title "this step can not be safely retriggered as it depends on previous build steps"}]
+      [:i {:class "fa fa-repeat pipeline__step__action-button" :on-click (click-handler #(api/retrigger build-number (step-id-for build-step)))}])))
 
 (defn- can-be-killed? [step]
   (and

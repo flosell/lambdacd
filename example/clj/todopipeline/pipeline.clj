@@ -45,10 +45,12 @@
       ;; these child steps do some actual work with the checked out git repo
       (with-frontend-git
         create-some-details
-        client-package)
+        client-package
+        client-publish)
       (with-backend-git
         server-test
-        server-package))
+        server-package
+        server-publish))
     ;; the package-scripts copy deploy-scripts and artifacts into the mockrepo directory,
     ;; execute the depoy-steps from there
     (in-cwd "/tmp/mockrepo"

@@ -6,7 +6,8 @@
             [lambdacd.presentation.pipeline-structure :refer :all]))
 
 (defn do-stuff [& ] {})
-(defn ^{:depends-on [do-stuff]} do-other-stuff [] {})
+(defn ^{:depends-on-previous-steps true} do-other-stuff [] {})
+(defn ^{:depends-on-previous-steps false} step-that-declares-it-doesnt-depend [] {})
 (defn do-more-stuff [] {})
 (defn do-even-more-stuff [] {})
 (defn do-stuff-with-hidden-params [^:hide a b])
@@ -95,43 +96,54 @@
     (testing "that normal steps don't depend on anything"
       (is (= false (has-dependencies? `do-stuff)))
       (is (= false (has-dependencies? (first simple-pipeline)))))
-    (testing "that it returns the step-ids of steps that declare dependencies"
+    (testing "that it is true when step declares it depends on something"
       (is (= true (has-dependencies? `do-other-stuff )))
-      (is (= true (has-dependencies? (second simple-pipeline)))))))
+      (is (= true (has-dependencies? (second simple-pipeline)))))
+    (testing "that it is false if a step declares it doesn't depend on anything"
+      (is (= false (has-dependencies? `step-that-declares-it-doesnt-depend ))))
+    (testing "that it works with nested steps"
+      (is (= false (has-dependencies? `(do-stuff "foo"))))
+      (is (= true (has-dependencies? `(do-other-stuff "foo")))))))
 
 (deftest display-representation-test
   (testing "that the display-representation of a step is the display-name and display-type"
-    (is (= {:name "do-even-more-stuff" :type :step :step-id '()} (step-display-representation (last (second pipeline)) '()))))
+    (is (= {:name "do-even-more-stuff" :type :step :step-id '() :has-dependencies false} (step-display-representation (last (second pipeline)) '()))))
   (testing "that the display-representation of a step with children has name, type and children"
     (is (= {:name "in-cwd some-path"
             :type :container
             :step-id '()
-            :children [{:name "do-even-more-stuff" :type :step :step-id '(1)}]} (step-display-representation (second pipeline) '()))))
+            :has-dependencies false
+            :children [{:name "do-even-more-stuff" :type :step :step-id '(1) :has-dependencies false}]} (step-display-representation (second pipeline) '()))))
   (testing "that a display-representation of a sequence of only steps works"
-    (is (= [{:name "do-stuff" :type :step :step-id '(1)} {:name "do-other-stuff" :type :step :step-id '(2)}] (pipeline-display-representation simple-pipeline))))
+    (is (= [{:name "do-stuff" :type :step :step-id '(1) :has-dependencies false} {:name "do-other-stuff" :type :step :step-id '(2) :has-dependencies true}] (pipeline-display-representation simple-pipeline))))
   (testing "that foo-pipeline works"
     (is (= [{:name "in-parallel"
              :type :parallel
              :step-id '(1)
+             :has-dependencies false
              :children
                [{:name "in-cwd foo"
                  :type :container
                  :step-id '(1 1)
-                 :children [{:name "do-stuff" :type :step :step-id '(1 1 1)}]}
+                 :has-dependencies false
+                 :children [{:name "do-stuff" :type :step :step-id '(1 1 1) :has-dependencies false}]}
                {:name "in-cwd bar"
                 :type :container
                 :step-id '(2 1)
-                :children [{:name "do-other-stuff" :type :step :step-id '(1 2 1)}]}]}] (pipeline-display-representation foo-pipeline))))
+                :has-dependencies false
+                :children [{:name "do-other-stuff" :type :step :step-id '(1 2 1) :has-dependencies true}]}]}] (pipeline-display-representation foo-pipeline))))
   (testing "that nesting parallel in sequential containers works (reproduces #47)"
     (is (not (nil? (:children (first (pipeline-display-representation `((run (in-parallel do-stuff))))))))))
   (testing "that display type defaults to :container for container-steps"
     (is (= [{:name "container-without-display-type"
              :step-id '(1)
              :type :container
-             :children [{:name "do-stuff" :type :step :step-id '(1 1)}]}]
+             :has-dependencies false
+             :children [{:name "do-stuff" :type :step :step-id '(1 1) :has-dependencies false}]}]
            (pipeline-display-representation pipeline-with-container-without-display-type))))
   (testing "that we support parameterized functions returning pipelines"
     (is (= [{:name "in-cwd bar"
              :type :container
              :step-id '(1)
-             :children [{:name "do-stuff foo" :type :step :step-id '(1 1)}]}] (pipeline-display-representation (mk-pipeline "foo"))))))
+             :has-dependencies false
+             :children [{:name "do-stuff foo" :type :step :step-id '(1 1) :has-dependencies false}]}] (pipeline-display-representation (mk-pipeline "foo"))))))

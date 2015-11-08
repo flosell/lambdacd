@@ -61,8 +61,13 @@
                           (println "This is an optional greeting: " greeting)
                           (shell/bash ctx cwd
                                       "bower install"
-                                      "./package.sh"
-                                      "./publish.sh")))
+                                      "./package.sh")))
+
+;; this step depends on the fact that we packaged the artifact first and in the same workspace.
+;; to make sure retriggering doesnt mess with this (as it sets up a new workspace), we declare this step as dependent
+(defn ^{:depends-on-previous-steps true} client-publish [{cwd :cwd} ctx]
+  (shell/bash ctx cwd
+              "./publish.sh"))
 
 (defn server-test [{cwd :cwd} ctx]
   (println "server test cwd: " cwd)
@@ -72,8 +77,11 @@
 (defn server-package [{cwd :cwd} ctx]
   (println "server package cwd: " cwd)
   (shell/bash ctx cwd
-    "lein uberjar"
-    "./publish.sh"))
+    "lein uberjar"))
+
+(defn ^{:depends-on-previous-steps true} server-publish [{cwd :cwd} ctx]
+  (shell/bash ctx cwd
+              "./publish.sh"))
 
 (defn server-deploy-ci [{cwd :cwd} ctx]
   (shell/bash ctx cwd "./deploy-server.sh backend_ci /tmp/mockrepo/server-snapshot.tar.gz"))
