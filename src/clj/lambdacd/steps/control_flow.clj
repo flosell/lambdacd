@@ -42,9 +42,10 @@
           watch-ref (synchronize-atoms parent-kill-switch kill-switch)
           _ (reset! kill-switch @parent-kill-switch)
           execute-output (core/execute-steps steps args ctx
-                                                     :is-killed kill-switch
-                                                     :step-result-producer step-producer-returning-with-first-successful
-                                                     :unify-status-fn status/successful-when-one-successful)]
+                                             :is-killed kill-switch
+                                             :step-result-producer step-producer-returning-with-first-successful
+                                             :retrigger-predicate (constantly true)
+                                             :unify-status-fn status/successful-when-one-successful)]
       (reset! kill-switch true)
       (remove-watch parent-kill-switch watch-ref)
       (if (= :success (:status execute-output))

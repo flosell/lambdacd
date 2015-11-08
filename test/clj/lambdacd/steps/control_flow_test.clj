@@ -208,7 +208,20 @@
           ctx       (some-ctx-with :is-killed is-killed
                                    :step-id [0])]
       ((either some-successful-step some-step-waiting-to-be-killed) {} ctx)
-      (is (= false @is-killed)))))
+      (is (= false @is-killed))))
+  (testing "that retriggering retriggers all branches"
+    (let [initial-pipeline-state { 0 {[1 0] {:status :killed :old :one}
+                                      [2 0] {:status :success :old :two}}}
+          ctx (some-ctx-with :step-id [0]
+                             :retriggered-build-number 0
+                             :initial-pipeline-state   initial-pipeline-state)]
+      (is (map-containing {:status :success} ((either some-step-taking-100ms some-failing-step) {} (assoc ctx :retriggered-step-id [2 0])))))
+    (let [initial-pipeline-state { 0 {[1 0] {:status :success :old :one}
+                                      [2 0] {:status :killed :old :two}}}
+          ctx (some-ctx-with :step-id [0]
+                             :retriggered-build-number 0
+                             :initial-pipeline-state   initial-pipeline-state)]
+      (is (map-containing {:status :success} ((either some-failing-step some-step-taking-100ms ) {} (assoc ctx :retriggered-step-id [1 0])))))))
 
 (deftest junction-test
   (testing "that it executes the success-step if the condition is a success"
