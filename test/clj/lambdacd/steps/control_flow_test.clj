@@ -84,6 +84,9 @@
                                     (recur (inc counter)))
                                   {:status :waited-too-long}))))
 
+(defn some-step-that-shouldnt-be-called [_ _]
+  (throw (IllegalStateException. "Dont call me!")))
+
 (deftest in-parallel-test
   (testing "that it collects all the outputs together correctly"
     (is (map-containing {:outputs { [1 0 0] {:foo :baz :status :undefined} [2 0 0] {:foo :baz :status :undefined}} :status :undefined} ((in-parallel some-step some-step) {} (some-ctx-with :step-id [0 0])))))
@@ -108,7 +111,33 @@
                                    :step-id [0])]
       (is (map-containing {:status :killed
                            :outputs {[1 0] {:status :killed}
-                                     [2 0] {:status :killed}}} ((in-parallel some-step-waiting-to-be-killed some-step-waiting-to-be-killed) {} ctx))))))
+                                     [2 0] {:status :killed}}} ((in-parallel some-step-waiting-to-be-killed some-step-waiting-to-be-killed) {} ctx)))))
+  (testing "that retriggering doesn't retrigger both branches"
+    (let [initial-pipeline-state { 0 {[1 0] {:status :success :old :one}
+                                      [2 0] {:status :success :old :two}}}
+          ctx (some-ctx-with :step-id [0]
+                             :retriggered-build-number 0
+                             :initial-pipeline-state   initial-pipeline-state)]
+      (is (map-containing {:status :success
+                           :outputs {[1 0] {:status :success :old :one :retrigger-mock-for-build-number 0}
+                                     [2 0] {:status :success}}} ((in-parallel some-step-that-shouldnt-be-called some-successful-step) {} (assoc ctx :retriggered-step-id [2 0])))))
+    (let [initial-pipeline-state { 0 {[1 0] {:status :success :old :one}
+                                      [2 0] {:status :success :old :two}}}
+          ctx (some-ctx-with :step-id [0]
+                             :retriggered-build-number 0
+                             :initial-pipeline-state   initial-pipeline-state)]
+      (is (map-containing {:status :success
+                           :outputs {[1 0] {:status :success}
+                                     [2 0] {:status :success :old :two :retrigger-mock-for-build-number 0}}} ((in-parallel some-successful-step some-step-that-shouldnt-be-called) {} (assoc ctx :retriggered-step-id [1 0]))))))
+  (testing "that retriggering the step itself works"
+    (let [initial-pipeline-state { 0 {[1 0] {:status :success :old :one}
+                                      [2 0] {:status :success :old :two}}}
+          ctx (some-ctx-with :step-id [0]
+                             :retriggered-build-number 0
+                             :initial-pipeline-state   initial-pipeline-state)]
+      (is (map-containing {:status :success
+                           :outputs {[1 0] {:status :success}
+                                     [2 0] {:status :success}}} ((in-parallel some-successful-step some-successful-step) {} (assoc ctx :retriggered-step-id [0])))))))
 
 (deftest in-cwd-test
   (testing "that it collects all the outputs together correctly and passes cwd to steps"

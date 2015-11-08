@@ -205,25 +205,29 @@
       (assoc original-step-result
         :retrigger-mock-for-build-number retriggered-build-number))))
 
-(defn replace-step-with-retrigger-mock [[ctx step]]
+(defn sequential-retrigger-predicate [ctx step]
   (let [cur-step-id (:step-id ctx)
-        retriggered-step-id (:retriggered-step-id ctx)
-        retriggered-build-number (:retriggered-build-number ctx)]
-    (if (and
-          (not (step-id/parent-of? cur-step-id retriggered-step-id))
-          (step-id/before? cur-step-id retriggered-step-id))
-      [ctx (retrigger-mock-step retriggered-build-number)]
-      [ctx step])))
+        retriggered-step-id (:retriggered-step-id ctx)]
+    (or
+      (step-id/parent-of? cur-step-id retriggered-step-id)
+      (not (step-id/before? cur-step-id retriggered-step-id)))))
 
-  (defn- add-retrigger-mocks [root-ctx step-contexts]
+(defn- replace-step-with-retrigger-mock [retrigger-predicate [ctx step]]
+  (let [retriggered-build-number (:retriggered-build-number ctx)]
+    (if (retrigger-predicate ctx step)
+      [ctx step]
+      [ctx (retrigger-mock-step retriggered-build-number)])))
+
+(defn- add-retrigger-mocks [retrigger-predicate root-ctx step-contexts]
   (if (:retriggered-build-number root-ctx)
-    (map replace-step-with-retrigger-mock step-contexts)
+    (map (partial replace-step-with-retrigger-mock retrigger-predicate) step-contexts)
     step-contexts))
 
-(defn execute-steps [steps args ctx & {:keys [step-result-producer is-killed unify-status-fn]
+(defn execute-steps [steps args ctx & {:keys [step-result-producer is-killed unify-status-fn retrigger-predicate]
                                        :or   {step-result-producer serial-step-result-producer
                                               is-killed            (atom false)
-                                              unify-status-fn      status/successful-when-all-successful}}]
+                                              unify-status-fn      status/successful-when-all-successful
+                                              retrigger-predicate  sequential-retrigger-predicate}}]
   (let [base-ctx-with-kill-switch (assoc ctx :is-killed is-killed)
         subscription (event-bus/subscribe ctx :step-result-updated)
         children-step-results-channel (->> subscription
@@ -231,7 +235,7 @@
                                            (async/filter< (inherit-message-from-parent? ctx)))
         step-contexts (contexts-for-steps steps base-ctx-with-kill-switch)
         _ (inherit-from children-step-results-channel (:result-channel ctx)  unify-status-fn)
-        step-contexts-with-retrigger-mocks (add-retrigger-mocks ctx step-contexts)
+        step-contexts-with-retrigger-mocks (add-retrigger-mocks retrigger-predicate ctx step-contexts)
         step-results (step-result-producer args step-contexts-with-retrigger-mocks)
         result (reduce merge-two-step-results step-results)]
     (event-bus/unsubscribe ctx :step-result-updated subscription)

@@ -51,6 +51,14 @@
         (first (vals (:outputs execute-output)))
         execute-output))))
 
+(defn- parallel-retrigger-predicate [ctx step]
+  (let [cur-step-id (:step-id ctx)
+        retriggered-step-id (:retriggered-step-id ctx)]
+    (or
+      (step-id/parent-of? cur-step-id retriggered-step-id)
+      (step-id/parent-of? retriggered-step-id cur-step-id)
+      (= cur-step-id retriggered-step-id))))
+
 (defn- parallel-step-result-producer [args steps-and-ids]
   (pmap #(core/execute-step args %) steps-and-ids))
 
@@ -58,6 +66,7 @@
   (core/execute-steps steps args ctx
                       :step-result-producer parallel-step-result-producer
                       :unify-status-fn status/successful-when-all-successful
+                      :retrigger-predicate parallel-retrigger-predicate
                       :is-killed (:is-killed ctx)))
 
 (defn ^{:display-type :parallel} in-parallel [& steps]

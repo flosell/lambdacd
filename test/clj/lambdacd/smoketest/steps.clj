@@ -37,5 +37,5 @@
 
 (defn use-global-value [{{v :value-from-repo} :global} & _]
   (let [hello-global (str "hello " v)]
-  (swap! the-global-value (constantly hello-global))
-  {:status :success}))
+    (swap! the-global-value (constantly hello-global))
+    {:status :success}))
