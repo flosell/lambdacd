@@ -11,28 +11,35 @@
     (t/epoch)
     (format/parse formatter s)))
 
+(defn unparse-time [t]
+  (format/unparse formatter t))
+
 (defn seconds-between-two-timestamps [t1 t2]
-  (t/in-seconds (t/interval t1 t2)))
+  (if (or (nil? t1) (nil? t2))
+    0
+    (let [tt1 (if (string? t1) (parse-time t1) t1)
+          tt2 (if (string? t2) (parse-time t2) t2)]
+      (t/in-seconds (t/interval tt1 tt2)))))
 
 (defn str-if-not-zero [t s]
   (if (zero? t)
     ""
     (str t s)))
 
-(defn format-duration-in-seconds [s]
-  (let [dt (t/plus (t/epoch) (t/seconds s))
+(defn format-duration-long [sec]
+  (let [dt (t/plus (t/epoch) (t/seconds sec))
         sec-str (str-if-not-zero (t/second dt) "sec")
         min-str (str-if-not-zero (t/minute dt) "min")
         h-str (str-if-not-zero (t/hour dt) "h")
         all (remove s/blank? [h-str min-str sec-str])]
     (s/join " " all)))
 
-
-(defn format-duration [s1 s2]
-  (let [t1 (parse-time s1)
-        t2 (parse-time s2)
-        sec (seconds-between-two-timestamps t1 t2)]
-    (format-duration-in-seconds sec)))
+(defn format-duration-short [sec]
+  (let [dt (t/plus (t/epoch) (t/seconds sec))
+        short-format (format/formatter "mm:ss")
+        long-format (format/formatter "HH:mm:ss")
+        appropriate-format (if (zero? (t/hour dt)) short-format long-format)]
+    (format/unparse appropriate-format dt)))
 
 (defn format-ago [s1]
   (when s1 (-> s1

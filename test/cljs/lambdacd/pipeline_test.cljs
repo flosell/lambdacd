@@ -1,6 +1,6 @@
 (ns lambdacd.pipeline-test
   (:require [cljs.test :refer-macros [deftest is testing run-tests]]
-            [lambdacd.testdata :refer [some-build-step with-name with-type with-output with-children]]
+            [lambdacd.testdata :refer [some-build-step with-name with-type with-output with-children time-start time-after-ten-sec]]
             [dommy.core :as dommy]
             [dommy.core :refer-macros [sel sel1]]
             [lambdacd.pipeline :as pipeline]
@@ -33,6 +33,21 @@
   (sel1 step :span))
 
 (def some-step-id-to-display 10)
+
+(deftest build-step-duration-formatter-test
+  (testing "that it formats the duration of a build step"
+    (is (= "00:10" (pipeline/format-build-step-duration {:status                :success
+                                                         :first-updated-at      time-start
+                                                         :most-recent-update-at time-after-ten-sec}))))
+  (testing "that we don't format waiting steps"
+    (is (= "" (pipeline/format-build-step-duration {:status                :success
+                                                    :first-updated-at      time-start
+                                                    :has-been-waiting      true
+                                                    :most-recent-update-at time-after-ten-sec}))))
+  (testing "that we don't format steps that didn't run yet"
+    (is (= "" (pipeline/format-build-step-duration {:status                nil
+                                                    :first-updated-at      time-start
+                                                    :most-recent-update-at time-after-ten-sec})))))
 
 (deftest build-step-test
   (testing "rendering of a single build-step"

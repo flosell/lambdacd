@@ -6,16 +6,31 @@
             [lambdacd.route :as route]
             [clojure.string :as string]
             [lambdacd.db :as db]
-            [re-frame.core :as re-frame]))
+            [lambdacd.time :as time]
+            [re-frame.core :as re-frame]
+            [clojure.string :as s]))
 
 (declare build-step-component) ;; mutual recursion
 
-(defn step-component-with [{step-id :step-id {status :status} :result name :name } build-number children step-id-to-display]
+(defn format-build-step-duration [{status :status
+                                   has-been-waiting   :has-been-waiting
+                                   most-recent-update :most-recent-update-at
+                                   first-update :first-updated-at}]
+  (if (or has-been-waiting
+          (not status))
+    ""
+    (let [duration-in-sec (time/seconds-between-two-timestamps first-update most-recent-update)
+          duration (time/format-duration-short duration-in-sec)]
+      duration)))
+
+(defn step-component-with [{step-id :step-id {status :status :as step-result} :result name :name } build-number children step-id-to-display]
   (let [status-class (str  "pipeline__step--" (or status "no-status") (if (= step-id step-id-to-display) " pipeline__step--active"))
-        pipeline-step-class "pipeline__step"]
+        pipeline-step-class "pipeline__step"
+        formatted-duration (format-build-step-duration step-result)
+        name-and-duration (if (s/blank? formatted-duration) name (str name " (" formatted-duration ")"))]
     (append-components [:li { :key (str step-id) :data-status status :class (classes status-class pipeline-step-class)}
                         [:a {:class "step-link" :href (route/for-build-and-step-id build-number step-id)}
-                          [:span {:class "build-step"} name]]] children)))
+                          [:span {:class "build-step"} name-and-duration]]] children)))
 
 (defn container-build-step-component [{children :children :as build-step } type retrigger-elem kill-elem build-number step-id-to-display]
   (let [ul-or-ol (if (= type :sequential) :ol :ul)

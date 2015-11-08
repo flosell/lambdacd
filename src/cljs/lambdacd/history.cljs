@@ -46,7 +46,8 @@
     [:div {:class "history--item--line"}
      [icon "fa fa-clock-o"]
      [:p {:class "history--item--line--item" } (if first-updated-at
-                                                 (str "Duration: " (time/format-duration first-updated-at most-recent-update-at))
+                                                 (str "Duration: " (time/format-duration-long
+                                                                     (time/seconds-between-two-timestamps first-updated-at most-recent-update-at)))
                                                  "Duration: 0sec")]]
     (if retriggered
       [:div {:class "history--item--line"}
