@@ -58,13 +58,6 @@
     (finally
       (async/close! (:result-channel ctx)))))
 
-(defn- reuse-from-history-if-required [{:keys [step-id] :as ctx} {build-number-to-resuse :reuse-from-build-number :as result}]
-  (if build-number-to-resuse
-    (let [state (pipeline-state/get-all (:pipeline-state-component ctx))
-          old-result (get-in state [build-number-to-resuse step-id])]
-      (assoc old-result :retrigger-mock-for-build-number build-number-to-resuse))
-    result))
-
 (defn kill-step-handling [ctx]
   (let [is-killed     (:is-killed ctx)
         step-id       (:step-id ctx)
@@ -83,6 +76,11 @@
 (defn clean-up-kill-handling [ctx subscription]
   (event-bus/unsubscribe ctx :kill-step subscription))
 
+(defn- report-step-finished [ctx complete-step-result]
+  (event-bus/publish ctx :step-finished {:step-id      (:step-id ctx)
+                                         :build-number (:build-number ctx)
+                                         :final-result complete-step-result}))
+
 (defn execute-step [args [ctx step]]
  (let [_ (send-step-result ctx {:status :running})
        step-id (:step-id ctx)
@@ -97,16 +95,13 @@
        processed-async-result-ch (process-channel-result-async result-ch ctx)
        kill-subscription (kill-step-handling ctx-for-child)
        immediate-step-result (execute-or-catch step args ctx-for-child)
-       step-result-or-history (reuse-from-history-if-required ctx immediate-step-result)
        processed-async-result (async/<!! processed-async-result-ch)
-       complete-step-result (merge processed-async-result step-result-or-history)]
+       complete-step-result (merge processed-async-result immediate-step-result)]
    (log/debug (str "executed step " step-id complete-step-result))
    (clean-up-kill-handling ctx-for-child kill-subscription)
    (remove-watch parent-kill-switch watch-key)
    (send-step-result ctx complete-step-result)
-   (event-bus/publish ctx :step-finished {:step-id      step-id
-                                          :build-number (:build-number ctx)
-                                          :final-result complete-step-result})
+   (report-step-finished ctx complete-step-result)
    (step-output step-id complete-step-result)))
 
 (defn- merge-status [s1 s2]
@@ -194,6 +189,37 @@
           msg-from-same-build? (= parent-build msg-build)]
       (and msg-from-child? msg-from-same-build?))))
 
+
+(defn- publish-child-step-results [ctx retriggered-build-number original-build-result]
+  (->> original-build-result
+       (filter #(step-id/parent-of? (:step-id ctx) (first %)))
+       (map #(send-step-result (assoc ctx :step-id (first %)) (assoc (second %) :retrigger-mock-for-build-number retriggered-build-number)))
+       (doall)))
+
+(defn retrigger-mock-step [retriggered-build-number]
+  (fn [args ctx]
+    (let [state (pipeline-state/get-all (:pipeline-state-component ctx))
+          original-build-result (get state retriggered-build-number)
+          original-step-result (get original-build-result (:step-id ctx))]
+      (publish-child-step-results ctx retriggered-build-number original-build-result)
+      (assoc original-step-result
+        :retrigger-mock-for-build-number retriggered-build-number))))
+
+(defn replace-step-with-retrigger-mock [[ctx step]]
+  (let [cur-step-id (:step-id ctx)
+        retriggered-step-id (:retriggered-step-id ctx)
+        retriggered-build-number (:retriggered-build-number ctx)]
+    (if (and
+          (not (step-id/parent-of? cur-step-id retriggered-step-id))
+          (step-id/before? cur-step-id retriggered-step-id))
+      [ctx (retrigger-mock-step retriggered-build-number)]
+      [ctx step])))
+
+  (defn- add-retrigger-mocks [root-ctx step-contexts]
+  (if (:retriggered-build-number root-ctx)
+    (map replace-step-with-retrigger-mock step-contexts)
+    step-contexts))
+
 (defn execute-steps [steps args ctx & {:keys [step-result-producer is-killed unify-status-fn]
                                        :or   {step-result-producer serial-step-result-producer
                                               is-killed            (atom false)
@@ -205,7 +231,8 @@
                                            (async/filter< (inherit-message-from-parent? ctx)))
         step-contexts (contexts-for-steps steps base-ctx-with-kill-switch)
         _ (inherit-from children-step-results-channel (:result-channel ctx)  unify-status-fn)
-        step-results (step-result-producer args step-contexts)
+        step-contexts-with-retrigger-mocks (add-retrigger-mocks ctx step-contexts)
+        step-results (step-result-producer args step-contexts-with-retrigger-mocks)
         result (reduce merge-two-step-results step-results)]
     (event-bus/unsubscribe ctx :step-result-updated subscription)
     result))
@@ -214,54 +241,15 @@
   (let [build-number (pipeline-state/next-build-number (:pipeline-state-component context))]
     (let [runnable-pipeline (map eval pipeline)]
       (execute-steps runnable-pipeline {} (merge context {:result-channel (async/chan (async/dropping-buffer 0))
-                                                          :step-id []
-                                                          :build-number build-number})))))
-
-(defn- add-result [new-build-number retriggered-build-number initial-ctx [step-id result]]
-  (let [ctx (assoc initial-ctx :build-number new-build-number :step-id step-id)
-        result-with-annotation (assoc result :retrigger-mock-for-build-number retriggered-build-number)]
-    (send-step-result ctx result-with-annotation)))
-
-(defn- to-be-duplicated? [step-id-retriggered [step-id _]]
-  (and
-    (step-id/before? step-id step-id-retriggered)
-    (not (step-id/parent-of? step-id step-id-retriggered))))
-
-(defn- duplicate-step-results-not-running-again [new-build-number retriggered-build-number pipeline-history context step-id-to-run]
-  (let [do-add-result (partial add-result new-build-number retriggered-build-number context)
-        history-to-duplicate (filter (partial to-be-duplicated? step-id-to-run) pipeline-history)]
-    (dorun (map do-add-result history-to-duplicate))))
-
-(defn mock-step [build-number]
-  (fn [& _]
-    {:reuse-from-build-number build-number :status :to-be-overwritten}))
-
-(defn- with-step-id [parent-step-id]
-  (fn [idx step]
-    [(cons (inc idx) parent-step-id) step]))
-
-(declare mock-for-steps)
-(defn- replace-with-mock-or-recur [step-id-to-retrigger build-number]
-  (fn [[step-id step]]
-    (cond
-      (to-be-duplicated? step-id-to-retrigger [step-id step]) (cons mock-step [build-number])
-      (step-id/parent-of? step-id step-id-to-retrigger) (cons (first step) (mock-for-steps (rest step) step-id step-id-to-retrigger build-number))
-      :else step)))
-
-(defn- mock-for-steps [steps cur-step-id step-id-to-retrigger build-number]
-  (->> steps
-      (map-indexed (with-step-id cur-step-id))
-      (map (replace-with-mock-or-recur step-id-to-retrigger build-number))))
+                                                          :step-id [] :build-number build-number})))))
 
 (defn retrigger [pipeline context build-number step-id-to-run next-build-number]
-  (let [pipeline-state (pipeline-state/get-all (:pipeline-state-component context))
-        pipeline-history (get pipeline-state build-number)
-        pipeline-fragment-to-run (mock-for-steps pipeline [] step-id-to-run build-number)
-        executable-pipeline (map eval pipeline-fragment-to-run) ]
-    (duplicate-step-results-not-running-again next-build-number build-number pipeline-history context step-id-to-run)
+  (let [executable-pipeline (map eval pipeline) ]
     (execute-steps executable-pipeline {} (assoc context :step-id []
                                                          :result-channel (async/chan (async/dropping-buffer 0))
-                                                         :build-number next-build-number))))
+                                                         :build-number next-build-number
+                                                         :retriggered-build-number build-number
+                                                         :retriggered-step-id      step-id-to-run))))
 
 (defn retrigger-async [pipeline context build-number step-id-to-run]
   (let [next-build-number (pipeline-state/next-build-number (:pipeline-state-component context))]
@@ -272,3 +260,4 @@
 (defn kill-step [ctx build-number step-id]
   (event-bus/publish ctx :kill-step {:step-id      step-id
                                      :build-number build-number}))
+

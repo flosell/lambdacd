@@ -253,8 +253,9 @@
     (is (= {:outputs { [1 0] {:status :success} [2 0] {:status :success}} :status :success}
            (execute-steps [some-successful-step step-that-expects-a-kill-switch] {} (some-ctx-with :step-id [0]))))))
 
-(defn some-control-flow [&] ; just a mock, we don't actually execute this
-  (throw (IllegalStateException. "This shouldn't be called")))
+(defn some-control-flow [& _] ; just a mock, we don't actually execute this
+  (fn [args ctx]
+    (throw (IllegalStateException. "This shouldn't be called"))))
 
 (defn some-step-that-fails-if-retriggered [ & _]
   (throw (IllegalStateException. "This step shouldn't be called")))
@@ -321,3 +322,33 @@
       (let [new-container-step-result (get-in (ps/get-all (:pipeline-state-component context)) [1 [1]])]
         (is (= :success (:status new-container-step-result)))
         (is (not= 1970 (t/year (:first-updated-at new-container-step-result))))))))
+
+(deftest retrigger-mock-step-test
+  (testing "that it returns the result of the original step"
+    (let [some-original-result {:foo :bar}
+          initial-state        { 0 {[1] some-original-result
+                                    [2] {:some :other :steps :result}}
+                                 1 {[1] {:some :other :builds :result}}}
+          ctx                  (some-ctx-with :initial-pipeline-state initial-state
+                                              :step-id [1])
+          mock-step            (retrigger-mock-step 0)]
+      (is (= (assoc some-original-result :retrigger-mock-for-build-number 0)
+             (mock-step {} ctx)))))
+  (testing "that it reports the results of its children"
+    (let [some-original-result  {:foo :bar}
+          some-childs-result    {:bar :baz}
+          initial-state         {0 {[1] some-original-result
+                                    [1 1] some-childs-result
+                                     [2] {:some :other :steps :result}}
+                                 1 {[1] {:some :other :builds :result}}}
+          ctx                   (some-ctx-with :initial-pipeline-state initial-state
+                                               :build-number 1
+                                               :step-id [1])
+          step-finished-events  (step-result-updates-for ctx)
+          mock-step             (retrigger-mock-step 0)
+          expected-child-result (assoc some-childs-result :retrigger-mock-for-build-number 0)]
+      (mock-step {} ctx)
+      (is (= [{:build-number 1
+               :step-id      [1 1]
+               :step-result expected-child-result}]
+             (slurp-chan step-finished-events))))))
