@@ -26,8 +26,7 @@
            (tu/with-mounted-component
              [:div (history/build-history-renderer
                [{:build-number 1
-                 :first-updated-at "2015-05-17T10:02:36.684Z"
-                 :most-recent-update-at "2015-05-17T10:03:51.684Z"}] 1)]
+                 :duration-in-sec 75}] 1)]
              (fn [c div]
                (is (dom/found-in div #"1min 15sec")))))
   (testing "that the history displays build status icons"

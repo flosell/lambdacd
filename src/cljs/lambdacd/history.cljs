@@ -30,9 +30,9 @@
 (defn history-item-component [active-build-number
                               {build-number          :build-number
                                status                :status
-                               most-recent-update-at :most-recent-update-at
                                first-updated-at      :first-updated-at
-                               retriggered           :retriggered}]
+                               retriggered           :retriggered
+                               duration-in-seconds   :duration-in-sec}]
   [:li {:key build-number :class (str "history--item" (if (= build-number active-build-number) " history--item--active"))}
    [:a {:href (route/for-build-number build-number) :class "history--item--container"}
     [:div {:class "history--item--line"}
@@ -45,9 +45,9 @@
                                                  "Not started yet")]]
     [:div {:class "history--item--line"}
      [icon "fa fa-clock-o"]
-     [:p {:class "history--item--line--item" } (if first-updated-at
+     [:p {:class "history--item--line--item" } (if (not (zero? duration-in-seconds))
                                                  (str "Duration: " (time/format-duration-long
-                                                                     (time/seconds-between-two-timestamps first-updated-at most-recent-update-at)))
+                                                                     duration-in-seconds))
                                                  "Duration: 0sec")]]
     (if retriggered
       [:div {:class "history--item--line"}
