@@ -18,6 +18,7 @@ The official release will have a defined and more stable API. If you are already
   
     This can be useful if several steps work on a workspace created by a nested step (such as `with-git`) and rely on the products of previous steps. 
     See #36 for details. 
+  * Improved calculation of build duration for retriggered pipelines (#30)
 
 ## 0.5.6
 
