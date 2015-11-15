@@ -25,7 +25,7 @@
                  [cheshire "5.4.0"]
                  [cljsjs/moment "2.10.6-0"]
                  [clj-time "0.9.0"]
-                 ]
+                 [clj-timeframes "0.1.0"]]
   :test-selectors {:default (complement :smoke)
                    :smoke :smoke
                    :all (constantly true)}

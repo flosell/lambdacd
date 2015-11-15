@@ -2,7 +2,8 @@
   (:require [lambdacd.util :as util]
             [lambdacd.internal.pipeline-state :as pipeline-state]
             [clj-time.core :as t]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [clj-timeframes.core :as tf]))
 
 (defn- desc [a b]
   (compare b a))
@@ -52,26 +53,36 @@
 (defn build-that-was-retriggered [step-ids-and-results]
   (get-in step-ids-and-results [[1] :retrigger-mock-for-build-number]))
 
-(defn- build-duration-in-sec [step-results]
+(defn- build-interval [step]
   (try
-    (let [most-recent-update-at (latest-most-recent-update step-results)
-          first-updated-at (earliest-first-update step-results)
-          duration (t/in-seconds (t/interval first-updated-at most-recent-update-at))]
-      duration)
+    (t/interval (:first-updated-at step) (:most-recent-update-at step))
     (catch IllegalArgumentException e
-      (log/warn (str "Timestamps for build duration dont add up (" (.getMessage e) "), falling back to duration 0. responsible step-result:" step-results))
-      0)))
+      (log/warn (str "Timestamps for build duration dont add up (" (.getMessage e) "), falling back to duration 0. responsible step-result:" step))
+      (t/interval (t/epoch) (t/epoch)))))
+
+(defn- interval-duration [interval]
+  (t/in-seconds interval))
+
+(defn- build-duration [step-ids-and-results]
+  (->> step-ids-and-results
+       (vals)
+       (filter not-waiting?)
+       (map build-interval)
+       (tf/merge-intervals)
+       (map interval-duration)
+       (reduce +)))
 
 (defn- history-entry [[build-number step-ids-and-results]]
   (let [step-results (vals step-ids-and-results)
         most-recent-update-at (latest-most-recent-update step-results)
-        first-updated-at (earliest-first-update step-results)]
+        first-updated-at (earliest-first-update step-results)
+        duration (build-duration step-ids-and-results)]
     {:build-number build-number
      :status (status-for-steps step-ids-and-results)
      :most-recent-update-at most-recent-update-at
      :first-updated-at first-updated-at
      :retriggered (build-that-was-retriggered step-ids-and-results)
-     :duration-in-sec (build-duration-in-sec step-results)}))
+     :duration-in-sec duration}))
 
 (defn history-for [state]
   (sort-by :build-number (map history-entry state)))
