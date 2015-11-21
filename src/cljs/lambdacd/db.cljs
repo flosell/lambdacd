@@ -10,7 +10,8 @@
    :pipeline-state []
    :connection-state :lost
    :displayed-build-number nil
-   :raw-step-results-visible false})
+   :raw-step-results-visible false
+   :expanded-step-ids #{}})
 
 (defn initialize-db-handler [_ _]
   default-db)
@@ -74,6 +75,16 @@
 (defn current-step-result-subscription [db _]
   (reaction (state/find-by-step-id (:pipeline-state @db) (:step-id @db))))
 
+(defn expanded-step-ids-subscription [db _]
+  (reaction (:expanded-step-ids @db)))
+
+(defn toggle-step-expanded[db [_ step-id]]
+  (let [cur-expanded (:expanded-step-ids db)
+        result (if (contains? cur-expanded step-id)
+                 (disj cur-expanded step-id)
+                 (conj cur-expanded step-id))]
+    (assoc db :expanded-step-ids result)))
+
 
 (re-frame/register-handler ::history-updated history-updated-handler)
 (re-frame/register-handler ::initialize-db initialize-db-handler)
@@ -82,6 +93,7 @@
 (re-frame/register-handler ::build-number-updated build-number-update-handler)
 (re-frame/register-handler ::step-id-updated step-id-update-handler)
 (re-frame/register-handler ::toggle-raw-step-results-visible toggle-raw-step-results-visible-handler)
+(re-frame/register-handler ::toggle-step-expanded toggle-step-expanded)
 
 (re-frame/register-sub ::history history-subscription)
 (re-frame/register-sub ::pipeline-state pipeline-state-subscription)
@@ -90,3 +102,4 @@
 (re-frame/register-sub ::step-id step-id-subscription)
 (re-frame/register-sub ::raw-step-results-visible raw-step-result-visible-subscription)
 (re-frame/register-sub ::current-step-result current-step-result-subscription)
+(re-frame/register-sub ::expanded-step-ids expanded-step-ids-subscription)

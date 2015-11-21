@@ -21,7 +21,6 @@
   (:use [lambdacd.steps.control-flow]
         [todopipeline.steps]))
 
-
 (def pipeline-def
   "the definition of the pipeline as a list of steps that are executed in order."
   `(

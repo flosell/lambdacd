@@ -84,7 +84,7 @@
                                                          :step-id [2 2 3]
                                                          :result {:status "failure"}}]}]}])
         build-number     1]
-      [#'pipeline/pipeline-renderer build-number build-state-atom 42]))
+      [#'pipeline/pipeline-renderer build-number build-state-atom 42 []]))
 
 (defn formatted-time [t]
   (format/unparse time/formatter t))
