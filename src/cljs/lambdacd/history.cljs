@@ -45,7 +45,7 @@
                                                  "Not started yet")]]
     [:div {:class "history--item--line"}
      [icon "fa fa-clock-o"]
-     [:p {:class "history--item--line--item" } (if (not (zero? duration-in-seconds))
+     [:p {:class "history--item--line--item" } (if-not (zero? duration-in-seconds)
                                                  (str "Duration: " (time/format-duration-long
                                                                      duration-in-seconds))
                                                  "Duration: 0sec")]]
