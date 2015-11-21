@@ -1,6 +1,6 @@
 (ns lambdacd.pipeline-test
   (:require [cljs.test :refer-macros [deftest is testing run-tests]]
-            [lambdacd.testdata :refer [some-build-step with-name with-type with-output with-children time-start time-after-ten-sec]]
+            [lambdacd.testdata :refer [some-build-step some-build-step-id with-name with-type with-output with-children time-start time-after-ten-sec]]
             [dommy.core :as dommy]
             [dommy.core :refer-macros [sel sel1]]
             [lambdacd.pipeline :as pipeline]
@@ -52,7 +52,7 @@
 (deftest build-step-test
   (testing "rendering of a single build-step"
     (tu/with-mounted-component
-      (pipeline/build-step-component some-build-step 1 some-step-id-to-display [])
+      (pipeline/build-step-component some-build-step 1 some-step-id-to-display #{some-build-step-id})
       (fn [c div]
         (is (dom/found-in div #"some-step"))
         (is (dom/having-class "build-step" (step-label (first (steps div)))))
@@ -60,7 +60,7 @@
         (is (dom/containing-link-to div (route/for-build-and-step-id 1 [1 2 3]))))))
   (testing "rendering of a container build-step"
     (tu/with-mounted-component
-      (pipeline/build-step-component some-container-build-step 1 some-step-id-to-display [])
+      (pipeline/build-step-component some-container-build-step 1 some-step-id-to-display #{some-build-step-id})
       (fn [c div]
         (is (dom/found-in div #"some-container"))
         (is (dom/found-in (first (steps div)) #"some-step"))
@@ -69,7 +69,7 @@
         (is (dom/containing-ordered-list (first (steps div)))))))
   (testing "rendering of a parallel build-step"
     (tu/with-mounted-component
-      (pipeline/build-step-component some-parallel-build-step 1 some-step-id-to-display [])
+      (pipeline/build-step-component some-parallel-build-step 1 some-step-id-to-display #{some-build-step-id})
       (fn [c div]
         (is (dom/found-in div #"some-parallel-step"))
         (is (dom/found-in (first (steps div)) #"some-other-step"))
@@ -81,7 +81,7 @@
 (deftest pipeline-test
   (testing "rendering of a complete pipeline"
     (tu/with-mounted-component
-      (pipeline/pipeline-renderer 1 (atom [some-parallel-build-step]) 42 [])
+      (pipeline/pipeline-renderer 1 (atom [some-parallel-build-step]) 42 #{some-build-step-id})
       (fn [c div]
         (is (dom/found-in div #"some-parallel-step"))
         (is (dom/found-in div #"some-other-step"))))))

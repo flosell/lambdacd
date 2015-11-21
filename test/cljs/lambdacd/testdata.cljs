@@ -5,15 +5,16 @@
 (def time-start (t/now))
 (def time-after-ten-sec (t/plus time-start (t/seconds 10)))
 
+(def some-build-step-id [1 2 3])
 (def some-build-step
-  {:name "some-step"
-   :type "step"
-   :step-id [1 2 3]
+  {:name     "some-step"
+   :type     "step"
+   :step-id  some-build-step-id
    :children []
-   :result {:status "success"
-            :out "hello world"
-            :first-updated-at (time/unparse-time time-start)
-            :most-recent-update-at (time/unparse-time time-after-ten-sec)}})
+   :result   {:status                "success"
+              :out                   "hello world"
+              :first-updated-at      (time/unparse-time time-start)
+              :most-recent-update-at (time/unparse-time time-after-ten-sec)}})
 
 (defn with-name [step name]
   (assoc step :name name))
