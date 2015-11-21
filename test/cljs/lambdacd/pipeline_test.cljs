@@ -6,7 +6,9 @@
             [lambdacd.pipeline :as pipeline]
             [lambdacd.dom-utils :as dom]
             [lambdacd.testutils :as tu]
-            [lambdacd.route :as route]))
+            [lambdacd.route :as route]
+            [lambdacd.db :as db]
+            [re-frame.core :as re-frame]))
 
 (def some-other-step
   (-> some-build-step
@@ -49,39 +51,49 @@
                                                     :first-updated-at      time-start
                                                     :most-recent-update-at time-after-ten-sec})))))
 
-(deftest build-step-test
-  (testing "rendering of a single build-step"
-    (tu/with-mounted-component
-      (pipeline/build-step-component some-build-step 1 some-step-id-to-display #{some-build-step-id})
-      (fn [c div]
-        (is (dom/found-in div #"some-step"))
-        (is (dom/having-class "build-step" (step-label (first (steps div)))))
-        (is (dom/having-data "status" "success" (first (steps div))))
-        (is (dom/containing-link-to div (route/for-build-and-step-id 1 [1 2 3]))))))
-  (testing "rendering of a container build-step"
-    (tu/with-mounted-component
-      (pipeline/build-step-component some-container-build-step 1 some-step-id-to-display #{some-build-step-id})
-      (fn [c div]
-        (is (dom/found-in div #"some-container"))
-        (is (dom/found-in (first (steps div)) #"some-step"))
-        (is (dom/having-class "build-step" (step-label (first (steps div)))))
-        (is (dom/having-data "status" "success" (first (steps div))))
-        (is (dom/containing-ordered-list (first (steps div)))))))
-  (testing "rendering of a parallel build-step"
-    (tu/with-mounted-component
-      (pipeline/build-step-component some-parallel-build-step 1 some-step-id-to-display #{some-build-step-id})
-      (fn [c div]
-        (is (dom/found-in div #"some-parallel-step"))
-        (is (dom/found-in (first (steps div)) #"some-other-step"))
-        (is (dom/having-class "build-step" (step-label (first (steps div)))))
-        (is (dom/having-data "status" "success" (first (steps div))))
-        (is (dom/containing-unordered-list (first (steps div))))))))
+(defn subscription-stub []
+  (fn [x]
+    (atom
+      (case x
+        [::db/build-number]   1
+        [::db/step-id]        42
+        [::db/pipeline-state] [some-parallel-build-step]
+        [::db/expanded-step-ids] #{some-build-step-id}))))
 
+(deftest build-step-test
+  (with-redefs [re-frame/subscribe (subscription-stub)]
+    (testing "rendering of a single build-step"
+      (tu/with-mounted-component
+        [pipeline/build-step-component some-build-step some-step-id-to-display]
+        (fn [c div]
+          (is (dom/found-in div #"some-step"))
+          (is (dom/having-class "build-step" (step-label (first (steps div)))))
+          (is (dom/having-data "status" "success" (first (steps div))))
+          (is (dom/containing-link-to div (route/for-build-and-step-id 1 [1 2 3]))))))
+    (testing "rendering of a container build-step"
+      (tu/with-mounted-component
+        [pipeline/build-step-component some-container-build-step some-step-id-to-display]
+        (fn [c div]
+          (is (dom/found-in div #"some-container"))
+          (is (dom/found-in (first (steps div)) #"some-step"))
+          (is (dom/having-class "build-step" (step-label (first (steps div)))))
+          (is (dom/having-data "status" "success" (first (steps div))))
+          (is (dom/containing-ordered-list (first (steps div)))))))
+    (testing "rendering of a parallel build-step"
+      (tu/with-mounted-component
+        [pipeline/build-step-component some-parallel-build-step some-step-id-to-display]
+        (fn [c div]
+          (is (dom/found-in div #"some-parallel-step"))
+          (is (dom/found-in (first (steps div)) #"some-other-step"))
+          (is (dom/having-class "build-step" (step-label (first (steps div)))))
+          (is (dom/having-data "status" "success" (first (steps div))))
+          (is (dom/containing-unordered-list (first (steps div)))))))))
 
 (deftest pipeline-test
   (testing "rendering of a complete pipeline"
-    (tu/with-mounted-component
-      (pipeline/pipeline-renderer 1 (atom [some-parallel-build-step]) 42 #{some-build-step-id})
-      (fn [c div]
-        (is (dom/found-in div #"some-parallel-step"))
-        (is (dom/found-in div #"some-other-step"))))))
+    (with-redefs [re-frame/subscribe (subscription-stub)]
+      (tu/with-mounted-component
+        [pipeline/pipeline-component]
+        (fn [c div]
+          (is (dom/found-in div #"some-parallel-step"))
+          (is (dom/found-in div #"some-other-step")))))))

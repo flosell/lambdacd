@@ -1,7 +1,8 @@
 (ns lambdacd.styleguide
   (:require [lambdacd.testutils :refer [query]]
             [lambdacd.testcases :as testcases]
-            [reagent.core :as reagent]))
+            [reagent.core :as reagent]
+            [re-frame.core :as re-frame]))
 
 (defn render [component]
   (reagent/render-component component (.getElementById js/document "content")))
@@ -15,7 +16,11 @@
 (defn- initialize-testcase [testcase-id]
   (let [testcases-by-id (group-by :id testcases/tc)
         testcase        (first (get testcases-by-id testcase-id))
-        component       (:component testcase)]
+        component       (:component testcase)
+        data            (:data      testcase)]
+    (if data
+      (with-redefs [re-frame/subscribe data]
+                   (render component)))
     (render component)))
 
 (defn initialize-styleguide []

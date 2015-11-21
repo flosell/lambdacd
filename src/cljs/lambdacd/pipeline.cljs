@@ -23,31 +23,37 @@
           duration (time/format-duration-short duration-in-sec)]
       duration)))
 
-(defn step-component-with [{step-id :step-id {status :status :as step-result} :result name :name } build-number children step-id-to-display]
-  (let [status-class (str  "pipeline__step--" (or status "no-status") (if (= step-id step-id-to-display) " pipeline__step--active"))
-        pipeline-step-class "pipeline__step"
-        formatted-duration (format-build-step-duration step-result)
-        name-and-duration (if (s/blank? formatted-duration) name (str name " (" formatted-duration ")"))]
-    (append-components [:li { :key (str step-id) :data-status status :class (classes status-class pipeline-step-class)}
-                        [:a {:class "step-link" :href (route/for-build-and-step-id build-number step-id)}
-                          [:span {:class "build-step"} name-and-duration]]] children)))
+(defn step-component-with []
+  (let [step-id-to-display-atom (re-frame/subscribe [::db/step-id])]
+    (fn [{step-id :step-id {status :status :as step-result} :result name :name } build-number children]
+      (let [step-id-to-display @step-id-to-display-atom
+            status-class (str  "pipeline__step--" (or status "no-status") (if (= step-id step-id-to-display) " pipeline__step--active"))
+            pipeline-step-class "pipeline__step"
+            formatted-duration (format-build-step-duration step-result)
+            name-and-duration (if (s/blank? formatted-duration) name (str name " (" formatted-duration ")"))]
+        (append-components [:li { :key (str step-id) :data-status status :class (classes status-class pipeline-step-class)}
+                            [:a {:class "step-link" :href (route/for-build-and-step-id build-number step-id)}
+                              [:span {:class "build-step"} name-and-duration]]] children)))))
 
-(defn container-build-step-component [{children :children step-id :step-id :as build-step } type retrigger-elem kill-elem build-number step-id-to-display expanded-step-ids]
-  (let [ul-or-ol (if (= type :sequential) :ol :ul)
-        modifier-class (if (= type :sequential) "pipeline__step-container--sequential" "pipeline__step-container--parallel")
-        container-class "pipeline__step-container"
-        is-expanded (contains? expanded-step-ids step-id)
-        expansion-icon-class (if is-expanded "fa-minus" "fa-plus")
-        expander [:i {:class (str "fa " expansion-icon-class " pipeline__step__action-button") :on-click (fn [event]
-                                                                                                           (re-frame/dispatch [::db/toggle-step-expanded step-id])
-                                                                                                           nil)}]]
-    (step-component-with build-step
-                         build-number
-                         [retrigger-elem kill-elem
-                          expander
-                          (if is-expanded
-                            [ul-or-ol {:class (classes container-class modifier-class)} (map #(build-step-component % build-number step-id-to-display expanded-step-ids) children)])]
-                         step-id-to-display)))
+(defn container-build-step-component []
+  (let [expanded-step-ids (re-frame/subscribe [::db/expanded-step-ids])]
+    (fn [{children :children step-id :step-id :as build-step } type retrigger-elem kill-elem build-number]
+      (let [ul-or-ol (if (= type :sequential) :ol :ul)
+            modifier-class (if (= type :sequential) "pipeline__step-container--sequential" "pipeline__step-container--parallel")
+            container-class "pipeline__step-container"
+            is-expanded (contains? @expanded-step-ids step-id)
+            expansion-icon-class (if is-expanded "fa-minus" "fa-plus")
+            expander [:i {:class (str "fa " expansion-icon-class " pipeline__step__action-button") :on-click (fn [event]
+                                                                                                               (re-frame/dispatch [::db/toggle-step-expanded step-id])
+                                                                                                               nil)}]]
+        [step-component-with build-step
+                             build-number
+                             [retrigger-elem kill-elem
+                              expander
+                              (if is-expanded
+                                [ul-or-ol {:class (classes container-class modifier-class)}
+                                 (for [child children]
+                                   ^{:key (:step-id child)} [build-step-component child])])]]))))
 
 (defn ask-for [parameters]
   (into {} (doall (map (fn [[param-name param-config]]
@@ -99,27 +105,25 @@
     (if (and trigger-id (not (is-finished build-step)))
       [:i {:class "fa fa-play pipeline__step__action-button" :on-click (click-handler #(manual-trigger result))}])))
 
-(defn build-step-component [build-step build-number step-id-to-display expanded-step-ids]
-  (let [retrigger-elem (retrigger-component build-number build-step)
-        kill-elem      (kill-component build-number build-step)]
-    (case (:type build-step)
-      "parallel"  (container-build-step-component build-step :parallel retrigger-elem kill-elem build-number step-id-to-display expanded-step-ids)
-      "container" (container-build-step-component build-step :sequential retrigger-elem kill-elem build-number step-id-to-display expanded-step-ids)
-      (step-component-with build-step build-number
-                           [(manualtrigger-component build-step)
-                            retrigger-elem
-                            (kill-component build-number build-step)]
-                           step-id-to-display))))
-
-(defn pipeline-renderer [build-number build-state-atom step-id-to-display expanded-step-ids]
-  [:div {:class "pipeline" :key "build-pipeline"}
-   [:ol {:class "pipeline__step-container pipeline__step-container--sequential"}
-    (map #(build-step-component % build-number step-id-to-display expanded-step-ids) @build-state-atom)]])
+(defn build-step-component []
+  (let [build-number-subscription (re-frame/subscribe [::db/build-number])]
+    (fn [build-step _]
+      (let [build-number   @build-number-subscription
+            retrigger-elem (retrigger-component build-number build-step)
+            kill-elem      (kill-component build-number build-step)]
+        (case (:type build-step)
+          "parallel"  [container-build-step-component build-step :parallel retrigger-elem kill-elem build-number]
+          "container" [container-build-step-component build-step :sequential retrigger-elem kill-elem build-number]
+          [step-component-with build-step build-number
+                               [(manualtrigger-component build-step)
+                                retrigger-elem
+                                (kill-component build-number build-step)]])))))
 
 (defn pipeline-component []
-  (let [current-build-number (re-frame/subscribe [::db/build-number])
-        step-id-to-display-atom (re-frame/subscribe [::db/step-id])
-        state-atom (re-frame/subscribe [::db/pipeline-state])
-        expanded-step-ids (re-frame/subscribe [::db/expanded-step-ids])]
+  (let [build-state-atom (re-frame/subscribe [::db/pipeline-state])]
     (fn []
-      [pipeline-renderer @current-build-number state-atom @step-id-to-display-atom @expanded-step-ids])))
+      [:div {:class "pipeline" :key "build-pipeline"}
+       [:ol {:class "pipeline__step-container pipeline__step-container--sequential"}
+        (doall
+          (for [step @build-state-atom]
+            ^{:key (:step-id step)} [build-step-component step]))]])))

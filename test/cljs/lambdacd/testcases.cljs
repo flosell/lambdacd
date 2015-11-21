@@ -5,6 +5,7 @@
             [cljs-time.format :as format]
             [lambdacd.pipeline :as pipeline]
             [cljs-time.core :as t]
+            [lambdacd.db :as db]
             [lambdacd.time :as time]))
 (defn- background [color]
   {:style {:background-color color}})
@@ -42,49 +43,53 @@
                             fake-history-component
                             fake-current-build-component]))
 
-(defn normal-pipeline []
-  (let [build-state-atom (atom [{:type "parallel"
-                                 :name "either"
-                                 :step-id [1]
-                                 :result {:status "success"}
-                                 :children [{:name "wait-for-git"
-                                             :step-id [1 1]
-                                             :result {:status "success"}}
-                                            {:name "wait-for-manual-trigger"
-                                             :step-id [2 1]
-                                             :result {:status "killed"}}
-                                            {:name "always-waiting"
-                                             :step-id [3 1]
-                                             :result {:status "waiting"}}]}
-                                {:name "build"
-                                 :step-id [2]
-                                 :result {:status "success"}}
-                                {:name "deploy"
-                                 :type "parallel"
-                                 :step-id [3]
-                                 :result {:status "running"}
-                                 :children [{:name "deploy-ci"
-                                             :type "container"
-                                             :step-id [1 3]
-                                             :result {:status "running"}
-                                             :children [{:name "deploy"
-                                                         :step-id [1 1 3]
-                                                         :result {:status "running"}}
-                                                        {:name "smoke-test"
-                                                         :step-id [2 1 3]
-                                                         :result {}}]}
-                                            {:name "deploy-qa"
-                                             :type "container"
-                                             :step-id [2 3]
-                                             :result {:status "failure"}
-                                             :children [{:name "deploy"
-                                                         :step-id [1 2 3]
-                                                         :result {:status "success"}}
-                                                        {:name "smoke-test"
-                                                         :step-id [2 2 3]
-                                                         :result {:status "failure"}}]}]}])
-        build-number     1]
-      [#'pipeline/pipeline-renderer build-number build-state-atom 42 []]))
+(defn normal-pipeline-mock-data []
+  (fn [x]
+    (atom
+      (case x
+        [::db/build-number] 1
+        [::db/expanded-step-ids] #{[1] [3] [1 3] [2 3]}
+        [::db/step-id] [1 1]
+        [::db/pipeline-state] [{:type "parallel"
+                                :name "either"
+                                :step-id [1]
+                                :result {:status "success"}
+                                :children [{:name "wait-for-git"
+                                            :step-id [1 1]
+                                            :result {:status "success"}}
+                                           {:name "wait-for-manual-trigger"
+                                            :step-id [2 1]
+                                            :result {:status "killed"}}
+                                           {:name "always-waiting"
+                                            :step-id [3 1]
+                                            :result {:status "waiting"}}]}
+                               {:name "build"
+                                :step-id [2]
+                                :result {:status "success"}}
+                               {:name "deploy"
+                                :type "parallel"
+                                :step-id [3]
+                                :result {:status "running"}
+                                :children [{:name "deploy-ci"
+                                            :type "container"
+                                            :step-id [1 3]
+                                            :result {:status "running"}
+                                            :children [{:name "deploy"
+                                                        :step-id [1 1 3]
+                                                        :result {:status "running"}}
+                                                       {:name "smoke-test"
+                                                        :step-id [2 1 3]
+                                                        :result {}}]}
+                                           {:name "deploy-qa"
+                                            :type "container"
+                                            :step-id [2 3]
+                                            :result {:status "failure"}
+                                            :children [{:name "deploy"
+                                                        :step-id [1 2 3]
+                                                        :result {:status "success"}}
+                                                       {:name "smoke-test"
+                                                        :step-id [2 2 3]
+                                                        :result {:status "failure"}}]}]}]))))
 
 (defn formatted-time [t]
   (format/unparse time/formatter t))
@@ -138,7 +143,8 @@
   [{:id        "main-connection-lost"
     :component [#'main-connection-lost]}
    {:id        "normal-pipeline"
-    :component [#'normal-pipeline]}
+    :component [#'pipeline/pipeline-component]
+    :data      (normal-pipeline-mock-data)}
    {:id        "normal-history"
     :component [#'normal-history]}
    {:id        "current-build-wrapper"
