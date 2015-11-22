@@ -51,17 +51,16 @@
                                                     :first-updated-at      time-start
                                                     :most-recent-update-at time-after-ten-sec})))))
 
-(defn subscription-stub []
-  (fn [x]
-    (atom
-      (case x
-        [::db/build-number]   1
-        [::db/step-id]        42
-        [::db/pipeline-state] [some-parallel-build-step]
-        [::db/expanded-step-ids] #{some-build-step-id}))))
+(defn subscription-stub [x]
+  (atom
+    (case x
+      [::db/build-number]   1
+      [::db/step-id]        42
+      [::db/pipeline-state] [some-parallel-build-step]
+      [::db/expanded-step-ids] #{some-build-step-id})))
 
 (deftest build-step-test
-  (with-redefs [re-frame/subscribe (subscription-stub)]
+  (with-redefs [re-frame/subscribe subscription-stub]
     (testing "rendering of a single build-step"
       (tu/with-mounted-component
         [pipeline/build-step-component some-build-step some-step-id-to-display]
@@ -91,7 +90,7 @@
 
 (deftest pipeline-test
   (testing "rendering of a complete pipeline"
-    (with-redefs [re-frame/subscribe (subscription-stub)]
+    (with-redefs [re-frame/subscribe subscription-stub]
       (tu/with-mounted-component
         [pipeline/pipeline-component]
         (fn [c div]
