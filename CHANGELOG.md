@@ -19,6 +19,15 @@ The official release will have a defined and more stable API. If you are already
     This can be useful if several steps work on a workspace created by a nested step (such as `with-git`) and rely on the products of previous steps. 
     See #36 for details. 
   * Improved calculation of build duration for retriggered pipelines (#30)
+  * UI: collapsing child steps by default (#59)
+  * Add feature to alias build steps in UI:
+    ```clojure
+    ; this displays "trigger" instead of "either" in UI
+    (alias "trigger"
+      (either
+        wait-for-manual-trigger
+        wait-for-repo))
+    ```
 
 ## 0.5.6
 

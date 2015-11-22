@@ -3,7 +3,9 @@
         [lambdacd.steps.control-flow]
         [lambdacd.testsupport.test-util])
   (:require [clojure.test :refer :all]
-            [lambdacd.presentation.pipeline-structure :refer :all]))
+            [lambdacd.presentation.pipeline-structure :refer :all]
+            [lambdacd.steps.control-flow :as control-flow])
+  (:refer-clojure :exclude [alias]))
 
 (defn do-stuff [& ] {})
 (defn ^{:depends-on-previous-steps true} do-other-stuff [] {})
@@ -30,8 +32,12 @@
 (def simple-pipeline
   `(
     do-stuff
-    do-other-stuff
-   ))
+    do-other-stuff))
+
+(def pipeline-with-alias
+  `(
+     (alias "do-stuff-alias" do-stuff)
+    do-other-stuff))
 
 (def foo-pipeline
   `((in-parallel
@@ -91,7 +97,9 @@
         (is (= "in-cwd some-cwd" (display-name `(in-cwd "some-cwd" do-stuff do-more-stuff))))
         (is (= "in-cwd some-cwd" (display-name `(in-cwd "some-cwd" do-stuff (do-stuff "foo"))))))
       (testing "hiding parameters"
-        (is (= "do-stuff-with-hidden-params visible" (display-name `(do-stuff-with-hidden-params "hidden" "visible")))))))
+        (is (= "do-stuff-with-hidden-params visible" (display-name `(do-stuff-with-hidden-params "hidden" "visible")))))
+      (testing "that the display-name for alias is just the alias parameter without the function name"
+        (is (= "the alias" (display-name `(control-flow/alias "the alias" do-stuff)))))))
   (deftest dependencies-of-test
     (testing "that normal steps don't depend on anything"
       (is (= false (has-dependencies? `do-stuff)))
@@ -116,6 +124,8 @@
             :children [{:name "do-even-more-stuff" :type :step :step-id '(1) :has-dependencies false}]} (step-display-representation (second pipeline) '()))))
   (testing "that a display-representation of a sequence of only steps works"
     (is (= [{:name "do-stuff" :type :step :step-id '(1) :has-dependencies false} {:name "do-other-stuff" :type :step :step-id '(2) :has-dependencies true}] (pipeline-display-representation simple-pipeline))))
+  (testing "that aliasing makes the aliased child disappear"
+    (is (= [{:name "do-stuff-alias" :type :step :step-id '(1 1) :has-dependencies false} {:name "do-other-stuff" :type :step :step-id '(2) :has-dependencies true}] (pipeline-display-representation pipeline-with-alias))))
   (testing "that foo-pipeline works"
     (is (= [{:name "in-parallel"
              :type :parallel

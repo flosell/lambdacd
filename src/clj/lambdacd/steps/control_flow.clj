@@ -5,6 +5,7 @@
             [lambdacd.steps.support :as support]
             [lambdacd.internal.step-id :as step-id]
             [lambdacd.steps.status :as status])
+  (:refer-clojure :exclude [alias])
   (:import (java.util UUID)))
 
 (defn- post-process-container-results [result]
@@ -103,3 +104,8 @@
         (if (= :success (:status condition-step-result))
           (core/execute-step args (child-context ctx 2) success-step)
           (core/execute-step args (child-context ctx 3) failiure-step))))))
+
+(defn alias
+  "just runs child but child is displayed with the given alias in visualization"
+  [alias child]
+  (run child))

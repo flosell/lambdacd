@@ -19,7 +19,8 @@
             [ring.util.response :as resp]
             [compojure.route :as route])
   (:use [lambdacd.steps.control-flow]
-        [todopipeline.steps]))
+        [todopipeline.steps])
+  (:refer-clojure :exclude [alias]))
 
 (def pipeline-def
   "the definition of the pipeline as a list of steps that are executed in order."
@@ -28,36 +29,39 @@
     ;; a manual trigger or some change in the repo
     ;; the `either` control-flow element allows us to assemble a new trigger out of the two existing ones:
     ;; wait for either a change in the repository or the manual trigger.
-     (either
-       lambdacd.steps.manualtrigger/wait-for-manual-trigger
-       wait-for-greeting
-       wait-for-frontend-repo
-       wait-for-backend-repo
-       ;always-echo-something
-       )
+     (alias "trigger"
+       (either
+         lambdacd.steps.manualtrigger/wait-for-manual-trigger
+         wait-for-greeting
+         wait-for-frontend-repo
+         wait-for-backend-repo
+         ;always-echo-something
+         ))
      ;; you could also wait for a repository to change. to try, point the step to a repo you control,
     ;; uncomment this, run and see the magic happen (the first build will immediately run since there is no known state)
     ; wait-for-frontend-repo
     ;; this step executes his child-steps (the arguments after the in-parallel) in parallel and waits
     ;; until all of them are done. if one of them fails, the whole step fails.
-    (in-parallel
-      ;; these child steps do some actual work with the checked out git repo
-      (with-frontend-git
-        create-some-details
-        client-package
-        client-publish)
-      (with-backend-git
-        server-test
-        server-package
-        server-publish))
+     (alias "build and publish"
+       (in-parallel
+        ;; these child steps do some actual work with the checked out git repo
+        (with-frontend-git
+          create-some-details
+          client-package
+          client-publish)
+        (with-backend-git
+          server-test
+          server-package
+          server-publish)))
     ;; the package-scripts copy deploy-scripts and artifacts into the mockrepo directory,
     ;; execute the depoy-steps from there
-    (in-cwd "/tmp/mockrepo"
-      client-deploy-ci
-      server-deploy-ci)
+     (alias "deploy"
+       (in-cwd "/tmp/mockrepo"
+         client-deploy-ci
+         server-deploy-ci))
 
     ;; now we want the build to fail, just to show it's working.
-    some-failing-step
+    (alias "step that always fails" some-failing-step)
     some-step-that-cant-be-reached
   ))
 

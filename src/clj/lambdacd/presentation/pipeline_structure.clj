@@ -2,7 +2,8 @@
   "this namespace is responsible for converting the pipeline
   into a nice, map-format that we can use to display the pipeline
   in a UI"
-  (:require [clojure.string :as s]))
+  (:require [clojure.string :as s]
+            [lambdacd.steps.control-flow :as control-flow]))
 
 
 (defn- is-fn? [fun]
@@ -65,12 +66,17 @@
                               (map second))]
     parameter-values))
 
+(defn- is-alias-fun? [fun]
+  (= `control-flow/alias fun))
+
 (defn- display-name [x]
   (if (sequential? x)
     (let [fun    (first x)
           params (rest x)
           parts  (concat [(display-name fun)] (parameter-values fun params))]
-      (s/join " " parts))
+      (if (is-alias-fun? fun)
+        (first params)
+        (s/join " " parts)))
     (clear-namespace (str x))))
 
 (defn- has-dependencies? [x]
@@ -81,7 +87,7 @@
 
 (declare step-display-representation) ; mutual recursion
 
-(defn- seq-to-display-representations [part parent-step-id]
+(defn- seq-to-display-representations [parent-step-id part]
   (map-indexed #(step-display-representation %2 (conj parent-step-id (inc %1))) part))
 
 (defn- is-simple-step? [x]
@@ -100,13 +106,23 @@
    :has-dependencies (has-dependencies? part)
    :step-id id})
 
+(defn- is-alias-part? [part]
+  (and
+    (sequential? part)
+    (is-alias-fun? (first part))))
+
 (defn- container-step-representation [part id]
-  (let [children (filter is-child? (rest part))]
-    {:name (display-name part)
-     :type (display-type part)
-     :step-id id
-     :has-dependencies false
-     :children (seq-to-display-representations children id)}))
+  (let [children-representations (->> part
+                                      (rest)
+                                      (filter is-child?)
+                                      (seq-to-display-representations id))]
+    (if (is-alias-part? part)
+      (assoc (first children-representations) :name (display-name part))
+      {:name (display-name part)
+       :type (display-type part)
+       :step-id id
+       :has-dependencies false
+       :children children-representations})))
 
 (defn step-display-representation [part id]
   (if (is-simple-step? part)
@@ -116,4 +132,4 @@
 
 (defn pipeline-display-representation
   ([part]
-   (seq-to-display-representations part '())))
+   (seq-to-display-representations '() part)))
