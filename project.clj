@@ -6,6 +6,7 @@
   :min-lein-version "2.5.0"
   :deploy-repositories [["clojars" {:creds :gpg}]
                         ["releases" :clojars]]
+  :repositories [["activeon" "http://repository.activeeon.com/content/repositories/releases/"]] ; for process tree killer
   :source-paths ["src/clj" "src/cljs"]
   :test-paths ["test/clj" "example/clj"]
   :jar-exclusions [#"logback.xml"]
@@ -25,7 +26,9 @@
                  [cheshire "5.4.0"]
                  [cljsjs/moment "2.10.6-0"]
                  [clj-time "0.9.0"]
+                 [org.ow2.proactive/process-tree-killer "1.0.0"]
                  [clj-timeframes "0.1.0"]]
+  :exclusions [org.jvnet.winp/winp] ; process-tree-killer depends on this for windows only and doesnt provide it...
   :test-selectors {:default (complement :smoke)
                    :smoke :smoke
                    :all (constantly true)}

@@ -29,6 +29,8 @@ The official release will have a defined and more stable API. If you are already
         wait-for-repo))
     ```
   * UI: Added feedback after killing a step
+  * Killing a `shell/bash`-step now kills the whole process tree spawned by it. This helps in cases where the step spawns
+    longer-running processes and bash doesn't pass on the TERM signal to its children)
 
 ## 0.5.6
 

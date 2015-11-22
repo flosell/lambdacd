@@ -7,7 +7,8 @@
             [clojure.core.async :as async]
             [lambdacd.util :as util])
   (:import (java.util UUID)
-           (java.io IOException)))
+           (java.io IOException)
+           (org.ow2.proactive.process_tree_killer ProcessTree)))
 
 
 (defn- exit-code->status [exit-code was-killed]
@@ -16,19 +17,20 @@
     (zero? exit-code) :success
     :default :failure))
 
-(defn kill [was-killed-indicator proc ctx]
+(defn kill [was-killed-indicator proc ctx kill-cookie]
   (reset! was-killed-indicator true)
   (async/>!! (:result-channel ctx) [:processed-kill true])
-  (.destroy proc))
+  (.destroy proc)
+  (.killAll (ProcessTree/get) {"killcookie" kill-cookie}))
 
-(defn- add-kill-handling [ctx proc was-killed watch-ref]
+(defn- add-kill-handling [ctx proc was-killed watch-ref kill-cookie]
   (let [is-killed (:is-killed ctx)]
     (dosync
       (if @is-killed
-        (kill was-killed proc ctx)
+        (kill was-killed proc ctx kill-cookie)
         (add-watch is-killed watch-ref (fn [_ _ _ new]
                                            (if new
-                                             (kill was-killed proc ctx))))))))
+                                             (kill was-killed proc ctx kill-cookie))))))))
 
 (defn- safe-read-line [reader]
   (try
@@ -44,15 +46,16 @@
           (recur))))))
 
 (defn- execte-shell-command [cwd shell-script ctx env]
-  (let [x (sh/proc "bash" "-e" shell-script
+  (let [kill-cookie (str (UUID/randomUUID))
+        x (sh/proc "bash" "-e" shell-script
                    :dir cwd
-                   :env env
+                   :env (assoc env "killcookie" kill-cookie)
                    :redirect-err true)
         proc (:process x)
         was-killed (atom false)
         kill-switch (:is-killed ctx)
         watch-ref (UUID/randomUUID)
-        _ (add-kill-handling ctx proc was-killed watch-ref)
+        _ (add-kill-handling ctx proc was-killed watch-ref kill-cookie)
         out (read-and-print-shell-output x)
         exit-code (sh/exit-code x)
         status (exit-code->status exit-code @was-killed)]
