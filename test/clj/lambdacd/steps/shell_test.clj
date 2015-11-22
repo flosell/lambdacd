@@ -75,4 +75,12 @@
               :out    ""
               :status :killed}
              (bash (some-ctx-with :is-killed is-killed) "/"
-                   "echo foo"))))))
+                   "echo foo")))))
+  (testing "that we inform the user about trying to kill the process"
+    (let [is-killed (atom true)
+          some-ctx (some-ctx-with :result-channel (async/chan 100)
+                                  :is-killed is-killed)
+          result-channel (:result-channel some-ctx)]
+      (bash some-ctx "/" "sleep 5")
+      (is (= [[:processed-kill true]]
+             (slurp-chan result-channel))))))

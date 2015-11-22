@@ -28,6 +28,7 @@ The official release will have a defined and more stable API. If you are already
         wait-for-manual-trigger
         wait-for-repo))
     ```
+  * UI: Added feedback after killing a step
 
 ## 0.5.6
 

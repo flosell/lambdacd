@@ -60,10 +60,22 @@
 (defn- still-active? [status]
   (or (nil? status) (= status "running") (= status "waiting")))
 
-(defn- enhanced-output [{status :status output :out}]
-   (if (still-active? status)
-     output
-     (str output "\n\n" "Step is finished: " (status-to-string status))))
+(defn- received-kill? [result]
+  (and
+    (:received-kill result)
+    (not= "killed" (:status result))))
+
+(defn- processed-kill? [result]
+  (and
+    (:processed-kill result)
+    (not= "killed" (:status result))))
+
+(defn- enhanced-output [{status :status output :out :as result}]
+  (cond
+    (processed-kill? result) (str output "\n\n" "Step received kill and is shutting down...")
+    (received-kill? result) (str output "\n\n" "LambdaCD received kill and waiting for build step to react to it...")
+    (still-active? status) output
+    :else (str output "\n\n" "Step is finished: " (status-to-string status))))
 
 (defn- plain-output-component [step raw-step-results-visible]
   (let [result (:result step)]

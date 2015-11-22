@@ -1,7 +1,8 @@
 (ns lambdacd.internal.pipeline-state
   (:require [clojure.core.async :as async]
             [lambdacd.event-bus :as event-bus]
-            [lambdacd.util :as util]))
+            [lambdacd.util :as util])
+  (:refer-clojure :exclude [alias]))
 
 
 ; TODO: move this protocol out of internal once the interface is more polished and stable

@@ -218,6 +218,16 @@
       (wait-for (tu/step-running? ctx))
       (kill-step ctx 3 [3 2 1])
       (is (map-containing {:status :killed} (get-or-timeout future-step-result)))))
+  (testing "that killing a step sets a marker that can be used to determine if a kill was received even if the step didnt handle it"
+    (let [is-killed (atom false)
+          ctx (some-ctx-with :step-id [3 2 1]
+                             :build-number 3
+                             :is-killed is-killed)
+          _ (pipeline-state/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
+          future-step-result (start-waiting-for (execute-step {} [ctx some-step-waiting-to-be-killed]))]
+      (wait-for (tu/step-running? ctx))
+      (kill-step ctx 3 [3 2 1])
+      (is (map-containing {:received-kill true} (first (vals (:outputs (get-or-timeout future-step-result))))))))
   (testing "that a step using the kill-switch does not bubble up to the parents passing in the kill-switch"
     (let [is-killed (atom false)
           ctx (some-ctx-with :is-killed is-killed)]

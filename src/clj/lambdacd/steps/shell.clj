@@ -4,6 +4,7 @@
             [clojure.string :as string]
             [me.raynes.conch.low-level :as sh]
             [lambdacd.util :as utils]
+            [clojure.core.async :as async]
             [lambdacd.util :as util])
   (:import (java.util UUID)
            (java.io IOException)))
@@ -15,18 +16,19 @@
     (zero? exit-code) :success
     :default :failure))
 
-(defn kill [was-killed-indicator proc]
+(defn kill [was-killed-indicator proc ctx]
   (reset! was-killed-indicator true)
+  (async/>!! (:result-channel ctx) [:processed-kill true])
   (.destroy proc))
 
 (defn- add-kill-handling [ctx proc was-killed watch-ref]
   (let [is-killed (:is-killed ctx)]
     (dosync
       (if @is-killed
-        (kill was-killed proc)
+        (kill was-killed proc ctx)
         (add-watch is-killed watch-ref (fn [_ _ _ new]
                                            (if new
-                                             (kill was-killed proc))))))))
+                                             (kill was-killed proc ctx))))))))
 
 (defn- safe-read-line [reader]
   (try

@@ -62,6 +62,7 @@
   (let [is-killed     (:is-killed ctx)
         step-id       (:step-id ctx)
         build-number  (:build-number ctx)
+        result-ch     (:result-channel ctx)
         subscription  (event-bus/subscribe ctx :kill-step)
         kill-payloads (event-bus/only-payload subscription)]
     (async/go-loop []
@@ -69,7 +70,9 @@
         (if (and
               (= step-id (:step-id kill-payload))
               (= build-number (:build-number kill-payload)))
-          (reset! is-killed true)
+          (do
+            (reset! is-killed true)
+            (async/>!! (:result-channel ctx) [:received-kill true]))
           (recur))))
     subscription))
 
@@ -83,6 +86,7 @@
                                          :rerun-for-retrigger (boolean
                                                                 (and (:retriggered-build-number ctx)
                                                                      (:retriggered-step-id ctx)))}))
+
 
 (defn execute-step [args [ctx step]]
   (let [_ (send-step-result ctx {:status :running})

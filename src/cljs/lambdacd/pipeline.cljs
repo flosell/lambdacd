@@ -69,6 +69,11 @@
         is-finished (or (= "success" status) (= "failure" status) (= "killed" status))]
     is-finished))
 
+(defn is-already-killed [{result :result}]
+  (or
+    (:received-kill result)
+    (:processed-kill result)))
+
 (defn has-dependencies [step]
   (:has-dependencies step))
 
@@ -93,7 +98,8 @@
   (and
     (has-status step)
     (not (is-finished step))
-    (not (is-waiting step))))
+    (not (is-waiting step))
+    (not (is-already-killed step))))
 
 (defn kill-component [build-number build-step]
   (if (can-be-killed? build-step)

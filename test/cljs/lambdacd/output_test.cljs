@@ -47,10 +47,31 @@
                                                                     :details [{:label "some nested details"}]}]}
                                                 :children []})
 
-(def some-failed-build-state {:name "do-other-stuff"
-                                 :step-id [1 1]
-                                 :result {:status "failure" :out "hello from successful child"}
-                                 :children []})
+(def some-failed-build-state
+  {:name     "do-other-stuff"
+   :step-id  [1 1]
+   :result   {:status "failure" :out "hello from successful child"}
+   :children []})
+(def some-build-state-that-received-a-kill
+  {:name     "do-other-stuff"
+   :step-id  [1 1]
+   :result   {:status "running" :out "hello" :received-kill true}
+   :children []})
+(def some-build-state-that-received-a-kill-and-is-dead
+  {:name     "do-other-stuff"
+   :step-id  [1 1]
+   :result   {:status "killed" :out "hello" :received-kill true}
+   :children []})
+(def some-build-state-that-processed-a-kill
+  {:name     "do-other-stuff"
+   :step-id  [1 1]
+   :result   {:status "running" :out "hello" :processed-kill true :received-kill true}
+   :children []})
+(def some-build-state-that-processed-a-kill-and-is-dead
+  {:name     "do-other-stuff"
+   :step-id  [1 1]
+   :result   {:status "killed" :out "hello" :processed-kill true :received-kill true}
+   :children []})
 
 
 (def raw-step-result-invisible false)
@@ -77,6 +98,26 @@
       (output/output-renderer some-failed-build-state raw-step-result-invisible)
       (fn [c div]
         (is (dom/found-in div #"Step is finished: FAILURE")))))
+  (testing "that the output contains a message indicating that a kill was received"
+    (tu/with-mounted-component
+      (output/output-renderer some-build-state-that-received-a-kill raw-step-result-invisible)
+      (fn [c div]
+        (is (dom/found-in div #"LambdaCD received kill")))))
+  (testing "that the output contains a message indicating that a kill was processed"
+    (tu/with-mounted-component
+      (output/output-renderer some-build-state-that-processed-a-kill raw-step-result-invisible)
+      (fn [c div]
+        (is (dom/found-in div #"Step received kill")))))
+  (testing "that the output contains no message indicating that a kill was processed after the step is dead"
+    (tu/with-mounted-component
+      (output/output-renderer some-build-state-that-processed-a-kill-and-is-dead raw-step-result-invisible)
+      (fn [c div]
+        (is (dom/not-found-in div #"Step received kill")))))
+  (testing "that the output contains no message indicating that a kill was received after the step is dead"
+    (tu/with-mounted-component
+      (output/output-renderer some-build-state-that-received-a-kill-and-is-dead raw-step-result-invisible)
+      (fn [c div]
+        (is (dom/not-found-in div #"LambdaCD received kill")))))
   (testing "that the finished message does not appear if the step doesn't have a known state"
     (tu/with-mounted-component
       (output/output-renderer some-unknown-build-state [1 1])
