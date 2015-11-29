@@ -36,3 +36,6 @@
 
 (defn with-first-update-at [step ts]
   (assoc-in step [:result :first-updated-at] ts))
+
+(defn with-status [step status]
+  (assoc-in step [:result :status] status))

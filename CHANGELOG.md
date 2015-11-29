@@ -7,7 +7,7 @@ The official release will have a defined and more stable API. If you are already
 
 # 0.5.8
 * Improvements: 
-  * UI: Add expand/collapse all (#59)
+  * UI: Adding feature to collapse/expand all or active steps (#59)
 
 ## 0.5.7
 * Improvements:

@@ -11,3 +11,9 @@
 
 (defn find-by-step-id [steps step-id]
   (first (filter #(is-step step-id %) (flatten-state steps))))
+
+(defn- is-active? [step]
+  (let [status (get-in step [:result :status])]
+    (or
+      (= "running" status)
+      (= "waiting" status))))

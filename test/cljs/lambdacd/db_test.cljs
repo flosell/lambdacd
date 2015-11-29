@@ -1,7 +1,7 @@
 (ns lambdacd.db-test
   (:require
     [cljs.test :refer-macros [deftest is testing run-tests]]
-    [lambdacd.testdata :refer [some-build-step with-name with-type with-output with-children with-step-id]]
+    [lambdacd.testdata :refer [some-build-step with-name with-type with-output with-children with-step-id with-status]]
     [reagent.core :as r]
     [lambdacd.db :as db]))
 
@@ -132,6 +132,25 @@
    (-> some-build-step
        (with-step-id [2]))])
 
+(def some-active-container
+  (-> some-build-step
+      (with-step-id [1])
+      (with-status "running")
+      (with-children [(-> some-build-step
+                          (with-step-id [1 1])
+                          (with-status "running"))])))
+(def some-inactive-container
+  (-> some-build-step
+      (with-step-id [2])
+      (with-status "success")
+      (with-children [(-> some-build-step
+                          (with-step-id [1 2])
+                          (with-status "failure"))])))
+
+(def some-hierarchical-state-with-active-and-inactive
+  [some-active-container
+   some-inactive-container])
+
 (deftest all-step-ids-test
   (testing "that we get all step ids in the sequence"
     (is (= #{[1] [2]} (db/all-step-ids {:pipeline-state some-state}))))
@@ -145,9 +164,7 @@
       (is (= false (query db db/step-expanded-subscription [1])))
       (is (= false (query db db/step-expanded-subscription [2])))
       (is (= false (query db db/all-expanded-subscription [2])))
-      (is (= true (query db db/all-collapsed-subscription)))
-
-      ))
+      (is (= true (query db db/all-collapsed-subscription)))))
   (testing "that toggling switches expansion on and off"
     (let [db (r/atom db/default-db)]
       (dispatch! db db/pipeline-state-updated-handler some-state)
@@ -180,4 +197,22 @@
       (is (= true (query db db/all-collapsed-subscription)))
       (is (= false (query db db/all-expanded-subscription)))
       (is (= false (query db db/step-expanded-subscription [1])))
-      (is (= false (query db db/step-expanded-subscription [2]))))))
+      (is (= false (query db db/step-expanded-subscription [2])))))
+  (testing "expand active"
+    (testing "that active steps are expanded and inactive ones arent"
+      (let [db (r/atom db/default-db)]
+        (dispatch! db db/pipeline-state-updated-handler some-hierarchical-state-with-active-and-inactive)
+        (dispatch! db db/toggle-expand-active-handler)
+        (is (= true (query db db/step-expanded-subscription [1])))
+        (is (= true (query db db/step-expanded-subscription [1 1])))
+        (is (= false (query db db/step-expanded-subscription [2])))
+        (is (= false (query db db/step-expanded-subscription [2 1])))))
+    (testing "that everything behaves as normal if toggled off"
+      (let [db (r/atom db/default-db)]
+        (dispatch! db db/pipeline-state-updated-handler some-hierarchical-state-with-active-and-inactive)
+        (dispatch! db db/toggle-expand-active-handler)
+        (dispatch! db db/toggle-expand-active-handler)
+        (is (= false (query db db/step-expanded-subscription [1])))
+        (is (= false (query db db/step-expanded-subscription [1 1])))
+        (is (= false (query db db/step-expanded-subscription [2])))
+        (is (= false (query db db/step-expanded-subscription [2 1])))))))

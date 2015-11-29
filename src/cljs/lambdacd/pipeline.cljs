@@ -124,18 +124,25 @@
                                 retrigger-elem
                                 (kill-component build-number build-step)]])))))
 
-(defn not-implemented []
-  (js/alert "not implemented yet"))
+(defn- control-disabled-if [b]
+  (if b
+    "pipeline__controls__control--disabled"
+    ""))
+
+(defn- control-active-if [b]
+  (if b
+    "pipeline__controls__control--active"
+    ""))
 
 (defn pipeline-controls []
   (let [all-expanded? (re-frame/subscribe [::db/all-expanded?])
-        all-collapsed? (re-frame/subscribe [::db/all-collapsed?])]
+        all-collapsed? (re-frame/subscribe [::db/all-collapsed?])
+        expand-active? (re-frame/subscribe [::db/expand-active-active?])]
     (fn []
-      (let [expand-all-active-class (if @all-expanded? "pipeline__controls__control--disabled" "")
-            all-collapsed-class (if @all-collapsed? "pipeline__controls__control--disabled" "")]
-        [:ul {:class "pipeline__controls"}
-         [:li {:class (str "pipeline__controls__control " expand-all-active-class) :on-click #(re-frame/dispatch [::db/set-all-expanded])} "Expand all"]
-         [:li {:class (str "pipeline__controls__control " all-collapsed-class) :on-click #(re-frame/dispatch [::db/set-all-collapsed]) } "Collapse all"]]))))
+      [:ul {:class "pipeline__controls"}
+       [:li {:class (str "pipeline__controls__control " (control-disabled-if @all-expanded?)) :on-click #(re-frame/dispatch [::db/set-all-expanded])} "Expand all"]
+       [:li {:class (str "pipeline__controls__control " (control-disabled-if @all-collapsed?)) :on-click #(re-frame/dispatch [::db/set-all-collapsed]) } "Collapse all"]
+       [:li {:class (str "pipeline__controls__control " (control-active-if @expand-active?)) :on-click #(re-frame/dispatch [::db/toggle-expand-active]) } "Expand active"]])))
 
 (defn pipeline-component []
   (let [build-state-atom (re-frame/subscribe [::db/pipeline-state])]

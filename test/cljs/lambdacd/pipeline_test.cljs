@@ -60,6 +60,7 @@
       [::db/step-expanded? some-build-step-id] true
       [::db/all-collapsed?] false
       [::db/all-expanded?] false
+      [::db/expand-active-active?] false
       (do
         (println "ERROR: " x " not mocked")
         (throw "mock missing")))))
