@@ -61,6 +61,7 @@
       [::db/all-collapsed?] false
       [::db/all-expanded?] false
       [::db/expand-active-active?] false
+      [::db/expand-failures-active?] false
       (do
         (println "ERROR: " x " not mocked")
         (throw "mock missing")))))

@@ -17,3 +17,7 @@
     (or
       (= "running" status)
       (= "waiting" status))))
+
+(defn- is-failure? [step]
+  (let [status (get-in step [:result :status])]
+      (= "failure" status)))

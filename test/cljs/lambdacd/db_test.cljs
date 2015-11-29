@@ -147,6 +147,14 @@
                           (with-step-id [1 2])
                           (with-status "failure"))])))
 
+(def some-failed-container
+  (-> some-build-step
+      (with-step-id [2])
+      (with-status "failure")
+      (with-children [(-> some-build-step
+                          (with-step-id [1 2])
+                          (with-status "failure"))])))
+
 (def some-hierarchical-state-with-active-and-inactive
   [some-active-container
    some-inactive-container])
@@ -215,4 +223,13 @@
         (is (= false (query db db/step-expanded-subscription [1])))
         (is (= false (query db db/step-expanded-subscription [1 1])))
         (is (= false (query db db/step-expanded-subscription [2])))
-        (is (= false (query db db/step-expanded-subscription [2 1])))))))
+        (is (= false (query db db/step-expanded-subscription [1 2]))))))
+  (testing "expand failed"
+    (testing "that failed steps are expanded"
+      (let [db (r/atom db/default-db)]
+        (dispatch! db db/pipeline-state-updated-handler [some-active-container some-failed-container])
+        (dispatch! db db/toggle-expand-failure-handler)
+        (is (= false (query db db/step-expanded-subscription [1])))
+        (is (= false (query db db/step-expanded-subscription [1 1])))
+        (is (= true (query db db/step-expanded-subscription [2])))
+        (is (= true (query db db/step-expanded-subscription [1 2])))))))

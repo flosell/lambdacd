@@ -12,7 +12,8 @@
    :displayed-build-number nil
    :raw-step-results-visible false
    :expanded-step-ids #{}
-   :expand-active false})
+   :expand-active false
+   :expand-failures false})
 
 (defn initialize-db-handler [_ _]
   default-db)
@@ -81,11 +82,17 @@
     (:expand-active db)
     (state/is-active? (state/find-by-step-id (:pipeline-state db) step-id))))
 
+(defn- expand-failed? [db step-id]
+  (and
+    (:expand-failures db)
+    (state/is-failure? (state/find-by-step-id (:pipeline-state db) step-id))))
+
 (defn step-expanded-subscription [db-atom [_ step-id]]
   (reaction (let [db @db-atom]
               (or
                 (contains? (:expanded-step-ids db) step-id)
-                (expand-active? db step-id)))))
+                (expand-active? db step-id)
+                (expand-failed? db step-id)))))
 
 (defn all-step-ids [{state :pipeline-state}]
   (->> state
@@ -115,8 +122,14 @@
 (defn toggle-expand-active-handler [db _]
   (update db :expand-active not))
 
+(defn toggle-expand-failure-handler [db _]
+  (update db :expand-failures not))
+
 (defn expand-active-active-subscription [db _]
   (reaction (:expand-active @db)))
+
+(defn expand-failure-active-subscription [db _]
+  (reaction (:expand-failures @db)))
 
 (re-frame/register-handler ::history-updated history-updated-handler)
 (re-frame/register-handler ::initialize-db initialize-db-handler)
@@ -129,6 +142,7 @@
 (re-frame/register-handler ::set-all-expanded set-all-expanded-handler)
 (re-frame/register-handler ::set-all-collapsed set-all-collapsed-handler)
 (re-frame/register-handler ::toggle-expand-active toggle-expand-active-handler)
+(re-frame/register-handler ::toggle-expand-failures toggle-expand-failure-handler)
 
 (re-frame/register-sub ::history history-subscription)
 (re-frame/register-sub ::pipeline-state pipeline-state-subscription)
@@ -141,3 +155,4 @@
 (re-frame/register-sub ::all-expanded? all-expanded-subscription)
 (re-frame/register-sub ::all-collapsed? all-collapsed-subscription)
 (re-frame/register-sub ::expand-active-active? expand-active-active-subscription)
+(re-frame/register-sub ::expand-failures-active? expand-failure-active-subscription)
