@@ -7,7 +7,7 @@ The official release will have a defined and more stable API. If you are already
 
 # 0.6.0
 * Improvements: 
-  * UI: Adding feature to collapse/expand all or active steps (#59)
+  * UI: Adding feature to collapse/expand all, only active or only failed steps (#59)
 * Bugs: 
   * `either` no longer aggregates to failure if only some children failed (#67)
   * `in-parallel` no longer aggregates to failure while other children are still running (#68)
