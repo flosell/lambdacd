@@ -66,19 +66,21 @@
         (println "ERROR: " x " not mocked")
         (throw "mock missing")))))
 
+(def some-build-number 1)
+
 (deftest build-step-test
   (with-redefs [re-frame/subscribe subscription-stub]
     (testing "rendering of a single build-step"
       (tu/with-mounted-component
-        [pipeline/build-step-component some-build-step some-step-id-to-display]
+        [pipeline/build-step some-build-step some-build-number]
         (fn [c div]
           (is (dom/found-in div #"some-step"))
           (is (dom/having-class "build-step" (step-label (first (steps div)))))
           (is (dom/having-data "status" "success" (first (steps div))))
-          (is (dom/containing-link-to div (route/for-build-and-step-id 1 [1 2 3]))))))
+          (is (dom/containing-link-to div (route/for-build-and-step-id some-build-number [1 2 3]))))))
     (testing "rendering of a container build-step"
       (tu/with-mounted-component
-        [pipeline/build-step-component some-container-build-step some-step-id-to-display]
+        [pipeline/build-step some-container-build-step some-build-number]
         (fn [c div]
           (is (dom/found-in div #"some-container"))
           (is (dom/found-in (first (steps div)) #"some-step"))
@@ -87,7 +89,7 @@
           (is (dom/containing-ordered-list (first (steps div)))))))
     (testing "rendering of a parallel build-step"
       (tu/with-mounted-component
-        [pipeline/build-step-component some-parallel-build-step some-step-id-to-display]
+        [pipeline/build-step some-parallel-build-step some-build-number]
         (fn [c div]
           (is (dom/found-in div #"some-parallel-step"))
           (is (dom/found-in (first (steps div)) #"some-other-step"))
