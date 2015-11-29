@@ -8,9 +8,11 @@
     (is (= :success (successful-when-one-successful [:waiting :success])))
     (is (= :success (successful-when-one-successful [:waiting :success])))
     (is (= :success (successful-when-one-successful [:running :success]))))
-  (testing "that one failed step fails the unified view"
-    (is (= :failure (successful-when-one-successful [:failure :success])))
-    (is (= :failure (successful-when-one-successful [:failure :running]))))
+  (testing "that everything needs to be have failed for the view to fail"
+    (is (= :success (successful-when-one-successful [:failure :success])))
+    (is (= :running (successful-when-one-successful [:failure :running])))
+    (is (= :waiting (successful-when-one-successful [:failure :waiting])))
+    (is (= :failure (successful-when-one-successful [:failure]))))
   (testing "that a running and no finished steps make the unified view running"
     (is (= :running (successful-when-one-successful [:running :waiting]))))
   (testing "that all waiting makes the unified view waiting"

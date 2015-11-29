@@ -1,5 +1,6 @@
 (ns lambdacd.steps.control-flow-test
   (:use [lambdacd.testsupport.test-util])
+  (:refer-clojure :exclude [alias])
   (:require [clojure.test :refer :all]
             [lambdacd.steps.control-flow :as control-flow]
             [lambdacd.testsupport.matchers :refer [map-containing]]
@@ -179,6 +180,13 @@
     (let [result-ch (async/chan 100)
           ctx (some-ctx-with :result-channel result-ch)]
       ((either some-step-sending-waiting-on-channel some-step-sending-running-then-waiting-then-finished-on-channel) {} ctx)
+      (is (= [[:status :running]
+              [:status :waiting]
+              [:status :success]] (slurp-chan result-ch)))))
+  (testing "that it doesn't inherit failures on the result channel so it doesn't look like the step has failed just because a child failed"
+    (let [result-ch (async/chan 100)
+          ctx (some-ctx-with :result-channel result-ch)]
+      ((either some-failing-step some-step-sending-running-then-waiting-then-finished-on-channel) {} ctx)
       (is (= [[:status :running]
               [:status :waiting]
               [:status :success]] (slurp-chan result-ch)))))

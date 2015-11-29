@@ -5,9 +5,13 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
-# 0.5.8
+# 0.6.0
 * Improvements: 
   * UI: Adding feature to collapse/expand all or active steps (#59)
+* Bugs: 
+  * `either` no longer aggregates to failure if only some children failed (#67)
+* Breaking Changes: 
+  * `successful-when-one-successful` status aggregation only fails if all statuses are `:failure` (#64)
 
 ## 0.5.7
 * Improvements:
