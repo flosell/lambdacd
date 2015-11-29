@@ -5,6 +5,10 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
+# 0.5.8
+* Improvements: 
+  * UI: Add expand/collapse all (#59)
+
 ## 0.5.7
 * Improvements:
   * UI: Displaying duration of each build step (#34)
