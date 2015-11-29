@@ -19,8 +19,8 @@
 
 (defn successful-when-all-successful [statuses]
   (cond
-    (one-in statuses :failure) :failure
     (one-in statuses :running) :running
     (one-in statuses :waiting) :waiting
+    (one-in statuses :failure) :failure
     (all    statuses :success) :success
     :else                      :unknown))

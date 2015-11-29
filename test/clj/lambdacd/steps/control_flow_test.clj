@@ -34,8 +34,15 @@
 
 (defn some-successful-step [arg & _]
   {:status :success})
+
 (defn some-failing-step [arg & _]
   {:status :failure})
+
+(defn some-step-sending-failure-but-returning-success [_ {ch :result-channel}]
+  (async/>!! ch [:status :running])
+  (async/>!! ch [:status :failure])
+  (Thread/sleep 20)
+  {:status :success})
 
 (defn some-step-sending-waiting-on-channel [_ {ch :result-channel}]
   (async/>!! ch [:status :running])
@@ -103,6 +110,13 @@
     (let [result-ch (async/chan 100)
           ctx (some-ctx-with :result-channel result-ch :step-id [333])]
       ((in-parallel some-step-sending-waiting-on-channel some-step-sending-running-then-waiting-then-finished-on-channel) {} ctx)
+      (is (= [[:status :running]
+              [:status :waiting]
+              [:status :success]] (slurp-chan result-ch)))))
+  (testing "that it doesnt immediately inherit failures on the result channel so it doesn't look like the step has failed just because a child failed"
+    (let [result-ch (async/chan 100)
+          ctx (some-ctx-with :result-channel result-ch :step-id [333])]
+      ((in-parallel some-step-sending-failure-but-returning-success some-step-sending-running-then-waiting-then-finished-on-channel) {} ctx)
       (is (= [[:status :running]
               [:status :waiting]
               [:status :success]] (slurp-chan result-ch)))))

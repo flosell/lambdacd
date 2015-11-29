@@ -22,15 +22,14 @@
   (testing "undefined otherwise"
     (is (= :unknown (successful-when-one-successful [:foo :bar])))))
 
-
 (deftest successful-when-all-successful-test
   (testing "that that all successful steps make a successful unified view"
     (is (= :success (successful-when-all-successful [:success])))
     (is (= :success (successful-when-all-successful [:success :success]))))
-  (testing "that one failed step fails the unified view"
+  (testing "it doesnt fail as long as something is running"
     (is (= :failure (successful-when-all-successful [:failure])))
-    (is (= :failure (successful-when-all-successful [:failure :running])))
-    (is (= :failure (successful-when-all-successful [:failure :waiting])))
+    (is (= :running (successful-when-all-successful [:failure :running])))
+    (is (= :waiting (successful-when-all-successful [:failure :waiting])))
     (is (= :failure (successful-when-all-successful [:success :failure]))))
   (testing "that one waiting makes the unified view waiting when nothing's running"
     (is (= :waiting (successful-when-all-successful [:success :waiting]))))

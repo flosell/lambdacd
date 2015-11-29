@@ -10,8 +10,10 @@ The official release will have a defined and more stable API. If you are already
   * UI: Adding feature to collapse/expand all or active steps (#59)
 * Bugs: 
   * `either` no longer aggregates to failure if only some children failed (#67)
+  * `in-parallel` no longer aggregates to failure while other children are still running (#68)
 * Breaking Changes: 
-  * `successful-when-one-successful` status aggregation only fails if all statuses are `:failure` (#64)
+  * `successful-when-one-successful` status aggregation only fails if all statuses are `:failure` (#67)
+  * `successful-when-all-successful-sequential` status aggregation doesn't fail while other steps are still running (#68)
 
 ## 0.5.7
 * Improvements:
