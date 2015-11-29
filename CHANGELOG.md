@@ -5,7 +5,7 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
-# 0.6.0
+## 0.6.0
 * Improvements: 
   * UI: Adding feature to collapse/expand all, only active or only failed steps (#59)
 * Bugs: 
