@@ -48,7 +48,7 @@
     (atom
       (case x
         [::db/build-number] 1
-        [::db/expanded-step-ids] #{[1] [3] [1 3] [2 3]}
+        [::db/step-expanded?] true
         [::db/step-id] [1 1]
         [::db/pipeline-state] [{:type "parallel"
                                 :name "either"

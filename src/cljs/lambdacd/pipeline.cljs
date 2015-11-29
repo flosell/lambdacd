@@ -35,14 +35,13 @@
                             [:a {:class "step-link" :href (route/for-build-and-step-id build-number step-id)}
                               [:span {:class "build-step"} name-and-duration]]] children)))))
 
-(defn container-build-step-component []
-  (let [expanded-step-ids (re-frame/subscribe [::db/expanded-step-ids])]
+(defn container-build-step-component [{children :children step-id :step-id :as build-step } type retrigger-elem kill-elem build-number]
+  (let [is-expanded (re-frame/subscribe [::db/step-expanded? step-id])]
     (fn [{children :children step-id :step-id :as build-step } type retrigger-elem kill-elem build-number]
       (let [ul-or-ol (if (= type :sequential) :ol :ul)
             modifier-class (if (= type :sequential) "pipeline__step-container--sequential" "pipeline__step-container--parallel")
             container-class "pipeline__step-container"
-            is-expanded (contains? @expanded-step-ids step-id)
-            expansion-icon-class (if is-expanded "fa-minus" "fa-plus")
+            expansion-icon-class (if @is-expanded "fa-minus" "fa-plus")
             expander [:i {:class (str "fa " expansion-icon-class " pipeline__step__action-button") :on-click (fn [event]
                                                                                                                (re-frame/dispatch [::db/toggle-step-expanded step-id])
                                                                                                                nil)}]]
@@ -50,7 +49,7 @@
                              build-number
                              [retrigger-elem kill-elem
                               expander
-                              (if is-expanded
+                              (if @is-expanded
                                 [ul-or-ol {:class (classes container-class modifier-class)}
                                  (for [child children]
                                    ^{:key (:step-id child)} [build-step-component child])])]]))))
@@ -125,10 +124,24 @@
                                 retrigger-elem
                                 (kill-component build-number build-step)]])))))
 
+(defn not-implemented []
+  (js/alert "not implemented yet"))
+
+(defn pipeline-controls []
+  (let [all-expanded? (re-frame/subscribe [::db/all-expanded?])
+        all-collapsed? (re-frame/subscribe [::db/all-collapsed?])]
+    (fn []
+      (let [expand-all-active-class (if @all-expanded? "pipeline__controls__control--disabled" "")
+            all-collapsed-class (if @all-collapsed? "pipeline__controls__control--disabled" "")]
+        [:ul {:class "pipeline__controls"}
+         [:li {:class (str "pipeline__controls__control " expand-all-active-class) :on-click #(re-frame/dispatch [::db/set-all-expanded])} "Expand all"]
+         [:li {:class (str "pipeline__controls__control " all-collapsed-class) :on-click #(re-frame/dispatch [::db/set-all-collapsed]) } "Collapse all"]]))))
+
 (defn pipeline-component []
   (let [build-state-atom (re-frame/subscribe [::db/pipeline-state])]
     (fn []
       [:div {:class "pipeline" :key "build-pipeline"}
+       [pipeline-controls]
        [:ol {:class "pipeline__step-container pipeline__step-container--sequential"}
         (doall
           (for [step @build-state-atom]

@@ -95,7 +95,7 @@
                     (is (= false @(db/raw-step-result-visible-subscription db nil))))))
 
 
-(deftest current-step-result
+(deftest current-step-result-test
   (testing "return the step-result of the current step"
     (let [db (r/atom db/default-db)]
       (reset! db (db/pipeline-state-updated-handler @db [nil [some-parallel-build-step]]))
@@ -105,3 +105,79 @@
     (let [db (r/atom db/default-db)]
       (reset! db (db/pipeline-state-updated-handler @db [nil [some-parallel-build-step]]))
       (is (= nil @(db/current-step-result-subscription db nil))))))
+
+(defn dispatch!
+  ([db handler]
+   (dispatch! db handler nil))
+  ([db handler param]
+    (reset! db (handler @db [nil param]))))
+
+(defn query
+  ([db subs]
+   (query db subs nil))
+  ([db subs param]
+    @(subs db [nil param])))
+
+(def some-state
+  [(-> some-build-step
+       (with-step-id [1]))
+   (-> some-build-step
+       (with-step-id [2]))])
+
+(def some-state-with-children
+  [(-> some-build-step
+       (with-step-id [1])
+       (with-children [(-> some-build-step
+                           (with-step-id [1 1]))]))
+   (-> some-build-step
+       (with-step-id [2]))])
+
+(deftest all-step-ids-test
+  (testing "that we get all step ids in the sequence"
+    (is (= #{[1] [2]} (db/all-step-ids {:pipeline-state some-state}))))
+  (testing "that we get all step ids in a hierarchy"
+    (is (= #{[1] [1 1] [2]} (db/all-step-ids {:pipeline-state some-state-with-children})))))
+
+(deftest step-expansion-test
+  (testing "that steps are collapsed per default"
+    (let [db (r/atom db/default-db)]
+      (dispatch! db db/pipeline-state-updated-handler some-state)
+      (is (= false (query db db/step-expanded-subscription [1])))
+      (is (= false (query db db/step-expanded-subscription [2])))
+      (is (= false (query db db/all-expanded-subscription [2])))
+      (is (= true (query db db/all-collapsed-subscription)))
+
+      ))
+  (testing "that toggling switches expansion on and off"
+    (let [db (r/atom db/default-db)]
+      (dispatch! db db/pipeline-state-updated-handler some-state)
+      (dispatch! db db/toggle-step-expanded [1])
+      (is (= true (query db db/step-expanded-subscription [1])))
+      (dispatch! db db/toggle-step-expanded [1])
+      (is (= false (query db db/step-expanded-subscription [1])))))
+  (testing "that expand-all leads to all steps being expanded"
+    (let [db (r/atom db/default-db)]
+      (dispatch! db db/pipeline-state-updated-handler some-state)
+      (is (= false (query db db/all-expanded-subscription)))
+      (dispatch! db db/set-all-expanded-handler)
+      (is (= true (query db db/all-expanded-subscription)))
+      (is (= true (query db db/step-expanded-subscription [1])))
+      (is (= true (query db db/step-expanded-subscription [2])))))
+  (testing "that we can collapse individual steps after expanding all"
+    (let [db (r/atom db/default-db)]
+      (dispatch! db db/pipeline-state-updated-handler some-state)
+      (is (= false (query db db/all-expanded-subscription)))
+      (dispatch! db db/set-all-expanded-handler)
+      (dispatch! db db/toggle-step-expanded [1])
+      (is (= false (query db db/all-expanded-subscription)))
+      (is (= false (query db db/step-expanded-subscription [1])))
+      (is (= true (query db db/step-expanded-subscription [2])))))
+  (testing "that we can collapse all steps"
+    (let [db (r/atom db/default-db)]
+      (dispatch! db db/pipeline-state-updated-handler some-state)
+      (dispatch! db db/toggle-step-expanded [1])
+      (dispatch! db db/set-all-collapsed-handler)
+      (is (= true (query db db/all-collapsed-subscription)))
+      (is (= false (query db db/all-expanded-subscription)))
+      (is (= false (query db db/step-expanded-subscription [1])))
+      (is (= false (query db db/step-expanded-subscription [2]))))))

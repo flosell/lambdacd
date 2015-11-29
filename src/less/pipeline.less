@@ -1,4 +1,4 @@
-    @import "_variables";
+@import "_variables";
 
 .pipeline__step-container {
     display:-ms-flexbox;
@@ -59,8 +59,23 @@
     cursor:pointer;
 }
 
-
 .pipeline__step__action-button--disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.pipeline__controls {
+  list-style-type: none;
+  flex-direction: row;
+  display: flex;
+}
+
+.pipeline__controls__control {
+  padding-left: 3px;
+  padding-right: 3px;
+  cursor: hand;
+}
+
+.pipeline__controls__control--disabled {
+  opacity: 0.5;
 }

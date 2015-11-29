@@ -57,7 +57,12 @@
       [::db/build-number]   1
       [::db/step-id]        42
       [::db/pipeline-state] [some-parallel-build-step]
-      [::db/expanded-step-ids] #{some-build-step-id})))
+      [::db/step-expanded? some-build-step-id] true
+      [::db/all-collapsed?] false
+      [::db/all-expanded?] false
+      (do
+        (println "ERROR: " x " not mocked")
+        (throw "mock missing")))))
 
 (deftest build-step-test
   (with-redefs [re-frame/subscribe subscription-stub]

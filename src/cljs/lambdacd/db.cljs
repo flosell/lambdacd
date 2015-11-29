@@ -75,16 +75,34 @@
 (defn current-step-result-subscription [db _]
   (reaction (state/find-by-step-id (:pipeline-state @db) (:step-id @db))))
 
-(defn expanded-step-ids-subscription [db _]
-  (reaction (:expanded-step-ids @db)))
+(defn step-expanded-subscription [db-atom [_ step-id]]
+  (reaction (let [db @db-atom]
+                (contains? (:expanded-step-ids db) step-id))))
 
-(defn toggle-step-expanded[db [_ step-id]]
+(defn all-step-ids [{state :pipeline-state}]
+  (->> state
+       (state/flatten-state)
+       (map :step-id)
+       (into #{})))
+
+(defn all-expanded-subscription [db _]
+  (reaction (= (all-step-ids @db) (:expanded-step-ids @db))))
+
+(defn all-collapsed-subscription [db _]
+  (reaction (empty? (:expanded-step-ids @db))))
+
+(defn toggle-step-expanded [db [_ step-id]]
   (let [cur-expanded (:expanded-step-ids db)
         result (if (contains? cur-expanded step-id)
                  (disj cur-expanded step-id)
                  (conj cur-expanded step-id))]
     (assoc db :expanded-step-ids result)))
 
+(defn set-all-expanded-handler [db _]
+  (assoc db :expanded-step-ids (all-step-ids db)))
+
+(defn set-all-collapsed-handler [db _]
+  (assoc db :expanded-step-ids #{}))
 
 (re-frame/register-handler ::history-updated history-updated-handler)
 (re-frame/register-handler ::initialize-db initialize-db-handler)
@@ -94,6 +112,8 @@
 (re-frame/register-handler ::step-id-updated step-id-update-handler)
 (re-frame/register-handler ::toggle-raw-step-results-visible toggle-raw-step-results-visible-handler)
 (re-frame/register-handler ::toggle-step-expanded toggle-step-expanded)
+(re-frame/register-handler ::set-all-expanded set-all-expanded-handler)
+(re-frame/register-handler ::set-all-collapsed set-all-collapsed-handler)
 
 (re-frame/register-sub ::history history-subscription)
 (re-frame/register-sub ::pipeline-state pipeline-state-subscription)
@@ -102,4 +122,6 @@
 (re-frame/register-sub ::step-id step-id-subscription)
 (re-frame/register-sub ::raw-step-results-visible raw-step-result-visible-subscription)
 (re-frame/register-sub ::current-step-result current-step-result-subscription)
-(re-frame/register-sub ::expanded-step-ids expanded-step-ids-subscription)
+(re-frame/register-sub ::step-expanded? step-expanded-subscription)
+(re-frame/register-sub ::all-expanded? all-expanded-subscription)
+(re-frame/register-sub ::all-collapsed? all-collapsed-subscription)
