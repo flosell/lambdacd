@@ -60,7 +60,8 @@
                                        [org.clojure/clojurescript "1.7.48"]]}
              :dev      {:main         todopipeline.pipeline
                         :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
-                        :dependencies [[ring-mock "0.1.5"]
+                        :dependencies [[org.clojure/core.match "0.3.0-alpha4"]
+                                       [ring-mock "0.1.5"]
                                        [prismatic/dommy "1.0.0"]
                                        [http-kit "2.1.16"]
                                        [ring/ring-devel "1.3.2"]
@@ -83,7 +84,7 @@
                                        :css-dirs         ["resources/public/css"]}
 
                         :env          {:dev? true}
-                        :cljsbuild    {:builds        {:app {:source-paths ["env/dev/cljs" "src/cljs"]
+                        :cljsbuild    {:builds        {:app {:source-paths ["visual-styleguide/src/cljs" "env/dev/cljs" "src/cljs"]
                                                              :compiler     {:main          "lambdacd.dev"
                                                                             :optimizations :none
                                                                             :source-map    true}}

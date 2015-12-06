@@ -6,7 +6,8 @@
             [lambdacd.pipeline :as pipeline]
             [cljs-time.core :as t]
             [lambdacd.db :as db]
-            [lambdacd.time :as time]))
+            [lambdacd.time :as time]
+            [cljs.core.match :refer-macros [match]]))
 (defn- background [color]
   {:style {:background-color color}})
 
@@ -46,24 +47,32 @@
 (defn normal-pipeline-mock-data []
   (fn [x]
     (atom
-      (case x
+      (match x
+        [::db/all-expanded?] false
+        [::db/all-collapsed?] false
+        [::db/expand-active-active?] false
+        [::db/expand-failures-active?] false
         [::db/build-number] 1
-        [::db/step-expanded?] true
+        [::db/step-expanded? _] true
         [::db/step-id] [1 1]
         [::db/pipeline-state] [{:type "parallel"
                                 :name "either"
                                 :step-id [1]
                                 :result {:status "success"}
-                                :children [{:name "wait-for-git"
+                                :children [{:type "step"
+                                            :name "wait-for-git"
                                             :step-id [1 1]
                                             :result {:status "success"}}
-                                           {:name "wait-for-manual-trigger"
+                                           {:type "step"
+                                            :name "wait-for-manual-trigger"
                                             :step-id [2 1]
                                             :result {:status "killed"}}
-                                           {:name "always-waiting"
+                                           {:type "step"
+                                            :name "always-waiting"
                                             :step-id [3 1]
                                             :result {:status "waiting"}}]}
                                {:name "build"
+                                :type "step"
                                 :step-id [2]
                                 :result {:status "success"}}
                                {:name "deploy"
@@ -75,9 +84,11 @@
                                             :step-id [1 3]
                                             :result {:status "running"}
                                             :children [{:name "deploy"
+                                                        :type "step"
                                                         :step-id [1 1 3]
                                                         :result {:status "running"}}
                                                        {:name "smoke-test"
+                                                        :type "step"
                                                         :step-id [2 1 3]
                                                         :result {}}]}
                                            {:name "deploy-qa"
@@ -85,9 +96,11 @@
                                             :step-id [2 3]
                                             :result {:status "failure"}
                                             :children [{:name "deploy"
+                                                        :type "step"
                                                         :step-id [1 2 3]
                                                         :result {:status "success"}}
                                                        {:name "smoke-test"
+                                                        :type "step"
                                                         :step-id [2 2 3]
                                                         :result {:status "failure"}}]}]}]))))
 

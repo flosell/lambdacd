@@ -11,7 +11,12 @@
   (second (re-find #"testcase=([^&]+)" query)))
 
 (defn- initialize-styleguide-overview []
-  (println "overview"))
+  (render [:div
+           [:h1 "Testcases"]
+           [:ul
+            (for [testcase testcases/tc]
+              [:li
+               [:a {:href (str "?testcase=" (:id testcase))} (:id testcase)]])]]))
 
 (defn- initialize-testcase [testcase-id]
   (let [testcases-by-id (group-by :id testcases/tc)
