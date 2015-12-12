@@ -8,7 +8,8 @@
             [lambdacd.steps.control-flow :refer :all]
             [clojure.core.async :as async]
             [lambdacd.steps.support :as step-support]
-            [lambdacd.internal.pipeline-state :as pipeline-state]))
+            [lambdacd.internal.pipeline-state :as pipeline-state]
+            [clojure.java.io :as io]))
 
 (defn some-step [arg & _]
   {:foo :baz :status :undefined})
@@ -16,8 +17,8 @@
 (defn some-other-step [arg & _]
   {:foo :baz :status :success})
 
-(defn some-step-for-cwd [{cwd :cwd} & _]
-  {:foo cwd :status :success})
+(defn some-step-returning-cwd [{cwd :cwd} & _]
+  {:given-cwd cwd :status :success})
 
 (defn some-step-taking-100ms [arg & _]
   (Thread/sleep 100)
@@ -92,7 +93,18 @@
                                     (recur (inc counter)))
                                   {:status :waited-too-long}))))
 
-(defn some-step-that-shouldnt-be-called [_ _]
+(defn some-step-writing-into-cwd [{cwd :cwd} _]
+  (let [output-file (io/file cwd "some-file")]
+    (assert (.exists (io/file cwd)))
+    (spit output-file "from file")
+    {:status :success}))
+
+(defn some-step-reading-from-cwd [{cwd :cwd} _]
+  (let [input-file (io/file cwd "some-file")]
+    (assert (.exists input-file))
+    {:status :success :read-value (slurp input-file)}))
+
+(defn some-step-that-throws-exception [_ _]
   (throw (IllegalStateException. "Dont call me!")))
 
 (deftest in-parallel-test
@@ -135,7 +147,7 @@
                              :initial-pipeline-state   initial-pipeline-state)]
       (is (map-containing {:status :success
                            :outputs {[1 0] {:status :success :old :one :retrigger-mock-for-build-number 0}
-                                     [2 0] {:status :success}}} ((in-parallel some-step-that-shouldnt-be-called some-successful-step) {} (assoc ctx :retriggered-step-id [2 0])))))
+                                     [2 0] {:status :success}}} ((in-parallel some-step-that-throws-exception some-successful-step) {} (assoc ctx :retriggered-step-id [2 0])))))
     (let [initial-pipeline-state { 0 {[1 0] {:status :success :old :one}
                                       [2 0] {:status :success :old :two}}}
           ctx (some-ctx-with :step-id [0]
@@ -143,7 +155,7 @@
                              :initial-pipeline-state   initial-pipeline-state)]
       (is (map-containing {:status :success
                            :outputs {[1 0] {:status :success}
-                                     [2 0] {:status :success :old :two :retrigger-mock-for-build-number 0}}} ((in-parallel some-successful-step some-step-that-shouldnt-be-called) {} (assoc ctx :retriggered-step-id [1 0]))))))
+                                     [2 0] {:status :success :old :two :retrigger-mock-for-build-number 0}}} ((in-parallel some-successful-step some-step-that-throws-exception) {} (assoc ctx :retriggered-step-id [1 0]))))))
   (testing "that retriggering the step itself works"
     (let [initial-pipeline-state { 0 {[1 0] {:status :success :old :one}
                                       [2 0] {:status :success :old :two}}}
@@ -156,8 +168,8 @@
 
 (deftest in-cwd-test
   (testing "that it collects all the outputs together correctly and passes cwd to steps"
-    (is (map-containing {:outputs { [1 0 0] {:foo "somecwd" :status :success} [2 0 0] {:foo :baz :status :success}} :status :success}
-                        ((in-cwd "somecwd" some-step-for-cwd some-other-step) {} (some-ctx-with :step-id [0 0])))))
+    (is (map-containing {:outputs { [1 0 0] {:given-cwd "somecwd" :status :success} [2 0 0] {:foo :baz :status :success}} :status :success}
+                        ((in-cwd "somecwd" some-step-returning-cwd some-other-step) {} (some-ctx-with :step-id [0 0])))))
   (testing "that all the result-values are merged together into a new result"
     (is (map-containing {:the-number 42 :foo :baz}
                         ((in-cwd "somecwd" some-step-that-returns-42 some-other-step) {} (some-ctx)))))
@@ -258,3 +270,35 @@
                                    :step-id [0])]
       (is (map-containing {:status :killed
                            :outputs {[2 0] {:status :killed}}} ((junction some-successful-step some-step-waiting-to-be-killed some-step-waiting-to-be-killed) {} ctx))))))
+
+(deftest with-workspace-test
+  (testing "that it runs all the children and collects the results"
+    (is (map-containing {:outputs {[1 0 0] {:status :success}
+                                   [2 0 0] {:foo :baz :status :success}} :status :success}
+                        ((with-workspace some-successful-step some-other-step) {} (some-ctx-with :step-id [0 0])))))
+  (testing "that it stops after the first failure"
+    (is (map-containing {:outputs {[1 0 0] {:status :success}
+                                   [2 0 0] {:status :failure}} :status :failure}
+                        ((with-workspace some-successful-step some-failing-step some-other-step) {} (some-ctx-with :step-id [0 0])))))
+  (testing "that it kills all children if it is killed"
+    (let [is-killed (atom true)
+          ctx       (some-ctx-with :is-killed is-killed
+                                   :step-id [0])]
+      (is (map-containing {:status :killed
+                           :outputs {[1 0] {:status :killed}}}
+                          ((with-workspace some-step-waiting-to-be-killed some-failing-step) {} ctx)))))
+  (testing "that child steps receive a directory they can work in"
+    (is (map-containing {:outputs {[1 0 0] {:status :success}
+                                   [2 0 0] {:status :success :read-value "from file"}}}
+                        ((with-workspace some-step-writing-into-cwd some-step-reading-from-cwd  ) {} (some-ctx-with :step-id [0 0])))))
+  (testing "that the workspace is cleaned up after the step finishes"
+    (let [result ((with-workspace some-step-returning-cwd) {} (some-ctx-with :step-id [0 0]))
+          cwd    (get-in result [:outputs [1 0 0] :given-cwd])]
+      (is (not (.exists (io/file cwd))))))(testing "that the workspace is cleaned up after the step finishes"
+    (let [result ((with-workspace some-step-returning-cwd) {} (some-ctx-with :step-id [0 0]))
+          cwd    (get-in result [:outputs [1 0 0] :given-cwd])]
+      (is (not (.exists (io/file cwd))))))
+  (testing "that the workspace is cleaned up after a failure"
+    (let [result ((with-workspace some-step-returning-cwd some-step-that-throws-exception) {} (some-ctx-with :step-id [0 0]))
+          cwd    (get-in result [:outputs [1 0 0] :given-cwd])]
+      (is (not (.exists (io/file cwd)))))))

@@ -4,7 +4,8 @@
             [clojure.core.async :as async]
             [lambdacd.steps.support :as support]
             [lambdacd.internal.step-id :as step-id]
-            [lambdacd.steps.status :as status])
+            [lambdacd.steps.status :as status]
+            [lambdacd.util :as utils])
   (:refer-clojure :exclude [alias])
   (:import (java.util UUID)))
 
@@ -85,12 +86,16 @@
       (core/execute-steps steps (assoc args :cwd cwd) ctx
                           :unify-status-fn status/successful-when-all-successful))))
 
+(defn- run-steps-in-sequence [args ctx steps]
+  (post-process-container-results
+    (core/execute-steps steps args ctx
+                        :unify-status-fn status/successful-when-all-successful
+                        :is-killed (:is-killed ctx)))
+  )
+
 (defn ^{:display-type :container} run [ & steps]
   (fn [args ctx]
-    (post-process-container-results
-      (core/execute-steps steps args ctx
-                          :unify-status-fn status/successful-when-all-successful
-                          :is-killed (:is-killed ctx)))))
+    (run-steps-in-sequence args ctx steps)))
 
 (defn- child-context [parent-ctx child-number]
   (let [parent-step-id (:step-id parent-ctx)
@@ -109,3 +114,12 @@
   "just runs child but child is displayed with the given alias in visualization"
   [alias child]
   (run child))
+
+(defn with-workspace
+  "runs given steps with a clean workspace given to child step as :cwd argument"
+  [& steps]
+  (fn [args ctx]
+    (let [temp-dir (utils/create-temp-dir)
+          new-args  (assoc args :cwd temp-dir)]
+      (utils/with-temp temp-dir
+                       (run-steps-in-sequence new-args ctx steps)))) )
