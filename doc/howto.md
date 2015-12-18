@@ -58,6 +58,8 @@ There's also a shorthand for this relying on the revision in `:revision`:
 Both will check out the specified revision into a new temporary workspace and then execute the given steps.
 The steps receive the workspace path as an argument under the `:cwd` key.
 
+For details, check out the documentation in the [wiki](https://github.com/flosell/lambdacd/wiki/Git)
+
 ## How do I write to the output so I can see in the UI what my build-step is doing?
 
 LambdaCD comes with a small utility that can rebind `*out*` to pipe the clojure standard out into LambdaCD: 
