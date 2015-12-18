@@ -190,3 +190,22 @@ For example, to implement simple HTTP Basic Auth password protection, you can us
 
 For more advanced security, use [friend](https://github.com/cemerick/friend), [clj-ldap](https://github.com/pauldorman/clj-ldap)
 or any other clojure library that works as a ring middleware.
+
+## How do I deploy my pipeline
+
+"OK", you say, "you convinced me that my pipeline is a piece of software, but how to I deploy it?". 
+
+You are right, your pipeline is a piece of software and it shouldn't just run on your laptop, it should be a running on 
+a server. It's replacing a build server like Jenkins after all! In fact, it should have a pipeline of it's own. 
+
+LambdaCD allows you to have as many pipelines as you like in your project so the straightforward thing to do is to create
+a second pipeline that deploys the pipeline-project itself (a "meta-pipeline"). It can run when the pipeline code changes
+and redeploy your pipeline project. 
+
+That still leaves the question on how to really get your pipeline running on a server. This will depend very much on the
+infrastructure and the conventions you are working with. In short, deploy your pipeline like you would deploy your application: 
+If your applications are deployed as RPM or DEB packages using Puppet, Chef or Ansible, then do the same with your pipeline. 
+If you are building AMIs and spin up servers on EC2, do that. 
+ 
+And if you don't have much infrastructure automation in place yet, a bit of shell might be enough as well: run `lein uberjar` 
+to create a self-contained JAR file, copy it to a well known location on the server. Have a script to start it from there and kill the old process. 
