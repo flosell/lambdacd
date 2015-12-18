@@ -15,6 +15,8 @@
     (is (= 0 (:exit (bash (some-ctx) "/" "exit 0")))))
   (testing "that bash returns the right return code for a single failing command"
     (is (= 1 (:exit (bash (some-ctx) "/" "exit 1")))))
+  (testing "that bash returns fails if the exit code isn't 0"
+    (is (= :failure (:status (bash (some-ctx) "/" "exit 1")))))
   (testing "that bash returns the right return code for a series of commands"
     (is  (= 1 (:exit (bash (some-ctx) "/" "echo foo" "echo bar" "exit 1" "echo baz"))))))
 
