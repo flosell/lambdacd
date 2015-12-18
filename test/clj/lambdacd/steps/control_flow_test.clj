@@ -9,7 +9,8 @@
             [clojure.core.async :as async]
             [lambdacd.steps.support :as step-support]
             [lambdacd.internal.pipeline-state :as pipeline-state]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [lambdacd.util :as util]))
 
 (defn some-step [arg & _]
   {:foo :baz :status :undefined})
@@ -129,9 +130,7 @@
     (let [result-ch (async/chan 100)
           ctx (some-ctx-with :result-channel result-ch :step-id [333])]
       ((in-parallel some-step-sending-failure-but-returning-success some-step-sending-running-then-waiting-then-finished-on-channel) {} ctx)
-      (is (= [[:status :running]
-              [:status :waiting]
-              [:status :success]] (slurp-chan result-ch)))))
+      (is (not (util/contains-value? :failure (slurp-chan result-ch))))))
   (testing "that it kills all children if it is killed"
     (let [is-killed (atom true)
           ctx       (some-ctx-with :is-killed is-killed
