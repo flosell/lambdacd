@@ -235,5 +235,6 @@ And that's all you need. `lein run` your pipeline again and see the it all work.
 
 * Find out [how to do implement some common, more advanced use cases](https://github.com/flosell/lambdacd/blob/master/doc/howto.md)
 * Read the [FAQs](https://github.com/flosell/lambdacd/blob/master/doc/FAQ.md)
+* Check out how to [refactor a complex pipeline](https://github.com/flosell/lambdacd/wiki/Guide:-Pipeline-Structure-Refactoring)
 * Go through a [comprehensive walkthrough](https://github.com/flosell/lambdacd/blob/master/doc/walkthrough.md),
   implementing a complete delivery pipeline and going deeper into the details of LambdaCD
