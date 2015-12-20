@@ -5,11 +5,11 @@
 * [How do I call things on the command line?](#how-do-i-call-things-on-the-command-line)
 * [How do I interact with git\-repositories?](#how-do-i-interact-with-git-repositories)
 * [How do I write to the output so I can see in the UI what my build\-step is doing?](#how-do-i-write-to-the-output-so-i-can-see-in-the-ui-what-my-build-step-is-doing)
-* [How to I display LambdaCD builds on my build monitor](#how-to-i-display-lambdacd-builds-on-my-build-monitor)
+* [How to I display LambdaCD builds on my build monitor?](#how-to-i-display-lambdacd-builds-on-my-build-monitor)
 * [How do I generate several pipelines with the same structure?](#how-do-i-generate-several-pipelines-with-the-same-structure)
 * [How do I use fragments of a pipeline in more than one pipeline?](#how-do-i-use-fragments-of-a-pipeline-in-more-than-one-pipeline)
 * [How do I implement authentication and authorization?](#how-do-i-implement-authentication-and-authorization)
-* [How do I deploy my pipeline](#how-do-i-deploy-my-pipeline)
+* [How do I deploy my pipeline?](#how-do-i-deploy-my-pipeline)
 
 ## How do I call things on the command line?
 

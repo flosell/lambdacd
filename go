@@ -2,6 +2,8 @@
 
 set -e
 
+SCRIPT_DIR=$(dirname "$0")
+
 bold=$(tput bold)
 normal=$(tput sgr0)
 
@@ -145,6 +147,11 @@ repl-server() {
   lein repl :headless :port 58488
 }
 
+generate-howto-toc() {
+  check "gh-md-toc" "Make sure gh-md-toc is in PATH or download from https://github.com/ekalinin/github-markdown-toc.go/releases"
+  gh-md-toc ${SCRIPT_DIR}/doc/howto.md
+}
+
 if [ "$1" == "clean" ]; then
     clean
 elif [ "$1" == "setup" ]; then
@@ -177,6 +184,8 @@ elif [ "$1" == "repl-server" ]; then
     repl-server
 elif [ "$1" == "setupTodopipelineEnv" ]; then
     setupTodopipelineEnv
+elif [ "$1" == "generate-howto-toc" ]; then
+    generate-howto-toc
 else
     echo "usage: $0 <goal>
 
@@ -196,6 +205,7 @@ goal:
     release              -- release current version
     release-local        -- install current version in local repository
     repl-server          -- start a repl cursive can use to run tests in
-    setupTodopipelineEnv -- setup everything you need to make the demo pipeline green"
+    setupTodopipelineEnv -- setup everything you need to make the demo pipeline green
+    generate-howto-toc   -- generate table of contents for howto"
     exit 1
 fi
