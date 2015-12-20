@@ -107,7 +107,7 @@ or use the printer-utilities:
      :out (printed-output printer)})))
 ```
 
-## How to I display LambdaCD builds on my build monitor
+## How to I display LambdaCD builds on my build monitor?
 
 Most build monitoring tools (e.g. [CCMenu](http://ccmenu.org/), [BuildNotify](https://bitbucket.org/Anay/buildnotify/wiki/Home), [nevergreen](http://nevergreen.io/))
 support the cctray XML format. LambdaCD can expose the state of your build pipeline steps using the [lambdacd-cctray](https://github.com/flosell/lambdacd-cctray) extension.
@@ -209,7 +209,7 @@ For example, to implement simple HTTP Basic Auth password protection, you can us
 For more advanced security, use [friend](https://github.com/cemerick/friend), [clj-ldap](https://github.com/pauldorman/clj-ldap)
 or any other clojure library that works as a ring middleware.
 
-## How do I deploy my pipeline
+## How do I deploy my pipeline?
 
 "OK", you say, "you convinced me that my pipeline is a piece of software, but how to I deploy it?". 
 
