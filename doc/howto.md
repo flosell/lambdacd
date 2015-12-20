@@ -96,6 +96,13 @@ or use the printer-utilities:
      :out (printed-output printer)})))
 ```
 
+## How to I display LambdaCD builds on my build monitor
+
+Most build monitoring tools (e.g. [CCMenu](http://ccmenu.org/), [BuildNotify](https://bitbucket.org/Anay/buildnotify/wiki/Home), [nevergreen](http://nevergreen.io/))
+support the cctray XML format. LambdaCD can expose the state of your build pipeline steps using the [lambdacd-cctray](https://github.com/flosell/lambdacd-cctray) extension.
+
+You can find a full example [here](https://github.com/flosell/lambdacd-cctray/blob/master/test/lambdacd_cctray/sample_pipeline.clj)
+
 ## How do I generate several pipelines with the same structure?
 
 You might have several pipelines that look pretty much the same. Maybe they check out a repository, run tests and build
