@@ -8,6 +8,7 @@ The official release will have a defined and more stable API. If you are already
 ## 0.6.1
 * Improvements:
   * Adds `with-workspace` container step that allows users to run operations in the context of a clean workspace on disk (#72)
+  * UI: expand active steps per default
 
 ## 0.6.0
 * Improvements: 

@@ -207,10 +207,9 @@
       (is (= false (query db db/step-expanded-subscription [1])))
       (is (= false (query db db/step-expanded-subscription [2])))))
   (testing "expand active"
-    (testing "that active steps are expanded and inactive ones arent"
+    (testing "that active steps are expanded and inactive ones arent and expand active on per default"
       (let [db (r/atom db/default-db)]
         (dispatch! db db/pipeline-state-updated-handler some-hierarchical-state-with-active-and-inactive)
-        (dispatch! db db/toggle-expand-active-handler)
         (is (= true (query db db/step-expanded-subscription [1])))
         (is (= true (query db db/step-expanded-subscription [1 1])))
         (is (= false (query db db/step-expanded-subscription [2])))
@@ -218,8 +217,7 @@
     (testing "that everything behaves as normal if toggled off"
       (let [db (r/atom db/default-db)]
         (dispatch! db db/pipeline-state-updated-handler some-hierarchical-state-with-active-and-inactive)
-        (dispatch! db db/toggle-expand-active-handler)
-        (dispatch! db db/toggle-expand-active-handler)
+        (dispatch! db db/toggle-expand-active-handler) ; toggle off
         (is (= false (query db db/step-expanded-subscription [1])))
         (is (= false (query db db/step-expanded-subscription [1 1])))
         (is (= false (query db db/step-expanded-subscription [2])))
@@ -228,6 +226,7 @@
     (testing "that failed steps are expanded"
       (let [db (r/atom db/default-db)]
         (dispatch! db db/pipeline-state-updated-handler [some-active-container some-failed-container])
+        (dispatch! db db/toggle-expand-active-handler) ; toggle off
         (dispatch! db db/toggle-expand-failure-handler)
         (is (= false (query db db/step-expanded-subscription [1])))
         (is (= false (query db db/step-expanded-subscription [1 1])))

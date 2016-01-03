@@ -12,7 +12,7 @@
    :displayed-build-number nil
    :raw-step-results-visible false
    :expanded-step-ids #{}
-   :expand-active false
+   :expand-active true
    :expand-failures false})
 
 (defn initialize-db-handler [_ _]
