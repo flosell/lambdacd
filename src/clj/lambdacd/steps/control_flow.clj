@@ -119,7 +119,8 @@
   "runs given steps with a clean workspace given to child step as :cwd argument"
   [& steps]
   (fn [args ctx]
-    (let [temp-dir (utils/create-temp-dir)
+    (let [home-dir (:home-dir (:config ctx))
+          temp-dir (utils/create-temp-dir home-dir)
           new-args  (assoc args :cwd temp-dir)]
       (utils/with-temp temp-dir
                        (run-steps-in-sequence new-args ctx steps)))) )
