@@ -78,6 +78,7 @@ And if you notice something, please open bug reports, feature requests or just g
 
 ## Related projects
 
+* [lambdacd-git](https://github.com/flosell/lambdacd-git): Next generation of Git support for LambdaCD. Will replace the functionality in the core `lambdacd.steps.git` namespace in the future
 * [lambdacd-cctray](https://github.com/flosell/lambdacd-cctray): Support for cctray.xml to integrate LambdaCD with build monitoring tools such as [nevergreen](http://nevergreen.io/) or [CCMenu](http://ccmenu.org/)
 * [lambdacd-artifacts](https://github.com/flosell/lambdacd-artifacts): Makes arbitrary build-artifacts (test-results, binaries, ...) available on LambdaCD
 * [lambdacd-mongodb](https://github.com/SimonMonecke/lambdacd-mongodb): Alternative persistence backend for LambdaCD, saving the pipeline state into MongoDB instead of the filesystem
