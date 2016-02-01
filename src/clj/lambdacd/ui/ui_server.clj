@@ -66,7 +66,8 @@
                       [:body
                         [:div {:class "app l-horizontal" }
                          [:div {:class "app__header"}
-                          [:h1 {:class "app__header__lambdacd"} "LambdaCD"]
+                          [:a {:href "/"}
+                            [:h1 {:class "app__header__lambdacd"} "LambdaCD"]]
                           (if pipeline-name
                             [:span {:class "app__header__pipeline-name" } pipeline-name])]
                          [:div {:id "app" }]]
