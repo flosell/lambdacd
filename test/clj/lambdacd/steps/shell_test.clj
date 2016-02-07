@@ -3,12 +3,19 @@
             [clojure.core.async :as async]
             [lambdacd.testsupport.test-util :refer [result-channel->map slurp-chan]]
             [lambdacd.testsupport.data :refer [some-ctx some-ctx-with]]
-            [lambdacd.steps.shell :refer :all]))
+            [lambdacd.steps.shell :refer :all]
+            [lambdacd.event-bus :as event-bus]))
 
-(defn- kill-after-one-sec [is-killed]
-  (async/thread
-    (Thread/sleep 1000)
-    (reset! is-killed true)))
+(defn- contains-bar-output [[k v]]
+  (and
+    (= :out k)
+    (.contains v "bar")))
+
+(defn- kill-after-bar-is-echoed [ctx]
+  (async/go-loop []
+    (if (contains-bar-output (async/<! (:result-channel ctx)))
+      (reset! (:is-killed ctx) true)
+      (recur))))
 
 (deftest shell-return-code-test
   (testing "that bash returns the right return code for a single successful command"
@@ -60,17 +67,18 @@
 
 (deftest kill-test
   (testing "that we are able to kill a running shell-step"
-    (let [is-killed (atom false)]
-      (kill-after-one-sec is-killed)
+    (let [is-killed (atom false)
+          ctx       (some-ctx-with :is-killed is-killed)]
+      (kill-after-bar-is-echoed ctx)
       (is (= {:exit   143
               :out    "foo\nbar\n"
               :status :killed}
-             (bash (some-ctx-with :is-killed is-killed) "/"
-                "echo foo"
-                "sleep .5"
-                "echo bar"
-                "sleep 5"
-                "echo this-is-after-more-than-five-seconds-and-shouldnt-appear-in-output")))))
+             (bash ctx "/"
+                   "echo foo"
+                   "sleep .5"
+                   "echo bar"
+                   "sleep 5"
+                   "echo this-is-after-more-than-five-seconds-and-shouldnt-appear-in-output")))))
   (testing "that we are able to handle jobs that are already killed from the start"
     (let [is-killed (atom true)]
       (is (= {:exit   143
