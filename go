@@ -101,13 +101,14 @@ testunit() {
 
 testunitRepeat() {
   n=0
-  echob "Repeating unit tests a couple of times to get a higher likelihood of flaky tests failing"
+  echob "Repeating unit tests a couple of times to get a higher likelihood of flaky tests failing."
+  echob "If you got here, you can assume that your unit tests are all succeeding, we are just checking for flakiness now"
   until [ $n -ge 10 ]
   do
     testunit || exit 1
     n=$[$n+1]
   done
-  echob "Tests didn't fail yet, maybe nothing is flaky"
+  echob "Tests didn't fail in a few tries, maybe nothing is flaky."
 }
 check-style() {
   echob "Running code-style checks..."
