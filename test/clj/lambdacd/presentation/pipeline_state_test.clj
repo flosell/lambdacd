@@ -124,3 +124,17 @@
                                            '(2)   {:status :success :most-recent-update-at stop-time :first-updated-at start-time}}))))
   (testing "that a missing status leads to status unknown"
     (is (= :unknown (overall-build-status {'(0) {:no :status :most-recent-update-at stop-time :first-updated-at start-time}})))))
+
+(deftest earliest-first-update-test
+  (testing "that the earliest start time is the start time of the pipeline"
+    (is (= before-start-time (earliest-first-update {'(2) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
+                                                     '(1) {:status :success :most-recent-update-at stop-time :first-updated-at before-start-time}}))))
+  (testing "that retriggered steps are ignored when searching the earliest start time"
+    (is (= start-time (earliest-first-update {'(2) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
+                                              '(1) {:status :success :most-recent-update-at stop-time :first-updated-at before-start-time :retrigger-mock-for-build-number 42}})))))
+
+(deftest latest-most-recent-update-test
+  (testing "that the most recent update will be the pipelines most recent update"
+    (is (= after-stop-time (latest-most-recent-update {'(0) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
+                                                       '(1) {:status :success :most-recent-update-at after-stop-time :first-updated-at start-time}})))))
+

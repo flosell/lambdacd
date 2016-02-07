@@ -43,13 +43,13 @@
        (sort comp)
        (first)))
 
-(defn- earliest-first-update [steps]
-  (->> steps
+(defn earliest-first-update [step-ids-and-results]
+  (->> (vals step-ids-and-results)
       (filter not-retriggered?)
       (first-with-key-ordered-by asc :first-updated-at)))
 
-(defn- latest-most-recent-update [steps]
-  (first-with-key-ordered-by desc :most-recent-update-at steps))
+(defn latest-most-recent-update [step-ids-and-results]
+  (first-with-key-ordered-by desc :most-recent-update-at (vals step-ids-and-results)))
 
 (defn build-that-was-retriggered [step-ids-and-results]
   (get-in step-ids-and-results [[1] :retrigger-mock-for-build-number]))
@@ -74,16 +74,12 @@
        (reduce +)))
 
 (defn- history-entry [[build-number step-ids-and-results]]
-  (let [step-results (vals step-ids-and-results)
-        most-recent-update-at (latest-most-recent-update step-results)
-        first-updated-at (earliest-first-update step-results)
-        duration (build-duration step-ids-and-results)]
-    {:build-number build-number
-     :status (overall-build-status step-ids-and-results)
-     :most-recent-update-at most-recent-update-at
-     :first-updated-at first-updated-at
-     :retriggered (build-that-was-retriggered step-ids-and-results)
-     :duration-in-sec duration}))
+  {:build-number          build-number
+   :status                (overall-build-status step-ids-and-results)
+   :most-recent-update-at (latest-most-recent-update step-ids-and-results)
+   :first-updated-at      (earliest-first-update step-ids-and-results)
+   :retriggered           (build-that-was-retriggered step-ids-and-results)
+   :duration-in-sec       (build-duration step-ids-and-results)})
 
 (defn history-for [state]
   (sort-by :build-number (map history-entry state)))
