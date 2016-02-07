@@ -3,7 +3,8 @@
             [lambdacd.internal.pipeline-state :as pipeline-state]
             [clj-time.core :as t]
             [clojure.tools.logging :as log]
-            [clj-timeframes.core :as tf]))
+            [clj-timeframes.core :as tf]
+            [lambdacd.internal.step-id :as step-id]))
 
 (defn- desc [a b]
   (compare b a))
@@ -12,10 +13,10 @@
   (compare a b))
 
 (defn- root-step? [[step-id _]]
-  (= 1 (count step-id)))
+  (step-id/root-step-id? step-id))
 
 (defn- root-step-id [[step-id _]]
-  (first step-id))
+  (step-id/root-step-id-of step-id))
 
 (defn- step-result [[_ step-result]]
   step-result)
@@ -23,8 +24,8 @@
 (defn- status-for-steps [step-ids-and-results]
   (let [accumulated-status (->> step-ids-and-results
                                 (filter root-step?)
-                                (sort-by root-step-id desc)
-                                (first)
+                                (sort-by root-step-id)
+                                (last)
                                 (step-result)
                                 (:status))]
     (or accumulated-status :unknown)))

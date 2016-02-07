@@ -43,3 +43,13 @@
     (is (parent-of? [2] [1 2 2]))
     (is (not (parent-of? [1 2 2] [2])))
     (is (not (parent-of? [1] [2 2 2]))) ))
+
+(deftest root-step-id?-test
+  (testing "that a root-step has a step-id with only one digit, i.e. it has no parent"
+    (is (root-step-id? [1]))
+    (is (not (root-step-id? [1 1])))))
+
+(deftest root-step-id-test
+  (testing "that root-step-id is the last element of the step id"
+    (is (= 1 (root-step-id-of [1])))
+    (is (= 1 (root-step-id-of [3 2 1])))))

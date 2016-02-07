@@ -1,6 +1,8 @@
 (ns lambdacd.internal.step-id
   (:require [lambdacd.util :as util]))
 
+; TODO: make this namespace public
+
 (defn parent-of? [a b]
   (let [cut-off-b (take-last (count a) b)]
     (and
@@ -27,3 +29,9 @@
 
 (defn child-id [parent-step-id child-number]
   (cons child-number parent-step-id))
+
+(defn root-step-id? [step-id]
+  (= 1 (count step-id)))
+
+(defn root-step-id-of [step-id]
+  (last step-id))
