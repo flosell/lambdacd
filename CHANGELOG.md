@@ -15,6 +15,9 @@ The official release will have a defined and more stable API. If you are already
   * UI: Link LambdaCD header to "/" to link back to overview in cases with multiple pipelines (#82)
 * Bugs: 
   * `with-workspace` now creates temporary directories in the home-dir (#79)
+* API Changes:
+  * `lambdacd.presentation.pipeline-state/most-recent-build-number-in` seems to be unused and now considered DEPRECATED.
+    Will be removed in subsequent releases.
 
 ## 0.6.1
 * Improvements:

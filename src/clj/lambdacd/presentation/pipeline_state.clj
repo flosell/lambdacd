@@ -84,7 +84,9 @@
 (defn history-for [state]
   (sort-by :build-number (map history-entry state)))
 
-(defn most-recent-build-number-in [state]
+(defn most-recent-build-number-in
+  "UNUSED DEPRECATED, will be removed in subsequent releases"
+  [state]
   (apply max (keys state)))
 
 
