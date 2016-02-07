@@ -9,6 +9,9 @@ The official release will have a defined and more stable API. If you are already
 * Improvements: 
   * Adds public functions to simplify building custom build state aggregations (#84)
     * `lambdacd.presentation.pipeline-state/overall-build-status`
+  * UI: Link LambdaCD header to "/" to link back to overview in cases with multiple pipelines (#82)
+* Bugs: 
+  * `with-workspace` now creates temporary directories in the home-dir (#79)
 
 ## 0.6.1
 * Improvements:
