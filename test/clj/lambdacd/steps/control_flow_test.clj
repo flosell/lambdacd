@@ -41,6 +41,7 @@
   {:status :failure})
 
 (defn some-step-sending-failure-but-returning-success [_ {ch :result-channel}]
+  (Thread/sleep 100) ; wait a bit before starting to give both steps some time
   (async/>!! ch [:status :running])
   (async/>!! ch [:status :failure])
   (Thread/sleep 20)
@@ -54,6 +55,7 @@
   {:status :success})
 
 (defn some-step-sending-running-then-waiting-then-finished-on-channel [_ {ch :result-channel}]
+  (Thread/sleep 100) ; wait a bit before starting to give both steps some time
   (Thread/sleep 10)
   (async/>!! ch [:status :waiting])
   (Thread/sleep 40)
