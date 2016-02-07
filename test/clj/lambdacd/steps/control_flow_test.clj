@@ -38,6 +38,7 @@
   {:status :success})
 
 (defn some-failing-step [arg & _]
+  (Thread/sleep 100)
   {:status :failure})
 
 (defn some-step-sending-failure-but-returning-success [_ {ch :result-channel}]

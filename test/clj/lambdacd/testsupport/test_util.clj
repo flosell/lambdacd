@@ -123,7 +123,6 @@
         (second result)
         (recur)))))
 
-
 (defn step-status [{build-number :build-number step-id :step-id pipeline-state-component :pipeline-state-component}]
   (-> (ps/get-all pipeline-state-component)
       (get build-number)
@@ -132,6 +131,10 @@
 
 (defn step-running? [ctx]
   (= :running (step-status ctx)))
+
+(defn child-step-running? [ctx step-id]
+  (let [child-ctx (assoc ctx :step-id step-id)]
+    (= :running (step-status child-ctx))))
 
 (defn step-success? [ctx build-number step-id]
   (= :success (step-status (assoc ctx :build-number build-number

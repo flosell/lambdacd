@@ -11,7 +11,9 @@
             [lambdacd.util :as utils]
             [lambdacd.testsupport.data :refer [some-ctx some-ctx-with]]
             [clojure.java.io :as io]
-            [lambdacd.steps.support :as step-support]))
+            [lambdacd.steps.support :as step-support]
+            [lambdacd.testsupport.test-util :as tu]
+            [lambdacd.internal.pipeline-state :as pipeline-state]))
 
 (defn- git-commits [cwd]
   (reverse (string/split-lines (:out (util/bash cwd "git log --pretty=format:%H")))))
@@ -214,8 +216,9 @@
             ctx (some-ctx-with :config {:home-dir some-parent-folder}
                                :step-id [0]
                                :is-killed is-killed)
+            _ (pipeline-state/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
             future-result (start-waiting-for (checkout-and-execute repo-uri "HEAD" args ctx [some-step-waiting-to-be-killed]))]
-      (Thread/sleep 200) ; wait for git checkout
+      (wait-for (tu/child-step-running? ctx [1 0]))
       (reset! is-killed true)
       (is (map-containing {:status :killed
                            :outputs {[1 0] {:status :killed}}} (get-or-timeout future-result)))))))
