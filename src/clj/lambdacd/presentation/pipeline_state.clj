@@ -1,6 +1,5 @@
 (ns lambdacd.presentation.pipeline-state
-  (:require [lambdacd.util :as util]
-            [lambdacd.internal.pipeline-state :as pipeline-state]
+  (:require [lambdacd.internal.pipeline-state :as pipeline-state]
             [clj-time.core :as t]
             [clojure.tools.logging :as log]
             [clj-timeframes.core :as tf]
@@ -45,8 +44,8 @@
 
 (defn earliest-first-update [step-ids-and-results]
   (->> (vals step-ids-and-results)
-      (filter not-retriggered?)
-      (first-with-key-ordered-by asc :first-updated-at)))
+       (filter not-retriggered?)
+       (first-with-key-ordered-by asc :first-updated-at)))
 
 (defn latest-most-recent-update [step-ids-and-results]
   (first-with-key-ordered-by desc :most-recent-update-at (vals step-ids-and-results)))
@@ -91,9 +90,9 @@
 
 
 (defn most-recent-step-result-with [key ctx]
-  (let [state (pipeline-state/get-all (:pipeline-state-component ctx))
-        step-id (:step-id ctx)
-        step-results (map second (reverse (sort-by first (seq state))))
-        step-results-for-id (map #(get % step-id) step-results)
+  (let [state                 (pipeline-state/get-all (:pipeline-state-component ctx))
+        step-id               (:step-id ctx)
+        step-results          (map second (reverse (sort-by first (seq state))))
+        step-results-for-id   (map #(get % step-id) step-results)
         step-results-with-key (filter key step-results-for-id)]
     (first step-results-with-key)))
