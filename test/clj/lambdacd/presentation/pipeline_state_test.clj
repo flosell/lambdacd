@@ -138,3 +138,10 @@
     (is (= after-stop-time (latest-most-recent-update {'(0) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
                                                        '(1) {:status :success :most-recent-update-at after-stop-time :first-updated-at start-time}})))))
 
+(deftest build-that-was-retriggered-test
+  (testing "that the retrigger-mock of the first build step indicates the build number that was retriggered for this build"
+    (is (= 3 (build-that-was-retriggered {'(2) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
+                                          '(1) {:status :success :most-recent-update-at stop-time :first-updated-at before-start-time :retrigger-mock-for-build-number 3}}))))
+  (testing "that nil is returned if the build wasn't retriggered"
+    (is (= nil (build-that-was-retriggered {'(2) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
+                                            '(1) {:status :success :most-recent-update-at stop-time :first-updated-at before-start-time}})))))
