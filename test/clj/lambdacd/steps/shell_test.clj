@@ -85,6 +85,7 @@
               :out    ""
               :status :killed}
              (bash (some-ctx-with :is-killed is-killed) "/"
+                   "sleep 5"
                    "echo foo")))))
   (testing "that we inform the user about trying to kill the process"
     (let [is-killed (atom true)
