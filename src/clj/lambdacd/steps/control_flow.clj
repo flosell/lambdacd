@@ -3,7 +3,7 @@
   (:require [lambdacd.core :as core]
             [clojure.core.async :as async]
             [lambdacd.steps.support :as support]
-            [lambdacd.internal.step-id :as step-id]
+            [lambdacd.step-id :as step-id]
             [lambdacd.steps.status :as status]
             [lambdacd.util :as utils])
   (:refer-clojure :exclude [alias])

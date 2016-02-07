@@ -1,7 +1,7 @@
-(ns lambdacd.internal.step-id-test
+(ns lambdacd.step-id-test
   (:use [lambdacd.testsupport.test-util])
   (:require [clojure.test :refer :all]
-            [lambdacd.internal.step-id :refer :all]))
+            [lambdacd.step-id :refer :all]))
 
 (deftest later-or-before-test
   (testing "that [2] is after [1]"

@@ -3,7 +3,7 @@
             [clj-time.core :as t]
             [clojure.tools.logging :as log]
             [clj-timeframes.core :as tf]
-            [lambdacd.internal.step-id :as step-id]))
+            [lambdacd.step-id :as step-id]))
 
 (defn- desc [a b]
   (compare b a))

@@ -3,7 +3,7 @@
   (:require [clojure.core.async :as async]
             [lambdacd.internal.pipeline-state :as pipeline-state]
             [clojure.tools.logging :as log]
-            [lambdacd.internal.step-id :as step-id]
+            [lambdacd.step-id :as step-id]
             [lambdacd.steps.status :as status]
             [clojure.repl :as repl]
             [lambdacd.event-bus :as event-bus])

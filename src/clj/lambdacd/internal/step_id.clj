@@ -1,37 +1,24 @@
 (ns lambdacd.internal.step-id
-  (:require [lambdacd.util :as util]))
+  (:require [lambdacd.util :as util]
+            [lambdacd.step-id :as step-id]))
 
-; TODO: make this namespace public
+; THIS NAMESPACE IS DEPRECATED and will be removed in subsequent releases.
+; Use lambdacd.step-id instead.
 
 (defn parent-of? [a b]
-  (let [cut-off-b (take-last (count a) b)]
-    (and
-      (not= a b)
-      (= a cut-off-b))))
+  (step-id/parent-of? a b))
 
 (defn later-than? [a b]
-  (let [length (max (count a) (count b))
-        a-parents-first (reverse a)
-        b-parents-first (reverse b)
-        equal-length-a (util/fill a-parents-first length -1)
-        equal-length-b (util/fill b-parents-first length -1)
-        a-and-b (map vector equal-length-a equal-length-b)
-        first-not-equal (first (drop-while (fn [[x y]] (= x y)) a-and-b))
-        [x y] first-not-equal]
-    (if (nil? first-not-equal)
-      (> (count a) (count b))
-      (> x y))))
+  (step-id/later-than? a b))
 
 (defn before? [a b]
-  (and
-    (not= a b)
-    (not (later-than? a b))))
+  (step-id/later-than? a b))
 
 (defn child-id [parent-step-id child-number]
-  (cons child-number parent-step-id))
+  (step-id/child-id parent-step-id child-number))
 
 (defn root-step-id? [step-id]
-  (= 1 (count step-id)))
+  (step-id/root-step-id? step-id))
 
 (defn root-step-id-of [step-id]
-  (last step-id))
+  (step-id/root-step-id-of step-id))
