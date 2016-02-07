@@ -64,7 +64,7 @@
 (defn- interval-duration [interval]
   (t/in-seconds interval))
 
-(defn- build-duration [step-ids-and-results]
+(defn build-duration [step-ids-and-results]
   (->> step-ids-and-results
        (vals)
        (filter not-waiting?)

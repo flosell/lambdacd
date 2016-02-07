@@ -47,34 +47,6 @@
       (is (= after-stop-time (:most-recent-update-at (first
                                                        (history-for {5 {'(0) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
                                                                         '(1) {:status :success :most-recent-update-at after-stop-time :first-updated-at start-time}}})))))))
-  (testing "calculation of build duration"
-    (testing "the normal case"
-      (is (= 20 (:duration-in-sec (first
-                                    (history-for {7 {'(2) {:status :success :most-recent-update-at after-twenty-sec :first-updated-at after-ten-sec}
-                                                     '(1) {:status :success :most-recent-update-at after-ten-sec :first-updated-at start-time}}}))))))
-    (testing "more than one minute"
-      (is (= 90 (:duration-in-sec (first
-                                    (history-for {7 {'(2) {:status :success :most-recent-update-at after-one-minute-and-30-sec :first-updated-at after-ten-sec}
-                                                     '(1) {:status :success :most-recent-update-at after-ten-sec :first-updated-at start-time}}}))))))
-    (testing "can deal with hiccups in timestamps"
-      (is (= 0 (:duration-in-sec (first
-                                    (history-for {7 {'(1) {:status :success :most-recent-update-at start-time :first-updated-at after-ten-sec}}}))))))
-    (testing "retriggered pipeline takes as long as all intervals where the pipeline was active"
-      (is (= 40 (:duration-in-sec (first
-                                    (history-for {7 {'(1 2) {:status :success :most-recent-update-at after-thirty-sec :first-updated-at after-ten-sec :retrigger-mock-for-build-number 10}
-                                                     '(2 2) {:status :success :most-recent-update-at after-one-minute-and-40-sec :first-updated-at after-one-minute-and-30-sec}
-                                                     '(2) {:status :success :most-recent-update-at after-one-minute-and-40-sec :first-updated-at after-one-minute-and-30-sec}
-                                                     '(1) {:status :success :most-recent-update-at after-ten-sec :first-updated-at start-time :retrigger-mock-for-build-number 10}}}))))))
-    (testing "steps that wait aren't considered"
-      (is (= 20 (:duration-in-sec (first
-                                    (history-for {7 {'(3) {:status :success :most-recent-update-at after-thirty-sec :first-updated-at after-twenty-sec}
-                                                     '(2) {:status :success :most-recent-update-at after-twenty-sec :first-updated-at after-ten-sec :has-been-waiting true}
-                                                     '(1) {:status :success :most-recent-update-at after-ten-sec :first-updated-at start-time :retrigger-mock-for-build-number 10}}}))))))
-    (testing "durations of child-steps aren't considered"
-      (is (= 20 (:duration-in-sec (first
-                                    (history-for {7 {'(1 2) {:status :success :most-recent-update-at after-thirty-sec :first-updated-at after-ten-sec}
-                                                     '(2) {:status :success :most-recent-update-at after-twenty-sec :first-updated-at after-ten-sec}
-                                                     '(1) {:status :success :most-recent-update-at after-ten-sec :first-updated-at start-time}}})))))))
   (testing "that the build-status is accumulated correctly"
     (testing "that a pipeline will be a failure once there is a failed step"
       (is (= :failure (:status (first
@@ -145,3 +117,26 @@
   (testing "that nil is returned if the build wasn't retriggered"
     (is (= nil (build-that-was-retriggered {'(2) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
                                             '(1) {:status :success :most-recent-update-at stop-time :first-updated-at before-start-time}})))))
+
+(deftest build-duration-test
+  (testing "the normal case"
+    (is (= 20 (build-duration {'(2) {:status :success :most-recent-update-at after-twenty-sec :first-updated-at after-ten-sec}
+                               '(1) {:status :success :most-recent-update-at after-ten-sec :first-updated-at start-time}}))))
+  (testing "more than one minute"
+    (is (= 90 (build-duration {'(2) {:status :success :most-recent-update-at after-one-minute-and-30-sec :first-updated-at after-ten-sec}
+                               '(1) {:status :success :most-recent-update-at after-ten-sec :first-updated-at start-time}}))))
+  (testing "can deal with hiccups in timestamps"
+    (is (= 0 (build-duration {'(1) {:status :success :most-recent-update-at start-time :first-updated-at after-ten-sec}}))))
+  (testing "retriggered pipeline takes as long as all intervals where the pipeline was active"
+    (is (= 40 (build-duration {'(1 2) {:status :success :most-recent-update-at after-thirty-sec :first-updated-at after-ten-sec :retrigger-mock-for-build-number 10}
+                               '(2 2) {:status :success :most-recent-update-at after-one-minute-and-40-sec :first-updated-at after-one-minute-and-30-sec}
+                               '(2)   {:status :success :most-recent-update-at after-one-minute-and-40-sec :first-updated-at after-one-minute-and-30-sec}
+                               '(1)   {:status :success :most-recent-update-at after-ten-sec :first-updated-at start-time :retrigger-mock-for-build-number 10}}))))
+  (testing "steps that wait aren't considered"
+    (is (= 20 (build-duration {'(3) {:status :success :most-recent-update-at after-thirty-sec :first-updated-at after-twenty-sec}
+                               '(2) {:status :success :most-recent-update-at after-twenty-sec :first-updated-at after-ten-sec :has-been-waiting true}
+                               '(1) {:status :success :most-recent-update-at after-ten-sec :first-updated-at start-time :retrigger-mock-for-build-number 10}}))))
+  (testing "durations of child-steps aren't considered"
+    (is (= 20 (build-duration {'(1 2) {:status :success :most-recent-update-at after-thirty-sec :first-updated-at after-ten-sec}
+                               '(2)   {:status :success :most-recent-update-at after-twenty-sec :first-updated-at after-ten-sec}
+                               '(1)   {:status :success :most-recent-update-at after-ten-sec :first-updated-at start-time}})))))
