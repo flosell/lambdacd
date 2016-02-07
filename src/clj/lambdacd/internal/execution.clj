@@ -3,7 +3,7 @@
   (:require [clojure.core.async :as async]
             [lambdacd.internal.pipeline-state :as pipeline-state]
             [clojure.tools.logging :as log]
-            [lambdacd.step-id :as step-id]
+            [lambdacd.internal.step-id :as step-id]
             [lambdacd.steps.status :as status]
             [clojure.repl :as repl]
             [lambdacd.event-bus :as event-bus])
@@ -89,8 +89,7 @@
 
 
 (defn execute-step [args [ctx step]]
-  (let [_ (send-step-result ctx {:status :running})
-        step-id (:step-id ctx)
+  (let [step-id (:step-id ctx)
         result-ch (async/chan)
         child-kill-switch (atom false)
         parent-kill-switch (:is-killed ctx)
@@ -101,6 +100,7 @@
                                  :is-killed child-kill-switch)
         processed-async-result-ch (process-channel-result-async result-ch ctx)
         kill-subscription (kill-step-handling ctx-for-child)
+        _ (send-step-result ctx {:status :running})
         immediate-step-result (execute-or-catch step args ctx-for-child)
         processed-async-result (async/<!! processed-async-result-ch)
         complete-step-result (merge processed-async-result immediate-step-result)]
