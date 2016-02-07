@@ -5,6 +5,11 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
+## 0.6.2
+* Improvements: 
+  * Adds public functions to simplify building custom build state aggregations (#84)
+    * `lambdacd.presentation.pipeline-state/overall-build-status`
+
 ## 0.6.1
 * Improvements:
   * Adds `with-workspace` container step that allows users to run operations in the context of a clean workspace on disk (#72)

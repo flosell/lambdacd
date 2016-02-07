@@ -21,7 +21,7 @@
 (defn- step-result [[_ step-result]]
   step-result)
 
-(defn- status-for-steps [step-ids-and-results]
+(defn overall-build-status [step-ids-and-results]
   (let [accumulated-status (->> step-ids-and-results
                                 (filter root-step?)
                                 (sort-by root-step-id)
@@ -79,7 +79,7 @@
         first-updated-at (earliest-first-update step-results)
         duration (build-duration step-ids-and-results)]
     {:build-number build-number
-     :status (status-for-steps step-ids-and-results)
+     :status (overall-build-status step-ids-and-results)
      :most-recent-update-at most-recent-update-at
      :first-updated-at first-updated-at
      :retriggered (build-that-was-retriggered step-ids-and-results)

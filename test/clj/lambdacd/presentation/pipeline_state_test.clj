@@ -76,31 +76,10 @@
                                                      '(2) {:status :success :most-recent-update-at after-twenty-sec :first-updated-at after-ten-sec}
                                                      '(1) {:status :success :most-recent-update-at after-ten-sec :first-updated-at start-time}}})))))))
   (testing "that the build-status is accumulated correctly"
-    (testing "that the status will be running while the pipeline is still active"
-      (is (= :running (:status (first
-                                 (history-for {5 {'(0) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
-                                                  '(1) {:status :running :most-recent-update-at stop-time :first-updated-at start-time}}}))))))
-    (testing "that if everything is successful, the pipeline as a whole is successful"
-      (is (= :success (:status (first
-                                 (history-for {6 {'(0) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}}}))))))
-    (testing "that a pipeline will still be in running state while there is a running step"
-      (is (= :running (:status (first
-                                 (history-for {7 {'(0)   {:status :running :most-recent-update-at stop-time :first-updated-at start-time}
-                                                  '(1 0) {:status :running :most-recent-update-at stop-time :first-updated-at start-time}
-                                                  '(2 0) {:status :failure :most-recent-update-at stop-time :first-updated-at start-time}}}))))))
     (testing "that a pipeline will be a failure once there is a failed step"
       (is (= :failure (:status (first
                                  (history-for {7 {'(1) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
-                                                  '(2) {:status :failure :most-recent-update-at stop-time :first-updated-at start-time}}}))))))
-    (testing "that a killed step will be ignored"
-      (is (= :success (:status (first
-                                 (history-for {10 {'(1 1) {:status :killed :most-recent-update-at stop-time :first-updated-at long-before-start-time :has-been-waiting true}
-                                                   '(2 1) {:status :success :most-recent-update-at long-after-stop-time :first-updated-at start-time :has-been-waiting true}
-                                                   '(1)   {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
-                                                   '(2)   {:status :success :most-recent-update-at stop-time :first-updated-at start-time}}}))))))
-    (testing "that a missing status leads to status unknown"
-      (is (= :unknown (:status (first
-                                 (history-for {9 {'(0) {:no :status :most-recent-update-at stop-time :first-updated-at start-time}}})))))))
+                                                  '(2) {:status :failure :most-recent-update-at stop-time :first-updated-at start-time}}})))))))
   (testing "that we detect retriggered steps"
     (testing "that a pipeline will be treated as retriggered if the first step has a retrigger-mock"
       (is (= 3 (:retriggered (first
@@ -124,3 +103,24 @@
                                            (some-ctx-with
                                              :step-id [0 2]
                                              :initial-pipeline-state history)))))))
+
+(deftest overall-build-status-test
+  (testing "that the status will be running while the pipeline is still active"
+    (is (= :running (overall-build-status {'(0) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
+                                           '(1) {:status :running :most-recent-update-at stop-time :first-updated-at start-time}}))))
+  (testing "that if everything is successful, the pipeline as a whole is successful"
+    (is (= :success (overall-build-status {'(0) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}}))))
+  (testing "that a pipeline will still be in running state while there is a running step"
+    (is (= :running (overall-build-status {'(0)   {:status :running :most-recent-update-at stop-time :first-updated-at start-time}
+                                           '(1 0) {:status :running :most-recent-update-at stop-time :first-updated-at start-time}
+                                           '(2 0) {:status :failure :most-recent-update-at stop-time :first-updated-at start-time}}))))
+  (testing "that a pipeline will be a failure once there is a failed step"
+    (is (= :failure (overall-build-status {'(1) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
+                                           '(2) {:status :failure :most-recent-update-at stop-time :first-updated-at start-time}}))))
+  (testing "that a killed step will be ignored"
+    (is (= :success (overall-build-status {'(1 1) {:status :killed :most-recent-update-at stop-time :first-updated-at long-before-start-time :has-been-waiting true}
+                                           '(2 1) {:status :success :most-recent-update-at long-after-stop-time :first-updated-at start-time :has-been-waiting true}
+                                           '(1)   {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
+                                           '(2)   {:status :success :most-recent-update-at stop-time :first-updated-at start-time}}))))
+  (testing "that a missing status leads to status unknown"
+    (is (= :unknown (overall-build-status {'(0) {:no :status :most-recent-update-at stop-time :first-updated-at start-time}})))))
