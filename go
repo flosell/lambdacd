@@ -99,6 +99,16 @@ testunit() {
   lein test
 }
 
+testunitRepeat() {
+  n=0
+  echob "Repeating unit tests a couple of times to get a higher likelihood of flaky tests failing"
+  until [ $n -ge 10 ]
+  do
+    testunit || exit 1
+    n=$[$n+1]
+  done
+  echob "Tests didn't fail yet, maybe nothing is flaky"
+}
 check-style() {
   echob "Running code-style checks..."
   # kibit can't handle namespaced keywords, removing this output https://github.com/jonase/kibit/issues/14
@@ -186,6 +196,8 @@ elif [ "$1" == "setupTodopipelineEnv" ]; then
     setupTodopipelineEnv
 elif [ "$1" == "generate-howto-toc" ]; then
     generate-howto-toc
+elif [ "$1" == "test-clj-unit-repeat" ]; then
+    testunitRepeat
 else
     echo "usage: $0 <goal>
 
@@ -195,6 +207,7 @@ goal:
     test                 -- run all tests
     test-clj             -- run all tests for the clojure-part
     test-clj-unit        -- run only unit tests for the clojure-part
+    test-clj-unit-repeat -- run unit tests for the clojure-part ten times to increase likelihood of flaky tests failing
     test-cljs            -- run all ClojureScript tests (i.e. unit tests for frontend)
     test-cljs-auto       -- starts autotest-session for frontend
     check-style          -- runs code-style checks
