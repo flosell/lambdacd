@@ -102,13 +102,13 @@
         child-step-id  (step-id/child-id parent-step-id child-number)]
     (assoc parent-ctx :step-id child-step-id)))
 
-(defn ^{:display-type :parallel} junction [condition-step success-step failiure-step]
+(defn ^{:display-type :parallel} junction [condition-step success-step failure-step]
   (fn [args ctx]
     (post-process-container-results
       (let [condition-step-result (core/execute-step args (child-context ctx 1) condition-step)]
         (if (= :success (:status condition-step-result))
           (core/execute-step args (child-context ctx 2) success-step)
-          (core/execute-step args (child-context ctx 3) failiure-step))))))
+          (core/execute-step args (child-context ctx 3) failure-step))))))
 
 (defn alias
   "just runs child but child is displayed with the given alias in visualization"
