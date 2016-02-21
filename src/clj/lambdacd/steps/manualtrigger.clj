@@ -7,32 +7,32 @@
 
 (defn post-id [ctx id trigger-parameters]
   (log/info "received parameterized trigger with id " id " with data " trigger-parameters)
-  (event-bus/publish ctx :manual-trigger-received {:trigger-id id
+  (event-bus/publish ctx :manual-trigger-received {:trigger-id         id
                                                    :trigger-parameters trigger-parameters}))
 
-(defn- wait-for-trigger [id ctx]
-  (async/>!! (:result-channel ctx) [:out (str "Waiting for trigger..." )])
-  (let [subscription   (event-bus/subscribe ctx :manual-trigger-received)
-        trigger-events (event-bus/only-payload subscription)
-        wait-result (loop []
-                      (let [[result _] (async/alts!! [trigger-events
-                                               (async/timeout 1000)] :priority true)]
-                        (support/if-not-killed ctx
-                                               (if (and result (= id (:trigger-id result)))
-                                                 (assoc (:trigger-parameters result) :status :success)
-                                                 (recur)))))]
-    (event-bus/unsubscribe ctx :manual-trigger-received subscription)
-    wait-result))
+(defn- wait-for-trigger-event-while-not-killed [ctx trigger-events expected-trigger-id]
+  (loop []
+    (let [[result _] (async/alts!! [trigger-events
+                                    (async/timeout 1000)] :priority true)]
+      (support/if-not-killed ctx
+        (if (and result (= expected-trigger-id (:trigger-id result)))
+          (assoc (:trigger-parameters result) :status :success)
+          (recur))))))
 
 (defn wait-for-manual-trigger
   "build step that waits for someone to trigger the build by POSTing to the url indicated by a random trigger id.
   the trigger-id is returned as the :trigger-id result value. see UI implementation for details"
   [_ ctx & _]
-  (let [id (str (UUID/randomUUID))
-        result-ch (:result-channel ctx)]
-    (async/>!! result-ch [:trigger-id id])
-    (async/>!! result-ch [:status :waiting])
-    (wait-for-trigger id ctx)))
+  (let [trigger-id     (str (UUID/randomUUID))
+        result-ch      (:result-channel ctx)
+        subscription   (event-bus/subscribe ctx :manual-trigger-received)
+        trigger-events (event-bus/only-payload subscription)
+        _              (async/>!! result-ch [:trigger-id trigger-id])
+        _              (async/>!! result-ch [:status :waiting])
+        _              (async/>!! result-ch [:out (str "Waiting for trigger...")])
+        wait-result    (wait-for-trigger-event-while-not-killed ctx trigger-events trigger-id)
+        _              (event-bus/unsubscribe ctx :manual-trigger-received subscription)]
+    wait-result))
 
 (defn parameterized-trigger [parameter-config ctx]
   (async/>!! (:result-channel ctx) [:parameters parameter-config])

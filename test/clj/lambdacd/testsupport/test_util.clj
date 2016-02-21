@@ -115,13 +115,22 @@
   `(async/go
      ~body))
 
-(defn start-waiting-for-result [key result-channel]
+(defn start-waiting-for-result [key-to-wait-for result-channel]
   (async/go-loop []
-    (let [result (async/<! result-channel)
-          actual-key (first result)]
-      (if (= key actual-key)
-        (second result)
+    (let [[key value] (async/<! result-channel)]
+      (if (= key-to-wait-for key)
+        value
         (recur)))))
+
+(defn wait-for-status [status result-channel]
+  (get-or-timeout
+    (async/go-loop []
+      (let [[key value] (async/<! result-channel)]
+        (if (and
+              (= :status key)
+              (= status value))
+          value
+          (recur))))))
 
 (defn step-status [{build-number :build-number step-id :step-id pipeline-state-component :pipeline-state-component}]
   (-> (ps/get-all pipeline-state-component)
@@ -131,6 +140,9 @@
 
 (defn step-running? [ctx]
   (= :running (step-status ctx)))
+
+(defn step-waiting? [ctx]
+  (= :waiting (step-status ctx)))
 
 (defn child-step-running? [ctx step-id]
   (let [child-ctx (assoc ctx :step-id step-id)]
