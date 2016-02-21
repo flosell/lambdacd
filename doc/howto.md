@@ -227,3 +227,12 @@ If you are building AMIs and spin up servers on EC2, do that.
  
 And if you don't have much infrastructure automation in place yet, a bit of shell might be enough as well: run `lein uberjar` 
 to create a self-contained JAR file, copy it to a well known location on the server. Have a script to start it from there and kill the old process. 
+
+## Can I customize the UI?
+
+While many parts of the UI are rendered on the client side and can currently hardly be customized, you can customize how
+the UI page is rendered on the server side, e.g. to add additional styling, scripts or DOM elements. 
+
+To do that, you need to create your own ui-routes that point to your custom UI instead of using the ones provided by `lambdacd.ui.ui-server/ui-for`  
+
+For an example that adds a navigation bar, check out https://github.com/flosell/lambdacd-cookie-cutter-pipeline-example/blob/header-with-navigation/src/pipeline_templates/custom_ui.clj
