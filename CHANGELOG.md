@@ -15,6 +15,7 @@ The official release will have a defined and more stable API. If you are already
     * Renames namespace `lambdacd.internal.step-id` to `lambdacd.step-id` to officially make it public. 
       In case someone was using the internal namespace, it is still there but is considered DEPRECATED and will be removed in subsequent releases. 
   * UI: Link LambdaCD header to "/" to link back to overview in cases with multiple pipelines (#82)
+  * UI: Refactored the server side UI code to make it simpler to customize the UI (#83)
 * Bugs: 
   * `with-workspace` now creates temporary directories in the home-dir (#79)
 * API Changes:
