@@ -27,10 +27,10 @@
    [:a {:href "/"}
     [:h1 {:class "app__header__lambdacd"} "LambdaCD"]]
    (if pipeline-name
-     [:span {:class "app__header__pipeline-name" } pipeline-name])])
+     [:span {:class "app__header__pipeline-name"} pipeline-name])])
 
 (defn app-placeholder []
-  [:div {:id "app" }])
+  [:div {:id "app"}])
 
 (defn ui-page [pipeline-name]
   (h/html
@@ -40,7 +40,7 @@
       (favicon)
       (css-includes)]
      [:body
-      [:div {:class "app l-horizontal" }
+      [:div {:class "app l-horizontal"}
        (header pipeline-name)
        (app-placeholder)]
       (js-includes)]]))
