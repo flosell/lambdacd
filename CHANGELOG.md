@@ -5,7 +5,7 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
-## 0.6.2
+## 0.7.0
 * Improvements: 
   * Adds public functions to simplify building custom build state aggregations (#84)
     * `lambdacd.presentation.pipeline-state/overall-build-status`
@@ -20,6 +20,7 @@ The official release will have a defined and more stable API. If you are already
 * API Changes:
   * `lambdacd.presentation.pipeline-state/most-recent-build-number-in` seems to be unused and now considered DEPRECATED.
     Will be removed in subsequent releases.
+  * Removed `(ui-server/ui-for pipeline-def pipeline-state ctx)` (deprecated since 0.4.3). Use `(ui-server/ui-for pipeline)` instead.
 
 ## 0.6.1
 * Improvements:

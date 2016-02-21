@@ -30,7 +30,4 @@
   ([pipeline]
    (routes
      (context "/api" [] (api/rest-api pipeline))
-     (context "" [] (ui pipeline))))
-  ([pipeline-def pipeline-state ctx] ; this is deprecated and will be removed in subsequent releases
-   (ui-for {:pipeline-def pipeline-def
-            :context ctx})))
+     (context "" [] (ui pipeline)))))
