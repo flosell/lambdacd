@@ -9,6 +9,8 @@ The official release will have a defined and more stable API. If you are already
 * Improvements: 
   * UI: Adds ability to display preformatted text in step result details (#89)
   * UI: Honors ASCII escape sequences like `\r` in console output (#88)
+* Bug fixes:
+  * UI: Unicode Characters displayed as ??? (#92)
 
 ## 0.7.0
 * Improvements: 
@@ -21,7 +23,7 @@ The official release will have a defined and more stable API. If you are already
       In case someone was using the internal namespace, it is still there but is considered DEPRECATED and will be removed in subsequent releases. 
   * UI: Link LambdaCD header to "/" to link back to overview in cases with multiple pipelines (#82)
   * UI: Refactored the server side UI code to make it simpler to customize the UI (#83)
-* Bugs: 
+* Bug fixes:
   * `with-workspace` now creates temporary directories in the home-dir (#79)
 * API Changes:
   * `lambdacd.presentation.pipeline-state/most-recent-build-number-in` seems to be unused and now considered DEPRECATED.
@@ -36,7 +38,7 @@ The official release will have a defined and more stable API. If you are already
 ## 0.6.0
 * Improvements: 
   * UI: Adding feature to collapse/expand all, only active or only failed steps (#59)
-* Bugs: 
+* Bug fixes:
   * `either` no longer aggregates to failure if only some children failed (#67)
   * `in-parallel` no longer aggregates to failure while other children are still running (#68)
 * Breaking Changes: 

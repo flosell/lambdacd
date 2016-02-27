@@ -62,7 +62,7 @@
 (deftest json-test
   (testing "that a proper ring-json-response is returned"
     (is (= {:body    "{\"hello\":\"world\"}"
-            :headers {"Content-Type" "application/json"}
+            :headers {"Content-Type" "application/json;charset=UTF-8"}
             :status  200} (json { :hello :world })))))
 
 (deftest parse-int-test

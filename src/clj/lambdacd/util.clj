@@ -83,7 +83,7 @@
     (async/pipe ch result-ch)))
 
 (defn json [data]
-  {:headers { "Content-Type" "application/json"}
+  {:headers { "Content-Type" "application/json;charset=UTF-8"}
    :body (to-json data)
    :status 200 })
 
