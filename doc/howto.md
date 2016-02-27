@@ -236,3 +236,9 @@ the UI page is rendered on the server side, e.g. to add additional styling, scri
 To do that, you need to create your own ui-routes that point to your custom UI instead of using the ones provided by `lambdacd.ui.ui-server/ui-for`  
 
 For an example that adds a navigation bar, check out https://github.com/flosell/lambdacd-cookie-cutter-pipeline-example/blob/header-with-navigation/src/pipeline_templates/custom_ui.clj
+
+## Can I display my build output in a structured way? 
+
+Some build steps produce very specific outputs that are interesting to the user, e.g. test results, a list of artifacts
+and so on. The LambdaCD UI can interpret such information under the `:details`-key in a step result. For details, see
+the [build step documentation](https://github.com/flosell/lambdacd/wiki/Build-Steps) in the wiki
