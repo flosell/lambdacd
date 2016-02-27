@@ -44,15 +44,17 @@
 
 
 (defn create-some-details [args ctx]
-  {:status :success
-   :details [{:label "Some Links"
+  {:status  :success
+   :details [{:label   "Some Links"
               :details [{:label "Builds API"
-                         :href "/api/builds/"}
+                         :href  "/api/builds/"}
                         {:label "Github"
-                         :href "https://github.com/flosell/lambdacd"}]}
-             {:label "Mock test results"
+                         :href  "https://github.com/flosell/lambdacd"}]}
+             {:label   "Mock test results"
               :details [{:label "Unit Tests: 0/10 failed"}
-                        {:label "Integration Tests Tests: 1/5 failed"}]}]})
+                        {:label   "Integration Tests Tests: 1/5 failed"
+                         :details [{:label "SomeTestClass.shouldBeFailingWhenTested"
+                                    :raw   "java.lang.AssertionError: expected:<0> but was:<10>\n\tat org.junit.Assert.fail(Assert.java:88)\n\tat org.junit.Assert.failNotEquals(Assert.java:743)\n\tat org.junit.Assert.assertEquals(Assert.java:118)"}]}]}]})
 
 ;; The steps that do the real work testing, packaging, publishing our code.
 ;; They get the :cwd argument from the ```with-*-git steps``` we defined above.

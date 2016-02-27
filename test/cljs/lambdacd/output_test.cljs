@@ -44,7 +44,9 @@
                                                 :result {:status "success"
                                                          :details [{:label "some details"
                                                                     :href "http://some-url.com"
-                                                                    :details [{:label "some nested details"}]}]}
+                                                                    :details [{:label "some nested details"}]}
+                                                                   {:label "some preformatted text following"
+                                                                    :raw "this preformatted text"}]}
                                                 :children []})
 
 (def some-failed-build-state
@@ -162,4 +164,7 @@
       (fn [c div]
         (is (dom/found-in div #"some details"))
         (is (dom/containing-link-to div "http://some-url.com"))
-        (is (dom/found-in div #"nested details"))))))
+        (is (dom/found-in div #"nested details"))
+        (is (dom/found-in div #"preformatted text following"))
+        (is (dom/containing-preformatted-text div #"this preformatted text"))
+        ))))

@@ -42,6 +42,9 @@
 (defn containing-link-to [div href]
   (= href (first (map #(dommy/attr % :href) (by-tag div :a)))))
 
+(defn containing-preformatted-text [div re]
+  (found-in (first (by-tag div :pre)) re))
+
 (defn containing-ordered-list [elem]
   (not (empty? (sel elem :ol))))
 

@@ -5,6 +5,10 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
+## 0.7.1
+* Improvements: 
+  * Adds ability to display preformatted text in step result details (#89)
+
 ## 0.7.0
 * Improvements: 
   * Adds public functions to simplify building custom build state aggregations (#84)

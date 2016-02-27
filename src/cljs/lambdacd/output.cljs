@@ -12,17 +12,20 @@
 
 (defn- raw-step-results-component [visible result]
   (if visible
-    [:pre (js/JSON.stringify (clj->js result) nil 2)]
+    [:pre {:class "step-results__raw-step-results"} (js/JSON.stringify (clj->js result) nil 2)]
     [:pre]))
 
 (declare details-component)
 
 (defn- detail-component [detail]
   [:li {:key (:label detail)}
-   (if (:href detail)
-     [:a {:href (:href detail)
-          :target "_blank"} (:label detail)]
-     [:span (:label detail)])
+   (cond
+     (:href detail) [:a {:href (:href detail)
+                         :target "_blank"} (:label detail)]
+     (:raw detail) (list
+                     [:span (:label detail)]
+                     [:pre (:raw detail)])
+     :else [:span (:label detail)])
    (if (:details detail)
      (details-component (:details detail)))])
 
