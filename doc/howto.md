@@ -10,6 +10,7 @@
 * [How do I use fragments of a pipeline in more than one pipeline?](#how-do-i-use-fragments-of-a-pipeline-in-more-than-one-pipeline)
 * [How do I implement authentication and authorization?](#how-do-i-implement-authentication-and-authorization)
 * [How do I deploy my pipeline?](#how-do-i-deploy-my-pipeline)
+* [Can I display my build output in a structured way?](#can-i-display-my-build-output-in-a-structured-way)
 
 ## How do I call things on the command line?
 
