@@ -11,4 +11,10 @@
     (is (= ["three"] (p/process-ascii-escape-characters "one\rtwo\rthree")))
     (is (= ["three" "four" "five"] (p/process-ascii-escape-characters "one\rtwo\rthree\nfour\r\nfive")))
     (is (= ["one" "" "two"] (p/process-ascii-escape-characters "one\n\r\ntwo")))
-    (is (= ["one" "" "two"] (p/process-ascii-escape-characters "one\r\n\r\ntwo")))))
+    (is (= ["one" "" "two"] (p/process-ascii-escape-characters "one\r\n\r\ntwo"))))
+  (testing "that backspace removes the previous character"
+    (is (= ["hello world"] (p/process-ascii-escape-characters "hello worldd\b")))
+    (is (= ["hello world"] (p/process-ascii-escape-characters "hellll\b\bo world")))
+    (is (= [""] (p/process-ascii-escape-characters "\b")))
+    (is (= [""] (p/process-ascii-escape-characters "x\b\b")))
+    (is (= ["x"] (p/process-ascii-escape-characters "\bx")))))
