@@ -7,7 +7,8 @@ The official release will have a defined and more stable API. If you are already
 
 ## 0.7.1
 * Improvements: 
-  * Adds ability to display preformatted text in step result details (#89)
+  * UI: Adds ability to display preformatted text in step result details (#89)
+  * UI: Honors ASCII escape sequences like `\r` in console output (#88)
 
 ## 0.7.0
 * Improvements: 

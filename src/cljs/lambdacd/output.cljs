@@ -3,7 +3,8 @@
             [reagent.core :as reagent :refer [atom]]
             [re-frame.core :as re-frame]
             [lambdacd.db :as db]
-            [clojure.string :as s]))
+            [clojure.string :as s]
+            [lambdacd.console-output-processor :as console-output-processor]))
 
 (defn negate [a]
   (fn [& _ ]
@@ -80,6 +81,12 @@
     (still-active? status) output
     :else (str output "\n\n" "Step is finished: " (status-to-string status))))
 
+(defn- console-component [output]
+  (let [lines (console-output-processor/process-ascii-escape-characters output)]
+    [:div {:class "console-output"}
+     (for [line lines]
+       [:pre {:class "console-output__line"} line])]))
+
 (defn- plain-output-component [step raw-step-results-visible]
   (let [result (:result step)]
     [:div {:class "results"}
@@ -90,7 +97,7 @@
      (if (not (nil? (:out result)))
        [:div
         [:h3 "Console Output"]
-        [:pre (enhanced-output result)]])]))
+        (console-component (enhanced-output result))])]))
 
 (defn output-renderer [current-step-result raw-step-results-visible]
   (if current-step-result
