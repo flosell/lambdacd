@@ -23,9 +23,9 @@
    (cond
      (:href detail) [:a {:href (:href detail)
                          :target "_blank"} (:label detail)]
-     (:raw detail) (list
+     (:raw detail) [:div
                      [:span (:label detail)]
-                     [:pre (:raw detail)])
+                     [:pre (:raw detail)]]
      :else [:span (:label detail)])
    (if (:details detail)
      (details-component (:details detail)))])
@@ -81,11 +81,13 @@
     (still-active? status) output
     :else (str output "\n\n" "Step is finished: " (status-to-string status))))
 
+(defn- console-output-line [idx line]
+  [:pre {:class "console-output__line" :key (str idx "-" (hash line))} line])
+
 (defn- console-component [output]
   (let [lines (console-output-processor/process-ascii-escape-characters output)]
     [:div {:class "console-output"}
-     (for [line lines]
-       [:pre {:class "console-output__line"} line])]))
+     (map-indexed console-output-line lines)]))
 
 (defn- plain-output-component [step raw-step-results-visible]
   (let [result (:result step)]
