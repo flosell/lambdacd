@@ -1,8 +1,12 @@
 (ns lambdacd.console-output-processor
   (:require [clojure.string :as s]))
 
-(defn- process-carriage-returns [s]
-  (s/replace s #".*\r" ""))
+(defn- process-carriage-returns [line]
+  (->> (clojure.string/split line "\r")
+       reverse
+       (reduce (fn [final-line previous-chunk]
+                 (str final-line (subs previous-chunk (count final-line)))) "")))
+
 (defn- process-backspaces [s]
   (s/join
     (reverse
