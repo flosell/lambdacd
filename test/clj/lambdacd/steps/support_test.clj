@@ -1,6 +1,6 @@
 (ns lambdacd.steps.support-test
   (:require [clojure.test :refer :all]
-            [lambdacd.steps.support :refer :all]
+            [lambdacd.steps.support :as step-support :refer :all]
             [lambdacd.testsupport.test-util :refer [slurp-chan]]
             [lambdacd.testsupport.data :refer [some-ctx some-ctx-with]]
             [lambdacd.testsupport.matchers :refer [map-containing]]
@@ -160,7 +160,10 @@
   (testing "that a given argument is passed on to the step"
     (is (= {:status :success :the-arg 42}
            (chaining {:v 42} {}
-                     (some-step-returning-an-argument-passed-in injected-args injected-ctx)))))
+                     (some-step-returning-an-argument-passed-in injected-args injected-ctx))))
+    (is (= {:status :success :the-arg 42}
+           (chaining {:v 42} {}
+                     (some-step-returning-an-argument-passed-in step-support/injected-args injected-ctx)))))
   (testing "that we can have more arguments than just args and ctx"
     (is (= {:status :success :hello "hello" :world "world"}
            (chaining {} {} (some-step-with-additional-arguments injected-args injected-ctx "hello" "world")))))

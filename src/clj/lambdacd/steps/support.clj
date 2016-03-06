@@ -54,10 +54,14 @@
 
 (defn replace-args-and-ctx [args ctx]
   (fn [x]
-    (case x
-      injected-args args
-      injected-ctx ctx
-      x)))
+    (cond
+      (and
+        (symbol? x)
+        (= (var injected-args) (resolve x))) args
+      (and
+        (symbol? x)
+        (= (var injected-ctx) (resolve x))) ctx
+      :else x)))
 
 (defn to-fn-with-args [form]
   (let [f# (first form)

@@ -11,6 +11,7 @@ The official release will have a defined and more stable API. If you are already
   * UI: Honors ASCII escape sequences like `\r` in console output (#88)
 * Bug fixes:
   * UI: Unicode Characters displayed as ??? (#92)
+  * Chaining macro did not inject `args` and `ctx` if they were referred to via the namespace (#93)
 
 ## 0.7.0
 * Improvements: 
