@@ -250,13 +250,14 @@
     (is (= { } (merge-step-results [{} {}]))))
   (testing "that later step-results overwrite earlier ones"
     (is (= {:foo :baz} (merge-step-results [{:foo :bar} {:foo :baz}]))))
+  (testing "that details are merged correctly"
+    (is (= {:a [{:b 2} {:c 3}]} (merge-step-results [{:a [{:b 2}]} {:a [{:c 3}]}]))))
   (testing "that there is a special status handling"
     (is (= {:status :success} (merge-step-results [{:status :success} {:status :success}])))
     (is (= {:status :failure} (merge-step-results [{:status :success} {:status :failure}])))
     (is (= {:status :unknown} (merge-step-results [{:status :unknown} {:status :success}]))) ; non-success trumps order
     (is (= {:status :unknown} (merge-step-results [{:status :failure} {:status :unknown}]))) ; non-success overwrites in order
     (is (= {:status :failure} (merge-step-results [{:status :failure} {:status :success}]))))) ; non-success trumps order
-
 
 (deftest capture-output-test
   (testing "that the original step result is kept"
