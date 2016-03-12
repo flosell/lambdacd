@@ -121,6 +121,7 @@
 (defn- merge-entry [r1 r2]
   (cond
     (keyword? r1) (merge-status r1 r2)
+    (and (coll? r1) (coll? r2)) (into r1 r2)
     (coll? r1) (merge r1 r2)
     :else r2))
 
