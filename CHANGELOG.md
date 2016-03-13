@@ -12,6 +12,7 @@ The official release will have a defined and more stable API. If you are already
 * Bug fixes:
   * UI: Unicode Characters displayed as ??? (#92)
   * Chaining macro did not inject `args` and `ctx` if they were referred to via the namespace (#93)
+  * Fixed merging of step results when both values in the maps to be merged are seqs (#95) (thanks @thilo11)
 
 ## 0.7.0
 * Improvements: 
