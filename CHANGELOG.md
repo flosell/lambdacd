@@ -5,6 +5,10 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
+# 0.7.2
+* Bug fixes:
+  * UI did not display the second detail if it had the same label as the first (#98)
+
 ## 0.7.1
 * Improvements: 
   * UI: Adds ability to display preformatted text in step result details (#89)

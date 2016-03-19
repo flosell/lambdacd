@@ -19,7 +19,7 @@
 (declare details-component)
 
 (defn- detail-component [detail]
-  [:li {:key (:label detail)}
+  [:li {:key (str (:label detail) (hash detail))}
    (cond
      (:href detail) [:a {:href (:href detail)
                          :target "_blank"} (:label detail)]

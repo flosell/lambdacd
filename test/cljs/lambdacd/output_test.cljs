@@ -48,6 +48,14 @@
                                                                    {:label "some preformatted text following"
                                                                     :raw "this preformatted text"}]}
                                                 :children []})
+(def some-build-state-with-duplicate-detail-labels {:name     "do-other-stuff"
+                                                    :step-id  [1 1]
+                                                    :result   {:status  "success"
+                                                               :details [{:label   "foo"
+                                                                          :href    "http://some-url.com"}
+                                                                         {:label   "foo"
+                                                                          :href    "http://some-other-url.com"}]}
+                                                    :children []})
 
 (def some-failed-build-state
   {:name     "do-other-stuff"
@@ -166,5 +174,10 @@
         (is (dom/containing-link-to div "http://some-url.com"))
         (is (dom/found-in div #"nested details"))
         (is (dom/found-in div #"preformatted text following"))
-        (is (dom/containing-preformatted-text div #"this preformatted text"))
-        ))))
+        (is (dom/containing-preformatted-text div #"this preformatted text")))))
+  (testing "that if two details have the same label, both are displayed"
+    (tu/with-mounted-component
+      (output/output-renderer some-build-state-with-duplicate-detail-labels raw-step-result-visible)
+      (fn [c div]
+        (is (dom/containing-link-to div "http://some-url.com"))
+        (is (dom/containing-link-to div "http://some-other-url.com"))))))

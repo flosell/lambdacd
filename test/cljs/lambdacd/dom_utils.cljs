@@ -40,7 +40,8 @@
         false)))
 
 (defn containing-link-to [div href]
-  (= href (first (map #(dommy/attr % :href) (by-tag div :a)))))
+  (->> (map #(dommy/attr % :href) (by-tag div :a))
+       (some #(= href %))))
 
 (defn containing-preformatted-text [div re]
   (found-in (first (by-tag div :pre)) re))
