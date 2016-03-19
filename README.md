@@ -92,16 +92,7 @@ And if you notice something, please open bug reports, feature requests or just g
 
 I'd love to hear from you! If you have a question, a bug report or feature request please reach out.
 
-The preferred way at the moment is to open issues on the [Github Issue Tracker](https://github.com/flosell/lambdacd/issues)
-
-If you want to contribute improvements to the LambdaCD codebase, open a pull request.
-
-If you are building a new feature, consider if this needs to go into the core of LambdaCD. Lots of features
-(like support for another version control system, reusable build steps, nicer syntactic sugar, a different user interface
-and many others) can easily be maintained as a separate library.
-Have a look at [lambdacd-artifacts](https://github.com/flosell/lambdacd-artifacts) or [lambdacd-cctray](https://github.com/flosell/lambdacd-cctray)
-as an example. If in doubt, open an issue and ask.
-
+For details, refer to the [contribution guide](CONTRIBUTING.md)
 
 ## Development
 
