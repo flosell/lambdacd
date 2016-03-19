@@ -44,4 +44,4 @@ as an example. If in doubt, open an issue and ask.
 ## Contributing Documentation
 
 The main hub for documentation on LambdaCD is in the [wiki](https://github.com/flosell/lambdacd/wiki). 
-It's writable to everyone so if you have something that's worth knowing for everybody, don't hesitate to add it!
+It's writable for everyone so if you have something that's worth knowing for everybody, don't hesitate to add it!
