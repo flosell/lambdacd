@@ -20,7 +20,7 @@ If you want to contribute improvements to the LambdaCD codebase, open a pull req
 
 ## How to create the perfect pull request
 
-* Have a look into the [`README`](https://github.com/flosell/lambdacd#development) for details on how to work with the
+* Have a look into the [`README`](README.md#development) for details on how to work with the
   code
 * Follow the usual best practices for pull requests: 
   * use a branch, 
@@ -29,7 +29,7 @@ If you want to contribute improvements to the LambdaCD codebase, open a pull req
   * keep a tidy commit history that speaks for itself, consider squashing commits where appropriate
 * Run all the tests: `./go test`
 * Add tests where possible (UI changes might be very hard to test for limited benefit so I'm more relaxed there)
-* Add an entry in `CHANGELOG.md` if you add new features, fix bugs or otherwise change LambdaCD in a way that you want 
+* Add an entry in [`CHANGELOG.md`](CHANGELOG.md) if you add new features, fix bugs or otherwise change LambdaCD in a way that you want 
   users to be aware of. The entry goes into the section for the next release (which is the version number indicated in 
   `project.clj`), usually the top one. If that section doesn't exist yet, add it. 
 
