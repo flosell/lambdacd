@@ -90,8 +90,8 @@
   (post-process-container-results
     (core/execute-steps steps args ctx
                         :unify-status-fn status/successful-when-all-successful
-                        :is-killed (:is-killed ctx)))
-  )
+                        :is-killed (:is-killed ctx))))
+
 
 (defn ^{:display-type :container} run [ & steps]
   (fn [args ctx]
@@ -123,4 +123,4 @@
           temp-dir (utils/create-temp-dir home-dir)
           new-args  (assoc args :cwd temp-dir)]
       (utils/with-temp temp-dir
-                       (run-steps-in-sequence new-args ctx steps)))) )
+                       (run-steps-in-sequence new-args ctx steps)))))

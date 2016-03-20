@@ -19,7 +19,7 @@
           (assoc (:trigger-parameters result) :status :success)
           (recur))))))
 
-(defn wait-for-manual-trigger
+(defn ^{:display-type :manual-trigger} wait-for-manual-trigger
   "build step that waits for someone to trigger the build by POSTing to the url indicated by a random trigger id.
   the trigger-id is returned as the :trigger-id result value. see UI implementation for details"
   [_ ctx & _]

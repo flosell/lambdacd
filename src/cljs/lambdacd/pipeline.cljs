@@ -46,7 +46,7 @@
   (case type
     "parallel" :ul
     "container" :ol
-    "step" nil))
+    nil))
 
 (defn retrigger-component [build-number build-step]
   (if (is-finished build-step)
@@ -67,22 +67,34 @@
   (if (can-be-killed? build-step)
     [:i {:class "fa fa-times pipeline__step__action-button" :on-click (click-handler #(api/kill build-number (step-id-for build-step)))}]))
 
+(defn active-manual-trigger-component [build-step]
+  [:i {:class    "fa fa-play pipeline__step__action-button"
+       :on-click (click-handler #(manual-trigger (:result build-step)))}])
+
+(defn inactive-manual-trigger-component []
+  [:i {:class "fa fa-play pipeline__step__action-button pipeline__step__action-button--disabled"}])
+
 (defn manualtrigger-component [build-step]
-  (let [result (:result build-step)
-        trigger-id (:trigger-id result)]
-    (if (and trigger-id (not (is-finished build-step)))
-      [:i {:class "fa fa-play pipeline__step__action-button" :on-click (click-handler #(manual-trigger result))}])))
+  (let [trigger-id        (:trigger-id (:result build-step))
+        not-finished      (not (is-finished build-step))
+        is-manual-trigger (= "manual-trigger" (:type build-step))]
+    (cond
+      (and not-finished trigger-id)        [active-manual-trigger-component build-step]
+      (and not-finished is-manual-trigger) [inactive-manual-trigger-component])))
 
-(defn- expander-button [{step-id :step-id :as build-step}]
-  (let [is-expanded (re-frame/subscribe [::db/step-expanded? step-id])]
-    (fn [{step-id :step-id {status :status} :result type :type children :children :as build-step}]
-      (if (not= "step" type)
-        [:i {:class    (classes "fa" "pipeline__step__action-button" (if @is-expanded "fa-minus" "fa-plus"))
-             :on-click (fn [event]
-                         (re-frame/dispatch [::db/toggle-step-expanded step-id])
-                         nil)}]))))
+(defn- expandable? [{type :type}]
+  (or (= "parallel" type) (= "container" type)))
 
-(declare build-step)                                        ;; mutual recursion
+(defn- expander-button [{step-id :step-id}]
+(let [is-expanded (re-frame/subscribe [::db/step-expanded? step-id])]
+  (fn [{step-id :step-id :as build-step}]
+    (if (expandable? build-step)
+      [:i {:class    (classes "fa" "pipeline__step__action-button" (if @is-expanded "fa-minus" "fa-plus"))
+           :on-click (fn [event]
+                       (re-frame/dispatch [::db/toggle-step-expanded step-id])
+                       nil)}]))))
+
+(declare build-step) ;; mutual recursion
 
 (defn format-build-step-duration [{status             :status
                                    has-been-waiting   :has-been-waiting

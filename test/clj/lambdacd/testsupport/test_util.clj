@@ -154,3 +154,7 @@
 (defn step-failure? [ctx build-number step-id]
   (= :failure (step-status (assoc ctx :build-number build-number
                                       :step-id step-id))))
+
+
+(defn third [coll]
+  (nth coll 2))

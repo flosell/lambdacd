@@ -12,6 +12,7 @@
 (defn ^{:depends-on-previous-steps false} step-that-declares-it-doesnt-depend [] {})
 (defn do-more-stuff [] {})
 (defn do-even-more-stuff [] {})
+(defn ^{:display-type :some-display-type} do-stuff-that-has-a-different-display-type [] {})
 (defn do-stuff-with-hidden-params [^:hide a b])
 
 (defn container-without-display-type [& steps]
@@ -26,13 +27,14 @@
         do-other-stuff
         do-more-stuff))
     (in-cwd "some-path"
-      do-even-more-stuff)
-  ))
+      do-even-more-stuff)))
+
 
 (def simple-pipeline
   `(
     do-stuff
-    do-other-stuff))
+    do-other-stuff
+    do-stuff-that-has-a-different-display-type))
 
 (def pipeline-with-alias
   `(
@@ -53,7 +55,7 @@
 (defn mk-pipeline [some-param]
   `((in-cwd "bar"
             (do-stuff ~some-param))))
-(with-private-fns [lambdacd.presentation.pipeline-structure [display-type display-name has-dependencies? ]]
+(with-private-fns [lambdacd.presentation.pipeline-structure [display-type display-name has-dependencies?]]
   (deftest display-type-test
     (testing "that in-parallel gets detected"
       (is (= :parallel (display-type `(in-parallel do-stuff))))
@@ -64,6 +66,9 @@
     (testing "that normal steps get detected"
       (is (= :step (display-type `do-stuff)))
       (is (= :step (display-type (first simple-pipeline)))))
+    (testing "that display-types on normal steps work"
+      (is (= :some-display-type (display-type `do-stuff-that-has-a-different-display-type)))
+      (is (= :some-display-type (display-type (third simple-pipeline)))))
     (testing "that a string is unknown type"
       (is (= :unknown (display-type "foo")))
       (is (= :unknown (display-type (second (second (first pipeline)))))))
@@ -105,10 +110,10 @@
       (is (= false (has-dependencies? `do-stuff)))
       (is (= false (has-dependencies? (first simple-pipeline)))))
     (testing "that it is true when step declares it depends on something"
-      (is (= true (has-dependencies? `do-other-stuff )))
+      (is (= true (has-dependencies? `do-other-stuff)))
       (is (= true (has-dependencies? (second simple-pipeline)))))
     (testing "that it is false if a step declares it doesn't depend on anything"
-      (is (= false (has-dependencies? `step-that-declares-it-doesnt-depend ))))
+      (is (= false (has-dependencies? `step-that-declares-it-doesnt-depend))))
     (testing "that it works with nested steps"
       (is (= false (has-dependencies? `(do-stuff "foo"))))
       (is (= true (has-dependencies? `(do-other-stuff "foo")))))))
@@ -123,7 +128,10 @@
             :has-dependencies false
             :children [{:name "do-even-more-stuff" :type :step :step-id '(1) :has-dependencies false}]} (step-display-representation (second pipeline) '()))))
   (testing "that a display-representation of a sequence of only steps works"
-    (is (= [{:name "do-stuff" :type :step :step-id '(1) :has-dependencies false} {:name "do-other-stuff" :type :step :step-id '(2) :has-dependencies true}] (pipeline-display-representation simple-pipeline))))
+    (is (= [{:name "do-stuff" :type :step :step-id '(1) :has-dependencies false}
+            {:name "do-other-stuff" :type :step :step-id '(2) :has-dependencies true}
+            {:name "do-stuff-that-has-a-different-display-type" :type :some-display-type :step-id '(3) :has-dependencies false}]
+           (pipeline-display-representation simple-pipeline))))
   (testing "that aliasing makes the aliased child disappear"
     (is (= [{:name "do-stuff-alias" :type :step :step-id '(1 1) :has-dependencies false} {:name "do-other-stuff" :type :step :step-id '(2) :has-dependencies true}] (pipeline-display-representation pipeline-with-alias))))
   (testing "that foo-pipeline works"
@@ -137,11 +145,11 @@
                  :step-id '(1 1)
                  :has-dependencies false
                  :children [{:name "do-stuff" :type :step :step-id '(1 1 1) :has-dependencies false}]}
-               {:name "in-cwd bar"
-                :type :container
-                :step-id '(2 1)
-                :has-dependencies false
-                :children [{:name "do-other-stuff" :type :step :step-id '(1 2 1) :has-dependencies true}]}]}] (pipeline-display-representation foo-pipeline))))
+                {:name "in-cwd bar"
+                 :type :container
+                 :step-id '(2 1)
+                 :has-dependencies false
+                 :children [{:name "do-other-stuff" :type :step :step-id '(1 2 1) :has-dependencies true}]}]}] (pipeline-display-representation foo-pipeline))))
   (testing "that nesting parallel in sequential containers works (reproduces #47)"
     (is (not (nil? (:children (first (pipeline-display-representation `((run (in-parallel do-stuff))))))))))
   (testing "that display type defaults to :container for container-steps"

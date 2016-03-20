@@ -39,3 +39,6 @@
 
 (defn with-status [step status]
   (assoc-in step [:result :status] status))
+
+(defn with-trigger-id [step trigger-id]
+  (assoc-in step [:result :trigger-id] trigger-id))

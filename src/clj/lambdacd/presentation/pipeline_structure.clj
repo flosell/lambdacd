@@ -29,7 +29,7 @@
 
 (defn- display-type [x]
   (cond
-    (is-fn? x) :step
+    (is-fn? x) (or (display-type-by-metadata x) :step)
     (is-nested-with-children x) (or (display-type-by-metadata (first x)) :container)
     (sequential? x) :step
     :else :unknown))
@@ -90,15 +90,15 @@
 (defn- seq-to-display-representations [parent-step-id part]
   (map-indexed #(step-display-representation %2 (conj parent-step-id (inc %1))) part))
 
-(defn- is-simple-step? [x]
-  (= :step (display-type x)))
-
 (defn- is-container-step? [x]
   (let [dt (display-type x)]
-    (or (= :container dt) (= :parallel x))))
+    (or (= :container dt) (= :parallel dt))))
+
+(defn- has-display-type? [x]
+  (not= :unknown (display-type x)))
 
 (defn- is-child? [x]
-  (or (is-container-step? x) (is-simple-step? x) (is-nested-with-children x)))
+  (has-display-type? x))
 
 (defn- simple-step-representation [part id]
   {:name (display-name part)
@@ -125,9 +125,9 @@
        :children children-representations})))
 
 (defn step-display-representation [part id]
-  (if (is-simple-step? part)
-    (simple-step-representation part id)
-    (container-step-representation part id)))
+  (if (is-container-step? part)
+    (container-step-representation part id)
+    (simple-step-representation part id)))
 
 
 (defn pipeline-display-representation
