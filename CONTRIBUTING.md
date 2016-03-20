@@ -16,6 +16,7 @@ If you want to contribute improvements to the LambdaCD codebase, open a pull req
 * Provide context (what were you trying to achive, what were you expecting, ...)
 * Code samples and logs can be really helpful. Consider [Gists](https://gist.github.com/) or links to other Github repos
   for larger pieces. 
+* If the UI behaves in a strange way, have a look at your browsers development tools. The console and network traffic might give you some insight that's valuable for a bug report.  
 * If you are reporting a bug, add steps to reproduce it. 
 
 ## How to create the perfect pull request
