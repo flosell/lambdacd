@@ -11,12 +11,19 @@
     (swap! a not)
     nil))
 
-(defn- raw-step-results-component [visible result]
-  (if visible
-    [:pre {:class "step-results__raw-step-results"} (js/JSON.stringify (clj->js result) nil 2)]
-    [:pre]))
+(defn raw-step-results-component []
+  (let [current-step-result      (re-frame/subscribe [::db/current-step-result])
+        raw-step-results-visible (re-frame/subscribe [::db/raw-step-results-visible])]
+    (fn []
+      [:div
+       [:h3 "Complete Step Result"]
+       [:button {:on-click #(re-frame/dispatch [::db/toggle-raw-step-results-visible])}
+        (if @raw-step-results-visible "hide" "show")]
+       (if @raw-step-results-visible
+         [:pre {:class "step-results__raw-step-results"}
+          (js/JSON.stringify (clj->js @current-step-result) nil 2)])])))
 
-(declare details-component)
+(declare details-section)
 
 (defn- detail-component [detail]
   [:li {:key (str (:label detail) (hash detail))}
@@ -28,16 +35,18 @@
                      [:pre (:raw detail)]]
      :else [:span (:label detail)])
    (if (:details detail)
-     (details-component (:details detail)))])
+     (details-section (:details detail)))])
 
-(defn- details-component [details]
+(defn- details-section [details]
   [:ul (map detail-component details)])
 
-(defn- details-wrapper-component [result]
-  (if (:details result)
-    [:div {:class "details-container"}
-     [:h3 "Details"]
-     (details-component (:details result))]))
+(defn details-component []
+  (let [result (re-frame/subscribe [::db/current-step-result])]
+    (fn []
+      (if (:details (:result @result))
+        [:div {:class "details-container"}
+         [:h3 "Details"]
+         (details-section (:details (:result @result)))]))))
 
 (defn- scroll-to-bottom []
   (js/window.scrollTo 0 js/document.body.scrollHeight ))
@@ -52,10 +61,8 @@
         before-update #(reset! scrolled-to-bottom-before-update (is-scrolled-to-bottom))
         after-update #(if @scrolled-to-bottom-before-update (scroll-to-bottom))
         wrapped-component (with-meta component
-                             {:component-will-mount before-update
-                              :component-will-update before-update
-                              :component-did-update after-update
-                              :component-did-mount after-update})]
+                             {:component-will-update before-update
+                              :component-did-update after-update})]
     [wrapped-component]))
 
 (defn status-to-string [status]
@@ -84,30 +91,26 @@
 (defn- console-output-line [idx line]
   [:pre {:class "console-output__line" :key (str idx "-" (hash line))} line])
 
-(defn- console-component [output]
-  (let [lines (console-output-processor/process-ascii-escape-characters output)]
-    [:div {:class "console-output"}
-     (map-indexed console-output-line lines)]))
+(defn console-component []
+  (let [current-step-result (re-frame/subscribe [::db/current-step-result])]
+    (fn []
+      (if (not (nil? (:out (:result @current-step-result))))
+        [:div
+         [:h3 "Console Output"]
+         (let [lines (console-output-processor/process-ascii-escape-characters (enhanced-output (:result @current-step-result)))]
+           [:div {:class "console-output"}
+            (map-indexed console-output-line lines)])]
+        [:div]))))
 
-(defn- plain-output-component [step raw-step-results-visible]
-  (let [result (:result step)]
+(defn output-renderer [current-step-id]
+  (if current-step-id
     [:div {:class "results"}
-     [details-wrapper-component result]
-     [:h3 "Complete Step Result"]
-     [:button {:on-click #(re-frame/dispatch [::db/toggle-raw-step-results-visible])} (if raw-step-results-visible "hide" "show")]
-     [raw-step-results-component raw-step-results-visible result]
-     (if (not (nil? (:out result)))
-       [:div
-        [:h3 "Console Output"]
-        (console-component (enhanced-output result))])]))
-
-(defn output-renderer [current-step-result raw-step-results-visible]
-  (if current-step-result
-    (scroll-wrapper (partial plain-output-component current-step-result raw-step-results-visible))
-    [:pre {:key "build-output"} "Click on a build step to display details."]))
+     [details-component]
+     [raw-step-results-component]
+     (scroll-wrapper console-component)]
+    [:pre "Click on a build step to display details."]))
 
 (defn output-component []
-  (let [current-step-result (re-frame/subscribe [::db/current-step-result])
-        raw-step-results-visible (re-frame/subscribe [::db/raw-step-results-visible])]
+  (let [current-step-id (re-frame/subscribe [::db/step-id])]
     (fn []
-      [output-renderer @current-step-result @raw-step-results-visible])))
+      [output-renderer @current-step-id])))

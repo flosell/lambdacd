@@ -5,11 +5,7 @@
             [lambdacd.ui-core :as core]
             [re-frame.core :as re-frame]
             [lambdacd.db :as db]
-            [lambdacd.testutils :as tu]))
-
-(defn mock-subscriptions [values]
-  (fn [[q] _]
-    (atom (q values))))
+            [lambdacd.testutils :as tu :refer [mock-subscriptions]]))
 
 (deftest current-build-component-test
          (testing "a normally rendered pipeline"

@@ -27,3 +27,9 @@
 
 (defn contains-value? [v coll]
   (some #(= % v) coll))
+
+; mocking
+
+(defn mock-subscriptions [values]
+  (fn [[q] _]
+    (atom (q values))))
