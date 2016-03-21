@@ -5,11 +5,28 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
-# 0.7.2
+# 0.8.0
 * Improvements: 
   * UI: Trigger symbol is now visible before a manual trigger is reached (#97)
 * Bug fixes:
   * UI did not display the second detail if it had the same label as the first (#98)
+* Breaking Changes:
+  * LambdaCD no longer depends on Logback as a logging implementation. If you see the following message you need to add
+    a dependency to a library that's compatible with SLF4J
+
+    ```
+    SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+    SLF4J: Defaulting to no-operation (NOP) logger implementation
+    SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+    ```
+
+    The default dependencies were:
+
+    ```clojure
+    [ch.qos.logback/logback-core "1.0.13"]
+    [ch.qos.logback/logback-classic "1.0.13"]
+    ```
+
 
 ## 0.7.1
 * Improvements: 

@@ -1,4 +1,4 @@
-(defproject lambdacd "0.7.2-SNAPSHOT"
+(defproject lambdacd "0.8.0-SNAPSHOT"
   :description "a library to create a continous delivery pipeline in code"
   :url "http://github.com/flosell/lambdacd"
   :license {:name "Apache License, version 2.0"
@@ -19,8 +19,6 @@
                  [compojure "1.1.8"]
                  [org.clojure/tools.logging "0.3.0"]
                  [org.slf4j/slf4j-api "1.7.5"]
-                 [ch.qos.logback/logback-core "1.0.13"]
-                 [ch.qos.logback/logback-classic "1.0.13"]
                  [ring-server "0.3.1"]
                  [ring/ring-json "0.3.1"]
                  [cheshire "5.4.0"]
@@ -71,7 +69,9 @@
                                        [lein-doo "0.1.4"]
                                        [com.cemerick/piggieback "0.2.1"]
                                        [org.clojure/tools.nrepl "0.2.10"]
-                                       [pjstadig/humane-test-output "0.6.0"]]
+                                       [pjstadig/humane-test-output "0.6.0"]
+                                       [ch.qos.logback/logback-core "1.0.13"]
+                                       [ch.qos.logback/logback-classic "1.0.13"]]
 
                         :source-paths ["env/dev/clj"]
                         :plugins      [[lein-figwheel "0.4.0"]
