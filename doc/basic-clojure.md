@@ -14,6 +14,7 @@ To try out LambdaCD, here's what you need to know:
 
 This will most likely not be enough so here are some places with more detailed infos:
 
+* http://www.clojurenewbieguide.com/
 * http://tryclj.com/
 * http://clojure-doc.org/articles/tutorials/introduction.html
 * http://www.braveclojure.com/
