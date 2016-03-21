@@ -11,8 +11,8 @@ The official release will have a defined and more stable API. If you are already
 * Bug fixes:
   * UI did not display the second detail if it had the same label as the first (#98)
 * Breaking Changes:
-  * LambdaCD no longer depends on Logback as a logging implementation. If you see the following message you need to add
-    a dependency to a library that's compatible with SLF4J
+  * LambdaCD no longer depends on Logback as a logging implementation and gives you more freedom to choose a logging
+    implementation. If you see the following message you need to add a dependency to a library that's compatible with SLF4J:
 
     ```
     SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
@@ -25,6 +25,17 @@ The official release will have a defined and more stable API. If you are already
     ```clojure
     [ch.qos.logback/logback-core "1.0.13"]
     [ch.qos.logback/logback-classic "1.0.13"]
+    ```
+  * LambdaCD no longer depends on ring-server and leaves the decision on how you serve the UI to you. If you see the
+    following error, you were probably using ring-server and need to add it to your dependencies:
+    ```
+    Exception in thread "main" java.io.FileNotFoundException: Could not locate ring/server/standalone__init.class or ring/server/standalone.clj on classpath.
+    ```
+
+    The default dependency was:
+
+    ```clojure
+    [ring-server "0.3.1"]
     ```
 
 
