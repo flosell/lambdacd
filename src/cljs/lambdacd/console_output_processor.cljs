@@ -39,8 +39,8 @@
 
 (defn- partition-by-newline [c]
   (let [by-k #(not= :newline %)]
-    (->> (partition-by by-k c)
-         (filter #(not= [:newline] %)))))
+    (filter #(not= [:newline] %)
+            (partition-by by-k c))))
 
 
 (defn process-ascii-escape-characters [s]
