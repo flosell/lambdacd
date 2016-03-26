@@ -52,7 +52,8 @@
         (with-backend-git
           server-test
           server-package
-          server-publish)))
+          server-publish)
+        demonstrate-ansi))
     ;; the package-scripts copy deploy-scripts and artifacts into the mockrepo directory,
     ;; execute the depoy-steps from there
      (alias "deploy"
