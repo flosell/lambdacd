@@ -88,8 +88,39 @@
     (still-active? status) output
     :else (str output "\n\n" "Step is finished: " (status-to-string status))))
 
-(defn- console-output-line [idx line]
-  [:pre {:class "console-output__line" :key (str idx "-" (hash line))} line])
+
+(defn- fragment-style->classes [fragment]
+  (->> fragment
+       (filter #(true? (second %)))
+       (map first)
+       (map {:bold      "console-output__line--bold"
+             :italic    "console-output__line--italic"
+             :underline "console-output__line--underline"})
+       (filter #(not (nil? %)))))
+
+(defn- background-color->classes [fragment]
+  (if (:background fragment)
+    [(str "console-output__line--bg-" (:background fragment))]
+    []))
+
+(defn- foreground-color->classes [fragment]
+  (if (:foreground fragment)
+    [(str "console-output__line--fg-" (:foreground fragment))]
+    []))
+
+(defn ansi-fragment->classes [fragment]
+  (->> (concat
+         (fragment-style->classes fragment)
+         (background-color->classes fragment)
+         (foreground-color->classes fragment))
+       (s/join " ")))
+
+(defn- console-output-line-fragment [idx fragment]
+  [:span {:key (str idx "-" (hash fragment)) :class (ansi-fragment->classes fragment)} (:text fragment)])
+
+(defn- console-output-line [idx fragments]
+  [:pre {:class "console-output__line" :key (str idx "-" (hash fragments))}
+   (map-indexed console-output-line-fragment fragments)])
 
 (defn console-component []
   (let [current-step-result (re-frame/subscribe [::db/current-step-result])]

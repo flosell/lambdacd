@@ -8,6 +8,7 @@ The official release will have a defined and more stable API. If you are already
 # 0.8.0
 * Improvements: 
   * UI: Trigger symbol is now visible before a manual trigger is reached (#97)
+  * UI: Console output now supports basic ANSI escape sequences (#91)
 * Bug fixes:
   * UI did not display the second detail if it had the same label as the first (#98)
 * Breaking Changes:

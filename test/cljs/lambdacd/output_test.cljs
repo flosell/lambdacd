@@ -153,3 +153,19 @@
         (fn [c div]
           (is (dom/containing-link-to div "http://some-url.com"))
           (is (dom/containing-link-to div "http://some-other-url.com")))))))
+
+
+(deftest ansi-fragment->classes-test
+  (testing "that we correctly convert fragments with ansiparse information to a css class"
+    (is (= "" (output/ansi-fragment->classes {:bold false})))
+    (is (= "console-output__line--bold" (output/ansi-fragment->classes {:bold true})))
+    (is (= "console-output__line--italic" (output/ansi-fragment->classes {:italic true})))
+    (is (= "console-output__line--underline" (output/ansi-fragment->classes {:underline true})))
+    (is (= "console-output__line--fg-red" (output/ansi-fragment->classes {:foreground "red"})))
+    (is (= "console-output__line--fg-black" (output/ansi-fragment->classes {:foreground "black"})))
+    (is (= "console-output__line--bg-blue" (output/ansi-fragment->classes {:background "blue"}))))
+  (testing "that combinations work"
+    (is (= "console-output__line--bold console-output__line--italic console-output__line--bg-blue console-output__line--fg-black"
+           (output/ansi-fragment->classes {:background "blue" :foreground "black" :bold true :italic true}))))
+  (testing "that unknown things get ignored"
+    (is (= "" (output/ansi-fragment->classes {:something-unknown true})))))
