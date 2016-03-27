@@ -1,6 +1,6 @@
 (ns lambdacd.console-output-processor
   (:require [clojure.string :as s]
-            [ansiparse]))
+            [cljsjs.ansiparse]))
 
 (defn- process-carriage-returns [line]
   (->> (clojure.string/split line "\r")

@@ -44,10 +44,7 @@
                                         :asset-path   "js-gen/out"
                                         :jar true
                                         :optimizations :advanced
-                                        :pretty-print  false
-                                        :externs ["ansiparse-externs.js"]
-                                        :foreign-libs [{:file "ansiparse.js"
-                                                        :provides ["ansiparse"]}]}}}}
+                                        :pretty-print  false}}}}
   :profiles {:release  {:hooks [leiningen.cljsbuild]}
              ;; the namespace for all the clojurescript-dependencies,
              ;; we don't want them as dependencies of the final library as cljs is already compiled then
@@ -57,6 +54,7 @@
                                        [reagent "0.5.1"]
                                        [reagent-utils "0.1.5"]
                                        [com.andrewmcveigh/cljs-time "0.3.5"]
+                                       [cljsjs/ansiparse "0.0.5-1-0"]
                                        [org.clojure/clojurescript "1.7.48"]]}
              :dev      {:main         todopipeline.pipeline
                         :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
@@ -91,14 +89,8 @@
                         :cljsbuild    {:builds        {:app {:source-paths ["visual-styleguide/src/cljs" "env/dev/cljs" "src/cljs"]
                                                              :compiler     {:main          "lambdacd.dev"
                                                                             :optimizations :none
-                                                                            :source-map    true
-                                                                            :externs ["ansiparse-externs.js"]
-                                                                            :foreign-libs [{:file "ansiparse.js"
-                                                                                            :provides ["ansiparse"]}]}}
+                                                                            :source-map    true}}
                                                        :test {:source-paths ["src/cljs" "test/cljs"]
                                                               :compiler     {:optimizations :none
                                                                              :main "lambdacd.runner"
-                                                                             :pretty-print  true
-                                                                             :externs ["ansiparse-externs.js"]
-                                                                             :foreign-libs [{:file "ansiparse.js"
-                                                                                             :provides ["ansiparse"]}]}}}}}})
+                                                                             :pretty-print  true}}}}}})
