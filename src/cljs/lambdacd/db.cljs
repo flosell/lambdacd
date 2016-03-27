@@ -15,8 +15,19 @@
    :expand-active true
    :expand-failures false})
 
-(defn initialize-db-handler [_ _]
-  default-db)
+(defn- assoc-if [h b & args]
+  (if b
+    (apply assoc h args)
+    h))
+
+(defn- not-nil? [x]
+  (not (nil? x)))
+
+(defn initialize-db-handler [_ [_ {expand-active-default :expand-active-default
+                                   expand-failures-default :expand-failures-default :as y}]]
+  (-> default-db
+      (assoc-if (not-nil? expand-active-default) :expand-active expand-active-default)
+      (assoc-if (not-nil? expand-active-default) :expand-failures expand-failures-default)))
 
 (defn- most-recent-build-number [state]
   (->> state

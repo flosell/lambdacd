@@ -9,6 +9,7 @@ The official release will have a defined and more stable API. If you are already
 * Improvements: 
   * UI: Trigger symbol is now visible before a manual trigger is reached (#97)
   * UI: Console output now supports basic ANSI escape sequences (#91)
+  * UI: Default expand behavior now configurable (#99)
 * Bug fixes:
   * UI did not display the second detail if it had the same label as the first (#98)
 * Breaking Changes:

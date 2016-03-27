@@ -1,6 +1,8 @@
 (ns lambdacd.ui.ui-page
   (:require [hiccup.core :as h]
-            [hiccup.page :as p]))
+            [hiccup.page :as p]
+            [hiccup.element :as e]
+            [lambdacd.util :as utils]))
 
 (defn css-includes []
   (list
@@ -34,14 +36,21 @@
    (if pipeline-name
      [:span {:class "app__header__pipeline-name"} pipeline-name])])
 
+(defn ui-config [ui-config]
+  (e/javascript-tag
+    (str "lambdacd_ui_config=" (utils/to-json
+                                 (or ui-config {})))))
+
 (defn ui-page [pipeline]
-  (let [pipeline-name (get-in pipeline [:context :config :name])]
+  (let [pipeline-name  (get-in pipeline [:context :config :name])
+        ui-config-data (get-in pipeline [:context :config :ui-config])]
     (h/html
       [:html
        [:head
         (title pipeline-name)
         (favicon)
-        (css-includes)]
+        (css-includes)
+        (ui-config ui-config-data)]
        [:body
         [:div {:class "app l-horizontal"}
          (header pipeline-name)

@@ -232,3 +232,11 @@
         (is (= false (query db db/step-expanded-subscription [1 1])))
         (is (= true (query db db/step-expanded-subscription [2])))
         (is (= true (query db db/step-expanded-subscription [1 2])))))))
+
+(deftest initialize-db-test
+  (testing "that it falls back to default if no ui config is present"
+    (is (= db/default-db (db/initialize-db-handler nil [nil {}]))))
+  (testing "that we can configure the default expand behavior"
+    (is (= (assoc db/default-db
+             :expand-active false
+             :expand-failures true) (db/initialize-db-handler nil [nil {:expand-active-default false :expand-failures-default true}])))))

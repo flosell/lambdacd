@@ -37,7 +37,7 @@
         [current-build-component state build-number]]]))
 
 (defn init! []
-  (re-frame/dispatch-sync [::db/initialize-db])
+  (re-frame/dispatch-sync [::db/initialize-db (js->clj js/lambdacd_ui_config :keywordize-keys true)])
   (let [state-atom (re-frame/subscribe [::db/pipeline-state])
         build-number-atom (re-frame/subscribe [::db/build-number])
         connection-state (re-frame/subscribe [::db/connection-state])]
