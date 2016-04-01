@@ -48,11 +48,25 @@
     "container" :ol
     nil))
 
+(defn- step-icon-classes [status]
+  (case status
+    "kill" "fa fa-times"
+    "trigger" "fa fa-play"
+    "retrigger" "fa fa-repeat"
+    "expand" "fa fa-plus"
+    "killed"  "fa fa-bug"
+    "collapse" "fa fa-minus"))
+
+(defn step-icon [status build-step]
+  [:i {:class (step-icon-classes status) :alt (str status " " (:name build-step))}])
+
 (defn retrigger-component [build-number build-step]
   (if (is-finished build-step)
     (if (has-dependencies build-step)
       [:i {:class "fa fa-repeat pipeline__step__action-button pipeline__step__action-button--disabled" :title "this step can not be safely retriggered as it depends on previous build steps"}]
-      [:i {:class "fa fa-repeat pipeline__step__action-button" :on-click (click-handler #(api/retrigger build-number (step-id-for build-step)))}])))
+      [:a {:class    "pipeline__step__action-button"
+           :on-click (click-handler #(api/retrigger build-number (step-id-for build-step)))}
+       (step-icon "retrigger" build-step)])))
 
 (defn ask-for [parameters]
   (into {} (doall (map (fn [[param-name param-config]]
@@ -65,11 +79,14 @@
 
 (defn kill-component [build-number build-step]
   (if (can-be-killed? build-step)
-    [:i {:class "fa fa-times pipeline__step__action-button" :on-click (click-handler #(api/kill build-number (step-id-for build-step)))}]))
+    [:a {:class    "pipeline__step__action-button"
+         :on-click (click-handler #(api/kill build-number (step-id-for build-step)))}
+     (step-icon "kill" build-step)]))
 
 (defn active-manual-trigger-component [build-step]
-  [:i {:class    "fa fa-play pipeline__step__action-button"
-       :on-click (click-handler #(manual-trigger (:result build-step)))}])
+  [:a {:class    "pipeline__step__action-button"
+       :on-click (click-handler #(manual-trigger (:result build-step)))}
+   (step-icon "trigger" build-step)])
 
 (defn inactive-manual-trigger-component []
   [:i {:class "fa fa-play pipeline__step__action-button pipeline__step__action-button--disabled"}])
@@ -89,10 +106,13 @@
 (let [is-expanded (re-frame/subscribe [::db/step-expanded? step-id])]
   (fn [{step-id :step-id :as build-step}]
     (if (expandable? build-step)
-      [:i {:class    (classes "fa" "pipeline__step__action-button" (if @is-expanded "fa-minus" "fa-plus"))
+      [:a {:class    "pipeline__step__action-button"
            :on-click (fn [event]
                        (re-frame/dispatch [::db/toggle-step-expanded step-id])
-                       nil)}]))))
+                       nil)}
+       (if @is-expanded
+         (step-icon "collapse" build-step)
+         (step-icon "expand" build-step))]))))
 
 (declare build-step) ;; mutual recursion
 
