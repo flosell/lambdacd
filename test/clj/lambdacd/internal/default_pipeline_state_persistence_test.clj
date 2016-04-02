@@ -12,6 +12,12 @@
           home-dir            (utils/create-temp-dir)]
       (write-build-history home-dir 3 some-pipeline-state)
       (is (= some-pipeline-state (read-build-history-from home-dir)))))
+  (testing "the standard case in the old world"
+    (let [some-pipeline-state {3 {'(0)     {:status :success :most-recent-update-at (t/epoch)}
+                                  '(0 1 2) {:status :failure :out "something went wrong"}}}
+          home-dir            (utils/create-temp-dir)]
+      (write-build-history-internal home-dir 3 some-pipeline-state :json)
+      (is (= some-pipeline-state (read-build-history-from-internal home-dir :json)))))
   (testing "that string-keys in a step result are suppored as well (#101)"
     (let [some-pipeline-state {3 {'(0) {:status :success :_git-last-seen-revisions {"refs/heads/master" "some-sha"}}}}
           home-dir            (utils/create-temp-dir)]

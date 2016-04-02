@@ -13,7 +13,11 @@ The official release will have a defined and more stable API. If you are already
     For details see https://github.com/flosell/lambdacd/wiki/Configuration
 * Bug fixes:
   * UI did not display the second detail if it had the same label as the first (#98)
+  * Fixed bugs in persistence that led to some data becoming corrupted between restarts (#101)
 * Breaking Changes:
+  * Changed the default persistence format from JSON to EDN to fix #101. This change should be backwards and forwards
+    compatible (i.e. you keep your history when upgrading to 0.8.0 and when downgrading to an earlier version). However,
+    if your history is critical, consider backing up your LambdaCD home-dir just in case.
   * LambdaCD no longer depends on Logback as a logging implementation and gives you more freedom to choose a logging
     implementation. If you see the following message you need to add a dependency to a library that's compatible with SLF4J:
 
