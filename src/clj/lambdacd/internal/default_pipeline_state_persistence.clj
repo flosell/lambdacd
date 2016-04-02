@@ -1,9 +1,9 @@
 (ns lambdacd.internal.default-pipeline-state-persistence
-  "defines conversions between the data-models we use internally and the data-model that's used in JSON
-   (which is more user facing)"
+  "stores the current build history on disk"
   (:import (java.util.regex Pattern)
            (java.io File)
-           (org.joda.time DateTime))
+           (org.joda.time DateTime)
+           (java.util Date))
   (:require [clojure.string :as str]
             [lambdacd.util :as util]
             [clojure.java.io :as io]
@@ -43,25 +43,32 @@
     (keyword v)
     (to-date-if-date v)))
 
-(defn- read-state [filename]
-  (let [build-number (util/parse-int (second (re-find #"build-(\d+)" filename)))
-        state (json-format->pipeline-state (json/read-str (slurp filename) :key-fn keyword :value-fn post-process-values))]
-    { build-number state }))
+(defn- build-number-from-path [path]
+  (util/parse-int (second (re-find #"build-(\d+)" path))))
+
+(defn- read-build [path]
+  (let [build-number (build-number-from-path path)
+        state        (json-format->pipeline-state (json/read-str (slurp path) :key-fn keyword :value-fn post-process-values))]
+    {build-number state}))
+
+(defn- write-build [path build]
+  (let [state-as-json        (pipeline-state->json-format build)
+        state-as-json-string (util/to-json state-as-json)]
+    (spit path state-as-json-string)))
 
 (defn write-build-history [home-dir build-number new-state]
   (if home-dir
-    (let [dir (str home-dir "/" "build-" build-number "/")
-          path (str dir "pipeline-state.json")
-          state-as-json (pipeline-state->json-format (get new-state build-number))
-          state-as-json-string (util/to-json state-as-json)]
+    (let [dir   (str home-dir "/" "build-" build-number "/")
+          path  (str dir "pipeline-state.json")
+          build (get new-state build-number)]
       (.mkdirs (io/file dir))
-      (spit path state-as-json-string))))
+      (write-build path build))))
 
 (defn read-build-history-from [home-dir]
-  (let [dir (io/file home-dir)
-        home-contents (file-seq dir)
+  (let [dir                 (io/file home-dir)
+        home-contents       (file-seq dir)
         directories-in-home (filter #(.isDirectory %) home-contents)
-        build-dirs (filter #(.startsWith (.getName %) "build-") directories-in-home)
-        build-state-files (map #(str % "/pipeline-state.json") build-dirs)
-        states (map read-state build-state-files)]
+        build-dirs          (filter #(.startsWith (.getName %) "build-") directories-in-home)
+        build-state-files   (map #(str % "/pipeline-state.json") build-dirs)
+        states              (map read-build build-state-files)]
     (into {} states)))
