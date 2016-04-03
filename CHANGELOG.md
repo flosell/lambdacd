@@ -11,6 +11,9 @@ The official release will have a defined and more stable API. If you are already
   * UI: Console output now supports basic ANSI escape sequences (#91)
   * UI: Default expand behavior now configurable (#99)
     For details see https://github.com/flosell/lambdacd/wiki/Configuration
+  * Started to add features for clean shutdown (#103)
+    * Made pipeline runners stoppable (#78)
+    * Made persistence mechanism stoppable
 * Bug fixes:
   * UI did not display the second detail if it had the same label as the first (#98)
   * Fixed bugs in persistence that led to some data becoming corrupted between restarts (#101)
