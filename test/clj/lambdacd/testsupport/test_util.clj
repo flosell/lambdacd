@@ -115,6 +115,9 @@
   `(async/go
      ~body))
 
+(defmacro call-with-timeout [timeout body]
+  `(get-or-timeout (start-waiting-for ~body) :timeout ~timeout))
+
 (defn start-waiting-for-result [key-to-wait-for result-channel]
   (async/go-loop []
     (let [[key value] (async/<! result-channel)]

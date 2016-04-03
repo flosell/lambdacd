@@ -30,5 +30,5 @@
                                 (update [_ _ _ _]
                                   (throw (Exception. "no update expected"))))
           updater-finished-ch (start-pipeline-state-updater pipeline-state ctx)]
-      (event-bus/publish ctx :stop-pipeline-state-updater {})
+      (tu/call-with-timeout 1000 (stop-pipeline-state-updater ctx updater-finished-ch))
       (is (not= {:status :timeout} (tu/get-or-timeout updater-finished-ch :timeout 1000))))))
