@@ -13,7 +13,8 @@
             [cheshire.generate :as chg]
             [clojure.data.json :as json]
             [clojure.edn :as edn]
-            [clojure.walk :as walk]))
+            [clojure.walk :as walk]
+            [clojure.tools.logging :as log]))
 
 (defn convert-if-instance [c f]
   (fn [x]
@@ -59,16 +60,24 @@
 (defn- build-number-from-path [path]
   (util/parse-int (second (re-find #"build-(\d+)" path))))
 
-(defn- read-build-json [path]
+(defn- read-build-file-and-parse [path parser-fn]
   (let [build-number (build-number-from-path path)
-        state        (formatted-step-ids->pipeline-state (json/read-str (slurp path) :key-fn keyword :value-fn post-process-values))]
-    {build-number state}))
+        data-str     (atom nil)]
+    (try
+      (reset! data-str (slurp path))
+      (let [state (parser-fn @data-str)]
+        {build-number state})
+      (catch Exception e
+        (log/warn e "Could not read build state from" path ". Replacing with empty state. Broken content:" @data-str)
+        {build-number {}}))))
+
+(defn- read-build-json [path]
+  (let [parser-fn (fn [s] (formatted-step-ids->pipeline-state (json/read-str s :key-fn keyword :value-fn post-process-values)))]
+    (read-build-file-and-parse path parser-fn)))
 
 (defn- read-build-edn [path]
-  (let [build-number (build-number-from-path path)
-        data-str     (slurp path)
-        state        (formatted-step-ids->pipeline-state (dates->clj-times (edn/read-string data-str)))]
-    {build-number state}))
+  (let [parser-fn (fn [s] (formatted-step-ids->pipeline-state (dates->clj-times (edn/read-string s))))]
+    (read-build-file-and-parse path parser-fn)))
 
 (defn- write-build-json [path build]
   (let [state-as-json        (pipeline-state->formatted-step-ids build)

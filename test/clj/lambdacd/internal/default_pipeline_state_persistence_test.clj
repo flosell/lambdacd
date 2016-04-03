@@ -3,7 +3,21 @@
   (:require [clojure.test :refer :all]
             [lambdacd.internal.default-pipeline-state-persistence :refer :all]
             [clj-time.core :as t]
-            [lambdacd.util :as utils]))
+            [lambdacd.util :as utils]
+            [clojure.java.io :as io]))
+
+(defn write-broken-build-history [home-dir build-number]
+  (if home-dir
+    (let [dir   (str home-dir "/" "build-" build-number)
+          edn-path  (str dir "/" "build-state.edn")]
+      (.mkdirs (io/file dir))
+      (spit edn-path "{ not going to close this map"))))
+
+(defn write-missing-build-history [home-dir build-number]
+  (if home-dir
+    (let [dir   (str home-dir "/" "build-" build-number)
+          edn-path  (str dir "/" "build-state.edn")]
+      (.mkdirs (io/file dir)))))
 
 (deftest roundtrip-persistence-test
   (testing "the standard case"
@@ -27,6 +41,24 @@
     (let [some-pipeline-state {3 {'(0) {:status :success :v :x}}}
           home-dir            (utils/create-temp-dir)]
       (write-build-history home-dir 3 some-pipeline-state)
+      (is (= some-pipeline-state (read-build-history-from home-dir)))))
+  (testing "that a broken history file is handled by replacing it with an empty history"
+    (let [some-pipeline-state {3 {'(0) {:status :success :v :x}}
+                               2 {'(1) {:status :success}}
+                               1 {}}
+          home-dir            (utils/create-temp-dir)]
+      (write-build-history home-dir 3 some-pipeline-state)
+      (write-build-history home-dir 2 some-pipeline-state)
+      (write-broken-build-history home-dir 1)
+      (is (= some-pipeline-state (read-build-history-from home-dir)))))
+  (testing "that a missing history file is handled by replacing it with an empty history"
+    (let [some-pipeline-state {3 {'(0) {:status :success :v :x}}
+                               2 {'(1) {:status :success}}
+                               1 {}}
+          home-dir            (utils/create-temp-dir)]
+      (write-build-history home-dir 3 some-pipeline-state)
+      (write-build-history home-dir 2 some-pipeline-state)
+      (write-missing-build-history home-dir 1)
       (is (= some-pipeline-state (read-build-history-from home-dir)))))
   (testing "backwards compatibility"
     (testing "that old json is read if no edn file exists"
