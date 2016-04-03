@@ -22,6 +22,7 @@ The official release will have a defined and more stable API. If you are already
   * Changed the default persistence format from JSON to EDN to fix #101. This change should be backwards and forwards
     compatible (i.e. you keep your history when upgrading to 0.8.0 and when downgrading to an earlier version). However,
     if your history is critical, consider backing up your LambdaCD home-dir just in case.
+  * Removed deprecated function `lambdacd.presentation.pipeline_state/most-recent-build-number-in`
   * LambdaCD no longer depends on Logback as a logging implementation and gives you more freedom to choose a logging
     implementation. If you see the following message you need to add a dependency to a library that's compatible with SLF4J:
 

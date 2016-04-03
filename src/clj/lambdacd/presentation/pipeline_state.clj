@@ -83,12 +83,6 @@
 (defn history-for [state]
   (sort-by :build-number (map history-entry state)))
 
-(defn most-recent-build-number-in
-  "UNUSED DEPRECATED, will be removed in subsequent releases"
-  [state]
-  (apply max (keys state)))
-
-
 (defn most-recent-step-result-with [key ctx]
   (let [state                 (pipeline-state/get-all (:pipeline-state-component ctx))
         step-id               (:step-id ctx)

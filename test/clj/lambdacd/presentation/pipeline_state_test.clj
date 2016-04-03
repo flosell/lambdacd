@@ -57,11 +57,6 @@
       (is (= 3 (:retriggered (first
                                (history-for {7 {'(2) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
                                                 '(1) {:status :success :most-recent-update-at stop-time :first-updated-at before-start-time :retrigger-mock-for-build-number 3}}}))))))))
-(deftest most-recent-build-test
-  (testing "that it returns the most recent build number in the pipeline-state"
-    (is (= 9 (most-recent-build-number-in { 5 { }
-                                            6 {  }
-                                            9 { }})))))
 
 (deftest last-step-result-with-test
   (testing "that we can access the last step result for a particular step that has a value with a particular key and that it is independent of implemented order of the history-map"
