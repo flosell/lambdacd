@@ -5,7 +5,7 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
-# 0.8.0
+## 0.8.0
 * Improvements: 
   * UI: Trigger symbol is now visible before a manual trigger is reached (#97)
   * UI: Console output now supports basic ANSI escape sequences (#91)
@@ -49,7 +49,6 @@ The official release will have a defined and more stable API. If you are already
     ```clojure
     [ring-server "0.3.1"]
     ```
-
 
 ## 0.7.1
 * Improvements: 
