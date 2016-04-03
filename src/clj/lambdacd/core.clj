@@ -13,7 +13,7 @@
   ([pipeline-def config]
    (assemble-pipeline pipeline-def config (default-pipeline-state/new-default-pipeline-state config)))
   ([pipeline-def config pipeline-state-component]
-   (let [context                (-> {:config        (merge default-config config)}
+   (let [context                (-> {:config (merge default-config config)}
                                     (event-bus/initialize-event-bus)
                                     (running-builds-tracking/initialize-running-builds-tracking)
                                     (assoc :pipeline-state-component pipeline-state-component))
