@@ -408,4 +408,13 @@
           future-step-result (start-waiting-for (execute-step {} [ctx some-step-waiting-to-be-killed]))]
       (wait-for (tu/step-running? ctx))
       (kill-all-pipelines ctx)
-      (is (map-containing {:status :timeout} (get-or-timeout future-step-result :timeout 1000))))))
+      (is (map-containing {:status :timeout} (get-or-timeout future-step-result :timeout 1000)))))
+  (testing "that killing is idempotent"
+    (let [ctx                (some-ctx-with :step-id [3])
+          _                  (pipeline-state/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
+          future-step-result (start-waiting-for (execute-step {} [ctx some-step-waiting-to-be-killed]))]
+      (wait-for (tu/step-running? ctx))
+      (kill-all-pipelines ctx)
+      (kill-all-pipelines ctx)
+      (is (map-containing {:status :killed} (get-or-timeout future-step-result :timeout 1000)))
+      (kill-all-pipelines ctx))))

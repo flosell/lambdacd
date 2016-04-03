@@ -16,4 +16,6 @@
       ; we stop it
       (stop-runner ctx)
       ; it stops
-      (is (not= {:status :timeout} (get-or-timeout handle :timeout 200))))))
+      (is (not= {:status :timeout} (get-or-timeout handle :timeout 200)))
+      ; check that it's idempotent
+      (stop-runner ctx))))
