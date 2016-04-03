@@ -11,12 +11,14 @@
   ([pipeline-def config]
    (assemble-pipeline pipeline-def config (default-pipeline-state/new-default-pipeline-state config)))
   ([pipeline-def config pipeline-state-component]
-    (let [context (-> {:config                   config}
-                      (event-bus/initialize-event-bus)
-                      (assoc :pipeline-state-component pipeline-state-component))]
-      (pipeline-state/start-pipeline-state-updater (:pipeline-state-component context) context)
-      {:context      context
-       :pipeline-def pipeline-def})))
+   (let [context                (-> {:config config}
+                                    (event-bus/initialize-event-bus)
+                                    (assoc :pipeline-state-component pipeline-state-component))
+         pipeline-state-updater (pipeline-state/start-pipeline-state-updater (:pipeline-state-component context) context)]
+
+     {:context                context
+      :pipeline-def           pipeline-def
+      :pipeline-state-updater pipeline-state-updater})))
 
 (defn retrigger [pipeline context build-number step-id-to-retrigger]
   (execution/retrigger-async pipeline context build-number step-id-to-retrigger))
