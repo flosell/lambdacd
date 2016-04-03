@@ -4,10 +4,28 @@
             [lambdacd.internal.execution :as execution]
             [lambdacd.event-bus :as event-bus]
             [lambdacd.internal.running-builds-tracking :as running-builds-tracking]
-            [lambdacd.internal.pipeline-state :as pipeline-state]))
+            [lambdacd.internal.pipeline-state :as pipeline-state]
+            [clojure.tools.logging :as log]
+            [lambdacd.runners :as runners]))
+
+(defn- add-shutdown-sequence! [ctx]
+  (doto (Runtime/getRuntime)
+    (.addShutdownHook (fn []
+                        ((:shutdown-sequence (:config ctx)) ctx)))))
+
+(def default-shutdown-sequence
+  (fn [ctx]
+    (runners/stop-runner ctx)
+    (execution/kill-all-pipelines ctx)
+    (pipeline-state/stop-pipeline-state-updater ctx)))
 
 (def default-config
-  {:ms-to-wait-for-shutdown (* 10 1000)})
+  {:ms-to-wait-for-shutdown (* 10 1000)
+   :shutdown-sequence default-shutdown-sequence})
+
+(defn- initialize-pipeline-state-updater [ctx]
+  (let [updater (pipeline-state/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)]
+    (assoc ctx :pipeline-state-updater updater)))
 
 (defn assemble-pipeline
   ([pipeline-def config]
@@ -16,12 +34,10 @@
    (let [context                (-> {:config (merge default-config config)}
                                     (event-bus/initialize-event-bus)
                                     (running-builds-tracking/initialize-running-builds-tracking)
-                                    (assoc :pipeline-state-component pipeline-state-component))
-         pipeline-state-updater (pipeline-state/start-pipeline-state-updater (:pipeline-state-component context) context)]
-
+                                    (assoc :pipeline-state-component pipeline-state-component)
+                                    (initialize-pipeline-state-updater))]
      {:context                context
-      :pipeline-def           pipeline-def
-      :pipeline-state-updater pipeline-state-updater})))
+      :pipeline-def           pipeline-def})))
 
 (defn retrigger [pipeline context build-number step-id-to-retrigger]
   (execution/retrigger-async pipeline context build-number step-id-to-retrigger))

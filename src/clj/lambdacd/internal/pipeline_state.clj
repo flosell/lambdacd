@@ -30,8 +30,8 @@
             (update pipeline-state build-number step-id step-result)
             (recur)))))))
 
-(defn stop-pipeline-state-updater [ctx start-pipeline-state-updater-result]
+(defn stop-pipeline-state-updater [ctx]
   (log/info "Shutting down pipeline state updater...")
   (event-bus/publish ctx :stop-pipeline-state-updater {})
-  (async/<!! start-pipeline-state-updater-result)
+  (async/<!! (:pipeline-state-updater ctx))
   (log/info "Pipeline state updater stopped"))

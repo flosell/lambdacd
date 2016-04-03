@@ -31,7 +31,7 @@
                                   (update [_ _ _ _]
                                     (throw (Exception. "no update expected"))))
             updater-finished-ch (start-pipeline-state-updater pipeline-state ctx)]
-        (tu/call-with-timeout 1000 (stop-pipeline-state-updater ctx updater-finished-ch))
+        (tu/call-with-timeout 1000 (stop-pipeline-state-updater (assoc ctx :pipeline-state-updater updater-finished-ch)))
         (is (not= {:status :timeout} (tu/get-or-timeout updater-finished-ch :timeout 1000)))))
     (testing "that stopping is idempotent"
       (let [ctx                 (some-ctx)
@@ -39,7 +39,7 @@
                                   (update [_ _ _ _]
                                     (throw (Exception. "no update expected"))))
             updater-finished-ch (start-pipeline-state-updater pipeline-state ctx)]
-        (tu/call-with-timeout 1000 (stop-pipeline-state-updater ctx updater-finished-ch))
-        (tu/call-with-timeout 1000 (stop-pipeline-state-updater ctx updater-finished-ch))
+        (tu/call-with-timeout 1000 (stop-pipeline-state-updater (assoc ctx :pipeline-state-updater updater-finished-ch)))
+        (tu/call-with-timeout 1000 (stop-pipeline-state-updater (assoc ctx :pipeline-state-updater updater-finished-ch)))
         (is (not= {:status :timeout} (tu/get-or-timeout updater-finished-ch :timeout 1000)))
-        (tu/call-with-timeout 1000 (stop-pipeline-state-updater ctx updater-finished-ch))))))
+        (tu/call-with-timeout 1000 (stop-pipeline-state-updater (assoc ctx :pipeline-state-updater updater-finished-ch)))))))
