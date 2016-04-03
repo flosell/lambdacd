@@ -13,7 +13,8 @@
          :pipeline-state-component nil ;; set later
          :config                   config
          :is-killed                (atom false)
-         :_out-acc                 (atom "")}
+         :_out-acc                 (atom "")
+         :started-steps            (atom #{})}
         (event-bus/initialize-event-bus))
     ))
 

@@ -115,16 +115,20 @@
 (defn some-pipeline-state []
   (atom {}))
 
+(defn- events-for [k ctx]
+  (-> (event-bus/subscribe ctx k)
+      (event-bus/only-payload)
+      (buffered))
+  )
 
 (defn- step-finished-events-for [ctx]
-  (-> (event-bus/subscribe ctx :step-finished)
-      (event-bus/only-payload)
-      (buffered)))
+  (events-for :step-finished ctx))
 
-(defn step-result-updates-for [ctx]
-  (-> (event-bus/subscribe ctx :step-result-updated)
-      (event-bus/only-payload)
-      (buffered)))
+(defn- step-started-events-for [ctx]
+  (events-for :step-started ctx))
+
+(defn- step-result-updates-for [ctx]
+  (events-for :step-result-updated ctx))
 
 (deftest execute-step-test
   (testing "that executing returns the step result added to the input args"
@@ -208,6 +212,13 @@
                :step-id [1 2 3]
                :final-result {:status :success :foo :baz}
                :rerun-for-retrigger true}] (slurp-chan step-finished-events)))))
+  (testing "that the event bus is notified when a step starts"
+    (let [ctx (some-ctx-with :build-number 3
+                             :step-id [1 2 3])
+          step-started-events (step-started-events-for ctx)]
+      (execute-step {} [ctx some-other-step])
+      (is (= [{:build-number 3
+               :step-id [1 2 3]}] (slurp-chan step-started-events)))))
   (testing "that a running step can be killed"
     (let [is-killed (atom false)
           ctx (some-ctx-with :step-id [3 2 1]
@@ -417,4 +428,12 @@
       (kill-all-pipelines ctx)
       (kill-all-pipelines ctx)
       (is (map-containing {:status :killed} (get-or-timeout future-step-result :timeout 1000)))
-      (kill-all-pipelines ctx))))
+      (kill-all-pipelines ctx)))
+  (testing "that it waits until all running pipelines are done"
+    (let [started-steps (atom #{:foo})
+          ctx           (some-ctx-with :step-id [3 1]
+                                       :started-steps started-steps)]
+      ; still running, should time out
+      (is (map-containing {:status :timeout} (call-with-timeout 300 (kill-all-pipelines ctx))))
+      (reset! started-steps #{})
+      (is (not= {:status :timeout} (call-with-timeout 500 (kill-all-pipelines ctx)))))))

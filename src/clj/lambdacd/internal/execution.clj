@@ -101,6 +101,10 @@
                                                                 (and (:retriggered-build-number ctx)
                                                                      (:retriggered-step-id ctx)))}))
 
+(defn- report-step-started [ctx]
+  (send-step-result ctx {:status :running})
+  (event-bus/publish ctx :step-started  {:step-id      (:step-id ctx)
+                                         :build-number (:build-number ctx)}))
 
 (defn execute-step [args [ctx step]]
   (let [step-id (:step-id ctx)
@@ -114,7 +118,7 @@
                                  :is-killed child-kill-switch)
         processed-async-result-ch (process-channel-result-async result-ch ctx)
         kill-subscription (kill-step-handling ctx-for-child)
-        _ (send-step-result ctx {:status :running})
+        _ (report-step-started ctx)
         immediate-step-result (execute-or-catch step args ctx-for-child)
         processed-async-result (async/<!! processed-async-result-ch)
         complete-step-result (merge processed-async-result immediate-step-result)]
@@ -297,7 +301,13 @@
   (event-bus/publish ctx :kill-step {:step-id      step-id
                                      :build-number build-number}))
 
+(defn- wait-for-pipelines-to-complete [ctx]
+  (while (not-empty @(:started-steps ctx))
+    (log/debug "Waiting for steps to complete:" @(:started-steps ctx))
+    (Thread/sleep 100)))
+
 (defn kill-all-pipelines [ctx]
   (log/info "Killing all running pipelines...")
   (event-bus/publish ctx :kill-step {:step-id      :any-root
-                                     :build-number :any}))
+                                     :build-number :any})
+  (wait-for-pipelines-to-complete ctx))

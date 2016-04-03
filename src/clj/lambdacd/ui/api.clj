@@ -1,6 +1,7 @@
 (ns lambdacd.ui.api
   (:require [lambdacd.util :as util]
             [lambdacd.presentation.unified :as unified]
+            [lambdacd.runners :as runners]
             [ring.util.response :as resp]
             [clojure.string :as string]
             [ring.middleware.json :as ring-json]

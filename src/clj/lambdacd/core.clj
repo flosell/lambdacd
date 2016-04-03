@@ -3,7 +3,7 @@
   (:require [lambdacd.internal.default-pipeline-state :as default-pipeline-state]
             [lambdacd.internal.execution :as execution]
             [lambdacd.event-bus :as event-bus]
-            [clojure.core.async :as async]
+            [lambdacd.internal.running-builds-tracking :as running-builds-tracking]
             [lambdacd.internal.pipeline-state :as pipeline-state]))
 
 
@@ -11,8 +11,9 @@
   ([pipeline-def config]
    (assemble-pipeline pipeline-def config (default-pipeline-state/new-default-pipeline-state config)))
   ([pipeline-def config pipeline-state-component]
-   (let [context                (-> {:config config}
+   (let [context                (-> {:config        config}
                                     (event-bus/initialize-event-bus)
+                                    (running-builds-tracking/initialize-running-builds-tracking)
                                     (assoc :pipeline-state-component pipeline-state-component))
          pipeline-state-updater (pipeline-state/start-pipeline-state-updater (:pipeline-state-component context) context)]
 
