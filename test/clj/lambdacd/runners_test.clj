@@ -1,7 +1,7 @@
 (ns lambdacd.runners-test
   (:require [clojure.test :refer :all]
             [lambdacd.runners :refer :all]
-            [lambdacd.testsupport.test-util :refer [call-with-timeout start-waiting-for get-or-timeout wait-for]]
+            [lambdacd.testsupport.test-util :refer [start-waiting-for get-or-timeout wait-for]]
             [lambdacd.testsupport.data :refer [some-ctx]]
             [lambdacd.event-bus :as event-bus]))
 
