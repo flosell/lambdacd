@@ -62,7 +62,6 @@
   (let [is-killed     (:is-killed ctx)
         step-id       (:step-id ctx)
         build-number  (:build-number ctx)
-        result-ch     (:result-channel ctx)
         subscription  (event-bus/subscribe ctx :kill-step)
         kill-payloads (event-bus/only-payload subscription)]
     (async/go-loop []
