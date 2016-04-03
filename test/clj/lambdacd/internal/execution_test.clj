@@ -436,4 +436,10 @@
       ; still running, should time out
       (is (map-containing {:status :timeout} (call-with-timeout 300 (kill-all-pipelines ctx))))
       (reset! started-steps #{})
-      (is (not= {:status :timeout} (call-with-timeout 500 (kill-all-pipelines ctx)))))))
+      (is (not= {:status :timeout} (call-with-timeout 500 (kill-all-pipelines ctx))))))
+  (testing "that waiting for pipeline completion times out"
+    (let [started-steps (atom #{:foo})
+          ctx           (some-ctx-with :step-id [3 1]
+                                       :started-steps started-steps
+                                       :config {:ms-to-wait-for-shutdown 200})]
+      (is (not= {:status :timeout} (call-with-timeout 1000 (kill-all-pipelines ctx)))))))

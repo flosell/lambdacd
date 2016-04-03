@@ -6,7 +6,8 @@
 
 
 (defn- some-ctx-template []
-  (let [config {:home-dir    (utils/create-temp-dir)}]
+  (let [config {:home-dir    (utils/create-temp-dir)
+                :ms-to-wait-for-shutdown 10000}]
     (-> {:initial-pipeline-state   {} ;; only used to assemble pipeline-state, not in real life
          :step-id                  [42]
          :result-channel           (async/chan (async/dropping-buffer 100))

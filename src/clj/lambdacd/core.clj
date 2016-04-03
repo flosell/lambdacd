@@ -6,12 +6,14 @@
             [lambdacd.internal.running-builds-tracking :as running-builds-tracking]
             [lambdacd.internal.pipeline-state :as pipeline-state]))
 
+(def default-config
+  {:ms-to-wait-for-shutdown (* 10 1000)})
 
 (defn assemble-pipeline
   ([pipeline-def config]
    (assemble-pipeline pipeline-def config (default-pipeline-state/new-default-pipeline-state config)))
   ([pipeline-def config pipeline-state-component]
-   (let [context                (-> {:config        config}
+   (let [context                (-> {:config        (merge default-config config)}
                                     (event-bus/initialize-event-bus)
                                     (running-builds-tracking/initialize-running-builds-tracking)
                                     (assoc :pipeline-state-component pipeline-state-component))
