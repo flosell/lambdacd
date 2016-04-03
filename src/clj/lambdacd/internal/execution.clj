@@ -58,6 +58,21 @@
     (finally
       (async/close! (:result-channel ctx)))))
 
+(defn- step-id-to-kill? [step-id kill-payload]
+  (let [step-id-to-kill     (:step-id kill-payload)
+
+        exact-step-id-match (= step-id step-id-to-kill)
+
+        any-root-match      (and (= :any-root step-id-to-kill)
+                                 (= 1 (count step-id)))]
+    (or exact-step-id-match
+        any-root-match)))
+
+(defn- build-number-to-kill? [build-number kill-payload]
+  (let [build-number-to-kill (:build-number kill-payload)]
+    (or (= build-number build-number-to-kill)
+        (= :any build-number-to-kill))))
+
 (defn kill-step-handling [ctx]
   (let [is-killed     (:is-killed ctx)
         step-id       (:step-id ctx)
@@ -67,8 +82,8 @@
     (async/go-loop []
       (if-let [kill-payload (async/<! kill-payloads)]
         (if (and
-              (= step-id (:step-id kill-payload))
-              (= build-number (:build-number kill-payload)))
+              (step-id-to-kill? step-id kill-payload)
+              (build-number-to-kill? build-number kill-payload))
           (do
             (reset! is-killed true)
             (async/>!! (:result-channel ctx) [:received-kill true]))
@@ -281,3 +296,7 @@
   (event-bus/publish ctx :kill-step {:step-id      step-id
                                      :build-number build-number}))
 
+(defn kill-all-pipelines [ctx]
+  (log/info "Killing all running pipelines...")
+  (event-bus/publish ctx :kill-step {:step-id      :any-root
+                                     :build-number :any}))

@@ -392,3 +392,20 @@
                :step-id      [1 1]
                :step-result expected-child-result}]
              (slurp-chan step-finished-events))))))
+
+
+(deftest kill-all-pipelines-test
+  (testing "that it kills root build steps in any pipeline"
+    (let [ctx                (some-ctx-with :step-id [3])
+          _                  (pipeline-state/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
+          future-step-result (start-waiting-for (execute-step {} [ctx some-step-waiting-to-be-killed]))]
+      (wait-for (tu/step-running? ctx))
+      (kill-all-pipelines ctx)
+      (is (map-containing {:status :killed} (get-or-timeout future-step-result :timeout 1000)))))
+  (testing "that it doesn't kill nested steps as they are killed by their parents"
+    (let [ctx                (some-ctx-with :step-id [3 1])
+          _                  (pipeline-state/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
+          future-step-result (start-waiting-for (execute-step {} [ctx some-step-waiting-to-be-killed]))]
+      (wait-for (tu/step-running? ctx))
+      (kill-all-pipelines ctx)
+      (is (map-containing {:status :timeout} (get-or-timeout future-step-result :timeout 1000))))))
