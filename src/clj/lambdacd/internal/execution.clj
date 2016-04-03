@@ -276,7 +276,8 @@
   (let [build-number (pipeline-state/next-build-number (:pipeline-state-component context))]
     (let [runnable-pipeline (map eval pipeline)]
       (execute-steps runnable-pipeline {} (merge context {:result-channel (async/chan (async/dropping-buffer 0))
-                                                          :step-id [] :build-number build-number})))))
+                                                          :step-id []
+                                                          :build-number build-number})))))
 
 (defn retrigger [pipeline context build-number step-id-to-run next-build-number]
   (let [executable-pipeline (map eval pipeline) ]
