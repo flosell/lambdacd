@@ -4,24 +4,34 @@
             [re-frame.core :as re-frame]
             [lambdacd.db :as db]
             [clojure.string :as s]
-            [lambdacd.console-output-processor :as console-output-processor]))
+            [lambdacd.console-output-processor :as console-output-processor]
+            [clojure.walk :as walk]))
 
 (defn negate [a]
   (fn [& _ ]
     (swap! a not)
     nil))
 
+; from clojure.walk/stringify-keys but fixes keywords with slashes and renders them as :kw
+(defn stringify-keys [m]
+  (let [f (fn [[k v]] (if (keyword? k) [(str k) v] [k v]))]
+    (walk/postwalk (fn [x] (if (map? x) (into {} (map f x)) x)) m)))
+
 (defn raw-step-results-component []
   (let [current-step-result      (re-frame/subscribe [::db/current-step-result])
         raw-step-results-visible (re-frame/subscribe [::db/raw-step-results-visible])]
     (fn []
-      [:div
-       [:h3 "Complete Step Result"]
-       [:button {:on-click #(re-frame/dispatch [::db/toggle-raw-step-results-visible])}
-        (if @raw-step-results-visible "hide" "show")]
-       (if @raw-step-results-visible
-         [:pre {:class "step-results__raw-step-results"}
-          (js/JSON.stringify (clj->js @current-step-result) nil 2)])])))
+      (let [pretty-printed-step-result (-> @current-step-result
+                                           (stringify-keys)
+                                           (clj->js)
+                                           (js/JSON.stringify nil 2))]
+        [:div
+         [:h3 "Complete Step Result"]
+         [:button {:on-click #(re-frame/dispatch [::db/toggle-raw-step-results-visible])}
+          (if @raw-step-results-visible "hide" "show")]
+         (if @raw-step-results-visible
+           [:pre {:class "step-results__raw-step-results"}
+            pretty-printed-step-result])]))))
 
 (declare details-section)
 

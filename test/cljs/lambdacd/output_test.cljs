@@ -6,7 +6,8 @@
             [lambdacd.testutils :as tu]
             [re-frame.core :as re-frame]
             [lambdacd.output :as output]
-            [lambdacd.testutils :refer [mock-subscriptions]]))
+            [lambdacd.testutils :refer [mock-subscriptions]]
+            [clojure.walk :as walk]))
 
 (def some-step-id [4 2])
 
@@ -31,7 +32,25 @@
           (is (dom/found-in div #"hello from child"))
           (is (dom/found-in div #"some details"))
           (is (dom/found-in div #"some-key"))
-          (is (dom/found-in div #"some-value")))))))
+          (is (dom/found-in div #"some-value"))))))
+  (testing "issue #100"
+    (with-redefs [re-frame/subscribe (mock-subscriptions {::db/current-step-result      {:result {:status   "running"
+                                                                                                  :some-key :some-value
+                                                                                                  :all-revisions { (keyword "refs/heads/master") "some-sha" }
+                                                                                                  :out      "hello"}}
+                                                          ::db/raw-step-results-visible true
+                                                          ::db/step-id some-step-id})]
+      (tu/with-mounted-component
+        (output/output-component)
+        (fn [c div]
+          (is (dom/found-in div #"hello"))
+          (is (dom/found-in div #"refs/heads/master")))))))
+
+(deftest stringify-keys-test
+  (testing "that keywords in maps are properly stringified for rendering"
+    (is (= { ":foo" 42} (output/stringify-keys {:foo 42}))))
+  (testing "that strange keywords with namespaces are supported (#100)"
+    (is (= { ":refs/heads/master" "some-sha"} (output/stringify-keys { (keyword "refs/heads/master") "some-sha" })))))
 
 (deftest console-component-test
   (testing "that we can display the :out output of a step"

@@ -14,6 +14,7 @@ The official release will have a defined and more stable API. If you are already
 * Bug fixes:
   * UI did not display the second detail if it had the same label as the first (#98)
   * Fixed bugs in persistence that led to some data becoming corrupted between restarts (#101)
+  * Fixes rendering of complicated map-keys (like "refs/heads/master") in complete step result (#100)
 * Breaking Changes:
   * Changed the default persistence format from JSON to EDN to fix #101. This change should be backwards and forwards
     compatible (i.e. you keep your history when upgrading to 0.8.0 and when downgrading to an earlier version). However,
