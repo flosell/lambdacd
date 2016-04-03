@@ -15,7 +15,7 @@
             [lambdacd.runners :as runners]
             [clojure.tools.logging :as log]
 
-            [compojure.core :refer [routes GET]]
+            [compojure.core :refer [routes GET POST]]
             [ring.util.response :as resp]
             [compojure.route :as route])
   (:use [lambdacd.steps.control-flow]
@@ -87,7 +87,11 @@
         ;; wiring everything together everything that's necessary for lambdacd to run
         pipeline (core/assemble-pipeline pipeline-def config)
         ;; the ring handler
-        ring-handler (ui/ui-for pipeline)]
+        ring-handler (routes
+                       (POST "/shutdown" [] (let [shutdown-sequence (get-in pipeline [:context :config :shutdown-sequence])]
+                                              (shutdown-sequence (:context pipeline))
+                                              "OK"))
+                       (ui/ui-for pipeline))]
     (log/info "LambdaCD Home Directory is " home-dir)
     (runners/start-new-run-after-first-step-finished pipeline)
     (ring-server/serve ring-handler {:open-browser? false
