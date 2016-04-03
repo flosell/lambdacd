@@ -10,8 +10,10 @@
 
 (defn- add-shutdown-sequence! [ctx]
   (doto (Runtime/getRuntime)
-    (.addShutdownHook (fn []
-                        ((:shutdown-sequence (:config ctx)) ctx)))))
+    (.addShutdownHook (Thread. (fn []
+                                 (log/info "Shutting down LambdaCD...")
+                                 ((:shutdown-sequence (:config ctx)) ctx)))))
+  ctx)
 
 (def default-shutdown-sequence
   (fn [ctx]
@@ -35,7 +37,8 @@
                                     (event-bus/initialize-event-bus)
                                     (running-builds-tracking/initialize-running-builds-tracking)
                                     (assoc :pipeline-state-component pipeline-state-component)
-                                    (initialize-pipeline-state-updater))]
+                                    (initialize-pipeline-state-updater)
+                                    (add-shutdown-sequence!))]
      {:context                context
       :pipeline-def           pipeline-def})))
 
