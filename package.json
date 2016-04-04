@@ -4,7 +4,8 @@
     "watch":"latest",
     "postcss-cli": "latest",
     "autoprefixer": "latest",
-    "less":"latest"
+    "less":"latest",
+    "phantomjs":"latest"
   },
   "scripts": {
     "build:css": "node_modules/less/bin/lessc src/less/main.less | node_modules/postcss-cli/bin/postcss --use autoprefixer -o resources/public/css/main.css",
