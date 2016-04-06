@@ -175,10 +175,10 @@
         expand-failures? (re-frame/subscribe [::db/expand-failures-active?])]
     (fn []
       [:ul {:class "pipeline__controls"}
-       [:li {:class (classes "pipeline__controls__control" (control-disabled-if @all-expanded?)) :on-click #(re-frame/dispatch [::db/set-all-expanded])} "Expand all"]
-       [:li {:class (classes "pipeline__controls__control" (control-disabled-if @all-collapsed?)) :on-click #(re-frame/dispatch [::db/set-all-collapsed])} "Collapse all"]
-       [:li {:class (classes "pipeline__controls__control" (control-active-if @expand-active?)) :on-click #(re-frame/dispatch [::db/toggle-expand-active])} "Expand active"]
-       [:li {:class (classes "pipeline__controls__control" (control-active-if @expand-failures?)) :on-click #(re-frame/dispatch [::db/toggle-expand-failures])} "Expand failures"]])))
+       [:li [:a {:class (classes "pipeline__controls__control" (control-disabled-if @all-expanded?)) :on-click #(re-frame/dispatch [::db/set-all-expanded])} "Expand all"]]
+       [:li [:a {:class (classes "pipeline__controls__control" (control-disabled-if @all-collapsed?)) :on-click #(re-frame/dispatch [::db/set-all-collapsed])} "Collapse all"]]
+       [:li [:a {:class (classes "pipeline__controls__control" (control-active-if @expand-active?)) :on-click #(re-frame/dispatch [::db/toggle-expand-active])} "Expand active"]]
+       [:li [:a {:class (classes "pipeline__controls__control" (control-active-if @expand-failures?)) :on-click #(re-frame/dispatch [::db/toggle-expand-failures])} "Expand failures"]]])))
 
 (defn pipeline-component []
   (let [build-state-atom (re-frame/subscribe [::db/pipeline-state])
