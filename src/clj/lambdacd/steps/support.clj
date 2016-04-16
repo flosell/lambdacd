@@ -15,7 +15,22 @@
     :default b))
 
 
-(defn- do-chain-steps [args ctx steps]
+(defn- merge-step-status [a b]
+  (cond
+    (and (= :success a)
+         (not= :success b)) b
+    (and (not= :success a)
+         (= :success b)) a
+    :default b))
+
+(defn- merge-step-results-failures-win [a b]
+  (let [merged (merge-with merge-values a b)]
+    (if (and (contains? a :status)
+             (contains? b :status))
+      (assoc merged :status (merge-step-status (:status a) (:status b)))
+      merged)))
+
+(defn- do-chain-steps [stop-on-step-failure args ctx steps]
   "run the given steps one by one until a step fails and merge the results.
    results of one step are the inputs for the next one."
   (loop [x (first steps)
@@ -24,18 +39,23 @@
          args args]
     (if (nil? x)
       result
-      (let [step-result (x args ctx)
-            complete-result (merge-with merge-values result step-result)
-            next-args (merge args complete-result)]
-        (if (and
-              (not= :success (:status step-result))
-              (not= nil step-result))
+      (let [step-result     (x args ctx)
+            complete-result (merge-step-results-failures-win result step-result)
+            next-args       (merge args complete-result)
+            step-failed     (and
+                              (not= :success (:status step-result))
+                              (not= nil step-result))]
+        (if (and stop-on-step-failure step-failed)
           complete-result
           (recur (first rest) (next rest) complete-result next-args))))))
 
+(defn always-chain-steps
+  ([args ctx & steps]
+   (do-chain-steps false args ctx steps)))
+
 (defn chain-steps
   ([args ctx & steps]
-   (do-chain-steps args ctx steps)))
+   (do-chain-steps true args ctx steps)))
 
 
 (defn to-fn [form]
