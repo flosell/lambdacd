@@ -192,6 +192,14 @@
                        (print "foo-value:" (:foo injected-args))
                        (some-other-step injected-args injected-ctx)))))))
 
+(deftest always-chaining-test
+  (testing "that a failing step doesnt stop the execution"
+    (is (= {:status :failure :foo :baz}
+           (always-chaining {} {}
+                     (some-step injected-args injected-ctx)
+                     (some-failling-step injected-args injected-ctx)
+                     (some-other-step injected-args injected-ctx))))))
+
 (deftest if-not-killed-test
   (testing "that the body will only be executed if step is still alive"
     (let [killed-ctx (some-ctx-with :is-killed (atom true))

@@ -8,8 +8,8 @@ The official release will have a defined and more stable API. If you are already
 ## 0.9.0
 
 * Improvements:
-  * Add `lambdacd.steps.support/always-chain-steps` to support chaining without stopping on error,
-    to allow post-processing steps, e.g. test-report processors (#108)
+  * Added `lambdacd.steps.support/always-chain-steps` and `lambdacd.steps.support/always-chaining` to support chaining 
+    build-steps without stopping on error, to allow post-processing steps, e.g. test-report processors (#108)
 * Breaking Changes: 
   * Removed deprecated support for calling `lambdacd.steps.support/chain-steps` with a vector of steps, use varargs instead
   * Removed deprecated function `lambdacd.steps.support/chain`, use `chaining` instead

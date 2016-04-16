@@ -91,10 +91,17 @@
       `(fn [& _# ] ~form)
       `(fn [~args ~ctx] (~f# ~@r#)))))
 
-(defmacro chaining [args ctx & forms]
-  "a bit of syntactic sugar for chaining steps. Basically the threading-macro for LambdaCD. replaces :args and :ctx in calls"
+(defn- do-chaining [chain-fn args ctx forms]
   (let [fns (vec (map to-fn-with-args forms))]
-    `(apply chain-steps ~args ~ctx ~fns)))
+    `(apply ~chain-fn ~args ~ctx ~fns)))
+
+(defmacro chaining [args ctx & forms]
+  "syntactic sugar for chain-steps. can work with arbitrary code and can inject args and ctx"
+  (do-chaining chain-steps args ctx forms))
+
+(defmacro always-chaining [args ctx & forms]
+  "syntactic sugar for always-chain-steps. can work with arbitrary code and can inject args and ctx"
+  (do-chaining always-chain-steps args ctx forms))
 
 (defn- append-output [msg]
   (fn [old-output]
