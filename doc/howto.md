@@ -163,7 +163,28 @@ Here's a full example: https://github.com/flosell/lambdacd-cookie-cutter-pipelin
 As you start building a bigger project, you might feel the need to have some build steps into more than one pipeline.
 For example, you want a set of tests executed in all your deployment-pipelines.
 
-As LambdaCD pipelines are little more than nested lists, you can easily inline or concatenate pipeline fragments:
+As LambdaCD pipelines are little more than nested lists, you can use all the operations clojure gives you to operate
+on datastructures.
+
+For example, you can create functions that create pipeline fragments or concatenate two pipelines:
+
+```clojure
+(defn deploy-steps [environment]
+  `((check-preconditions ~environment)
+     (deploy ~environment)
+     (smoke-test ~environment)))
+
+(def pipeline-def
+  `(
+     ; ...
+
+     (alias "deploy to CI"
+            (run
+              ~@(deploy-steps :ci)
+              run-ci-tests))
+     ; ...
+))
+```
 
 ```clojure
 (def common-tests
@@ -185,6 +206,8 @@ As LambdaCD pipelines are little more than nested lists, you can easily inline o
      )
      common-tests))
 ```
+
+For details, check out the [Refactoring Guide](https://github.com/flosell/lambdacd/wiki/Guide:-Pipeline-Structure-Refactoring#step-3-removing-structural-duplication).
 
 ## How do I implement authentication and authorization?
 
