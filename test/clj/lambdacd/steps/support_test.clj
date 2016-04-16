@@ -115,38 +115,9 @@
   (testing "only always-chain-steps"
     (testing "that a failing step does not stop the execution but step is still a failure in the end"
       (is (= {:status :failure :foo :baz} (always-chain-steps {} {}
-                                                       some-step
-                                                       some-failling-step
-                                                       some-other-step))))))
-
-; Note: if cursive complains about incorrect arity, that's cursive not knowing what the chain-macro does.
-; as long as the tests are green, you can ignore this...
-(deftest chain-test ; TOOD: this is DEPRECATED
-  (testing "that we can just call a single step"
-    (is (= {:status :success :foo :bar} (chain {} {} (some-step)))))
-  (testing "that the results of two steps get merged"
-    (is (= {:status :success :foo :baz} (chain {} {}
-                                         (some-step)
-                                         (some-other-step)))))
-  (testing "that a failing step stops the execution"
-    (is (= {:status :failure :foo :bar} (chain {} {}
-                                          (some-step )
-                                          (some-failling-step)
-                                          (step-that-should-never-be-called)))))
-  (testing "that a given argument is passed on to the step"
-    (is (= {:status :success :the-arg 42} (chain {:v 42} {}
-                                               (some-step-returning-an-argument-passed-in)))))
-  (testing "that we can have more arguments than just args and ctx"
-    (is (= {:status :success :hello "hello" :world "world"}
-           (chain {} {} (some-step-with-additional-arguments "hello" "world")))))
-  (testing "that we can also hardcode results at the end of the chain"
-    (is (= {:status :success :this-is :test :foo :bar}
-           (chain {} {}
-                  (some-step)
-                  {:status :success :this-is :test}))))
-  (testing "that a given context is passed on to the step"
-    (is (= {:status :success :the-ctx-1 {:v 42}} (chain {} {:v 42}
-                                                 (some-step-returning-the-context-passed-in))))))
+                                                              some-step
+                                                              some-failling-step
+                                                              some-other-step))))))
 
 (deftest chaining-test
   (testing "that we can just call a single step"

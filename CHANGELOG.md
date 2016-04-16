@@ -12,6 +12,7 @@ The official release will have a defined and more stable API. If you are already
     to allow post-processing steps, e.g. test-report processors (#108)
 * Breaking Changes: 
   * Removed deprecated support for calling `lambdacd.steps.support/chain-steps` with a vector of steps, use varargs instead
+  * Removed deprecated function `lambdacd.steps.support/chain`, use `chaining` instead
 
 ## 0.8.0
 * Improvements: 

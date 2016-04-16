@@ -91,13 +91,6 @@
       `(fn [& _# ] ~form)
       `(fn [~args ~ctx] (~f# ~@r#)))))
 
-(defmacro chain [args ctx & forms]
-  "DEPRECATED: USE chaining instead"
-  (let [fns (vec (map to-fn forms))]
-    `(apply chain-steps ~args ~ctx ~fns)))
-
-
-
 (defmacro chaining [args ctx & forms]
   "a bit of syntactic sugar for chaining steps. Basically the threading-macro for LambdaCD. replaces :args and :ctx in calls"
   (let [fns (vec (map to-fn-with-args forms))]
