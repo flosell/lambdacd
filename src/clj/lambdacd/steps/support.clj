@@ -34,11 +34,8 @@
           (recur (first rest) (next rest) complete-result next-args))))))
 
 (defn chain-steps
-  ([args ctx & steps] ; a vector as single steps parameter is now deprecated and will no longer be supported in future releases
-   (let [is-not-vararg (vector? (first steps))]
-     (if is-not-vararg
-      (do-chain-steps args ctx (first steps))
-      (do-chain-steps args ctx steps)))))
+  ([args ctx & steps]
+   (do-chain-steps args ctx steps)))
 
 
 (defn to-fn [form]
@@ -78,6 +75,8 @@
   "DEPRECATED: USE chaining instead"
   (let [fns (vec (map to-fn forms))]
     `(apply chain-steps ~args ~ctx ~fns)))
+
+
 
 (defmacro chaining [args ctx & forms]
   "a bit of syntactic sugar for chaining steps. Basically the threading-macro for LambdaCD. replaces :args and :ctx in calls"

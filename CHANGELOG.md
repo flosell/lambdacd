@@ -5,6 +5,11 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
+## 0.9.0
+
+* Breaking Changes: 
+  * Removed deprecated support for calling `lambdacd.steps.support/chain-steps` with a vector of steps, use varargs instead
+
 ## 0.8.0
 * Improvements: 
   * UI: Trigger symbol is now visible before a manual trigger is reached (#97)
