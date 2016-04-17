@@ -60,6 +60,7 @@
                         :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
                         :dependencies [[org.clojure/core.match "0.3.0-alpha4"]
                                        [ring-mock "0.1.5"]
+                                       [org.clojars.runa/conjure "2.2.0"]
                                        [prismatic/dommy "1.0.0"]
                                        [http-kit "2.1.16"]
                                        [ring-server "0.3.1"]
