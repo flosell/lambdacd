@@ -84,6 +84,7 @@ And if you notice something, please open bug reports, feature requests or just g
 * [lambdacd-artifacts](https://github.com/flosell/lambdacd-artifacts): Makes arbitrary build-artifacts (test-results, binaries, ...) available on LambdaCD
 * [lambdacd-junit](https://github.com/thilo11/lambdacd-junit): Makes JUnit test reports available in LambdaCD 
 * [lambdacd-testng](https://github.com/otto-de/lambdacd-testng): Makes TestNG results available in LambdaCD
+* [lambdacd-cron](https://github.com/felixb/lambdacd-cron): A cron trigger for your LambdaCD
 * [lambdacd-mongodb](https://github.com/SimonMonecke/lambdacd-mongodb): Alternative persistence backend for LambdaCD, saving the pipeline state into MongoDB instead of the filesystem
 * [lambdacd-rest](https://github.com/SimonMonecke/lambdacd-rest): Alternative persistence backend for LambdaCD, delegating to a REST-service to take care of persistence
 * [lambdacd-state-controller](https://github.com/SimonMonecke/lambdacd-state-controller): Aggregator service for several instances of LambdaCD, backend for [lambdacd-rest](https://github.com/SimonMonecke/lambdacd-rest)
