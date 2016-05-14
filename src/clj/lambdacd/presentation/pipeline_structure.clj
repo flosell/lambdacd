@@ -90,7 +90,7 @@
 (declare step-display-representation) ; mutual recursion
 
 (defn- seq-to-display-representations [parent-step-id part]
-  (map-indexed #(step-display-representation %2 (conj parent-step-id (inc %1))) (filter (complement nil?) part)))
+  (map-indexed #(step-display-representation %2 (conj parent-step-id (inc %1))) (remove nil? part)))
 
 (defn- is-container-step? [x]
   (let [dt (display-type x)]
