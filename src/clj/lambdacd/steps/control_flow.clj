@@ -26,7 +26,7 @@
     (async/<!! filtered-by-success)))
 
 (defn- step-producer-returning-with-first-successful [args steps-and-ids]
-  (let [step-result-channels (map #(async/go (core/execute-step args %)) steps-and-ids)
+  (let [step-result-channels (map #(async/thread (core/execute-step args %)) steps-and-ids)
         result (wait-for-finished-on step-result-channels)]
     (if (nil? result)
       [{:status :failure}]

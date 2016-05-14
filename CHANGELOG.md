@@ -5,6 +5,14 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
+## 0.9.1
+
+* Bug fixes:
+  * Fixed bug that led to stuck pipelines in scenarios where a lot of pipelines live in the same project/process (#110)
+* API Changes:
+  * `lambdacd.event-bus/publish` is now deprecated in favor of `lambdacd.event-bus/publish!!` and `lambdacd.event-bus/publish!`
+     (to be able to properly publish from within a go-block)
+
 ## 0.9.0
 
 * Improvements:

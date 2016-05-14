@@ -22,14 +22,14 @@
     (assoc result :has-been-waiting true)
     result))
 
-(defn- send-step-result [{step-id :step-id build-number :build-number :as ctx } step-result]
+(defn- send-step-result!! [{step-id :step-id build-number :build-number :as ctx} step-result]
   (let [payload {:build-number build-number
-                 :step-id step-id :step-result step-result}]
-    (event-bus/publish ctx :step-result-updated payload)))
+                 :step-id      step-id
+                 :step-result  step-result}]
+    (event-bus/publish!! ctx :step-result-updated payload)))
 
-(defn process-channel-result-async [c ctx]
-  (async/go
-    (loop [cur-result {:status :running}]
+(defn process-channel-result-async [c {step-id :step-id build-number :build-number :as ctx}]
+  (async/go-loop [cur-result {:status :running}]
       (let [[key value] (async/<! c)
             new-result (-> cur-result
                            (assoc key value)
@@ -37,8 +37,10 @@
         (if (and (nil? key) (nil? value))
           cur-result
           (do
-            (send-step-result ctx new-result)
-            (recur new-result)))))))
+            (event-bus/publish! ctx :step-result-updated {:build-number build-number
+                                                           :step-id      step-id
+                                                           :step-result  new-result})
+            (recur new-result))))))
 
 (defmacro with-err-str
   [& body]
@@ -86,7 +88,7 @@
               (build-number-to-kill? build-number kill-payload))
           (do
             (reset! is-killed true)
-            (async/>!! (:result-channel ctx) [:received-kill true]))
+            (async/>! (:result-channel ctx) [:received-kill true]))
           (recur))))
     subscription))
 
@@ -102,7 +104,7 @@
                                                                      (:retriggered-step-id ctx)))}))
 
 (defn- report-step-started [ctx]
-  (send-step-result ctx {:status :running})
+  (send-step-result!! ctx {:status :running})
   (event-bus/publish ctx :step-started  {:step-id      (:step-id ctx)
                                          :build-number (:build-number ctx)}))
 
@@ -125,7 +127,7 @@
     (log/debug (str "executed step " step-id complete-step-result))
     (clean-up-kill-handling ctx-for-child kill-subscription)
     (remove-watch parent-kill-switch watch-key)
-    (send-step-result ctx complete-step-result)
+    (send-step-result!! ctx complete-step-result)
     (report-step-finished ctx complete-step-result)
     (step-output step-id complete-step-result)))
 
@@ -163,7 +165,7 @@
                 old-unified (unify-status-fn (vals statuses))
                 new-unified (unify-status-fn (vals new-statuses))]
             (if (not= old-unified new-unified)
-              (async/>!! out-ch [:status new-unified]))
+              (async/>! out-ch [:status new-unified]))
             (recur new-statuses))
           (async/close! out-ch))))
     out-ch))
@@ -219,7 +221,7 @@
 (defn- publish-child-step-results [ctx retriggered-build-number original-build-result]
   (->> original-build-result
        (filter #(step-id/parent-of? (:step-id ctx) (first %)))
-       (map #(send-step-result (assoc ctx :step-id (first %)) (assoc (second %) :retrigger-mock-for-build-number retriggered-build-number)))
+       (map #(send-step-result!! (assoc ctx :step-id (first %)) (assoc (second %) :retrigger-mock-for-build-number retriggered-build-number)))
        (doall)))
 
 (defn retrigger-mock-step [retriggered-build-number]
