@@ -41,6 +41,19 @@
      (alias "do-stuff-alias" do-stuff)
     do-other-stuff))
 
+(def pipeline-with-nils
+  `(
+     do-stuff
+     nil
+     ~(if false
+        do-other-stuff)
+     do-other-stuff))
+
+(def pipeline-with-nil-children
+  `((in-cwd "bar"
+            nil
+            do-stuff)))
+
 (def foo-pipeline
   `((in-parallel
      (in-cwd "foo"
@@ -72,6 +85,8 @@
     (testing "that a string is unknown type"
       (is (= :unknown (display-type "foo")))
       (is (= :unknown (display-type (second (second (first pipeline)))))))
+    (testing "that nil is an unknown type"
+      (is (= :unknown (display-type nil))))
     (testing "that a sequence with child-steps is a container"
       (is (= :container (display-type `(do-stuff do-more-stuff))))
       (is (= :container (display-type simple-pipeline))))
@@ -104,7 +119,10 @@
       (testing "hiding parameters"
         (is (= "do-stuff-with-hidden-params visible" (display-name `(do-stuff-with-hidden-params "hidden" "visible")))))
       (testing "that the display-name for alias is just the alias parameter without the function name"
-        (is (= "the alias" (display-name `(control-flow/alias "the alias" do-stuff)))))))
+        (is (= "the alias" (display-name `(control-flow/alias "the alias" do-stuff)))))
+      (testing "nil children"
+        (is (= "do-stuff" (display-name `(do-stuff nil))))
+        (is (= "do-stuff foo" (display-name `(do-stuff nil "foo" nil)))))))
   (deftest dependencies-of-test
     (testing "that normal steps don't depend on anything"
       (is (= false (has-dependencies? `do-stuff)))
@@ -164,4 +182,15 @@
              :type :container
              :step-id '(1)
              :has-dependencies false
-             :children [{:name "do-stuff foo" :type :step :step-id '(1 1) :has-dependencies false}]}] (pipeline-display-representation (mk-pipeline "foo"))))))
+             :children [{:name "do-stuff foo" :type :step :step-id '(1 1) :has-dependencies false}]}] (pipeline-display-representation (mk-pipeline "foo")))))
+  (testing "that nil-values in a pipeline are ignored in a sequence of steps"
+    (is (= [{:name "do-stuff" :type :step :step-id '(1) :has-dependencies false}
+            {:name "do-other-stuff" :type :step :step-id '(2) :has-dependencies true}]
+           (pipeline-display-representation pipeline-with-nils))))
+  (testing "that nil-values in a pipeline are ignored as children"
+    (is (= [{:name "in-cwd bar"
+             :type :container
+             :step-id '(1)
+             :has-dependencies false
+             :children [{:name "do-stuff" :type :step :step-id '(1 1) :has-dependencies false}]}]
+           (pipeline-display-representation pipeline-with-nil-children)))))

@@ -9,6 +9,7 @@ The official release will have a defined and more stable API. If you are already
 
 * Bug fixes:
   * Fixed bug that led to stuck pipelines in scenarios where a lot of pipelines live in the same project/process (#110)
+  * Fixed bug that prevented nil values to appear in a pipeline and made it hard to implement optional steps in the pipeline structure (#111)
 * API Changes:
   * `lambdacd.event-bus/publish` is now deprecated in favor of `lambdacd.event-bus/publish!!` and `lambdacd.event-bus/publish!`
      (to be able to properly publish from within a go-block)

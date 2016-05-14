@@ -29,6 +29,7 @@
 
 (defn- display-type [x]
   (cond
+    (nil? x) :unknown
     (is-fn? x) (or (display-type-by-metadata x) :step)
     (is-nested-with-children x) (or (display-type-by-metadata (first x)) :container)
     (sequential? x) :step
@@ -38,8 +39,9 @@
 (defn- clear-namespace [s]
   (clojure.string/replace s #"[^/]+/" ""))
 
-(defn displayable-parameter? [x]
+(defn- displayable-parameter? [x]
   (not (or (symbol? x)
+           (nil? x)
            (sequential? x))))
 
 (defn pad [coll val]
@@ -88,10 +90,12 @@
 (declare step-display-representation) ; mutual recursion
 
 (defn- seq-to-display-representations [parent-step-id part]
-  (map-indexed #(step-display-representation %2 (conj parent-step-id (inc %1))) part))
+  (map-indexed #(step-display-representation %2 (conj parent-step-id (inc %1))) (filter (complement nil?) part)))
 
 (defn- is-container-step? [x]
   (let [dt (display-type x)]
+    (and
+      (not (nil? x)))
     (or (= :container dt) (= :parallel dt))))
 
 (defn- has-display-type? [x]
