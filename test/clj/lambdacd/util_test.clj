@@ -56,7 +56,16 @@
       (is (= "some-value-from-function" (with-temp d (throw-if-not-exists d))))
 
       (is (not (fs/exists? (fs/file d "somefile"))))
-      (is (not (fs/exists? d))))))
+      (is (not (fs/exists? d)))))
+  (testing "that it can deal with circular symlinks"
+    (let [f (create-temp-dir)]
+      (is (= "some-value-from-function"
+             (with-temp f (let [link-parent (io/file f "foo" "bar")]
+                            (fs/mkdirs link-parent)
+                            (fs/sym-link (io/file link-parent "link-to-the-start") f)
+                            "some-value-from-function"
+                            ))))
+      (is (not (fs/exists? f))))))
 
 
 (deftest json-test
