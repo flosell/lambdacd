@@ -1,5 +1,5 @@
 (ns lambdacd.util
-  (:import (java.nio.file Files)
+  (:import (java.nio.file Files LinkOption)
            (java.nio.file.attribute FileAttribute)
            (org.joda.time DateTime))
   (:require [clojure.string :as string]
@@ -39,7 +39,7 @@
      (let [result# ~body]
        result#)
      (finally
-       (fs/delete-dir ~f))))
+       (fs/delete-dir ~f LinkOption/NOFOLLOW_LINKS))))
 
 
 (defn write-as-json [file data]
