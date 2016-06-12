@@ -11,7 +11,7 @@
 (defn start-ticker []
   (go-loop []
            (re-frame/dispatch [::tick])
-           (async/<! (utils/timeout poll-frequency))
+           (async/<! (async/timeout poll-frequency))
            (recur)))
 
 (defn on-tick [db _]
