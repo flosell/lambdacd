@@ -6,7 +6,7 @@
 
 
 (def default-db
-  {:history []
+  {:history nil
    :pipeline-state nil
    :connection-state :lost
    :displayed-build-number nil
