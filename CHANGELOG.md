@@ -7,6 +7,9 @@ The official release will have a defined and more stable API. If you are already
 
 ## 0.9.2
 
+* Improvements:
+  * UI: Clear pipeline-state when switching build to get rid of percieved
+    "lag" while waiting for new state to load
 * Bug fixes: 
   * Fixed bug that broke `with-workspace` when the workspace contained circular symlinks (#112)
 

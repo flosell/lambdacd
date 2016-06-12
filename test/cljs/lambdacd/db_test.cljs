@@ -72,7 +72,12 @@
          (testing "that the build-number can be updated"
                   (let [db (r/atom db/default-db)]
                     (reset! db (db/build-number-update-handler @db [nil 42]))
-                    (is (= 42 @(db/build-number-subscription db nil))))))
+                    (is (= 42 @(db/build-number-subscription db nil)))))
+         (testing "that updating the build-number also resets the pipeline state"
+           (let [db (r/atom db/default-db)]
+             (reset! db (db/pipeline-state-updated-handler @db [nil [:some :state]]))
+             (reset! db (db/build-number-update-handler @db [nil 42]))
+             (is (= nil @(db/pipeline-state-subscription db nil))))))
 
 (deftest step-id-test
          (testing "that initially the step-id is not set"

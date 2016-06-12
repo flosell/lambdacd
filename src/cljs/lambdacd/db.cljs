@@ -7,7 +7,7 @@
 
 (def default-db
   {:history []
-   :pipeline-state []
+   :pipeline-state nil
    :connection-state :lost
    :displayed-build-number nil
    :raw-step-results-visible false
@@ -70,7 +70,9 @@
   (reaction (:displayed-build-number @db)))
 
 (defn build-number-update-handler [db [_ new-buildnumber]]
-  (assoc db :displayed-build-number new-buildnumber))
+  (-> db
+      (assoc :displayed-build-number new-buildnumber)
+      (assoc :pipeline-state nil)))
 
 (defn step-id-subscription [db _] ; TODO: maybe we don't need this in the long run and can instead just subscribe on the current step result?
   (reaction (:step-id @db)))
