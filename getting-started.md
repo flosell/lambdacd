@@ -173,7 +173,7 @@ So let's create a new pipeline structure first:
 (def pipeline-def
   `(
     (either
-      wait-for-manual-trigger
+      manualtrigger/wait-for-manual-trigger
       wait-for-repo)
     (with-repo
           run-some-tests)))
