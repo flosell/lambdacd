@@ -10,7 +10,7 @@
 (ns todopipeline.pipeline
   (:require [lambdacd.core :as core]
             [lambdacd.util :as utils]
-            [ring.server.standalone :as ring-server]
+            [ring.adapter.jetty :as ring-jetty-adapter]
             [lambdacd.ui.ui-server :as ui]
             [lambdacd.runners :as runners]
             [clojure.tools.logging :as log]
@@ -20,7 +20,10 @@
             [compojure.route :as route])
   (:use [lambdacd.steps.control-flow]
         [todopipeline.steps])
-  (:refer-clojure :exclude [alias]))
+  (:refer-clojure :exclude [alias])
+  (:import (org.eclipse.jetty.util Jetty)
+           (org.eclipse.jetty.server Server)
+           (org.eclipse.jetty.server.handler.gzip GzipHandler)))
 
 (def pipeline-def
   "the definition of the pipeline as a list of steps that are executed in order."
@@ -74,6 +77,18 @@
     (GET "" [] (resp/redirect "/styleguide/"))
     (GET "/styleguide/" [] (resp/resource-response "visualStyleguide.html" {:root "public"}))))
 
+(defn- add-gzip-handler [^Server server]
+  (.setHandler server
+               (doto (GzipHandler.)
+                 (.setIncludedMimeTypes (into-array ["text/css"
+                                                     "text/plain"
+                                                     "text/javascript"
+                                                     "application/javascript"
+                                                     "application/json"
+                                                     "image/svg+xml"]))
+                 (.setMinGzipSize 1024)
+                 (.setHandler (.getHandler server)))))
+
 (defn -main [& args]
   (let [home-dir (utils/create-temp-dir)
         ;; # The Configuration.
@@ -95,8 +110,6 @@
                        (ui/ui-for pipeline))]
     (log/info "LambdaCD Home Directory is " home-dir)
     (runners/start-new-run-after-first-step-finished pipeline)
-    (ring-server/serve ring-handler {:open-browser? false
-                                     :port 8080})
+    (ring-jetty-adapter/run-jetty ring-handler {:port 8080 :join? false :configurator add-gzip-handler})
     ;; visual styleguide for ui development. you don't need this in production
-    (ring-server/serve (visual-styleguide) {:open-browser? false
-                                     :port 8081})))
+    (ring-jetty-adapter/run-jetty (visual-styleguide) {:port 8081 :join? true})))

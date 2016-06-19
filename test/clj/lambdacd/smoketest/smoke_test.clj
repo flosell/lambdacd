@@ -1,6 +1,6 @@
 (ns lambdacd.smoketest.smoke-test
   (:require [lambdacd.smoketest.steps :as steps]
-            [ring.server.standalone :as ring :only serve]
+            [ring.adapter.jetty :as ring-jetty-adapter]
             [org.httpkit.client :as http]
             [clojure.test :refer :all]
             [clojure.data.json :as json]
@@ -13,7 +13,8 @@
 
 (def url-base "http://localhost:3000")
 (defn- test-server [handler]
-  (ring/serve handler (merge {:join? false, :open-browser? false})))
+  (ring-jetty-adapter/run-jetty handler {:join? false
+                                         :port 3000}))
 
 (defn- server-status []
   (:status (deref (http/get (str url-base "/api/builds/1/")))))
