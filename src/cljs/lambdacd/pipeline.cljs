@@ -155,11 +155,13 @@
       [:li {:key         (str step-id)
             :data-status status
             :class       (classes "pipeline__step" (status-class status))}
-       [step-label build-step build-number]
-       [manualtrigger-component build-step]
-       [retrigger-component build-number build-step]
-       [kill-component build-number build-step]
-       [expander-button build-step]
+       [:div {:class "pipeline__step-desc-container"}
+        [retrigger-component build-number build-step]
+        [kill-component build-number build-step]
+        [step-label build-step build-number]
+        [manualtrigger-component build-step]
+        [expander-button build-step]]
+
        [step-children step-id (type->ul-or-ol type) children build-number]])))
 
 (defn- control-disabled-if [b]

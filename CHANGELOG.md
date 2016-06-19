@@ -10,6 +10,8 @@ The official release will have a defined and more stable API. If you are already
 * Improvements:
   * UI: Clear pipeline-state when switching build to get rid of perceived "lag" while waiting for new state to load
   * UI: Improve look&feel of loading behavior
+  * UI: kill and retrigger-buttons away from the expand/collapse button to prevent users from accidentally clicking
+    the wrong thing (#69)
 * Bug fixes: 
   * Fixed bug that broke `with-workspace` when the workspace contained circular symlinks (#112)
 
