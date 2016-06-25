@@ -1,11 +1,17 @@
 (ns lambdacd.step-id
   (:require [lambdacd.util :as util]))
 
-(defn parent-of? [a b]
-  (let [cut-off-b (take-last (count a) b)]
+(defn parent-of? [parent child]
+  (let [cut-off-b (take-last (count parent) child)]
     (and
-      (not= a b)
-      (= a cut-off-b))))
+      (not= parent child)
+      (= parent cut-off-b))))
+
+(defn direct-parent-of? [parent child]
+  (and
+    (parent-of? parent child)
+    (= (inc (count parent))
+       (count child))))
 
 (defn later-than? [a b]
   (let [length (max (count a) (count b))

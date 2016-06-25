@@ -3,7 +3,7 @@
   (:require [clojure.core.async :as async]
             [lambdacd.internal.pipeline-state :as pipeline-state]
             [clojure.tools.logging :as log]
-            [lambdacd.internal.step-id :as step-id]
+            [lambdacd.step-id :as step-id]
             [lambdacd.steps.status :as status]
             [clojure.repl :as repl]
             [lambdacd.event-bus :as event-bus])
@@ -213,7 +213,7 @@
           parent-step-id       (:step-id parent-ctx)
           msg-build            (:build-number msg)
           parent-build         (:build-number parent-ctx)
-          msg-from-child?      (step-id/parent-of? parent-step-id msg-step-id)
+          msg-from-child?      (step-id/direct-parent-of? parent-step-id msg-step-id)
           msg-from-same-build? (= parent-build msg-build)]
       (and msg-from-child? msg-from-same-build?))))
 

@@ -42,7 +42,15 @@
     (is (not (parent-of? [2 2] [2])))
     (is (parent-of? [2] [1 2 2]))
     (is (not (parent-of? [1 2 2] [2])))
-    (is (not (parent-of? [1] [2 2 2]))) ))
+    (is (not (parent-of? [1] [2 2 2])))))
+
+(deftest direct-parent-test
+  (testing "a direct child relationship"
+    (is (not (direct-parent-of? [1] [1])))
+    (is (direct-parent-of? [1] [2 1]))
+    (is (not (direct-parent-of? [2 1] [1]))))
+  (testing "recursive child relationship"
+    (is (not (direct-parent-of? [2] [1 2 2])))))
 
 (deftest root-step-id?-test
   (testing "that a root-step has a step-id with only one digit, i.e. it has no parent"
