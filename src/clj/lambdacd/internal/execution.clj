@@ -86,9 +86,7 @@
         (if (and
               (step-id-to-kill? step-id kill-payload)
               (build-number-to-kill? build-number kill-payload))
-          (do
-            (reset! is-killed true)
-            (async/>! (:result-channel ctx) [:received-kill true]))
+          (reset! is-killed true)
           (recur))))
     subscription))
 
@@ -108,6 +106,14 @@
   (event-bus/publish ctx :step-started  {:step-id      (:step-id ctx)
                                          :build-number (:build-number ctx)}))
 
+(defn report-received-kill [ctx]
+  (async/>!! (:result-channel ctx) [:received-kill true]))
+
+(defn add-kill-switch-reporter [ctx]
+  (add-watch (:is-killed ctx) (UUID/randomUUID) (fn [_ _ _ new-is-killed-val]
+                                                   (if new-is-killed-val
+                                                     (report-received-kill ctx)))))
+
 (defn execute-step [args [ctx step]]
   (let [step-id (:step-id ctx)
         result-ch (async/chan)
@@ -118,6 +124,7 @@
         _ (reset! child-kill-switch @parent-kill-switch) ; make sure kill switch has the parents state in the beginning and is updated through the watch
         ctx-for-child (assoc ctx :result-channel result-ch
                                  :is-killed child-kill-switch)
+        _ (add-kill-switch-reporter ctx-for-child)
         processed-async-result-ch (process-channel-result-async result-ch ctx)
         kill-subscription (kill-step-handling ctx-for-child)
         _ (report-step-started ctx)

@@ -218,10 +218,11 @@
                                :is-killed is-killed)
             _ (pipeline-state/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
             future-result (start-waiting-for (checkout-and-execute repo-uri "HEAD" args ctx [some-step-waiting-to-be-killed]))]
-      (wait-for (tu/child-step-running? ctx [1 0]))
-      (reset! is-killed true)
-      (is (map-containing {:status :killed
-                           :outputs {[1 0] {:status :killed}}} (get-or-timeout future-result)))))))
+        (wait-for (tu/child-step-running? ctx [1 0]))
+        (reset! is-killed true)
+        (is (map-containing {:status  :killed
+                             :outputs {[1 0] {:status :killed
+                                              :received-kill true}}} (get-or-timeout future-result)))))))
 
 
   (deftest with-commit-details-test

@@ -14,7 +14,8 @@
             [lambdacd.testsupport.noop-pipeline-state :as noop-pipeline-state]
             [lambdacd.internal.pipeline-state :as ps]
             [lambdacd.event-bus :as event-bus]
-            [lambdacd.internal.pipeline-state :as pipeline-state])
+            [lambdacd.internal.pipeline-state :as pipeline-state]
+            [lambdacd.steps.control-flow :as control-flow])
   (:import java.lang.IllegalStateException))
 
 (defn some-step-processing-input [arg & _]
@@ -230,15 +231,28 @@
       (kill-step ctx 3 [3 2 1])
       (is (map-containing {:status :killed} (get-or-timeout future-step-result)))))
   (testing "that killing a step sets a marker that can be used to determine if a kill was received even if the step didnt handle it"
-    (let [is-killed (atom false)
-          ctx (some-ctx-with :step-id [3 2 1]
-                             :build-number 3
-                             :is-killed is-killed)
-          _ (pipeline-state/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
-          future-step-result (start-waiting-for (execute-step {} [ctx some-step-waiting-to-be-killed]))]
-      (wait-for (tu/step-running? ctx))
-      (kill-step ctx 3 [3 2 1])
-      (is (map-containing {:received-kill true} (first (vals (:outputs (get-or-timeout future-step-result))))))))
+    (testing "a simple step"
+      (let [is-killed          (atom false)
+            ctx                (some-ctx-with :step-id [3 2 1]
+                                              :build-number 3
+                                              :is-killed is-killed)
+            _                  (pipeline-state/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
+            future-step-result (start-waiting-for (execute-step {} [ctx some-step-waiting-to-be-killed]))]
+        (wait-for (tu/step-running? ctx))
+        (kill-step ctx 3 [3 2 1])
+
+        (is (map-containing {:received-kill true} (first (vals (:outputs (get-or-timeout future-step-result))))))))
+    (testing "that it works for child steps that are killed along with the parent"
+      (let [is-killed          (atom false)
+            ctx                (some-ctx-with :step-id [3 2 1]
+                                              :build-number 3
+                                              :is-killed is-killed)
+            _                  (pipeline-state/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
+            future-step-result (start-waiting-for (execute-step {} [ctx (control-flow/run some-step-waiting-to-be-killed)]))]
+        (wait-for (tu/step-running? ctx))
+        (kill-step ctx 3 [3 2 1])
+
+        (is (map-containing {:received-kill true} (first (vals (:outputs (first (vals (:outputs (get-or-timeout future-step-result))))))))))))
   (testing "that a step using the kill-switch does not bubble up to the parents passing in the kill-switch"
     (let [is-killed (atom false)
           ctx (some-ctx-with :is-killed is-killed)]
