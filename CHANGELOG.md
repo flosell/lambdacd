@@ -9,6 +9,7 @@ The official release will have a defined and more stable API. If you are already
 
 * Improvements:
   * UI: Add kill button to waiting steps (#115)
+  * UI: Improve visualization of steps that are in the progress of being killed
 * Bug fixes:
   * Fix status aggregation that led to parent steps showing a wrong status in some situations with deeply nested
     container steps (#116)

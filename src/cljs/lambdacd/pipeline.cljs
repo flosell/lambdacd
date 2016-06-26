@@ -21,6 +21,11 @@
     (:received-kill result)
     (:processed-kill result)))
 
+(defn is-being-killed? [{result :result}]
+  (and
+    (:received-kill result)
+    (not (= "killed" (:status result)))))
+
 (defn has-dependencies [step]
   (:has-dependencies step))
 
@@ -54,6 +59,7 @@
     "retrigger" "fa fa-repeat"
     "expand" "fa fa-plus"
     "killed"  "fa fa-bug"
+    "being-killed" "fa fa-times fa-spin"
     "collapse" "fa fa-minus"))
 
 (defn step-icon [status build-step]
@@ -77,10 +83,12 @@
     (api/trigger trigger-id {})))
 
 (defn kill-component [build-number build-step]
-  (if (can-be-killed? build-step)
-    [:a {:class    "pipeline__step__action-button"
-         :on-click (click-handler #(api/kill build-number (step-id-for build-step)))}
-     (step-icon "kill" build-step)]))
+  (cond
+    (can-be-killed? build-step) [:a {:class    "pipeline__step__action-button"
+                                     :on-click (click-handler #(api/kill build-number (step-id-for build-step)))}
+                                 (step-icon "kill" build-step)]
+    (is-being-killed? build-step) [:span {:class "pipeline__step__action-button pipeline__step__action-button--disabled"}
+                                   (step-icon "being-killed" build-step)]))
 
 (defn active-manual-trigger-component [build-step]
   [:a {:class    "pipeline__step__action-button"
