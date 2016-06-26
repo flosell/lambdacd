@@ -24,7 +24,7 @@
 (defn is-being-killed? [{result :result}]
   (and
     (:received-kill result)
-    (not (= "killed" (:status result)))))
+    (not= "killed" (:status result))))
 
 (defn has-dependencies [step]
   (:has-dependencies step))
