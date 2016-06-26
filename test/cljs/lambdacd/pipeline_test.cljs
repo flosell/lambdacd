@@ -131,7 +131,8 @@
           (is (dom/found-in div #"some-manual-trigger"))
           (is (dom/having-class "build-step" (step-label (first (steps div)))))
           (is (dom/having-data "status" "waiting" (first (steps div))))
-          (is (dom/having-class "fa-play" (first (icons div)))))))
+          (is (dom/having-class "fa-times" (first (icons div))))
+          (is (dom/having-class "fa-play" (second (icons div)))))))
     (testing "rendering of an inactive manual trigger"
       (tu/with-mounted-component
         [pipeline/build-step some-inactive-manual-trigger some-build-number]

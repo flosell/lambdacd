@@ -39,7 +39,6 @@
   (and
     (has-status step)
     (not (is-finished step))
-    (not (is-waiting step))
     (not (is-already-killed step))))
 
 (defn- type->ul-or-ol [type]
