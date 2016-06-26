@@ -15,22 +15,24 @@
         merged-step-results (support/merge-step-results outputs)]
     (merge merged-step-results result {:global globals})))
 
-(defn- is-finished [{status :status}]
-  (or
-    (= :success status)
-    (= :killed status)))
+(defn- wait-for-finished-on [step-result-chs]
+  (let [all-resp-results-ch    (async/merge step-result-chs)
+        unified-status         (atom :unknown)
+        successful-step-result (async/<!!
+                                 (async/go-loop [statuses []]
+                                   (if-let [result (async/<! all-resp-results-ch)]
+                                     (let [new-statuses (conj statuses (:status result))]
+                                       (reset! unified-status (status/successful-when-one-successful new-statuses))
+                                       (if (= :success (:status result))
+                                         result
+                                         (recur new-statuses))))))]
+    (if (nil? successful-step-result)
+      [{:status @unified-status}]
+      [successful-step-result])))
 
-(defn- wait-for-finished-on [channels]
-  (let [merged (async/merge channels)
-        filtered-by-success (async/filter< is-finished merged)]
-    (async/<!! filtered-by-success)))
-
-(defn- step-producer-returning-with-first-successful [args steps-and-ids]
-  (let [step-result-channels (map #(async/thread (core/execute-step args %)) steps-and-ids)
-        result (wait-for-finished-on step-result-channels)]
-    (if (nil? result)
-      [{:status :failure}]
-      [result])))
+(defn- either-step-result-producer [args steps-and-ids]
+  (let [step-result-chs (map #(async/thread (core/execute-step args %)) steps-and-ids)]
+    (wait-for-finished-on step-result-chs)))
 
 (defn synchronize-atoms [source target]
   (let [key (UUID/randomUUID)]
@@ -40,14 +42,14 @@
 (defn ^{:display-type :parallel} either [& steps]
   (fn [args ctx]
     (let [parent-kill-switch (:is-killed ctx)
-          kill-switch (atom false)
-          watch-ref (synchronize-atoms parent-kill-switch kill-switch)
-          _ (reset! kill-switch @parent-kill-switch)
-          execute-output (core/execute-steps steps args ctx
-                                             :is-killed kill-switch
-                                             :step-result-producer step-producer-returning-with-first-successful
-                                             :retrigger-predicate (constantly :rerun)
-                                             :unify-status-fn status/successful-when-one-successful)]
+          kill-switch        (atom false)
+          watch-ref          (synchronize-atoms parent-kill-switch kill-switch)
+          _                  (reset! kill-switch @parent-kill-switch)
+          execute-output     (core/execute-steps steps args ctx
+                                                 :is-killed kill-switch
+                                                 :step-result-producer either-step-result-producer
+                                                 :retrigger-predicate (constantly :rerun)
+                                                 :unify-status-fn status/successful-when-one-successful)]
       (reset! kill-switch true)
       (remove-watch parent-kill-switch watch-ref)
       (if (= :success (:status execute-output))

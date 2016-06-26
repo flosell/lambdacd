@@ -37,6 +37,9 @@
 (defn some-successful-step [arg & _]
   {:status :success})
 
+(defn some-killed-step [arg & _]
+  {:status :killed})
+
 (defn some-failing-step [arg & _]
   (Thread/sleep 100)
   {:status :failure})
@@ -202,8 +205,11 @@
     (is (= {:status :success :successful "after a while"}
            ((either some-failing-step some-step-being-successful-after-200ms) {} (some-ctx)))))
   (testing "that it fails once all children failed"
-    (is (= { :status :failure }
+    (is (= {:status :failure}
            ((either some-failing-step some-failing-step) {} (some-ctx)))))
+  (testing "that a killed child doesnt' kill all the others"
+    (is (= {:status :success :foo :bar}
+           ((either some-step-taking-100ms some-killed-step) {} (some-ctx)))))
   (testing "that it can inherit the result status children send over the result channel"
     (let [result-ch (async/chan 100)
           ctx (some-ctx-with :result-channel result-ch)]

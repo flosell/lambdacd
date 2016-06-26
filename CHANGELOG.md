@@ -12,6 +12,7 @@ The official release will have a defined and more stable API. If you are already
 * Bug fixes:
   * Fix status aggregation that led to parent steps showing a wrong status in some situations with deeply nested
     container steps (#116)
+  * Fix bug that caused a whole `either` step to be killed when one of its children was killed (#118)
 
 ## 0.9.2
 

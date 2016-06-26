@@ -8,14 +8,13 @@
   (util/contains-value? status statuses))
 
 (defn successful-when-one-successful [statuses]
-  (let [none-failures (filter #(not= :failure %) statuses)]
-    (cond
-      (all    statuses      :failure) :failure
-      (one-in statuses      :success) :success
-      (one-in statuses      :running) :running
-      (all    none-failures :waiting) :waiting
-      (all    statuses      :killed)  :killed
-      :else :unknown)))
+  (cond
+    (all statuses :failure) :failure
+    (all statuses :killed) :killed
+    (one-in statuses :success) :success
+    (one-in statuses :running) :running
+    (one-in statuses :waiting) :waiting
+    :else :unknown))
 
 (defn successful-when-all-successful [statuses]
   (cond

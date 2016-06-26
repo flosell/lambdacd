@@ -18,7 +18,8 @@
   (testing "that all waiting makes the unified view waiting"
     (is (= :waiting (successful-when-one-successful [:waiting]))))
   (testing "that all killed makes the unified view killed"
-    (is (= :killed (successful-when-one-successful [:killed]))))
+    (is (= :killed (successful-when-one-successful [:killed :killed])))
+    (is (= :waiting (successful-when-one-successful [:killed :waiting]))))
   (testing "undefined otherwise"
     (is (= :unknown (successful-when-one-successful [:foo :bar])))))
 
