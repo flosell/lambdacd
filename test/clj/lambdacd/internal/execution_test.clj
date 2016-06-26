@@ -286,7 +286,10 @@
            (execute-steps [some-step-returning-global-foobar-value some-step-returning-another-global-foobar-value some-step-using-global-foobar-value] {} (some-ctx-with :step-id [0])))))
   (testing "that execute steps injects a kill-switch by default"
     (is (= {:outputs { [1 0] {:status :success} [2 0] {:status :success}} :status :success}
-           (execute-steps [some-successful-step step-that-expects-a-kill-switch] {} (some-ctx-with :step-id [0]))))))
+           (execute-steps [some-successful-step step-that-expects-a-kill-switch] {} (some-ctx-with :step-id [0])))))
+  (testing "that nil values (e.g. from an optional step in the structure) do not cause problems and are ignored"
+    (is (= {:outputs { [1 0] {:status :success}} :status :success}
+           (execute-steps [some-successful-step nil] {} (some-ctx-with :step-id [0]))))))
 
 (defn some-control-flow [& _] ; just a mock, we don't actually execute this
   (fn [args ctx]

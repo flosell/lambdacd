@@ -260,12 +260,15 @@
     (map (partial replace-step-with-retrigger-mock retrigger-predicate) step-contexts)
     step-contexts))
 
+(def not-nil? (complement nil?))
+
 (defn execute-steps [steps args ctx & {:keys [step-result-producer is-killed unify-status-fn retrigger-predicate]
                                        :or   {step-result-producer serial-step-result-producer
                                               is-killed            (atom false)
                                               unify-status-fn      status/successful-when-all-successful
                                               retrigger-predicate  sequential-retrigger-predicate}}]
-  (let [base-ctx-with-kill-switch (assoc ctx :is-killed is-killed)
+  (let [steps (filter not-nil? steps)
+        base-ctx-with-kill-switch (assoc ctx :is-killed is-killed)
         subscription (event-bus/subscribe ctx :step-result-updated)
         children-step-results-channel (->> subscription
                                            (event-bus/only-payload)
