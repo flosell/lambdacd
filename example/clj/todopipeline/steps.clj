@@ -135,3 +135,30 @@
 
 (defn always-echo-something [_ ctx]
   (shell/bash ctx "/" "while true; do date; sleep 1; done"))
+
+(defn check-greeting [{greeting :greeting} ctx]
+  (if (= "fail" greeting)
+    (shell/bash ctx "/"
+                "echo comparison failed"
+                "exit 1")
+    (shell/bash ctx "/"
+                "echo comparison success"
+                "echo to make this step fail, input fail into the wait-for-greeting step"
+                "exit 0")))
+
+(defn do-succeed [args ctx]
+  (println "args: " args)
+  {:status :success})
+
+(defn do-stuff [args ctx]
+  (support/chaining args ctx
+                    (shell/bash support/injected-ctx "/" "echo one && sleep 10 && echo  two")
+                    (shell/bash support/injected-ctx "/" "echo three && sleep 10 && echo four")))
+
+(defn compare-screenshots [args ctx]
+  (support/last-step-status-wins
+    (support/always-chaining args ctx
+      (check-greeting support/injected-args support/injected-ctx)
+      (if (= :failure (:status support/injected-args))
+        (manualtrigger/wait-for-manual-trigger support/injected-args support/injected-ctx)
+        {:status :success})))) ; else-branch seems to be necessary at the moment, otherwise nil will be returned

@@ -2,7 +2,8 @@
   (:require [clojure.string :as s]
             [clojure.core.async :as async]
             [lambdacd.internal.execution :as execution]
-            [clojure.walk :as walk])
+            [clojure.walk :as walk]
+            [lambdacd.step-id :as step-id])
   (:import (java.io PrintWriter Writer StringWriter PrintStream)
            (org.apache.commons.io.output WriterOutputStream)))
 
@@ -30,24 +31,35 @@
       (assoc merged :status (merge-step-status (:status a) (:status b)))
       merged)))
 
+(defn- do-chain-steps-final-result [merged-result all-outputs]
+  (assoc merged-result :outputs all-outputs))
 (defn- do-chain-steps [stop-on-step-failure args ctx steps]
   "run the given steps one by one until a step fails and merge the results.
    results of one step are the inputs for the next one."
-  (loop [x (first steps)
-         rest (rest steps)
-         result {}
-         args args]
+  (loop [counter     1
+         x           (first steps)
+         rest        (rest steps)
+         result      {}
+         all-outputs {}
+         args        args]
     (if (nil? x)
-      result
+      (do-chain-steps-final-result result all-outputs)
       (let [step-result     (x args ctx)
             complete-result (merge-step-results-failures-win result step-result)
             next-args       (merge args complete-result)
             step-failed     (and
                               (not= :success (:status step-result))
-                              (not= nil step-result))]
+                              (not= nil step-result))
+            child-step-id (step-id/child-id (:step-id ctx) counter)
+            new-all-outputs (assoc all-outputs child-step-id step-result)]
         (if (and stop-on-step-failure step-failed)
-          complete-result
-          (recur (first rest) (next rest) complete-result next-args))))))
+          (do-chain-steps-final-result complete-result new-all-outputs)
+          (recur (inc counter)
+                 (first rest)
+                 (next rest)
+                 complete-result
+                 new-all-outputs
+                 next-args))))))
 
 (defn always-chain-steps
   ([args ctx & steps]
@@ -102,6 +114,15 @@
 (defmacro always-chaining [args ctx & forms]
   "syntactic sugar for always-chain-steps. can work with arbitrary code and can inject args and ctx"
   (do-chaining always-chain-steps args ctx forms))
+
+(defn last-step-status-wins [step-result]
+  (let [winning-status (->> step-result
+                           :outputs
+                           (sort-by #(vec (first %)))
+                           last
+                           second
+                           :status)]
+    (assoc step-result :status winning-status)))
 
 (defn- append-output [msg]
   (fn [old-output]

@@ -5,6 +5,13 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
+## 0.9.4
+
+* Improvements: 
+  * `lambdacd.steps.support/{chain,always-chain,chaining,always-chaining}` now return outputs of individual chained steps (#122)
+  * Add `lambdacd.steps.support/last-step-status-wins` to coerce a step result into having the status of the last output
+    to make an always-chained step successful even though it had a failing step in it (#122)
+
 ## 0.9.3
 
 * Improvements:

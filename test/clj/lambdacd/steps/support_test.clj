@@ -81,124 +81,154 @@
     (doall (for [unit-under-test [chain-steps always-chain-steps]]
              (do
                (testing "that the input argument is passed to the first step"
-                 (is (= {:status :success :the-arg 42} (unit-under-test {:v 42} {}
-                                                                        some-step-returning-an-argument-passed-in))))
+                 (is (map-containing {:status :success :the-arg 42}
+                                     (unit-under-test {:v 42} {}
+                                                      some-step-returning-an-argument-passed-in))))
                (testing "that the input argument is passed to all the steps"
-                 (is (= {:status :success :the-arg 42} (unit-under-test {:v 42} {}
-                                                                        some-successful-step some-step-returning-an-argument-passed-in))))
+                 (is (map-containing {:status :success :the-arg 42}
+                                     (unit-under-test {:v 42} {}
+                                                      some-successful-step some-step-returning-an-argument-passed-in))))
                (testing "that the results of two steps get merged"
-                 (is (= {:status :success :foo :baz} (unit-under-test {} {}
-                                                                      some-step some-other-step))))
+                 (is (map-containing {:status :success :foo :baz}
+                                     (unit-under-test {} {}
+                                                      some-step some-other-step))))
                (testing "that the results of the first step are the input for the next step"
-                 (is (= {:status :success :the-arg 42 :v 42} (unit-under-test {} {}
-                                                                              some-step-that-returns-a-value
-                                                                              some-step-returning-an-argument-passed-in))))
+                 (is (map-containing {:status :success :the-arg 42 :v 42}
+                                     (unit-under-test {} {}
+                                                      some-step-that-returns-a-value
+                                                      some-step-returning-an-argument-passed-in))))
                (testing "that global values are being kept over all steps"
-                 (is (= {:status         :success
-                         :the-global-arg 42
-                         :global         {:g 42 :v 21}} (unit-under-test {} {} some-step-returning-a-global
-                                                                         some-step-returning-a-different-global
-                                                                         some-step-returning-a-global-argument-passed-in))))
+                 (is (map-containing {:status         :success
+                                      :the-global-arg 42
+                                      :global         {:g 42 :v 21}}
+                                     (unit-under-test {} {} some-step-returning-a-global
+                                                      some-step-returning-a-different-global
+                                                      some-step-returning-a-global-argument-passed-in))))
                (testing "that overlapping string-outputs get concatenated"
-                 (is (= {:status :success
-                         :out    "hello\nworld"} (unit-under-test {} {} some-step-saying-hello some-step-saying-world))))
+                 (is (map-containing {:status :success
+                                      :out    "hello\nworld"} (unit-under-test {} {} some-step-saying-hello some-step-saying-world))))
                (testing "that the context is passed to all the steps"
-                 (is (= {:status :success :the-ctx-1 {:v 42} :the-ctx-2 {:v 42}} (unit-under-test {} {:v 42}
-                                                                                                  some-step-returning-the-context-passed-in
-                                                                                                  some-other-step-returning-the-context-passed-in))))))))
+                 (is (map-containing {:status :success :the-ctx-1 {:v 42} :the-ctx-2 {:v 42}}
+                                     (unit-under-test {} {:v 42}
+                                                      some-step-returning-the-context-passed-in
+                                                      some-other-step-returning-the-context-passed-in))))
+               (testing "that the steps individual outputs are available in the end result"
+                 (is (map-containing {:outputs {[1 42] {:status :success}
+                                                [2 42] {:status :success :v 42}}}
+                                     (unit-under-test {} (some-ctx-with :step-id [42])
+                                                      some-successful-step
+                                                      some-step-that-returns-a-value))))))))
   (testing "only chain-steps"
     (testing "that a failing step stops the execution"
-      (is (= {:status :failure :foo :bar} (chain-steps {} {}
-                                                       some-step
-                                                       some-failling-step
-                                                       step-that-should-never-be-called)))))
+      (is (map-containing {:status :failure :foo :bar}
+                          (chain-steps {} {}
+                                       some-step
+                                       some-failling-step
+                                       step-that-should-never-be-called))))
+    (testing "that the steps individual outputs are available in the end result when aborted because of failing step"
+      (is (map-containing {:outputs {[1 42] {:status :failure}}}
+                          (chain-steps {} (some-ctx-with :step-id [42])
+                                       some-failling-step
+                                       some-successful-step)))))
   (testing "only always-chain-steps"
     (testing "that a failing step does not stop the execution but step is still a failure in the end"
-      (is (= {:status :failure :foo :baz} (always-chain-steps {} {}
-                                                              some-step
-                                                              some-failling-step
-                                                              some-other-step))))))
+      (is (map-containing {:status :failure :foo :baz}
+                          (always-chain-steps {} {}
+                                              some-step
+                                              some-failling-step
+                                              some-other-step))))))
 
 (deftest chaining-test
   (testing "that we can just call a single step"
-    (is (= {:status :success :foo :bar} (chaining {} {} (some-step injected-args injected-ctx)))))
+    (is (map-containing {:status :success :foo :bar} (chaining {} {} (some-step injected-args injected-ctx)))))
   (testing "that the results of two steps get merged"
-    (is (= {:status :success :foo :baz}
-           (chaining {} {}
-                     (some-step injected-args injected-ctx)
-                     (some-other-step injected-args injected-ctx)))))
+    (is (map-containing {:status :success :foo :baz}
+                        (chaining {} {}
+                                  (some-step injected-args injected-ctx)
+                                  (some-other-step injected-args injected-ctx)))))
   (testing "that a failing step stops the execution"
-    (is (= {:status :failure :foo :bar}
-           (chaining {} {}
-                     (some-step injected-args injected-ctx)
-                     (some-failling-step injected-args injected-ctx)
-                     (step-that-should-never-be-called injected-args injected-ctx)))))
+    (is (map-containing {:status :failure :foo :bar}
+                        (chaining {} {}
+                                  (some-step injected-args injected-ctx)
+                                  (some-failling-step injected-args injected-ctx)
+                                  (step-that-should-never-be-called injected-args injected-ctx)))))
   (testing "that a given argument is passed on to the step"
-    (is (= {:status :success :the-arg 42}
-           (chaining {:v 42} {}
-                     (some-step-returning-an-argument-passed-in injected-args injected-ctx))))
-    (is (= {:status :success :the-arg 42}
-           (chaining {:v 42} {}
-                     (some-step-returning-an-argument-passed-in step-support/injected-args injected-ctx)))))
+    (is (map-containing {:status :success :the-arg 42}
+                        (chaining {:v 42} {}
+                                  (some-step-returning-an-argument-passed-in injected-args injected-ctx))))
+    (is (map-containing {:status :success :the-arg 42}
+                        (chaining {:v 42} {}
+                                  (some-step-returning-an-argument-passed-in step-support/injected-args injected-ctx)))))
   (testing "that we can have more arguments than just args and ctx"
-    (is (= {:status :success :hello "hello" :world "world"}
-           (chaining {} {} (some-step-with-additional-arguments injected-args injected-ctx "hello" "world")))))
+    (is (map-containing {:status :success :hello "hello" :world "world"}
+                        (chaining {} {} (some-step-with-additional-arguments injected-args injected-ctx "hello" "world")))))
   (testing "that we can also hardcode results at the end of the chain"
-    (is (= {:status :success :this-is :test :foo :bar}
-           (chaining {} {}
-                     (some-step injected-args injected-ctx)
-                     {:status :success :this-is :test}))))
+    (is (map-containing {:status :success :this-is :test :foo :bar}
+                        (chaining {} {}
+                                  (some-step injected-args injected-ctx)
+                                  {:status :success :this-is :test}))))
   (testing "that a given context is passed on to the step"
-    (is (= {:status :success :the-ctx-1 {:v 42}}
-           (chaining {} {:v 42}
-                     (some-step-returning-the-context-passed-in injected-args injected-ctx)))))
+    (is (map-containing {:status :success :the-ctx-1 {:v 42}}
+                        (chaining {} {:v 42}
+                                  (some-step-returning-the-context-passed-in injected-args injected-ctx)))))
   (testing "that we can pass in only the ctx"
-    (is (= {:status :success :the-ctx-1 {:v 42}}
-           (chaining {} {:v 42}
-                     (some-step-receiving-only-ctx injected-ctx)))))
+    (is (map-containing {:status :success :the-ctx-1 {:v 42}}
+                        (chaining {} {:v 42}
+                                  (some-step-receiving-only-ctx injected-ctx)))))
   (testing "that we can pass in only the args"
-    (is (= {:status :success :the-arg 42}
-           (chaining {:v 42} {}
-                     (some-step-receiving-only-args injected-args)))))
+    (is (map-containing {:status :success :the-arg 42}
+                        (chaining {:v 42} {}
+                                  (some-step-receiving-only-args injected-args)))))
   (testing "that we can pass in no params at all"
-    (is (= {:status :success :no-arg :passed-in}
-           (chaining {} {}
-                     (some-step-receiving-nothing)))))
+    (is (map-containing {:status :success :no-arg :passed-in}
+                        (chaining {} {}
+                                  (some-step-receiving-nothing)))))
   (testing "that we can pass in values but nothing else"
-    (is (= {:status :success :hello "hello" :world "world"}
-           (chaining {} {}
-                     (some-step-with-arbitrary-arguments "hello" "world"))))
-    (is (= {:status :success :hello "hello" :world "world"}
-           (let [hello "hello"]
-             (chaining {} {}
-                       (some-step-with-arbitrary-arguments hello "world"))))))
+    (is (map-containing {:status :success :hello "hello" :world "world"}
+                        (chaining {} {}
+                                  (some-step-with-arbitrary-arguments "hello" "world"))))
+    (is (map-containing {:status :success :hello "hello" :world "world"}
+                        (let [hello "hello"]
+                          (chaining {} {}
+                                    (some-step-with-arbitrary-arguments hello "world"))))))
   (testing "that intermediate steps that return nil are ok and dont interfere"
-    (is (= {:status :success :foo :baz}
-           (chaining {} {}
-                     (some-step injected-args injected-ctx)
-                     (print "")
-                     (some-other-step injected-args injected-ctx)))))
+    (is (map-containing {:status :success :foo :baz}
+                        (chaining {} {}
+                                  (some-step injected-args injected-ctx)
+                                  (print "")
+                                  (some-other-step injected-args injected-ctx)))))
   (testing "that we can combine chaining and capture-output to debug intermediate results"
-    (is (= {:status :success :foo :baz :out "args: {:status :success, :foo :bar}"}
-           (capture-output (some-ctx)
-             (chaining {} {}
-                       (some-step injected-args injected-ctx)
-                       (print "args:" injected-args)
-                       (some-other-step injected-args injected-ctx)))))
-    (is (= {:status :success :foo :baz :out "foo-value: :bar"}
-           (capture-output (some-ctx)
-             (chaining {} {}
-                       (some-step injected-args injected-ctx)
-                       (print "foo-value:" (:foo injected-args))
-                       (some-other-step injected-args injected-ctx)))))))
+    (is (map-containing {:status :success :foo :baz :out "args: {:status :success, :foo :bar}"}
+                        (capture-output (some-ctx)
+                          (chaining {} {}
+                                    (some-step injected-args injected-ctx)
+                                    (print "args:" injected-args)
+                                    (some-other-step injected-args injected-ctx)))))
+    (is (map-containing {:status :success :foo :baz :out "foo-value: :bar"}
+                        (capture-output (some-ctx)
+                          (chaining {} {}
+                                    (some-step injected-args injected-ctx)
+                                    (print "foo-value:" (:foo injected-args))
+                                    (some-other-step injected-args injected-ctx)))))))
 
 (deftest always-chaining-test
   (testing "that a failing step doesnt stop the execution"
-    (is (= {:status :failure :foo :baz}
-           (always-chaining {} {}
-                     (some-step injected-args injected-ctx)
-                     (some-failling-step injected-args injected-ctx)
-                     (some-other-step injected-args injected-ctx))))))
+    (is (map-containing {:status :failure :foo :baz}
+                        (always-chaining {} {}
+                          (some-step injected-args injected-ctx)
+                          (some-failling-step injected-args injected-ctx)
+                          (some-other-step injected-args injected-ctx))))))
+
+(deftest last-step-status-wins-test
+  (testing "that it changes the step result to one where the status of the last step result wins"
+    (is (map-containing {:status :success}
+                        (last-step-status-wins {:status :failure :outputs {`(2 42) {:status :success}
+                                                                           `(1 42) {:status :failure}}}))))
+  (testing "that it keeps all the results"
+    (is (map-containing {:foo :bar}
+                        (last-step-status-wins {:status :failure :outputs {`(2 42) {:status :success}
+                                                                           `(1 42) {:status :failure}}
+                                                :foo    :bar})))))
 
 (deftest if-not-killed-test
   (testing "that the body will only be executed if step is still alive"
