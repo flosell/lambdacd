@@ -2,7 +2,7 @@
 
 ## Contributions encouraged
 
-I'd love to hear from you! If you have a question, a bug report or feature request please reach out.
+I'd love to hear from you! If you have a question, bug report, feature request or a pull request, please reach out.
 
 ## How to reach out
 
@@ -10,7 +10,7 @@ The preferred way at the moment is to open issues on the [Github Issue Tracker](
 
 If you want to contribute improvements to the LambdaCD codebase, open a pull request.
 
-## How to open the perfect bug issue
+## How to open the perfect issue
 
 * Be specific and as detailed as you feel is necessary to understand the topic 
 * Provide context (what were you trying to achive, what were you expecting, ...)
