@@ -60,7 +60,7 @@ $ tree
 ## `project.clj`
 
 This is a Leiningen project definition. You declare your dependencies here and other things about your project.
-Dont' worry about it for now.
+We'll get back to this later to add additional libraries to LambdaCD.
 
 ## `my_first_pipeline`
 
@@ -167,32 +167,45 @@ setting up configuration and starting pipeline and server:
 Most build pipelines need to touch version control at some point. So let's see how we can wait for commits, check out a
 repository and run some tests.
 
-So let's create a new pipeline structure first:
+So let's change our pipeline to something that does this:
 
 {% highlight clojure %}
 (def pipeline-def
   `(
-    (either
-      manualtrigger/wait-for-manual-trigger
-      wait-for-repo)
-    (with-repo
-          run-some-tests)))
+     (either
+       manualtrigger/wait-for-manual-trigger
+       wait-for-repo)
+     (with-workspace
+       clone
+       run-some-tests)))
 {% endhighlight %}
 
 A couple of things aren't there yet:
 
 * `wait-for-repo` to wait for commits on a repository
-* `with-repo` to check out the repository and run other steps on the checked out repository
+* `clone` to check out the repository and run other steps on the checked out repository
 * `run-some-tests` actually run some tests.
 
 Let's get started!
 
-First, let's pull in LambdaCDs Git support:
+First, we add the [lambdacd-git](https://github.com/flosell/lambdacd-git) library to `project.clj`[^1]:
+
+[^1]: You might notice that LambdaCD itself already contains git-support in the `lambdacd.git` namespace. It has a number of drawbacks (mainly in terms of flexibility and robustness) and will probably be deprecated in the future. Therefore, we are using the newer, more feature-rich lambdacd-git in this guide.
+
+{% highlight clojure %}
+; [...]
+:dependencies [; [...]
+               [lambdacd-git "0.1.6"]
+               ; [...]
+               ]
+{% endhighlight %}
+
+We'll also import the namespace it provides in `steps.clj`:
 
 {% highlight clojure %}
 (ns my-first-pipeline.steps
   (:require [lambdacd.steps.shell :as shell]
-            [lambdacd.steps.git :as git]))
+            [lambdacd-git.core :as lambdacd-git]))
 {% endhighlight %}
 
 Also, let's put the repository information into a constant so we can use them in both git-related steps we are going to
@@ -207,21 +220,23 @@ Now that we have everything we need set up, let's create the build steps:
 
 {% highlight clojure %}
 (defn wait-for-repo [args ctx]
-  (git/wait-for-git ctx repo-uri repo-branch))
+  (lambdacd-git/wait-for-git ctx repo-uri :ref (str "refs/heads/" repo-branch)))
 
-(defn with-repo [& steps]
-  (git/with-git repo-uri steps))
+(defn clone [args ctx]
+  (let [revision (:revision args)
+        cwd      (:cwd args)
+        ref      (or revision repo-branch)]
+    (lambdacd-git/clone ctx repo-uri ref cwd)))
 {% endhighlight %}
 
-`wait-for-repo` is more or less straightforward stuff you already know, `with-repo` looks a bit odd, right? Didn't I say
-that every build-steps needs to have two parameters, `args` and `ctx`? Yes, but then `with-repo` isn't a normal build-step
-when you look at how it's being used in the pipeline structure: It's being called within the pipeline structure, takes
-any number of build steps and returns a build step that'll run it's children within the git repository context.
+Nothing too surprising here: We call a library function to do the heavy git-lifting for us. Two things stand out:
+How do we know where to clone the repository and what revision to clone?
 
-Now, all that's left is how to get the tests running. The first step is easy, you have seen how to call something on the
-shell before. But where to find the git repository `with-git` checked out for us? Well remember I mentioned before that
-`args` is how build steps communicate with each other? `with-git` does just that. It puts the working directory into the
-childs `args` under the key `:cwd`.
+Well remember I mentioned before that `args` is how build steps communicate with each other? We are using this here:
+`with-workspace` passes in the path of the workspace directory it created as `:cwd`
+and `wait-for-repo` provides us with a `:revision` value (we fall back to the branch in case the build was triggered manually).
+
+Now all that's left to do is actually run the tests (and remember to use our workspace (`cwd`) as the working directory):
 
 {% highlight clojure %}
 (defn run-some-tests [args ctx]
@@ -230,7 +245,6 @@ childs `args` under the key `:cwd`.
 
 And that's all you need. `lein run` your pipeline again and see the it all work.
 
-
 # Where to go from here?
 
 * Find out [how to do implement some common, more advanced use cases](https://github.com/flosell/lambdacd/blob/master/doc/howto.md)
@@ -238,3 +252,5 @@ And that's all you need. `lein run` your pipeline again and see the it all work.
 * Check out how to [refactor a complex pipeline](https://github.com/flosell/lambdacd/wiki/Guide:-Pipeline-Structure-Refactoring)
 * Go through a [comprehensive walkthrough](https://github.com/flosell/lambdacd/blob/master/doc/walkthrough.md),
   implementing a complete delivery pipeline and going deeper into the details of LambdaCD
+
+# Footnotes
