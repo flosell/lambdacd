@@ -6,7 +6,8 @@
             [lambdacd.step-id :as step-id]
             [lambdacd.steps.status :as status]
             [clojure.repl :as repl]
-            [lambdacd.event-bus :as event-bus])
+            [lambdacd.event-bus :as event-bus]
+            [lambdacd.steps.result :as step-results])
   (:import (java.io StringWriter)
            (java.util UUID)))
 
@@ -138,15 +139,11 @@
     (report-step-finished ctx complete-step-result)
     (step-output step-id complete-step-result)))
 
-(defn- merge-entry [r1 r2]
-  (cond
-    (keyword? r1) (status/choose-last-or-not-success r1 r2)
-    (and (coll? r1) (coll? r2)) (into r1 r2)
-    (coll? r1) (merge r1 r2)
-    :else r2))
-
 (defn merge-two-step-results [r1 r2]
-  (merge-with merge-entry r1 r2))
+  (step-results/merge-step-results r1 r2 :resolvers [step-results/status-resolver
+                                        step-results/merge-nested-maps-resolver
+                                        step-results/combine-to-list-resolver
+                                        step-results/second-wins-resolver]))
 
 (defn- to-context-and-step [ctx]
   (fn [idx step]

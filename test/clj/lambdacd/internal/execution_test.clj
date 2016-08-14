@@ -119,8 +119,7 @@
 (defn- events-for [k ctx]
   (-> (event-bus/subscribe ctx k)
       (event-bus/only-payload)
-      (buffered))
-  )
+      (buffered)))
 
 (defn- step-finished-events-for [ctx]
   (events-for :step-finished ctx))

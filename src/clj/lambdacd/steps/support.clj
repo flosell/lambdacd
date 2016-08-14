@@ -4,27 +4,21 @@
             [lambdacd.internal.execution :as execution]
             [clojure.walk :as walk]
             [lambdacd.step-id :as step-id]
-            [lambdacd.steps.status :as status])
+            [lambdacd.steps.status :as status]
+            [lambdacd.steps.result :as step-results])
   (:import (java.io PrintWriter Writer StringWriter PrintStream)
            (org.apache.commons.io.output WriterOutputStream)))
 
-(defn merge-values [a b]
-  (cond
-    (and (map? a) (map? b))
-      (merge a b)
-    (and (string? a) (string? b))
-      (s/join "\n" [a b])
-    :default b))
-
-(defn- merge-step-results-failures-win [a b]
-  (let [merged (merge-with merge-values a b)]
-    (if (and (contains? a :status)
-             (contains? b :status))
-      (assoc merged :status (status/choose-last-or-not-success (:status a) (:status b)))
-      merged)))
-
 (defn- do-chain-steps-final-result [merged-result all-outputs]
   (assoc merged-result :outputs all-outputs))
+
+(defn merge-step-results-with-joined-output [a b]
+  (step-results/merge-step-results a b :resolvers [step-results/status-resolver
+                                      step-results/merge-nested-maps-resolver
+                                      step-results/join-output-resolver
+                                      step-results/second-wins-resolver]))
+
+
 (defn- do-chain-steps [stop-on-step-failure args ctx steps]
   "run the given steps one by one until a step fails and merge the results.
    results of one step are the inputs for the next one."
@@ -37,7 +31,7 @@
     (if (nil? x)
       (do-chain-steps-final-result result all-outputs)
       (let [step-result     (x args ctx)
-            complete-result (merge-step-results-failures-win result step-result)
+            complete-result (merge-step-results-with-joined-output result step-result)
             next-args       (merge args complete-result)
             step-failed     (and
                               (not= :success (:status step-result))

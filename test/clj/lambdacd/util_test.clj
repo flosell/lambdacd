@@ -2,7 +2,8 @@
   (:use [lambdacd.util])
   (:require [clojure.test :refer :all]
             [me.raynes.fs :as fs]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [conjure.core :as c]))
 
 (deftest range-test
   (testing "that range produces a range from a value+1 with a defined length"
@@ -86,3 +87,14 @@
   (testing "that a collection is left just as it was if it is already longer than the desired length"
     (is (= [1 2 3] (fill [1 2 3] 2 -1)))
     (is (= [1 2 3] (fill [1 2 3] 3 -1)))))
+
+(defn f [k v1 v2]
+  (str k v1 v2))
+
+(deftest merge-with-k-v-test
+  (testing "that conflicts get passed to the passed function"
+      (c/mocking [f]
+                 (merge-with-k-v f {:foo 1} {:foo 2})
+                 (c/verify-first-call-args-for f :foo 1 2)))
+  (testing "a merge"
+    (is (= {:foo ":foo12" :a 1 :b 2} (merge-with-k-v f {:foo 1 :a 1} {:foo 2 :b 2})))))
