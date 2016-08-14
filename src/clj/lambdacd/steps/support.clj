@@ -3,7 +3,8 @@
             [clojure.core.async :as async]
             [lambdacd.internal.execution :as execution]
             [clojure.walk :as walk]
-            [lambdacd.step-id :as step-id])
+            [lambdacd.step-id :as step-id]
+            [lambdacd.steps.status :as status])
   (:import (java.io PrintWriter Writer StringWriter PrintStream)
            (org.apache.commons.io.output WriterOutputStream)))
 
@@ -15,20 +16,11 @@
       (s/join "\n" [a b])
     :default b))
 
-
-(defn- merge-step-status [a b]
-  (cond
-    (and (= :success a)
-         (not= :success b)) b
-    (and (not= :success a)
-         (= :success b)) a
-    :default b))
-
 (defn- merge-step-results-failures-win [a b]
   (let [merged (merge-with merge-values a b)]
     (if (and (contains? a :status)
              (contains? b :status))
-      (assoc merged :status (merge-step-status (:status a) (:status b)))
+      (assoc merged :status (status/choose-last-or-not-success (:status a) (:status b)))
       merged)))
 
 (defn- do-chain-steps-final-result [merged-result all-outputs]

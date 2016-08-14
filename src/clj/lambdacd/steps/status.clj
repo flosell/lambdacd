@@ -23,3 +23,10 @@
     (one-in statuses :failure) :failure
     (all    statuses :success) :success
     :else                      :unknown))
+
+(defn choose-last-or-not-success [s1 s2]
+  (if (= s1 :success)
+    s2
+    (if (= s2 :success)
+      s1
+      s2)))

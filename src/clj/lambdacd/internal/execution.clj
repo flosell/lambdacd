@@ -138,16 +138,9 @@
     (report-step-finished ctx complete-step-result)
     (step-output step-id complete-step-result)))
 
-(defn- merge-status [s1 s2]
-  (if (= s1 :success)
-    s2
-    (if (= s2 :success)
-      s1
-      s2)))
-
 (defn- merge-entry [r1 r2]
   (cond
-    (keyword? r1) (merge-status r1 r2)
+    (keyword? r1) (status/choose-last-or-not-success r1 r2)
     (and (coll? r1) (coll? r2)) (into r1 r2)
     (coll? r1) (merge r1 r2)
     :else r2))

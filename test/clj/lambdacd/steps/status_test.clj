@@ -41,3 +41,13 @@
     (is (= :running (successful-when-all-successful [:killed :running]))))
   (testing "undefined otherwise"
     (is (= :unknown (successful-when-all-successful [:foo :bar])))))
+
+(deftest choose-last-or-not-success-test
+  (testing "everything not success wins over success"
+    (is (= :success (choose-last-or-not-success :success :success)))
+    (is (= :failure (choose-last-or-not-success :success :failure)))
+    (is (= :failure (choose-last-or-not-success :failure :success)))
+    (is (= :unknown (choose-last-or-not-success :unknown :success))))
+  (testing "that if none of the two is success, choose the latter"
+    (is (= :unknown (choose-last-or-not-success :failure :unknown)))
+    (is (= :failure (choose-last-or-not-success :unknown :failure)))))
