@@ -11,6 +11,11 @@ The official release will have a defined and more stable API. If you are already
   * `lambdacd.steps.support/{chain,always-chain,chaining,always-chaining}` now return outputs of individual chained steps (#122)
   * Add `lambdacd.steps.support/last-step-status-wins` to coerce a step result into having the status of the last output
     to make an always-chained step successful even though it had a failing step in it (#122)
+* Bug fixes: 
+  * Refactored merging of step results and resolved overly broad merging behavior (see breaking changes)
+* Breaking changes: 
+  * Changed behavior of step-merging in some edge-cases where it was merging with special behavior in cases that were not necessary.
+    This change should not affect normal pipeline behavior unless they rely on this very edge-case. 
 
 ## 0.9.3
 
