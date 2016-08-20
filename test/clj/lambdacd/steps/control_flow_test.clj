@@ -2,7 +2,6 @@
   (:use [lambdacd.testsupport.test-util])
   (:refer-clojure :exclude [alias])
   (:require [clojure.test :refer :all]
-            [lambdacd.steps.control-flow :as control-flow]
             [lambdacd.testsupport.matchers :refer [map-containing]]
             [lambdacd.testsupport.data :refer [some-ctx-with some-ctx]]
             [lambdacd.steps.control-flow :refer :all]
@@ -129,9 +128,9 @@
     (let [result-ch (async/chan 100)
           ctx (some-ctx-with :result-channel result-ch :step-id [333])]
       ((in-parallel some-step-sending-waiting-on-channel some-step-sending-running-then-waiting-then-finished-on-channel) {} ctx)
-      (is (= [[:status :running]
-              [:status :waiting]
-              [:status :success]] (slurp-chan result-ch)))))
+      (is (= [{:status :running}
+              {:status :waiting}
+              {:status :success}] (slurp-chan result-ch)))))
   (testing "that it doesnt immediately inherit failures on the result channel so it doesn't look like the step has failed just because a child failed"
     (let [result-ch (async/chan 100)
           ctx (some-ctx-with :result-channel result-ch :step-id [333])]
@@ -214,24 +213,24 @@
     (let [result-ch (async/chan 100)
           ctx (some-ctx-with :result-channel result-ch)]
       ((either some-step-sending-waiting-on-channel some-step-sending-running-then-waiting-then-finished-on-channel) {} ctx)
-      (is (= [[:status :running]
-              [:status :waiting]
-              [:status :success]] (slurp-chan result-ch)))))
+      (is (= [{:status :running}
+              {:status :waiting}
+              {:status :success}] (slurp-chan result-ch)))))
   (testing "that it doesn't inherit failures on the result channel so it doesn't look like the step has failed just because a child failed"
     (let [result-ch (async/chan 100)
           ctx (some-ctx-with :result-channel result-ch)]
       ((either some-failing-step some-step-sending-running-then-waiting-then-finished-on-channel) {} ctx)
-      (is (= [[:status :running]
-              [:status :waiting]
-              [:status :success]] (slurp-chan result-ch)))))
+      (is (= [{:status :running}
+              {:status :waiting}
+              {:status :success}] (slurp-chan result-ch)))))
   (testing "that it doesn't inherit the status of nested children"
     (let [result-ch (async/chan 100)
           ctx (some-ctx-with :result-channel result-ch)]
       ((either (run some-successful-step some-failing-step) some-failing-step) {} ctx)
-      (is (= [[:status :running]
-              [:status :success]
-              [:status :running]
-              [:status :failure]] (slurp-chan result-ch)))))
+      (is (= [{:status :running}
+              {:status :success}
+              {:status :running}
+              {:status :failure}] (slurp-chan result-ch)))))
   (testing "that it kills all children if it was already killed in the beginning"
     (let [is-killed (atom true)
           ctx       (some-ctx-with :is-killed is-killed

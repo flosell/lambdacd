@@ -29,13 +29,18 @@
                  :step-result  step-result}]
     (event-bus/publish!! ctx :step-result-updated payload)))
 
-(defn process-channel-result-async [c {step-id :step-id build-number :build-number :as ctx}]
+(defn- append-result [cur-result [key value]]
+  (-> cur-result
+      (assoc key value)
+      (attach-wait-indicator-if-necessary key value)))
+
+(defn- process-channel-result-async [c {step-id :step-id build-number :build-number :as ctx}]
   (async/go-loop [cur-result {:status :running}]
-      (let [[key value] (async/<! c)
-            new-result (-> cur-result
-                           (assoc key value)
-                           (attach-wait-indicator-if-necessary key value))]
-        (if (and (nil? key) (nil? value))
+      (let [ev (async/<! c)
+            new-result (if (map? ev)
+                         ev
+                         (append-result cur-result ev))]
+        (if (nil? ev)
           cur-result
           (do
             (event-bus/publish! ctx :step-result-updated {:build-number build-number
@@ -140,10 +145,10 @@
     (step-output step-id complete-step-result)))
 
 (defn merge-two-step-results [r1 r2]
-  (step-results/merge-step-results r1 r2 :resolvers [step-results/status-resolver
-                                        step-results/merge-nested-maps-resolver
-                                        step-results/combine-to-list-resolver
-                                        step-results/second-wins-resolver]))
+  (step-results/merge-two-step-results r1 r2 :resolvers [step-results/status-resolver
+                                                         step-results/merge-nested-maps-resolver
+                                                         step-results/combine-to-list-resolver
+                                                         step-results/second-wins-resolver]))
 
 (defn- to-context-and-step [ctx]
   (fn [idx step]
@@ -152,18 +157,18 @@
           step-ctx (assoc ctx :step-id new-step-id)]
       [step-ctx step])))
 
-(defn- process-inheritance [step-results-channel unify-status-fn]
+(defn- process-inheritance [step-results-channel unify-results-fn]
   (let [out-ch (async/chan)]
     (async/go
-      (loop [statuses {}]
-        (if-let [step-result-update (async/<! step-results-channel)]
-          (let [step-status (get-in step-result-update [:step-result :status])
-                new-statuses (assoc statuses (:step-id step-result-update) step-status)
-                old-unified (unify-status-fn (vals statuses))
-                new-unified (unify-status-fn (vals new-statuses))]
+      (loop [results {}]
+        (if-let [{step-id     :step-id
+                  step-result :step-result} (async/<! step-results-channel)]
+          (let [new-results (assoc results step-id step-result)
+                old-unified (unify-results-fn results)
+                new-unified (unify-results-fn new-results)]
             (if (not= old-unified new-unified)
-              (async/>! out-ch [:status new-unified]))
-            (recur new-statuses))
+              (async/>! out-ch new-unified))
+            (recur new-results))
           (async/close! out-ch))))
     out-ch))
 
@@ -184,25 +189,30 @@
     args-with-old-and-new-globals))
 
 
-(defn- keep-original-args [old-args step-result]
+(defn keep-original-args [old-args step-result]
   (merge old-args step-result))
 
-(defn- serial-step-result-producer [args s-with-id]
-  (loop [result ()
-         remaining-steps-with-id s-with-id
-         cur-args args]
-    (if (empty? remaining-steps-with-id)
-      result
-      (let [ctx-and-step (first remaining-steps-with-id)
-            step-result (execute-step cur-args ctx-and-step)
-            step-output (first (vals (:outputs step-result)))
-            new-result (cons step-result result)
-            new-args (->> step-output
-                          (keep-globals cur-args)
-                          (keep-original-args args))]
-        (if (not= :success (:status step-result))
-          new-result
-          (recur (cons step-result result) (rest remaining-steps-with-id) new-args))))))
+(defn not-success? [step-result]
+  (not= :success (:status step-result)))
+
+(defn serial-step-result-producer [& {:keys [stop-predicate]
+                                      :or   {stop-predicate not-success?}}]
+  (fn [args s-with-id]
+    (loop [result                  ()
+           remaining-steps-with-id s-with-id
+           cur-args                args]
+      (if (empty? remaining-steps-with-id)
+        result
+        (let [ctx-and-step (first remaining-steps-with-id)
+              step-result  (execute-step cur-args ctx-and-step)
+              step-output  (first (vals (:outputs step-result)))
+              new-result   (cons step-result result)
+              new-args     (->> step-output
+                                (keep-globals cur-args)
+                                (keep-original-args args))]
+          (if (stop-predicate step-result)
+            new-result
+            (recur (cons step-result result) (rest remaining-steps-with-id) new-args)))))))
 
 (defn- inherit-message-from-parent? [parent-ctx]
   (fn [msg]
@@ -259,19 +269,27 @@
 
 (def not-nil? (complement nil?))
 
-(defn execute-steps [steps args ctx & {:keys [step-result-producer is-killed unify-status-fn retrigger-predicate]
-                                       :or   {step-result-producer serial-step-result-producer
+(defn unify-only-status [unify-status-fn]
+  (fn [step-results]
+    {:status (unify-status-fn (->> step-results
+                                   (vals)
+                                   (map :status)))}))
+
+(defn execute-steps [steps args ctx & {:keys [step-result-producer is-killed unify-status-fn unify-results-fn retrigger-predicate]
+                                       :or   {step-result-producer (serial-step-result-producer)
                                               is-killed            (atom false)
                                               unify-status-fn      status/successful-when-all-successful
+                                              unify-results-fn     nil ; dependent on unify-status-fn, can't have it here for now
                                               retrigger-predicate  sequential-retrigger-predicate}}]
-  (let [steps (filter not-nil? steps)
+  (let [unify-results-fn (or unify-results-fn (unify-only-status unify-status-fn))
+        steps (filter not-nil? steps)
         base-ctx-with-kill-switch (assoc ctx :is-killed is-killed)
         subscription (event-bus/subscribe ctx :step-result-updated)
         children-step-results-channel (->> subscription
                                            (event-bus/only-payload)
                                            (async/filter< (inherit-message-from-parent? ctx)))
         step-contexts (contexts-for-steps steps base-ctx-with-kill-switch)
-        _ (inherit-from children-step-results-channel (:result-channel ctx)  unify-status-fn)
+        _ (inherit-from children-step-results-channel (:result-channel ctx) unify-results-fn)
         step-contexts-with-retrigger-mocks (add-retrigger-mocks retrigger-predicate ctx step-contexts)
         step-results (step-result-producer args step-contexts-with-retrigger-mocks)
         result (reduce merge-two-step-results step-results)]

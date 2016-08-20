@@ -1,60 +1,53 @@
 (ns lambdacd.steps.support
-  (:require [clojure.string :as s]
-            [clojure.core.async :as async]
+  (:require [clojure.core.async :as async]
             [lambdacd.internal.execution :as execution]
             [clojure.walk :as walk]
             [lambdacd.step-id :as step-id]
-            [lambdacd.steps.status :as status]
             [lambdacd.steps.result :as step-results])
-  (:import (java.io PrintWriter Writer StringWriter PrintStream)
-           (org.apache.commons.io.output WriterOutputStream)))
+  (:import (java.io Writer StringWriter)))
 
-(defn- do-chain-steps-final-result [merged-result all-outputs]
-  (assoc merged-result :outputs all-outputs))
+(defn- merge-step-results-with-joined-output [a b]
+  (step-results/merge-two-step-results a b :resolvers [step-results/status-resolver
+                                                       step-results/merge-nested-maps-resolver
+                                                       step-results/join-output-resolver
+                                                       step-results/second-wins-resolver]))
 
-(defn merge-step-results-with-joined-output [a b]
-  (step-results/merge-step-results a b :resolvers [step-results/status-resolver
-                                      step-results/merge-nested-maps-resolver
-                                      step-results/join-output-resolver
-                                      step-results/second-wins-resolver]))
+(defn- wrap-step-to-allow-nil-values [step]
+  (fn [args ctx]
+    (let [result (step args ctx)]
+      (if (nil? result)
+        args
+        result))))
 
+(defn- step-results-sorted-by-id [outputs]
+  (->> outputs
+       (into (sorted-map-by step-id/before?))
+       (vals)))
 
-(defn- do-chain-steps [stop-on-step-failure args ctx steps]
-  "run the given steps one by one until a step fails and merge the results.
-   results of one step are the inputs for the next one."
-  (loop [counter     1
-         x           (first steps)
-         rest        (rest steps)
-         result      {}
-         all-outputs {}
-         args        args]
-    (if (nil? x)
-      (do-chain-steps-final-result result all-outputs)
-      (let [step-result     (x args ctx)
-            complete-result (merge-step-results-with-joined-output result step-result)
-            next-args       (merge args complete-result)
-            step-failed     (and
-                              (not= :success (:status step-result))
-                              (not= nil step-result))
-            child-step-id (step-id/child-id (:step-id ctx) counter)
-            new-all-outputs (assoc all-outputs child-step-id step-result)]
-        (if (and stop-on-step-failure step-failed)
-          (do-chain-steps-final-result complete-result new-all-outputs)
-          (recur (inc counter)
-                 (first rest)
-                 (next rest)
-                 complete-result
-                 new-all-outputs
-                 next-args))))))
+(defn unify-results [step-results]
+  (-> step-results
+      (step-results-sorted-by-id)
+      (step-results/merge-step-results merge-step-results-with-joined-output)))
 
-(defn always-chain-steps
-  ([args ctx & steps]
-   (do-chain-steps false args ctx steps)))
+(defn- do-chain-steps-with-execute-steps [args ctx steps step-result-producer]
+  (let [execute-step-result (execution/execute-steps steps args ctx
+                                                     :step-result-producer step-result-producer
+                                                     :unify-results-fn unify-results)
+        sorted-step-results (step-results-sorted-by-id (:outputs execute-step-result))
+        merged-step-results (step-results/merge-step-results sorted-step-results merge-step-results-with-joined-output)]
+    (merge merged-step-results execute-step-result)))
 
 (defn chain-steps
   ([args ctx & steps]
-   (do-chain-steps true args ctx steps)))
+   (do-chain-steps-with-execute-steps args ctx
+                                      (map wrap-step-to-allow-nil-values steps)
+                                      (execution/serial-step-result-producer))))
 
+(defn always-chain-steps
+  ([args ctx & steps]
+   (do-chain-steps-with-execute-steps args ctx
+                                      (map wrap-step-to-allow-nil-values steps)
+                                      (execution/serial-step-result-producer :stop-predicate (constantly false)))))
 
 (defn to-fn [form]
   (let [f# (first form)

@@ -13,25 +13,25 @@
 (deftest merge-step-results-test
   (testing "that it merges two steps and resolves conflicts using the passed resolvers"
     (testing "conflictless merging"
-      (is (= {:foo "hello" :bar "world"} (merge-step-results {:foo "hello"} {:bar "world"}
-                                                             :resolvers []))))
+      (is (= {:foo "hello" :bar "world"} (merge-two-step-results {:foo "hello"} {:bar "world"}
+                                                                 :resolvers []))))
     (testing "using the resolvers"
       (testing "the resolver gets called"
         (c/stubbing [some-resolver :resolved]
-          (is (= {:foo :resolved} (merge-step-results {:foo :bar} {:foo :baz}
-                                                      :resolvers [some-resolver])))
+          (is (= {:foo :resolved} (merge-two-step-results {:foo :bar} {:foo :baz}
+                                                          :resolvers [some-resolver])))
           (c/verify-called-once-with-args some-resolver :foo :bar :baz)))
       (testing "that the first matching resolver wins"
         (c/stubbing [some-resolver nil
                      some-other-resolver :resolved
                      some-third-resolver :also-resolved]
-                    (is (= {:foo :resolved} (merge-step-results {:foo :bar} {:foo :baz}
-                                                                :resolvers [some-resolver some-other-resolver some-third-resolver])))))
+                    (is (= {:foo :resolved} (merge-two-step-results {:foo :bar} {:foo :baz}
+                                                                    :resolvers [some-resolver some-other-resolver some-third-resolver])))))
       (testing "that conflicts will become nil if no resolver is matching"
-        (is (= {:foo nil} (merge-step-results {:foo :bar} {:foo :baz}
-                                                    :resolvers [some-resolver])))
-        (is (= {:foo nil} (merge-step-results {:foo :bar} {:foo :baz}
-                                              :resolvers [])))))))
+        (is (= {:foo nil} (merge-two-step-results {:foo :bar} {:foo :baz}
+                                                  :resolvers [some-resolver])))
+        (is (= {:foo nil} (merge-two-step-results {:foo :bar} {:foo :baz}
+                                                  :resolvers [])))))))
 
 
 (deftest join-output-resolver-test

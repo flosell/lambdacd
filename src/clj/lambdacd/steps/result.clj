@@ -34,12 +34,13 @@
          (filter (complement nil?))
          (first))))
 
-(defn merge-step-results [a b & {:keys [resolvers]
-                                 :or   {resolvers [status-resolver
-                                                   merge-nested-maps-resolver
-                                                   second-wins-resolver]}}]
+(defn merge-two-step-results [a b & {:keys [resolvers]
+                                     :or   {resolvers [status-resolver
+                                                       merge-nested-maps-resolver
+                                                       second-wins-resolver]}}]
   (utils/merge-with-k-v (resolve-first-matching resolvers) a b))
 
-
+(defn merge-step-results [step-results merger] ; TODO: test this!
+  (reduce merger {} step-results))
 
 

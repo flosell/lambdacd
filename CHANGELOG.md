@@ -11,8 +11,13 @@ The official release will have a defined and more stable API. If you are already
   * `lambdacd.steps.support/{chain,always-chain,chaining,always-chaining}` now return outputs of individual chained steps (#122)
   * Add `lambdacd.steps.support/last-step-status-wins` to coerce a step result into having the status of the last output
     to make an always-chained step successful even though it had a failing step in it (#122)
+  * Add `:unify-results-fn` to unify the whole step-result, not just the step status from children in `core/execute-steps`
 * Bug fixes: 
   * Refactored merging of step results and resolved overly broad merging behavior (see breaking changes)
+  * Chaining no longer loses intermediate results (fixes #120)
+* API changes:
+  * The `:unify-status-fn` parameter in `core/execute-steps` is now deprecated and will be removed in subsequent releases. 
+    Use `:unify-results-fn` instead. 
 * Breaking changes: 
   * Changed behavior of step-merging in some edge-cases where it was merging with special behavior in cases that were not necessary.
     This change should not affect normal pipeline behavior unless they rely on this very edge-case. 
