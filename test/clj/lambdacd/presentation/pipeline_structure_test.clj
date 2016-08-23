@@ -87,6 +87,9 @@
       (is (= :unknown (display-type (second (second (first pipeline)))))))
     (testing "that nil is an unknown type"
       (is (= :unknown (display-type nil))))
+    (testing "that bool is an unknown type"
+      (is (= :unknown (display-type true)))
+      (is (= :unknown (display-type false))))
     (testing "that a sequence with child-steps is a container"
       (is (= :container (display-type `(do-stuff do-more-stuff))))
       (is (= :container (display-type simple-pipeline))))

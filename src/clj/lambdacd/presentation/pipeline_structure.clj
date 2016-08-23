@@ -5,15 +5,6 @@
   (:require [clojure.string :as s]
             [lambdacd.steps.control-flow :as control-flow]))
 
-
-(defn- is-fn? [fun]
-  (not (or (string? fun)
-           (map? fun)
-           (sequential? fun)
-           (integer? fun)
-           (keyword? fun)
-           (float? fun)))) ; hackedyhack...
-
 (defn- display-type-by-metadata [fun]
   (:display-type (meta (find-var fun))))
 
@@ -30,7 +21,7 @@
 (defn- display-type [x]
   (cond
     (nil? x) :unknown
-    (is-fn? x) (or (display-type-by-metadata x) :step)
+    (clojure.test/function? x) (or (display-type-by-metadata x) :step)
     (is-nested-with-children x) (or (display-type-by-metadata (first x)) :container)
     (sequential? x) :step
     :else :unknown))
@@ -59,10 +50,10 @@
   ;; not supported at the moment:
   ;; * declare variable arguments as hidden
   ;; * declare arguments as hidden in function with more than one argument list (first one is always taken)
-  (let [visible-args     (visible-args-bitmap fun)
+  (let [visible-args (visible-args-bitmap fun)
         displayable-args (map displayable-parameter? params)
         ; pad to make sure varargs don't cause problems
-        args-to-display  (map both-true? (pad visible-args true) displayable-args)
+        args-to-display (map both-true? (pad visible-args true) displayable-args)
         parameter-values (->> (map vector args-to-display params)
                               (filter first)
                               (map second))]
@@ -73,9 +64,9 @@
 
 (defn- display-name [x]
   (if (sequential? x)
-    (let [fun    (first x)
+    (let [fun (first x)
           params (rest x)
-          parts  (concat [(display-name fun)] (parameter-values fun params))]
+          parts (concat [(display-name fun)] (parameter-values fun params))]
       (if (is-alias-fun? fun)
         (first params)
         (s/join " " parts)))
@@ -87,7 +78,7 @@
         depends-on-previous-steps (:depends-on-previous-steps metadata)]
     (boolean depends-on-previous-steps)))
 
-(declare step-display-representation) ; mutual recursion
+(declare step-display-representation)                       ; mutual recursion
 
 (defn- seq-to-display-representations [parent-step-id part]
   (map-indexed #(step-display-representation %2 (conj parent-step-id (inc %1))) (remove nil? part)))
@@ -105,10 +96,10 @@
   (has-display-type? x))
 
 (defn- simple-step-representation [part id]
-  {:name (display-name part)
-   :type (display-type part)
+  {:name             (display-name part)
+   :type             (display-type part)
    :has-dependencies (has-dependencies? part)
-   :step-id id})
+   :step-id          id})
 
 (defn- is-alias-part? [part]
   (and
@@ -122,11 +113,11 @@
                                       (seq-to-display-representations id))]
     (if (is-alias-part? part)
       (assoc (first children-representations) :name (display-name part))
-      {:name (display-name part)
-       :type (display-type part)
-       :step-id id
+      {:name             (display-name part)
+       :type             (display-type part)
+       :step-id          id
        :has-dependencies false
-       :children children-representations})))
+       :children         children-representations})))
 
 (defn step-display-representation [part id]
   (if (is-container-step? part)
