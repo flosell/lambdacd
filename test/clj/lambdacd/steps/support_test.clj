@@ -45,8 +45,14 @@
 
 (defn some-step-saying-hello [args ctx]
   {:status :success :out "hello"})
+
 (defn some-step-saying-world [args ctx]
   {:status :success :out "world"})
+
+(defn some-step-printing-to-intermediate-output [args ctx]
+  (capture-output ctx
+    (println "helloworld")
+    {:status :success}))
 
 (defn some-step-with-additional-arguments [args ctx hello world]
   {:status :success :hello hello :world world})
@@ -75,8 +81,6 @@
       (print-to-output ctx printer "Hello")
       (print-to-output ctx printer "World")
       (is (= "Hello\nWorld\n" (printed-output printer))))))
-
-; TODO: add tests that show that intermediate results of chaining work
 
 (deftest chain-steps-test
   (testing "chain-steps and always-chain-steps"
@@ -109,6 +113,15 @@
                (testing "that overlapping string-outputs get concatenated"
                  (is (map-containing {:status :success
                                       :out    "hello\nworld"} (unit-under-test {} (some-ctx) some-step-saying-hello some-step-saying-world))))
+               (testing "that intermediate outputs are kept while step is running"
+                 (let [result-channel (async/chan 100)
+                       ctx (some-ctx-with :result-channel result-channel)]
+                   (unit-under-test {} ctx some-step-saying-hello some-step-printing-to-intermediate-output)
+                   (is (= [{:status :running}
+                           {:status :success :out "hello"}
+                           {:status :running :out "hello"}
+                           {:status :running :out "hello\nhelloworld\n"}
+                           {:status :success :out "hello\nhelloworld\n"}] (slurp-chan result-channel)))))
                (testing "that the context is passed to all the steps"
                  (let [result (unit-under-test {} (some-ctx-with :v 42)
                                               some-step-returning-the-context-passed-in
