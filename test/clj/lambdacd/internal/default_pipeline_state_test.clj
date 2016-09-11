@@ -25,12 +25,6 @@
     (is (= 1 (next-build-number (->DefaultPipelineState (atom clean-pipeline-state) no-home-dir keep-all-builds)))))
   (testing "that a new pipeline-state will be set on update"
     (is (= { 10 { [0] { :foo :bar }}} (tu/without-ts (after-update 10 [0] {:foo :bar})))))
-  (testing "that update will not loose keys that are not in the new map" ; e.g. to make sure values that are sent on the result-channel are not lost if they don't appear in the final result-map
-    (is (= {10 {[0] {:foo :bar :bar :baz}}}
-           (let [state (->DefaultPipelineState (atom clean-pipeline-state) no-home-dir keep-all-builds)]
-             (pipeline-state-record/update state 10 [0] {:foo :bar})
-             (pipeline-state-record/update state 10 [0] {:bar :baz})
-             (tu/without-ts (pipeline-state-record/get-all state))))))
   (testing "that update will set a first-updated-at and most-recent-update-at timestamp"
     (let [first-update-timestamp (t/minus (t/now) (t/minutes 1))
           last-updated-timestamp (t/now)

@@ -11,20 +11,15 @@
 (defn initial-pipeline-state [{home-dir :home-dir}]
   (persistence/read-build-history-from home-dir))
 
-(defn- update-current-run [step-id step-result current-state]
-  (let [current-step-result (get current-state step-id)
-        now                 (t/now)
-        new-step-result     (-> current-step-result
-                                (assoc :most-recent-update-at now)
-                                (util/put-if-not-present :first-updated-at now)
-                                (merge step-result))]
-    (assoc current-state step-id new-step-result)))
+(defn- update-step-result [new-step-result current-step-result]
+  (let [now                       (t/now)]
+    (-> new-step-result
+        (assoc :most-recent-update-at now)
+        (assoc :first-updated-at (or (:first-updated-at current-step-result) now))
+        (merge new-step-result))))
 
-(defn- update-step-result-in-state [build-number step-id step-result current-state]
-  (let [build     (get current-state build-number)
-        build-new (update-current-run step-id step-result build)
-        state-new (assoc current-state build-number build-new)]
-    state-new))
+(defn- update-step-result-in-state [build-number step-id new-step-result current-state]
+  (update-in current-state [build-number step-id] #(update-step-result new-step-result %)))
 
 (defn- truncate-build-history [max-builds state]
   (->> state
@@ -39,10 +34,10 @@
 
 (defrecord DefaultPipelineState [state-atom home-dir max-builds]
   pipeline-state/PipelineStateComponent
-  (update [self build-number step-id step-result]
+  (update [self build-number step-id new-step-result]
     (if (not (nil? state-atom))                             ; convenience for tests: if no state exists we just do nothing
       (let [new-state (swap! state-atom #(->> %
-                                              (update-step-result-in-state build-number step-id step-result)
+                                              (update-step-result-in-state build-number step-id new-step-result)
                                               (truncate-build-history max-builds)))]
         (persistence/write-build-history home-dir build-number new-state)
         (persistence/clean-up-old-history home-dir new-state))))
