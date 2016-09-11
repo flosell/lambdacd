@@ -9,11 +9,12 @@
             [clojure.java.io :as io]
             [clj-time.format :as f]
             [clj-time.coerce :as c]
-            [cheshire.core :as ch]
-            [cheshire.generate :as chg]
             [clojure.data.json :as json]
             [clojure.edn :as edn]
-            [clojure.walk :as walk]))
+            [clojure.walk :as walk]
+            [clojure.data :as data]
+            [me.raynes.fs :as fs]
+            [clojure.tools.logging :as log]))
 
 (defn convert-if-instance [c f]
   (fn [x]
@@ -80,6 +81,8 @@
         state-as-edn-string (pr-str serializable-build)]
     (spit path state-as-edn-string)))
 
+; TODO: get rid of json compatibility
+
 (defn- build-state-filename [json-or-edn]
   (if (= :json json-or-edn)
     "pipeline-state.json"
@@ -110,12 +113,15 @@
       (read-build-edn edn-path)
       (read-build-json json-path))))
 
-(defn read-build-history-from-internal [home-dir json-or-edn]
+(defn- build-dirs [home-dir]
   (let [dir                 (io/file home-dir)
         home-contents       (file-seq dir)
         directories-in-home (filter #(.isDirectory %) home-contents)
-        build-dirs          (filter #(.startsWith (.getName %) "build-") directories-in-home)
-        states              (map #(read-build-edn-or-json % json-or-edn) build-dirs)]
+        build-dirs          (filter #(.startsWith (.getName %) "build-") directories-in-home)]
+    build-dirs))
+
+(defn read-build-history-from-internal [home-dir json-or-edn]
+  (let [states              (map #(read-build-edn-or-json % json-or-edn) (build-dirs home-dir))]
     (into {} states)))
 
 (defn write-build-history [home-dir build-number new-state]
@@ -123,3 +129,14 @@
 
 (defn read-build-history-from [home-dir]
   (read-build-history-from-internal home-dir :prefer-edn))
+
+(defn clean-up-old-history [home-dir new-state]
+  (if home-dir
+    (let [existing-build-dirs    (map str (build-dirs home-dir))
+          expected-build-numbers (keys new-state)
+          expected-build-dirs    (map #(str (io/file home-dir (str "build-" %))) expected-build-numbers)
+          [only-in-existing _ _] (data/diff (set existing-build-dirs) (set expected-build-dirs))]
+      (doall (for [old-build-dir only-in-existing]
+               (do
+                 (log/info "Cleaning up old build directory" old-build-dir)
+                 (fs/delete-dir old-build-dir)))))))

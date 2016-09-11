@@ -11,28 +11,29 @@
             [clojure.java.io :as io]))
 
 (def no-home-dir nil)
+(def keep-all-builds Integer/MAX_VALUE)
 
 (defn- after-update [build id newstate]
-  (let [state (->DefaultPipelineState (atom clean-pipeline-state) no-home-dir)]
+  (let [state (->DefaultPipelineState (atom clean-pipeline-state) no-home-dir keep-all-builds)]
     (pipeline-state-record/update state build id newstate)
     (pipeline-state-record/get-all state)))
 
 (deftest general-pipeline-state-test
   (testing "that the next buildnumber is the highest build-number currently in the pipeline-state"
-    (is (= 5 (next-build-number (->DefaultPipelineState (atom { 3 {} 4 {} 1 {}}) no-home-dir))))
-    (is (= 1 (next-build-number (->DefaultPipelineState (atom clean-pipeline-state) no-home-dir)))))
+    (is (= 5 (next-build-number (->DefaultPipelineState (atom { 3 {} 4 {} 1 {}}) no-home-dir keep-all-builds))))
+    (is (= 1 (next-build-number (->DefaultPipelineState (atom clean-pipeline-state) no-home-dir keep-all-builds)))))
   (testing "that a new pipeline-state will be set on update"
     (is (= { 10 { [0] { :foo :bar }}} (tu/without-ts (after-update 10 [0] {:foo :bar})))))
   (testing "that update will not loose keys that are not in the new map" ; e.g. to make sure values that are sent on the result-channel are not lost if they don't appear in the final result-map
     (is (= {10 {[0] {:foo :bar :bar :baz}}}
-           (let [state (->DefaultPipelineState (atom clean-pipeline-state) no-home-dir)]
+           (let [state (->DefaultPipelineState (atom clean-pipeline-state) no-home-dir keep-all-builds)]
              (pipeline-state-record/update state 10 [0] {:foo :bar})
              (pipeline-state-record/update state 10 [0] {:bar :baz})
              (tu/without-ts (pipeline-state-record/get-all state))))))
   (testing "that update will set a first-updated-at and most-recent-update-at timestamp"
     (let [first-update-timestamp (t/minus (t/now) (t/minutes 1))
           last-updated-timestamp (t/now)
-          state                  (->DefaultPipelineState (atom clean-pipeline-state) no-home-dir)]
+          state                  (->DefaultPipelineState (atom clean-pipeline-state) no-home-dir keep-all-builds)]
       (t/do-at first-update-timestamp (pipeline-state-record/update state 10 [0] {:foo :bar}))
       (t/do-at last-updated-timestamp (pipeline-state-record/update state 10 [0] {:foo :baz}))
       (is (= {10 {[0] {:foo :baz :most-recent-update-at last-updated-timestamp :first-updated-at first-update-timestamp}}}
@@ -40,13 +41,42 @@
   (testing "that updating will save the current state to the file-system"
     (let [home-dir    (utils/create-temp-dir)
           step-result {:foo :bar}
-          state       (->DefaultPipelineState (atom clean-pipeline-state) home-dir)]
+          state       (->DefaultPipelineState (atom clean-pipeline-state) home-dir keep-all-builds)]
       (t/do-at (t/epoch) (pipeline-state-record/update state 10 [0] step-result))
       (is (= [{"step-id"     "0"
                "step-result" {"foo"                   "bar"
                               "most-recent-update-at" "1970-01-01T00:00:00.000Z"
                               "first-updated-at"      "1970-01-01T00:00:00.000Z"}}]
-             (json/read-str (slurp (str home-dir "/build-10/pipeline-state.json"))))))))
+             (json/read-str (slurp (str home-dir "/build-10/pipeline-state.json")))))))
+  (testing "truncate"
+    (testing "that updating will remove the oldest build if more than the maximum number of builds are written"
+      (let [max-builds 5
+            state      (->DefaultPipelineState (atom clean-pipeline-state) no-home-dir max-builds)]
+        (doall (for [build (range 5)]
+                 (pipeline-state-record/update state build [0] {:foo :baz :build build})))
+        (is (= {[0] {:foo :baz :build 0}} (tu/without-ts (get (pipeline-state-record/get-all state) 0))))
+        (is (= {[0] {:foo :baz :build 4}} (tu/without-ts (get (pipeline-state-record/get-all state) 4))))
+
+        (pipeline-state-record/update state 5 [0] {:foo :baz :build 5})
+
+        (is (nil?  (tu/without-ts (get (pipeline-state-record/get-all state) 0))))
+        (is (= {[0] {:foo :baz :build 4}} (tu/without-ts (get (pipeline-state-record/get-all state) 4))))
+        (is (= {[0] {:foo :baz :build 5}} (tu/without-ts (get (pipeline-state-record/get-all state) 5))))))
+    (testing "that updating will remove outdated state from file-system"
+      (let [max-builds 5
+            home-dir    (utils/create-temp-dir)
+            state      (->DefaultPipelineState (atom clean-pipeline-state) home-dir max-builds)]
+        (doall (for [build (range 5)]
+                 (pipeline-state-record/update state build [0] {:foo :baz :build build})))
+        (is (.exists (io/file home-dir "build-0/pipeline-state.json")))
+        (is (.exists (io/file home-dir "build-4/pipeline-state.json")))
+        (is (not (.exists (io/file home-dir "build-5/pipeline-state.json"))))
+
+        (pipeline-state-record/update state 5 [0] {:foo :baz :build 5})
+
+        (is (not (.exists (io/file home-dir "build-0/pipeline-state.json"))))
+        (is (.exists (io/file home-dir "build-4/pipeline-state.json")))
+        (is (.exists (io/file home-dir "build-5/pipeline-state.json")))))))
 
 (defn- write-pipeline-state [home-dir build-number state]
   (let [dir (str home-dir "/" "build-" build-number)

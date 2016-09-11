@@ -5,6 +5,10 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
+## 0.9.5
+* Improvements: 
+  * Allow truncating build history by setting `:max-builds` in config (#132). Defaults to `Integer/MAX_VALUE` so this should be a non-breaking change
+
 ## 0.9.4
 
 * Improvements: 
