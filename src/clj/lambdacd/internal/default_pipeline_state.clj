@@ -28,17 +28,12 @@
     current-build-number
     0))
 
-(defn update-legacy
-  [build-number step-id step-result home-dir state]
-  (if (not (nil? state)) ; convenience for tests: if no state exists we just do nothing
-    (let [new-state (swap! state (partial update-pipeline-state build-number step-id step-result))]
-      (persistence/write-build-history home-dir build-number new-state))))
-
-
 (defrecord DefaultPipelineState [state-atom home-dir]
   pipeline-state/PipelineStateComponent
   (update [self build-number step-id step-result]
-    (update-legacy build-number step-id step-result home-dir state-atom))
+    (if (not (nil? state-atom)) ; convenience for tests: if no state exists we just do nothing
+      (let [new-state (swap! state-atom (partial update-pipeline-state build-number step-id step-result))]
+        (persistence/write-build-history home-dir build-number new-state))))
   (get-all [self]
     @state-atom)
   (get-internal-state [self]
