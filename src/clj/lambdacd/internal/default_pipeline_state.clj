@@ -28,9 +28,6 @@
     current-build-number
     0))
 
-(defn next-build-number-legacy [state]
-  (inc (most-recent-build-number-in-state @state)))
-
 (defn update-legacy
   [build-number step-id step-result home-dir state]
   (if (not (nil? state)) ; convenience for tests: if no state exists we just do nothing
@@ -47,7 +44,7 @@
   (get-internal-state [self]
     state-atom)
   (next-build-number [self]
-    (next-build-number-legacy state-atom)))
+    (inc (most-recent-build-number-in-state @state-atom))))
 
 (defn new-default-pipeline-state [config & {:keys [initial-state-for-testing]}] ; TODO: remove this!
   (let [state-atom (atom (or initial-state-for-testing (initial-pipeline-state config)))
