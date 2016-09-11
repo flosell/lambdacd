@@ -5,6 +5,11 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
+## 0.10.0
+
+* API changes:
+  * Removed namespace `lambdacd.internal.step-id` (was deprecated since 0.7.0), use `lambdacd.step-id` instead
+
 ## 0.9.5
 * Improvements: 
   * Allow truncating build history by setting `:max-builds` in config (#132). Defaults to `Integer/MAX_VALUE` so this should be a non-breaking change
