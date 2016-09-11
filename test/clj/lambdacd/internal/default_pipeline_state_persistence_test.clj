@@ -13,12 +13,6 @@
           home-dir            (utils/create-temp-dir)]
       (write-build-history home-dir 3 some-pipeline-state)
       (is (= some-pipeline-state (read-build-history-from home-dir)))))
-  (testing "the standard case in the old world"
-    (let [some-pipeline-state {3 {'(0)     {:status :success :most-recent-update-at (t/epoch)}
-                                  '(0 1 2) {:status :failure :out "something went wrong"}}}
-          home-dir            (utils/create-temp-dir)]
-      (write-build-history-internal home-dir 3 some-pipeline-state :json)
-      (is (= some-pipeline-state (read-build-history-from-internal home-dir :json)))))
   (testing "that string-keys in a step result are suppored as well (#101)"
     (let [some-pipeline-state {3 {'(0) {:status :success :_git-last-seen-revisions {"refs/heads/master" "some-sha"}}}}
           home-dir            (utils/create-temp-dir)]
@@ -56,26 +50,7 @@
         (.mkdirs (io/file home-dir "helloworld"))
         (is (.exists (io/file home-dir "helloworld")))
         (clean-up-old-history home-dir truncated-pipeline-state)
-        (is (.exists (io/file home-dir "helloworld"))))))
-  (testing "backwards compatibility"
-    (testing "that old json is read if no edn file exists"
-      (let [some-pipeline-state {3 {'(0) {:status :success :source "json"}}}
-            home-dir            (utils/create-temp-dir)]
-        (write-build-history-internal home-dir 3 some-pipeline-state :json)
-        (is (= some-pipeline-state (read-build-history-from home-dir)))))
-    (testing "that edn is preferred if json and edn exist"
-      (let [json-state {3 {'(0) {:status :success :source "json"}}}
-            edn-state  {3 {'(0) {:status :success :source "edn"}}}
-            home-dir   (utils/create-temp-dir)]
-        (write-build-history-internal home-dir 3 json-state :json)
-        (write-build-history-internal home-dir 3 edn-state :edn)
-        (is (= edn-state (read-build-history-from home-dir)))))
-    (testing "that both json and edn are written so that users can still return to earlier versions without losing history"
-      (let [some-pipeline-state {3 {'(0) {:status :success :source "json"}}}
-            home-dir            (utils/create-temp-dir)]
-        (write-build-history home-dir 3 some-pipeline-state)
-        (is (= some-pipeline-state (read-build-history-from home-dir)))
-        (is (= some-pipeline-state (read-build-history-from-internal home-dir :json)))))))
+        (is (.exists (io/file home-dir "helloworld")))))))
 
 (defn- roundtrip-date-time [data]
   (dates->clj-times
