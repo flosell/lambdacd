@@ -4,11 +4,12 @@
             [lambdacd.internal.default-pipeline-state :refer :all]
             [lambdacd.internal.pipeline-state :refer [next-build-number] :as pipeline-state-record]
             [lambdacd.util :as utils]
-            [clojure.data.json :as json]
             [clj-time.core :as t]
             [lambdacd.testsupport.test-util :as tu]
             [lambdacd.testsupport.data :refer [some-ctx-with some-ctx]]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [clojure.edn :as edn])
+  (:import (java.util Date)))
 
 (def no-home-dir nil)
 (def keep-all-builds Integer/MAX_VALUE)
@@ -43,11 +44,11 @@
           step-result {:foo :bar}
           state       (->DefaultPipelineState (atom clean-pipeline-state) home-dir keep-all-builds)]
       (t/do-at (t/epoch) (pipeline-state-record/update state 10 [0] step-result))
-      (is (= [{"step-id"     "0"
-               "step-result" {"foo"                   "bar"
-                              "most-recent-update-at" "1970-01-01T00:00:00.000Z"
-                              "first-updated-at"      "1970-01-01T00:00:00.000Z"}}]
-             (json/read-str (slurp (str home-dir "/build-10/pipeline-state.json")))))))
+      (is (= [{:step-id     "0"
+               :step-result {:foo                   :bar
+                             :most-recent-update-at (Date. 0)
+                             :first-updated-at      (Date. 0)}}]
+             (edn/read-string (slurp (str home-dir "/build-10/build-state.edn")))))))
   (testing "truncate"
     (testing "that updating will remove the oldest build if more than the maximum number of builds are written"
       (let [max-builds 5
@@ -68,21 +69,21 @@
             state      (->DefaultPipelineState (atom clean-pipeline-state) home-dir max-builds)]
         (doall (for [build (range 5)]
                  (pipeline-state-record/update state build [0] {:foo :baz :build build})))
-        (is (.exists (io/file home-dir "build-0/pipeline-state.json")))
-        (is (.exists (io/file home-dir "build-4/pipeline-state.json")))
-        (is (not (.exists (io/file home-dir "build-5/pipeline-state.json"))))
+        (is (.exists (io/file home-dir "build-0/build-state.edn")))
+        (is (.exists (io/file home-dir "build-4/build-state.edn")))
+        (is (not (.exists (io/file home-dir "build-5/build-state.edn"))))
 
         (pipeline-state-record/update state 5 [0] {:foo :baz :build 5})
 
-        (is (not (.exists (io/file home-dir "build-0/pipeline-state.json"))))
-        (is (.exists (io/file home-dir "build-4/pipeline-state.json")))
-        (is (.exists (io/file home-dir "build-5/pipeline-state.json")))))))
+        (is (not (.exists (io/file home-dir "build-0/build-state.edn"))))
+        (is (.exists (io/file home-dir "build-4/build-state.edn")))
+        (is (.exists (io/file home-dir "build-5/build-state.edn")))))))
 
 (defn- write-pipeline-state [home-dir build-number state]
   (let [dir (str home-dir "/" "build-" build-number)
-        path (str dir "/pipeline-state.json")]
+        path (str dir "/build-state.edn")]
     (.mkdirs (io/file dir))
-    (utils/write-as-json path state)))
+    (spit (io/file path) (pr-str state))))
 
 (deftest initial-pipeline-state-test
   (testing "that with a clean home-directory, the initial pipeline-state is clean as well"

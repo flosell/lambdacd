@@ -78,7 +78,7 @@
       (write-build-edn edn-path build))))
 
 (defn read-build-history-from [home-dir]
-  (let [states              (map #(read-build-edn %) (build-dirs home-dir))]
+  (let [states              (map read-build-edn (build-dirs home-dir))]
     (into {} states)))
 
 (defn clean-up-old-history [home-dir new-state]
