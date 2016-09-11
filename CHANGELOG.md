@@ -11,6 +11,7 @@ The official release will have a defined and more stable API. If you are already
   * Added `lambdacd.execution/run` to the public namespace. If you were using `lambdacd.internal.execution/run` until now, migrate to make sure you are using the official public namespace as internal interfaces can change without notice (#128)
 * API changes: 
   * Moved public API to interact with execution engine from `lambdacd.core` into separate namespace `lambdacd.execution`. `lambdacd.core/{retrigger,kill-step,execute-steps,execute-step}` are now deprecated and will be removed in subsequent releases. Use the equivalent functions in `lambdacd.execution` instead
+
 ## 0.9.4
 
 * Improvements: 
