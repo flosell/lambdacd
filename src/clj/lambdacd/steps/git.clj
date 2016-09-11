@@ -2,6 +2,7 @@
   "build-steps that let you work with git repositories"
   (:import (java.io File))
   (:require [lambdacd.util :as util]
+            [lambdacd.execution :as execution]
             [clojure.tools.logging :as log]
             [lambdacd.steps.shell :as shell]
             [clojure.core.async :as async]
@@ -90,7 +91,7 @@
         checkout-exit-code (:exit checkout-result)]
     (utils/with-temp repo-location
       (if (zero? checkout-exit-code)
-        (let [execute-steps-result (core/execute-steps steps (assoc args :cwd repo-location) ctx
+        (let [execute-steps-result (execution/execute-steps steps (assoc args :cwd repo-location) ctx
                                                        :unify-status-fn status/successful-when-all-successful
                                                        :is-killed (:is-killed ctx))
               result-with-checkout-output (assoc execute-steps-result :out (:out checkout-result))

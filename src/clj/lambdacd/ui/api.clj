@@ -7,7 +7,7 @@
             [ring.middleware.json :as ring-json]
             [lambdacd.presentation.pipeline-state :as state-presentation]
             [lambdacd.internal.pipeline-state :as pipeline-state]
-            [lambdacd.core :as core]
+            [lambdacd.execution :as execution]
             [lambdacd.steps.manualtrigger :as manualtrigger]
             [clojure.walk :as w]
             [compojure.core :refer [routes GET POST]]))
@@ -29,11 +29,11 @@
         (GET "/builds/" [] (util/json (state-presentation/history-for (pipeline-state/get-all pipeline-state-component))))
         (GET "/builds/:buildnumber/" [buildnumber] (build-infos pipeline-def (pipeline-state/get-all pipeline-state-component) buildnumber))
         (POST "/builds/:buildnumber/:step-id/retrigger" [buildnumber step-id]
-          (let [new-buildnumber (core/retrigger pipeline-def ctx (util/parse-int buildnumber) (to-internal-step-id step-id))]
+          (let [new-buildnumber (execution/retrigger pipeline-def ctx (util/parse-int buildnumber) (to-internal-step-id step-id))]
             (util/json {:build-number new-buildnumber})))
         (POST "/builds/:buildnumber/:step-id/kill" [buildnumber step-id]
           (do
-            (core/kill-step ctx (util/parse-int buildnumber) (to-internal-step-id step-id))
+            (execution/kill-step ctx (util/parse-int buildnumber) (to-internal-step-id step-id))
             "OK"))
         (POST "/dynamic/:id" {{id :id} :params data :json-params} (do
                                                                     (manualtrigger/post-id ctx id (w/keywordize-keys data))

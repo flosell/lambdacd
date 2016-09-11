@@ -1,6 +1,7 @@
 (ns lambdacd.steps.control-flow
   "control flow elements for a pipeline: steps that control the way their child-steps are being run"
   (:require [lambdacd.core :as core]
+            [lambdacd.execution :as execution]
             [clojure.core.async :as async]
             [lambdacd.steps.support :as support]
             [lambdacd.step-id :as step-id]
@@ -31,7 +32,7 @@
       [successful-step-result])))
 
 (defn- either-step-result-producer [args steps-and-ids]
-  (let [step-result-chs (map #(async/thread (core/execute-step args %)) steps-and-ids)]
+  (let [step-result-chs (map #(async/thread (execution/execute-step args %)) steps-and-ids)]
     (wait-for-finished-on step-result-chs)))
 
 (defn synchronize-atoms [source target]
@@ -45,7 +46,7 @@
           kill-switch        (atom false)
           watch-ref          (synchronize-atoms parent-kill-switch kill-switch)
           _                  (reset! kill-switch @parent-kill-switch)
-          execute-output     (core/execute-steps steps args ctx
+          execute-output     (execution/execute-steps steps args ctx
                                                  :is-killed kill-switch
                                                  :step-result-producer either-step-result-producer
                                                  :retrigger-predicate (constantly :rerun)
@@ -67,10 +68,10 @@
       :mock)))
 
 (defn- parallel-step-result-producer [args steps-and-ids]
-  (pmap #(core/execute-step args %) steps-and-ids))
+  (pmap #(execution/execute-step args %) steps-and-ids))
 
 (defn- execute-steps-in-parallel [steps args ctx]
-  (core/execute-steps steps args ctx
+  (execution/execute-steps steps args ctx
                       :step-result-producer parallel-step-result-producer
                       :unify-status-fn status/successful-when-all-successful
                       :retrigger-predicate parallel-retrigger-predicate
@@ -85,12 +86,12 @@
 (defn ^{:display-type :container} in-cwd [cwd & steps]
   (fn [args ctx]
     (post-process-container-results
-      (core/execute-steps steps (assoc args :cwd cwd) ctx
+      (execution/execute-steps steps (assoc args :cwd cwd) ctx
                           :unify-status-fn status/successful-when-all-successful))))
 
 (defn- run-steps-in-sequence [args ctx steps]
   (post-process-container-results
-    (core/execute-steps steps args ctx
+    (execution/execute-steps steps args ctx
                         :unify-status-fn status/successful-when-all-successful
                         :is-killed (:is-killed ctx))))
 
@@ -107,10 +108,10 @@
 (defn ^{:display-type :parallel} junction [condition-step success-step failure-step]
   (fn [args ctx]
     (post-process-container-results
-      (let [condition-step-result (core/execute-step args (child-context ctx 1) condition-step)]
+      (let [condition-step-result (execution/execute-step args (child-context ctx 1) condition-step)]
         (if (= :success (:status condition-step-result))
-          (core/execute-step args (child-context ctx 2) success-step)
-          (core/execute-step args (child-context ctx 3) failure-step))))))
+          (execution/execute-step args (child-context ctx 2) success-step)
+          (execution/execute-step args (child-context ctx 3) failure-step))))))
 
 (defn alias
   "just runs child but child is displayed with the given alias in visualization"

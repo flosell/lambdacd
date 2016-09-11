@@ -1,5 +1,5 @@
 (ns lambdacd.runners
-  (:require [lambdacd.internal.execution :as execution]
+  (:require [lambdacd.execution :as execution]
             [clojure.core.async :as async]
             [lambdacd.event-bus :as event-bus]
             [clojure.tools.logging :as log]))

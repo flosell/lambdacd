@@ -43,16 +43,21 @@
       :pipeline-def           pipeline-def})))
 
 (defn retrigger [pipeline context build-number step-id-to-retrigger]
+  "DEPRECATED, use lambdacd.execution instead"
   (execution/retrigger-async pipeline context build-number step-id-to-retrigger))
 
 (defn kill-step [ctx build-number step-id]
+  "DEPRECATED, use lambdacd.execution instead"
   (execution/kill-step ctx build-number step-id))
 
 (defn execute-steps [steps args ctx & opts]
+  "DEPRECATED, use lambdacd.execution instead"
   (apply execution/execute-steps steps args ctx opts))
 
 (defn execute-step
   ([args ctx step]
+   "DEPRECATED, use lambdacd.execution instead"
    (execution/execute-step args [ctx step]))
   ([args [ctx step]]
+   "DEPRECATED, use lambdacd.execution instead"
    (execution/execute-step args [ctx step])))
