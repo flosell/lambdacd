@@ -7,8 +7,7 @@ The official release will have a defined and more stable API. If you are already
 
 ## 0.10.0
 
-* Breaking Changes:
-  * Removed backwards compatibility for versions older than 0.8.0 that write their history in JSON instead of EDN. If you want to keep your history, upgrade to 0.9.5 first and then upgrade to 0.10.0.
+* API changes:
   * Removed namespace `lambdacd.internal.step-id` (was deprecated since 0.7.0), use `lambdacd.step-id` instead
 
 ## 0.9.5
