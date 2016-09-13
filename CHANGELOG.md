@@ -7,11 +7,16 @@ The official release will have a defined and more stable API. If you are already
 
 ## 0.10.0
 
+* Bug Fixes: 
+  * Fixed critical issue that prevented release 0.9.5 from even starting #133
 * Breaking Changes:
-  * Removed backwards compatibility for versions older than 0.8.0 that write their history in JSON instead of EDN. If you want to keep your history, upgrade to 0.9.5 first and then upgrade to 0.10.0.
+  * Removed backwards compatibility for versions older than 0.8.0 that write their history in JSON instead of EDN. If you want to keep your history, upgrade to 0.9.4 first and then upgrade to 0.10.0.
   * Removed namespace `lambdacd.internal.step-id` (was deprecated since 0.7.0), use `lambdacd.step-id` instead
 
 ## 0.9.5
+
+**This release is broken (#133), do not use** 
+
 * Improvements: 
   * Allow truncating build history by setting `:max-builds` in config (#132). Defaults to `Integer/MAX_VALUE` so this should be a non-breaking change
   * Added `lambdacd.execution/run` to the public namespace. If you were using `lambdacd.internal.execution/run` until now, migrate to make sure you are using the official public namespace as internal interfaces can change without notice (#128)
