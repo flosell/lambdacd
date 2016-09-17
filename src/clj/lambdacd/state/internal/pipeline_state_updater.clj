@@ -6,12 +6,13 @@
             [lambdacd.internal.pipeline-state :refer [update]]
             [lambdacd.util :as util]))
 
-(defn start-pipeline-state-updater [pipeline-state ctx]
+(defn start-pipeline-state-updater [ctx]
   (let [step-updates-channel (util/buffered
                                (event-bus/only-payload
                                  (event-bus/subscribe ctx :step-result-updated)))
         stop-updater-channel (event-bus/only-payload
-                               (event-bus/subscribe ctx :stop-pipeline-state-updater))]
+                               (event-bus/subscribe ctx :stop-pipeline-state-updater))
+        pipeline-state (:pipeline-state-component ctx)]
     (async/go-loop []
                    (if-let [[step-result-update ch] (async/alts! [step-updates-channel stop-updater-channel])]
                      (when (not= stop-updater-channel ch)

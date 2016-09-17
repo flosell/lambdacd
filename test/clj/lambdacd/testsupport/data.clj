@@ -27,15 +27,14 @@
     template))
 
 (defn run-pipeline-state-updater [ctx]
-  (if-let [component (:pipeline-state-component ctx)]
-    (pipeline-state-updater/start-pipeline-state-updater component ctx))
+  (if (:pipeline-state-component ctx)
+    (pipeline-state-updater/start-pipeline-state-updater ctx))
   ctx)
 
 (defn some-ctx []
   (-> (some-ctx-template)
       (add-pipeline-state-component)
-      (run-pipeline-state-updater)
-      ))
+      (run-pipeline-state-updater)))
 
 (defn some-ctx-with [& args]
   (as-> (some-ctx-template) $

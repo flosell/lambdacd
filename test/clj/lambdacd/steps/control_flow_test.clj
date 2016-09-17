@@ -241,7 +241,7 @@
           ctx           (some-ctx-with :is-killed is-killed
                                        :step-id [0])
           child-ctx     (assoc ctx :step-id [2 0])
-          _ (pipeline-state-updater/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
+          _ (pipeline-state-updater/start-pipeline-state-updater ctx)
           either-result (start-waiting-for ((either some-step-waiting-to-be-killed some-step-waiting-to-be-killed) {} ctx))]
       (wait-for (step-running? child-ctx))
 

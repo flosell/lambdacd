@@ -8,7 +8,7 @@ The official release will have a defined and more stable API. If you are already
 ## 0.11.0
 
 * Breaking Changes:
-  * Moved pipeline-state-updater from `lambdacd.internal.pipeline-state` to `lambdacd.state.internal.pipeline-state-updater`. As this is an internal namespace, it should not affect users unless they customized LambdaCDs startup procedure to a large degree.
+  * Moved pipeline-state-updater from `lambdacd.internal.pipeline-state` to `lambdacd.state.internal.pipeline-state-updater` and refactored interface. As this is an internal namespace, it should not affect users unless they customized LambdaCDs startup procedure to a large degree.
 
 ## 0.10.0
 

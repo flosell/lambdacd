@@ -26,7 +26,7 @@
    :shutdown-sequence default-shutdown-sequence})
 
 (defn- initialize-pipeline-state-updater [ctx]
-  (let [updater (pipeline-state-updater/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)]
+  (let [updater (pipeline-state-updater/start-pipeline-state-updater ctx)]
     (assoc ctx :pipeline-state-updater updater)))
 
 (defn assemble-pipeline
