@@ -1,11 +1,10 @@
 (ns lambdacd.presentation.unified-test
-  (:use [lambdacd.steps.control-flow])
   (:require [clojure.test :refer :all]
-            [lambdacd.presentation.unified :refer :all]))
+            [lambdacd.presentation.unified :refer :all]
+            [lambdacd.steps.control-flow :refer [in-parallel in-cwd]]))
+
 (defn do-stuff [] {})
 (defn do-other-stuff [] {})
-(defn do-more-stuff [] {})
-(defn do-even-more-stuff [] {})
 
 (def foo-pipeline
   `((in-parallel

@@ -1,7 +1,7 @@
 (ns lambdacd.smoketest.pipeline
-  (:use [lambdacd.steps.control-flow]
-        [lambdacd.smoketest.steps])
-  (:require [lambdacd.util :as utils]))
+  (:require [lambdacd.util :as utils]
+            [lambdacd.steps.control-flow :refer [in-parallel]]
+            [lambdacd.smoketest.steps :refer :all]))
 
 (def pipeline-def
   `(
@@ -13,8 +13,7 @@
        increment-counter-by-three
        increment-counter-by-two
        use-global-value)
-     lambdacd.steps.manualtrigger/wait-for-manual-trigger
-  ))
+     lambdacd.steps.manualtrigger/wait-for-manual-trigger))
 
 (def config
   {:home-dir (utils/create-temp-dir)})
