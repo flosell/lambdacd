@@ -4,7 +4,7 @@
             [lambdacd.internal.execution :as execution]
             [lambdacd.event-bus :as event-bus]
             [lambdacd.internal.running-builds-tracking :as running-builds-tracking]
-            [lambdacd.internal.pipeline-state :as pipeline-state]
+            [lambdacd.state.internal.pipeline-state-updater :as pipeline-state-updater]
             [clojure.tools.logging :as log]
             [lambdacd.runners :as runners]))
 
@@ -19,14 +19,14 @@
   (fn [ctx]
     (runners/stop-runner ctx)
     (execution/kill-all-pipelines ctx)
-    (pipeline-state/stop-pipeline-state-updater ctx)))
+    (pipeline-state-updater/stop-pipeline-state-updater ctx)))
 
 (def default-config
   {:ms-to-wait-for-shutdown (* 10 1000)
    :shutdown-sequence default-shutdown-sequence})
 
 (defn- initialize-pipeline-state-updater [ctx]
-  (let [updater (pipeline-state/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)]
+  (let [updater (pipeline-state-updater/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)]
     (assoc ctx :pipeline-state-updater updater)))
 
 (defn assemble-pipeline

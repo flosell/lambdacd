@@ -14,7 +14,7 @@
             [lambdacd.testsupport.noop-pipeline-state :as noop-pipeline-state]
             [lambdacd.internal.pipeline-state :as ps]
             [lambdacd.event-bus :as event-bus]
-            [lambdacd.internal.pipeline-state :as pipeline-state]
+            [lambdacd.state.internal.pipeline-state-updater :as pipeline-state-updater]
             [lambdacd.steps.control-flow :as control-flow])
   (:import java.lang.IllegalStateException))
 
@@ -230,7 +230,7 @@
           ctx (some-ctx-with :step-id [3 2 1]
                              :build-number 3
                              :is-killed is-killed)
-          _ (pipeline-state/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
+          _ (pipeline-state-updater/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
           future-step-result (start-waiting-for (execute-step {} [ctx some-step-waiting-to-be-killed]))]
       (wait-for (tu/step-running? ctx))
       (kill-step ctx 3 [3 2 1])
@@ -241,7 +241,7 @@
             ctx                (some-ctx-with :step-id [3 2 1]
                                               :build-number 3
                                               :is-killed is-killed)
-            _                  (pipeline-state/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
+            _                  (pipeline-state-updater/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
             future-step-result (start-waiting-for (execute-step {} [ctx some-step-waiting-to-be-killed]))]
         (wait-for (tu/step-running? ctx))
         (kill-step ctx 3 [3 2 1])
@@ -252,7 +252,7 @@
             ctx                (some-ctx-with :step-id [3 2 1]
                                               :build-number 3
                                               :is-killed is-killed)
-            _                  (pipeline-state/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
+            _                  (pipeline-state-updater/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
             future-step-result (start-waiting-for (execute-step {} [ctx (control-flow/run some-step-waiting-to-be-killed)]))]
         (wait-for (tu/step-running? ctx))
         (kill-step ctx 3 [3 2 1])
@@ -331,7 +331,7 @@
                                    [2] { :status :failure }}}
           pipeline `((some-control-flow some-step) some-successful-step)
           context (some-ctx-with :initial-pipeline-state initial-state)]
-      (pipeline-state/start-pipeline-state-updater (:pipeline-state-component context) context)
+      (pipeline-state-updater/start-pipeline-state-updater (:pipeline-state-component context) context)
       (retrigger pipeline context 0 [2] 1)
       (wait-for (tu/step-success? context 1 [2]))
       (is (= {0 {[1] { :status :success }
@@ -346,7 +346,7 @@
                              [2] {:status :to-be-overwritten-by-next-run}
                              [3] {:status :to-be-overwritten-by-next-run}}}
           context (some-ctx-with :initial-pipeline-state initial-state)]
-      (pipeline-state/start-pipeline-state-updater (:pipeline-state-component context) context)
+      (pipeline-state-updater/start-pipeline-state-updater (:pipeline-state-component context) context)
       (retrigger pipeline context 0 [1] 1)
       (wait-for (tu/step-failure? context 1 [3]))
       (is (map-containing
@@ -359,7 +359,7 @@
                              [2] {:status :to-be-overwritten-by-next-run}
                              [3] {:status :to-be-overwritten-by-next-run}}}
           context (some-ctx-with :initial-pipeline-state initial-state)]
-      (pipeline-state/start-pipeline-state-updater (:pipeline-state-component context) context)
+      (pipeline-state-updater/start-pipeline-state-updater (:pipeline-state-component context) context)
       (retrigger pipeline context 0 [1] 1)
       (wait-for (tu/step-success? context 1 [2]))
       (is (map-containing
@@ -371,7 +371,7 @@
                              [2 1] {:status :unknown :out "this will be retriggered"}}}
           pipeline `((some-control-flow-thats-called some-step-that-fails-if-retriggered some-step-to-retrigger) some-successful-step)
           context (some-ctx-with :initial-pipeline-state initial-state)]
-      (pipeline-state/start-pipeline-state-updater (:pipeline-state-component context) context)
+      (pipeline-state-updater/start-pipeline-state-updater (:pipeline-state-component context) context)
       (retrigger pipeline context 0 [2 1] 1)
       (wait-for (tu/step-success? context 1 [2]))
       (is (= {0 {[1] { :status :success }
@@ -389,7 +389,7 @@
                              [2 1] {:status :unknown :out "this will be retriggered"}}}
           pipeline `((some-control-flow-thats-called some-step-that-fails-if-retriggered some-step-to-retrigger) some-successful-step)
           context (some-ctx-with :initial-pipeline-state initial-state)]
-      (pipeline-state/start-pipeline-state-updater (:pipeline-state-component context) context)
+      (pipeline-state-updater/start-pipeline-state-updater (:pipeline-state-component context) context)
       (retrigger pipeline context 0 [2 1] 1)
       (wait-for (tu/step-success? context 1 [2]))
       (let [new-container-step-result (get-in (ps/get-all (:pipeline-state-component context)) [1 [1]])]
@@ -430,21 +430,21 @@
 (deftest kill-all-pipelines-test
   (testing "that it kills root build steps in any pipeline"
     (let [ctx                (some-ctx-with :step-id [3])
-          _                  (pipeline-state/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
+          _                  (pipeline-state-updater/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
           future-step-result (start-waiting-for (execute-step {} [ctx some-step-waiting-to-be-killed]))]
       (wait-for (tu/step-running? ctx))
       (kill-all-pipelines ctx)
       (is (map-containing {:status :killed} (get-or-timeout future-step-result :timeout 1000)))))
   (testing "that it doesn't kill nested steps as they are killed by their parents"
     (let [ctx                (some-ctx-with :step-id [3 1])
-          _                  (pipeline-state/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
+          _                  (pipeline-state-updater/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
           future-step-result (start-waiting-for (execute-step {} [ctx some-step-waiting-to-be-killed]))]
       (wait-for (tu/step-running? ctx))
       (kill-all-pipelines ctx)
       (is (map-containing {:status :timeout} (get-or-timeout future-step-result :timeout 1000)))))
   (testing "that killing is idempotent"
     (let [ctx                (some-ctx-with :step-id [3])
-          _                  (pipeline-state/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
+          _                  (pipeline-state-updater/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
           future-step-result (start-waiting-for (execute-step {} [ctx some-step-waiting-to-be-killed]))]
       (wait-for (tu/step-running? ctx))
       (kill-all-pipelines ctx)

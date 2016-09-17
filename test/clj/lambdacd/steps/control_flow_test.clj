@@ -7,7 +7,7 @@
             [lambdacd.steps.control-flow :refer :all]
             [clojure.core.async :as async]
             [lambdacd.steps.support :as step-support]
-            [lambdacd.internal.pipeline-state :as pipeline-state]
+            [lambdacd.state.internal.pipeline-state-updater :as pipeline-state-updater]
             [clojure.java.io :as io]
             [lambdacd.util :as util]))
 
@@ -241,7 +241,7 @@
           ctx           (some-ctx-with :is-killed is-killed
                                        :step-id [0])
           child-ctx     (assoc ctx :step-id [2 0])
-          _ (pipeline-state/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
+          _ (pipeline-state-updater/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
           either-result (start-waiting-for ((either some-step-waiting-to-be-killed some-step-waiting-to-be-killed) {} ctx))]
       (wait-for (step-running? child-ctx))
 
