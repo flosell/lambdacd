@@ -216,7 +216,6 @@
             ctx (some-ctx-with :config {:home-dir some-parent-folder}
                                :step-id [0]
                                :is-killed is-killed)
-            _ (pipeline-state-updater/start-pipeline-state-updater (:pipeline-state-component ctx) ctx)
             future-result (start-waiting-for (checkout-and-execute repo-uri "HEAD" args ctx [some-step-waiting-to-be-killed]))]
         (wait-for (tu/child-step-running? ctx [1 0]))
         (reset! is-killed true)
