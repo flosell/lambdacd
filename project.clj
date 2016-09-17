@@ -62,6 +62,7 @@
                                        [ring-mock "0.1.5"]
                                        [org.clojars.runa/conjure "2.2.0"]
                                        [prismatic/dommy "1.0.0"]
+                                       [com.gearswithingears/shrubbery "0.4.1"]
                                        [http-kit "2.1.19"]
                                        [ring-server "0.3.1"]
                                        [ring/ring-devel "1.3.2"]
