@@ -247,11 +247,15 @@
         (is (map-containing {:received-kill true} (first (vals (:outputs (get-or-timeout future-step-result))))))))
     (testing "that it works for child steps that are killed along with the parent"
       (let [is-killed          (atom false)
-            ctx                (some-ctx-with :step-id [3 2 1]
+            parent-step-id     [3 2 1]
+            child-step-id      [1 3 2 1]
+            ctx                (some-ctx-with :step-id parent-step-id
                                               :build-number 3
                                               :is-killed is-killed)
+            child-ctx          (assoc ctx :step-id child-step-id)
             future-step-result (start-waiting-for (execute-step {} [ctx (control-flow/run some-step-waiting-to-be-killed)]))]
         (wait-for (tu/step-running? ctx))
+        (wait-for (tu/step-running? child-ctx))
         (kill-step ctx 3 [3 2 1])
         (is (map-containing {:received-kill true} (first (vals (:outputs (first (vals (:outputs (get-or-timeout future-step-result))))))))))))
   (testing "that a step using the kill-switch does not bubble up to the parents passing in the kill-switch"
