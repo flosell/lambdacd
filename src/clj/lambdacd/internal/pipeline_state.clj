@@ -1,12 +1,9 @@
 (ns lambdacd.internal.pipeline-state
-  (:refer-clojure :exclude [alias update]))
+  (:refer-clojure :exclude [update]))
 
-
-; TODO: move this protocol out of internal once the interface is more polished and stable
-; in the meantime, you can use this protocol but keep in mind it's subject to change
 (defprotocol PipelineStateComponent
-  "components implementing this protocol can provide the state of a pipeline"
+  "DEPRECATED: USE lambdacd.state.protocols instead"
   (update            [self build-number step-id step-result])
-  (get-all           [self]) ;; should in the future be replaced with more detailed accessor functions
-  (get-internal-state [self]) ;; FIXME: temporary, hack until runners are rewritten to use step-results-channel
+  (get-all           [self])
+  (get-internal-state [self])
   (next-build-number [self]))
