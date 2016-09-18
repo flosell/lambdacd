@@ -7,9 +7,17 @@
   (:pipeline-state-component ctx))
 
 (defn consume-step-result-update
-  "update a step-result in the state"
+  "Update a step-result in the state"
   [ctx build-number step-id step-result]
   (let [component (state-component ctx)]
     (if (satisfies? lambdacd.state.protocols/StepResultUpdateConsumer component)
       (protocols/consume-step-result-update component build-number step-id step-result)
       (legacy-pipeline-state/update component build-number step-id step-result))))
+
+(defn next-build-number
+  "Returns the build number for the next build"
+  [ctx]
+  (let [component (state-component ctx)]
+    (if (satisfies? lambdacd.state.protocols/BuildNumberSource component)
+      (protocols/next-build-number component)
+      (legacy-pipeline-state/next-build-number component))))

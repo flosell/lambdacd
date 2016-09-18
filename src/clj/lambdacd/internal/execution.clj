@@ -1,7 +1,8 @@
 (ns lambdacd.internal.execution
   "low level functions for job-execution"
   (:require [clojure.core.async :as async]
-            [lambdacd.internal.pipeline-state :as pipeline-state]
+            [lambdacd.internal.pipeline-state :as legacy-pipeline-state]
+            [lambdacd.state.core :as state]
             [clojure.tools.logging :as log]
             [lambdacd.step-id :as step-id]
             [lambdacd.steps.status :as status]
@@ -233,7 +234,7 @@
 
 (defn retrigger-mock-step [retriggered-build-number]
   (fn [args ctx]
-    (let [state (pipeline-state/get-all (:pipeline-state-component ctx))
+    (let [state (legacy-pipeline-state/get-all (:pipeline-state-component ctx))
           original-build-result (get state retriggered-build-number)
           original-step-result (get original-build-result (:step-id ctx))]
       (publish-child-step-results ctx retriggered-build-number original-build-result)
@@ -297,7 +298,7 @@
     result))
 
 (defn run [pipeline context]
-  (let [build-number (pipeline-state/next-build-number (:pipeline-state-component context))]
+  (let [build-number (state/next-build-number context)]
     (let [runnable-pipeline (map eval pipeline)]
       (execute-steps runnable-pipeline {} (merge context {:result-channel (async/chan (async/dropping-buffer 0))
                                                           :step-id []
@@ -312,7 +313,7 @@
                                                          :retriggered-step-id      step-id-to-run))))
 
 (defn retrigger-async [pipeline context build-number step-id-to-run]
-  (let [next-build-number (pipeline-state/next-build-number (:pipeline-state-component context))]
+  (let [next-build-number (state/next-build-number context)]
     (async/thread
       (retrigger pipeline context build-number step-id-to-run next-build-number ))
     next-build-number))
