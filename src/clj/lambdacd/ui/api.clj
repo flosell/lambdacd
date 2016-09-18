@@ -38,4 +38,3 @@
         (POST "/dynamic/:id" {{id :id} :params data :json-params} (do
                                                                     (manualtrigger/post-id ctx id (w/keywordize-keys data))
                                                                     (util/json {:status :success})))))))
-

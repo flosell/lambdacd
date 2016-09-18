@@ -236,7 +236,7 @@
   (fn [args ctx]
     (let [state (legacy-pipeline-state/get-all (:pipeline-state-component ctx))
           original-build-result (get state retriggered-build-number)
-          original-step-result (get original-build-result (:step-id ctx))]
+          original-step-result (state/get-step-result ctx retriggered-build-number (:step-id ctx))]
       (publish-child-step-results ctx retriggered-build-number original-build-result)
       (assoc original-step-result
         :retrigger-mock-for-build-number retriggered-build-number))))
