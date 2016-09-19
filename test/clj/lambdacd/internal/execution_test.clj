@@ -15,7 +15,8 @@
             [lambdacd.internal.pipeline-state :as ps]
             [lambdacd.event-bus :as event-bus]
             [lambdacd.state.internal.pipeline-state-updater :as pipeline-state-updater]
-            [lambdacd.steps.control-flow :as control-flow])
+            [lambdacd.steps.control-flow :as control-flow]
+            [lambdacd.state.core :as state])
   (:import java.lang.IllegalStateException))
 
 (defn some-step-processing-input [arg & _]
@@ -333,12 +334,14 @@
           context (some-ctx-with :initial-pipeline-state initial-state)]
       (retrigger pipeline context 0 [2] 1)
       (wait-for (tu/step-success? context 1 [2]))
-      (is (= {0 {[1] { :status :success }
-                 [1 1] {:status :success :out "I am nested"}
-                 [2] { :status :failure }}
-              1 {[1] { :status :success :retrigger-mock-for-build-number 0 }
-                 [1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0}
-                 [2] { :status :success }}} (tu/without-ts (ps/get-all (:pipeline-state-component context)))))))
+      (is (= {[1] { :status :success }
+              [1 1] {:status :success :out "I am nested"}
+              [2] { :status :failure }}
+             (tu/without-ts (state/get-step-results context 0))))
+      (is (= {[1] { :status :success :retrigger-mock-for-build-number 0 }
+              [1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0}
+              [2] { :status :success }}
+             (tu/without-ts (state/get-step-results context 1))))))
   (testing "that we can retrigger a pipeline from the initial step as well"
     (let [pipeline `(some-successful-step some-other-step some-failing-step)
           initial-state { 0 {[1] {:status :to-be-retriggered}
@@ -347,10 +350,10 @@
           context (some-ctx-with :initial-pipeline-state initial-state)]
       (retrigger pipeline context 0 [1] 1)
       (wait-for (tu/step-failure? context 1 [3]))
-      (is (map-containing
-            {1 {[1] {:status :success}
-                [2] {:status :success :foo :baz}
-                [3] {:status :failure}}} (tu/without-ts (ps/get-all (:pipeline-state-component context)))))))
+      (is (= {[1] {:status :success}
+              [2] {:status :success :foo :baz}
+              [3] {:status :failure}}
+             (tu/without-ts (state/get-step-results context 1))))))
   (testing "that steps after the retriggered step dont get the retrigger-metadata"
     (let [pipeline `(some-successful-step some-step-caring-about-retrigger-metadata)
           initial-state { 0 {[1] {:status :to-be-retriggered}
@@ -359,9 +362,9 @@
           context (some-ctx-with :initial-pipeline-state initial-state)]
       (retrigger pipeline context 0 [1] 1)
       (wait-for (tu/step-success? context 1 [2]))
-      (is (map-containing
-            {1 {[1] {:status :success}
-                [2] {:status :success :retriggered-build-number nil :retriggered-step-id nil}}} (tu/without-ts (ps/get-all (:pipeline-state-component context)))))))
+      (is (= {[1] {:status :success}
+              [2] {:status :success :retriggered-build-number nil :retriggered-step-id nil}}
+             (tu/without-ts (state/get-step-results context 1))))))
   (testing "that retriggering works for nested steps"
     (let [initial-state { 0 {[1] { :status :success }
                              [1 1] {:status :success :out "I am nested"}
@@ -370,15 +373,17 @@
           context (some-ctx-with :initial-pipeline-state initial-state)]
       (retrigger pipeline context 0 [2 1] 1)
       (wait-for (tu/step-success? context 1 [2]))
-      (is (= {0 {[1] { :status :success }
-                 [1 1] {:status :success :out "I am nested"}
-                 [2 1] {:status :unknown :out "this will be retriggered"}}
-              1 {[1] {:status :success
-                      :outputs {[1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0 }
-                                [2 1] {:the-some :val :status :success }}}
-                 [1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0}
-                 [2 1] {:the-some :val :status :success}
-                 [2] { :status :success }}} (tu/without-ts (ps/get-all (:pipeline-state-component context)))))))
+      (is (= {[1] { :status :success }
+              [1 1] {:status :success :out "I am nested"}
+              [2 1] {:status :unknown :out "this will be retriggered"}}
+             (tu/without-ts (state/get-step-results context 0))))
+      (is (= {[1] {:status :success
+                   :outputs {[1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0 }
+                             [2 1] {:the-some :val :status :success }}}
+              [1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0}
+              [2 1] {:the-some :val :status :success}
+              [2] { :status :success }}
+             (tu/without-ts (state/get-step-results context 1))))))
   (testing "that retriggering updates timestamps of container steps (#56)"
     (let [initial-state { 0 {[1] { :status :unknown :first-updated-at (t/date-time 1970) }
                              [1 1] {:status :success :out "I am nested"}
@@ -387,7 +392,7 @@
           context (some-ctx-with :initial-pipeline-state initial-state)]
       (retrigger pipeline context 0 [2 1] 1)
       (wait-for (tu/step-success? context 1 [2]))
-      (let [new-container-step-result (get-in (ps/get-all (:pipeline-state-component context)) [1 [1]])]
+      (let [new-container-step-result (state/get-step-result context 1 [1])]
         (is (= :success (:status new-container-step-result)))
         (is (not= 1970 (t/year (:first-updated-at new-container-step-result))))))))
 

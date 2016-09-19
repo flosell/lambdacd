@@ -1,9 +1,9 @@
 (ns lambdacd.presentation.pipeline-state
-  (:require [lambdacd.internal.pipeline-state :as pipeline-state]
-            [clj-time.core :as t]
+  (:require [clj-time.core :as t]
             [clojure.tools.logging :as log]
             [clj-timeframes.core :as tf]
-            [lambdacd.step-id :as step-id]))
+            [lambdacd.step-id :as step-id]
+            [lambdacd.state.core :as state]))
 
 (defn- desc [a b]
   (compare b a))
@@ -72,21 +72,35 @@
        (map interval-duration)
        (reduce +)))
 
-(defn- history-entry [[build-number step-ids-and-results]]
-  {:build-number          build-number
-   :status                (overall-build-status step-ids-and-results)
-   :most-recent-update-at (latest-most-recent-update step-ids-and-results)
-   :first-updated-at      (earliest-first-update step-ids-and-results)
-   :retriggered           (build-that-was-retriggered step-ids-and-results)
-   :duration-in-sec       (build-duration step-ids-and-results)})
+(defn- history-entry
+  ([build-number step-ids-and-results]
+   {:build-number          build-number
+    :status                (overall-build-status step-ids-and-results)
+    :most-recent-update-at (latest-most-recent-update step-ids-and-results)
+    :first-updated-at      (earliest-first-update step-ids-and-results)
+    :retriggered           (build-that-was-retriggered step-ids-and-results)
+    :duration-in-sec       (build-duration step-ids-and-results)})
+  ([[build-number step-ids-and-results]]
+   (history-entry build-number step-ids-and-results)))
 
-(defn history-for [state]
+(defn- legacy-history-for [state]
   (sort-by :build-number (map history-entry state)))
 
+(defn- history-for-pipeline-state-component [ctx]
+  (for [build-number (state/all-build-numbers ctx)]
+    (history-entry build-number (state/get-step-results ctx build-number))))
+
+(defn history-for
+  "Returns a build history for a given build state (the result of get-all) or a ctx;
+  Calling this with a complete build state (the get-all-result) is now DEPRECATED"
+  [all-state-or-ctx]
+  (if (:pipeline-state-component all-state-or-ctx)
+    (history-for-pipeline-state-component all-state-or-ctx)
+    (legacy-history-for all-state-or-ctx)))
+
 (defn most-recent-step-result-with [key ctx]
-  (let [state                 (pipeline-state/get-all (:pipeline-state-component ctx))
-        step-id               (:step-id ctx)
-        step-results          (map second (reverse (sort-by first (seq state))))
-        step-results-for-id   (map #(get % step-id) step-results)
-        step-results-with-key (filter key step-results-for-id)]
-    (first step-results-with-key)))
+  (->> (state/all-build-numbers ctx)
+       (reverse)
+       (map #(state/get-step-result ctx % (:step-id ctx)))
+       (filter key)
+       (first)))

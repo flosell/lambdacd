@@ -226,7 +226,7 @@
       (and msg-from-child? msg-from-same-build?))))
 
 
-(defn- publish-child-step-results [ctx retriggered-build-number original-build-result]
+(defn- publish-child-step-results!! [ctx retriggered-build-number original-build-result]
   (->> original-build-result
        (filter #(step-id/parent-of? (:step-id ctx) (first %)))
        (map #(send-step-result!! (assoc ctx :step-id (first %)) (assoc (second %) :retrigger-mock-for-build-number retriggered-build-number)))
@@ -234,10 +234,9 @@
 
 (defn retrigger-mock-step [retriggered-build-number]
   (fn [args ctx]
-    (let [state (legacy-pipeline-state/get-all (:pipeline-state-component ctx))
-          original-build-result (get state retriggered-build-number)
-          original-step-result (state/get-step-result ctx retriggered-build-number (:step-id ctx))]
-      (publish-child-step-results ctx retriggered-build-number original-build-result)
+    (let [original-build-result (state/get-step-results ctx retriggered-build-number)
+          original-step-result (get original-build-result (:step-id ctx))]
+      (publish-child-step-results!! ctx retriggered-build-number original-build-result)
       (assoc original-step-result
         :retrigger-mock-for-build-number retriggered-build-number))))
 

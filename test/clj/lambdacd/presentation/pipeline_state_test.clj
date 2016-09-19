@@ -3,7 +3,8 @@
   (:require [clojure.test :refer :all]
             [lambdacd.presentation.pipeline-state :refer :all]
             [lambdacd.testsupport.data :refer [some-ctx-with]]
-            [clj-time.core :as t]))
+            [clj-time.core :as t]
+            [lambdacd.state.protocols :as protocols]))
 
 (def start-time (t/now))
 (def before-start-time (t/minus start-time (t/seconds 10)))
@@ -18,7 +19,58 @@
 (def after-one-minute-and-30-sec (t/plus start-time (t/minutes 1) (t/seconds 30)))
 (def after-one-minute-and-40-sec (t/plus start-time (t/minutes 1) (t/seconds 40)))
 
-(deftest history-test
+(defrecord in-memory-pipeline-state [state]
+  protocols/QueryAllBuildNumbersSource
+  (all-build-numbers [self]
+    (keys state))
+  protocols/QueryBuildSource
+  (get-build [self build-number]
+    {:step-results (get state build-number)}))
+
+(defn ctx-with-state [state]
+  (some-ctx-with :pipeline-state-component (->in-memory-pipeline-state state)))
+
+(deftest history-for-ctx-test
+  (testing "that we can aggregate the pipeline state into a nice history representation"
+    (is (= [{:build-number          8
+             :status                :waiting
+             :most-recent-update-at stop-time
+             :first-updated-at      start-time
+             :retriggered           nil
+             :duration-in-sec       10}
+            {:build-number          9
+             :status                :running
+             :most-recent-update-at stop-time
+             :first-updated-at      start-time
+             :retriggered           nil
+             :duration-in-sec       10}]
+           (history-for (ctx-with-state {8 {'(0) {:status :waiting :most-recent-update-at stop-time :first-updated-at start-time}}
+                                         9 {'(0) {:status :running :most-recent-update-at stop-time :first-updated-at start-time}}})))))
+  (testing "that the timestamps are accumulated correctly"
+    (testing "that the earliest start time is the start time of the pipeline"
+      (is (= before-start-time (:first-updated-at (first
+                                                    (history-for (ctx-with-state {7 {'(2) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
+                                                                                     '(1) {:status :success :most-recent-update-at stop-time :first-updated-at before-start-time}}})))))))
+    (testing "that retriggered steps are ignored when searching the earliest start time"
+      (is (= start-time (:first-updated-at (first
+                                             (history-for (ctx-with-state {7 {'(2) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
+                                                                              '(1) {:status :success :most-recent-update-at stop-time :first-updated-at before-start-time :retrigger-mock-for-build-number 42}}})))))))
+    (testing "that the most recent update will be the pipelines most recent update"
+      (is (= after-stop-time (:most-recent-update-at (first
+                                                       (history-for (ctx-with-state {5 {'(0) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
+                                                                                        '(1) {:status :success :most-recent-update-at after-stop-time :first-updated-at start-time}}}))))))))
+  (testing "that the build-status is accumulated correctly"
+    (testing "that a pipeline will be a failure once there is a failed step"
+      (is (= :failure (:status (first
+                                 (history-for (ctx-with-state {7 {'(1) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
+                                                                  '(2) {:status :failure :most-recent-update-at stop-time :first-updated-at start-time}}}))))))))
+  (testing "that we detect retriggered steps"
+    (testing "that a pipeline will be treated as retriggered if the first step has a retrigger-mock"
+      (is (= 3 (:retriggered (first
+                               (history-for (ctx-with-state {7 {'(2) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
+                                                                '(1) {:status :success :most-recent-update-at stop-time :first-updated-at before-start-time :retrigger-mock-for-build-number 3}}})))))))))
+
+(deftest history-test-legacy
   (testing "that we can aggregate the pipeline state into a nice history representation"
     (is (= [{:build-number 8
              :status :waiting

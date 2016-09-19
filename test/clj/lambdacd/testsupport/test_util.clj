@@ -3,7 +3,8 @@
             [lambdacd.internal.execution :as execution]
             [clojure.core.async :as async]
             [clojure.walk :as w]
-            [lambdacd.internal.pipeline-state :as ps])
+            [lambdacd.internal.pipeline-state :as ps]
+            [lambdacd.state.core :as state])
   (:import (java.util.concurrent TimeoutException)))
 
 (defmacro my-time
@@ -135,11 +136,8 @@
           value
           (recur))))))
 
-(defn step-status [{build-number :build-number step-id :step-id pipeline-state-component :pipeline-state-component}]
-  (-> (ps/get-all pipeline-state-component)
-      (get build-number)
-      (get step-id)
-      :status))
+(defn step-status [{build-number :build-number step-id :step-id :as ctx}]
+  (:status (state/get-step-result ctx build-number step-id)))
 
 (defn step-running? [ctx]
   (= :running (step-status ctx)))
