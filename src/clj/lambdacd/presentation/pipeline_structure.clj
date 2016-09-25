@@ -2,11 +2,13 @@
   "this namespace is responsible for converting the pipeline
   into a nice, map-format that we can use to display the pipeline
   in a UI"
-  (:require [clojure.string :as s]
-            [lambdacd.steps.control-flow :as control-flow]))
+  (:require [clojure.string :as s]))
+
+(defn- metadata [fun]
+  (meta (find-var fun)))
 
 (defn- display-type-by-metadata [fun]
-  (:display-type (meta (find-var fun))))
+  (:display-type (metadata fun)))
 
 (declare is-child?)
 
@@ -60,7 +62,7 @@
     parameter-values))
 
 (defn- is-alias-fun? [fun]
-  (= `control-flow/alias fun))
+  (:is-alias (metadata fun)))
 
 (defn- display-name [x]
   (if (sequential? x)
@@ -73,9 +75,8 @@
     (clear-namespace (str x))))
 
 (defn- has-dependencies? [x]
-  (let [f (if (sequential? x) (first x) x)
-        metadata (meta (find-var f))
-        depends-on-previous-steps (:depends-on-previous-steps metadata)]
+  (let [f                         (if (sequential? x) (first x) x)
+        depends-on-previous-steps (:depends-on-previous-steps (metadata f))]
     (boolean depends-on-previous-steps)))
 
 (declare step-display-representation)                       ; mutual recursion

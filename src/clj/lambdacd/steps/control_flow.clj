@@ -113,7 +113,7 @@
           (execution/execute-step args (child-context ctx 2) success-step)
           (execution/execute-step args (child-context ctx 3) failure-step))))))
 
-(defn alias
+(defn ^{:is-alias true} alias
   "just runs child but child is displayed with the given alias in visualization"
   [alias child]
   (run child))
