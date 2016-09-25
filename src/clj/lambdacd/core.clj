@@ -37,6 +37,7 @@
                                     (event-bus/initialize-event-bus)
                                     (running-builds-tracking/initialize-running-builds-tracking)
                                     (assoc :pipeline-state-component pipeline-state-component)
+                                    (assoc :pipeline-def pipeline-def)
                                     (initialize-pipeline-state-updater)
                                     (add-shutdown-sequence!))]
      {:context                context

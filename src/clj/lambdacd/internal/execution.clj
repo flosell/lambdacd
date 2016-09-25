@@ -8,7 +8,8 @@
             [lambdacd.steps.status :as status]
             [clojure.repl :as repl]
             [lambdacd.event-bus :as event-bus]
-            [lambdacd.steps.result :as step-results])
+            [lambdacd.steps.result :as step-results]
+            [lambdacd.presentation.pipeline-structure :as pipeline-structure])
   (:import (java.io StringWriter)
            (java.util UUID)))
 
@@ -298,18 +299,20 @@
 
 (defn run [pipeline context]
   (let [build-number (state/next-build-number context)]
+    (state/consume-pipeline-structure context build-number (pipeline-structure/pipeline-display-representation pipeline))
     (let [runnable-pipeline (map eval pipeline)]
       (execute-steps runnable-pipeline {} (merge context {:result-channel (async/chan (async/dropping-buffer 0))
-                                                          :step-id []
-                                                          :build-number build-number})))))
+                                                          :step-id        []
+                                                          :build-number   build-number})))))
 
 (defn retrigger [pipeline context build-number step-id-to-run next-build-number]
-  (let [executable-pipeline (map eval pipeline) ]
+  (let [executable-pipeline (map eval pipeline)]
+    (state/consume-pipeline-structure context build-number (pipeline-structure/pipeline-display-representation pipeline))
     (execute-steps executable-pipeline {} (assoc context :step-id []
                                                          :result-channel (async/chan (async/dropping-buffer 0))
                                                          :build-number next-build-number
                                                          :retriggered-build-number build-number
-                                                         :retriggered-step-id      step-id-to-run))))
+                                                         :retriggered-step-id step-id-to-run))))
 
 (defn retrigger-async [pipeline context build-number step-id-to-run]
   (let [next-build-number (state/next-build-number context)]

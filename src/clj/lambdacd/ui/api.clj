@@ -11,11 +11,13 @@
             [compojure.core :refer [routes GET POST]]
             [lambdacd.state.core :as state]))
 
-(defn- build-infos [pipeline-def ctx buildnumber]
-  (let [build-state (state/get-step-results ctx (util/parse-int buildnumber))]
-    (if build-state
-      (util/json (unified/unified-presentation pipeline-def build-state))
-      (resp/not-found (str "build " buildnumber " does not exist")))))
+(defn- build-infos [ctx build-number-str]
+  (let [build-number       (util/parse-int build-number-str)
+        pipeline-structure (state/get-pipeline-structure ctx build-number)
+        step-results              (state/get-step-results ctx build-number)]
+    (if (and pipeline-structure step-results)
+      (util/json (unified/pipeline-structure-with-step-results pipeline-structure step-results))
+      (resp/not-found (str "build " build-number-str " does not exist")))))
 
 (defn- to-internal-step-id [dash-seperated-step-id]
   (map util/parse-int (string/split dash-seperated-step-id #"-")))
@@ -24,7 +26,7 @@
   (ring-json/wrap-json-params
     (routes
       (GET "/builds/" [] (util/json (state-presentation/history-for ctx)))
-      (GET "/builds/:buildnumber/" [buildnumber] (build-infos pipeline-def ctx buildnumber))
+      (GET "/builds/:buildnumber/" [buildnumber] (build-infos ctx buildnumber))
       (POST "/builds/:buildnumber/:step-id/retrigger" [buildnumber step-id]
         (let [new-buildnumber (execution/retrigger pipeline-def ctx (util/parse-int buildnumber) (to-internal-step-id step-id))]
           (util/json {:build-number new-buildnumber})))

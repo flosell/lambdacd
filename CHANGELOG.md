@@ -7,11 +7,14 @@ The official release will have a defined and more stable API. If you are already
 
 ## 0.11.0
 
+* Keeps a history of pipeline structure if persistence component supports it (#131, #6)
 * API changes:
   * New state handling (#131): 
     * Protocols in `lambdacd.state.protocols` replace `lambdacd.internal.pipeline-state/PipelineStateComponent` which is now deprecated. Custom persistence-mechanisms need to migrate.
     * Added facade `lambdacd.state.core` for all state-related functionality. Access directly to `PipelineStateComponent` is now deprecated.
-    * `lambdacd.presentation.pipeline-state/history-for` should now be called with ctx; Calling it with a build-state (the result of `lambdacd.internal.pipeline-state/get-all`) still works but is now deprecated. 
+    * `lambdacd.presentation.pipeline-state/history-for` should now be called with ctx; Calling it with a build-state (the result of `lambdacd.internal.pipeline-state/get-all`) still works but is now deprecated.
+    * `lambdacd.presentation.unified/unified-presentation` is now deprecated, use `lambdacd.presentation.unified/pipeline-structure-with-step-results` instead
+  * The current pipeline-definition can now be accessed as `:pipeline-def` in ctx
 * Breaking Changes:
   * Moved pipeline-state-updater from `lambdacd.internal.pipeline-state` to `lambdacd.state.internal.pipeline-state-updater` and refactored interface. As this is an internal namespace, it should not affect users unless they customized LambdaCDs startup procedure to a large degree.
 

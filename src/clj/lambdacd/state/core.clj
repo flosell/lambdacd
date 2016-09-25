@@ -1,7 +1,8 @@
 (ns lambdacd.state.core
   "Facade for all functions related to dealing with LambdaCDs state. Wraps the related interfaces to simplify compatibility and API."
   (:require [lambdacd.state.protocols :as protocols]
-            [lambdacd.internal.pipeline-state :as legacy-pipeline-state]))
+            [lambdacd.internal.pipeline-state :as legacy-pipeline-state]
+            [lambdacd.presentation.pipeline-structure :as pipeline-structure]))
 
 (defn- all-build-numbers-from-legacy [component]
   (->> (legacy-pipeline-state/get-all component)
@@ -18,6 +19,7 @@
   (:pipeline-state-component ctx))
 
 ; -------------------------------------------------------------------------
+
 (defn consume-step-result-update
   "Update a step-result in the state"
   [ctx build-number step-id step-result]
@@ -25,6 +27,11 @@
     (if (satisfies? protocols/StepResultUpdateConsumer component)
       (protocols/consume-step-result-update component build-number step-id step-result)
       (legacy-pipeline-state/update component build-number step-id step-result))))
+
+(defn consume-pipeline-structure [ctx build-number pipeline-structure-representation]
+  (let [component (state-component ctx)]
+    (if (satisfies? protocols/PipelineStructureConsumer component)
+      (protocols/consume-pipeline-structure component build-number pipeline-structure-representation))))
 
 (defn next-build-number
   "Returns the build number for the next build"
@@ -60,3 +67,9 @@
   [ctx build-number step-id]
   (get (get-step-results ctx build-number)
        step-id))
+
+(defn get-pipeline-structure
+  "Returns a map describing the structure of the pipeline"
+  [ctx build-number]
+  (or (:pipeline-structure (get-build ctx build-number))
+      (pipeline-structure/pipeline-display-representation (:pipeline-def ctx))))
