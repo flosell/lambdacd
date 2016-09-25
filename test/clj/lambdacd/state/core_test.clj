@@ -60,37 +60,33 @@
                                                                                     2 {}}})]
         (is (= [1 2 5] (s/all-build-numbers (some-ctx-with :pipeline-state-component component))))))))
 
-(deftest get-build-test
-  (testing "that calls to QueryBuildSource will just pass through"
-    (let [component (mock state-protocols/QueryBuildSource {:get-build {:some :state}})]
-      (is (= {:some :state} (s/get-build (some-ctx-with :pipeline-state-component component) 1)))
-      (is (received? component state-protocols/get-build [1]))))
+(deftest get-step-results-test
+  (testing "that calls to QueryStepResultSource will just pass through"
+    (let [component (mock state-protocols/QueryStepResultsSource {:get-step-results {:some :step-results}})]
+      (is (= {:some :step-results} (s/get-step-results (some-ctx-with :pipeline-state-component component) 1)))
+      (is (received? component state-protocols/get-step-results [1]))))
   (testing "compatibility with PipelineStateComponent"
     (testing "an empty state"
       (let [component (mock legacy-pipeline-state/PipelineStateComponent {:get-all {}})]
-        (is (= {:step-results nil} (s/get-build (some-ctx-with :pipeline-state-component component) 1)))))
+        (is (= nil (s/get-step-results (some-ctx-with :pipeline-state-component component) 1)))))
     (testing "state with builds returns sorted list"
       (let [component (mock legacy-pipeline-state/PipelineStateComponent {:get-all {1 {:some :build}}})]
-        (is (= {:step-results {:some :build}} (s/get-build (some-ctx-with :pipeline-state-component component) 1)))))))
-
-(deftest get-step-results
-  (testing "that it returns step-results"
-    (with-redefs [s/get-build (constantly {:step-results {:step :results}})]
-      (is (= {:step :results} (s/get-step-results nil nil))))))
+        (is (= {:some :build} (s/get-step-results (some-ctx-with :pipeline-state-component component) 1)))))))
 
 (deftest get-step-result-test
   (testing "that we can get a simple step-result"
-    (with-redefs [s/get-build (constantly {:step-results {[2 1] {:step :result}}})]
+    (with-redefs [s/get-step-results (constantly {[2 1] {:step :result}})]
       (is (= {:step :result} (s/get-step-result nil 1 [2 1]))))))
 
 (deftest get-pipeline-structure-test
-  (testing "that we get the pipeline structure if it is contained in the build"
-    (with-redefs [s/get-build (constantly {:pipeline-structure some-structure})]
-      (is (= some-structure (s/get-pipeline-structure nil some-build-number)))))
-  (testing "that we get the current pipeline structure if the build result doesn't contain it (for compatibility reasons)"
-    (with-redefs [s/get-build (constantly {:no :structure-here})]
+  (testing "that calls to PipelineStructureSource will just pass through"
+    (let [component (mock state-protocols/PipelineStructureSource {:get-pipeline-structure {:some :pipeline-structure}})]
+      (is (= {:some :pipeline-structure} (s/get-pipeline-structure (some-ctx-with :pipeline-state-component component) 1)))
+      (is (received? component state-protocols/get-pipeline-structure [1]))))
+  (testing "that we get the current pipeline structure if the component doesn't support PipelineStructures"
+    (let [component (mock state-protocols/QueryStepResultsSource {:get-step-results {:some :step-results}})]
       (is (= [{:name             "foo"
                :type             :unknown
                :has-dependencies false
-               :step-id          `(1)}] (s/get-pipeline-structure (some-ctx-with :pipeline-def some-pipeline-def) some-build-number))))))
-
+               :step-id          `(1)}] (s/get-pipeline-structure (some-ctx-with :pipeline-state-component component
+                                                                                 :pipeline-def some-pipeline-def) 1))))))

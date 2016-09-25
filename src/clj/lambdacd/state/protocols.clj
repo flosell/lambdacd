@@ -21,7 +21,13 @@
   (all-build-numbers [self]
     "Returns a sorted list of build numbers present in the datastore"))
 
-(defprotocol QueryBuildSource
-  "Components implementing this protocol can supply information on one build"
-  (get-build [self build-number]
-    "Returns build information as a map with :step-results, :pipeline-structure and TODO"))
+(defprotocol QueryStepResultsSource
+  "Components implementing this protocol can supply steps results of a build"
+  (get-step-results [self build-number]
+    "Returns a map of step-id to step results"))
+
+(defprotocol PipelineStructureSource
+  "Components implementing this protocol can supply the structure of the pipeline for a particular build"
+  (get-pipeline-structure [self build-number]
+    "Returns a map describing the pipeline of for a particular build"))
+

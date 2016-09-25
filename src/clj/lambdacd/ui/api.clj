@@ -14,7 +14,7 @@
 (defn- build-infos [ctx build-number-str]
   (let [build-number       (util/parse-int build-number-str)
         pipeline-structure (state/get-pipeline-structure ctx build-number)
-        step-results              (state/get-step-results ctx build-number)]
+        step-results       (state/get-step-results ctx build-number)]
     (if (and pipeline-structure step-results)
       (util/json (unified/pipeline-structure-with-step-results pipeline-structure step-results))
       (resp/not-found (str "build " build-number-str " does not exist")))))

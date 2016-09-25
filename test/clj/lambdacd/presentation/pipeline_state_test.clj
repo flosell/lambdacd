@@ -23,9 +23,9 @@
   protocols/QueryAllBuildNumbersSource
   (all-build-numbers [self]
     (keys state))
-  protocols/QueryBuildSource
-  (get-build [self build-number]
-    {:step-results (get state build-number)}))
+  protocols/QueryStepResultsSource
+  (get-step-results [self build-number]
+    (get state build-number)))
 
 (defn ctx-with-state [state]
   (some-ctx-with :pipeline-state-component (->in-memory-pipeline-state state)))

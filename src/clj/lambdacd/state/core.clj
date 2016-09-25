@@ -9,9 +9,9 @@
        (keys)
        (sort)))
 
-(defn- get-build-from-legacy [component build-number]
-  {:step-results (-> (legacy-pipeline-state/get-all component)
-                     (get build-number))})
+(defn- get-step-results-from-legacy [component build-number]
+  (-> (legacy-pipeline-state/get-all component)
+      (get build-number)))
 
 ; -------------------------------------------------------------------------
 
@@ -49,18 +49,13 @@
       (protocols/all-build-numbers component)
       (all-build-numbers-from-legacy component))))
 
-(defn get-build
-  "Returns all information for a given build as a map with :step-results and TODO more"
-  [ctx build-number]
-  (let [component (state-component ctx)]
-    (if (satisfies? protocols/QueryBuildSource component)
-      (protocols/get-build component build-number)
-      (get-build-from-legacy component build-number))))
-
 (defn get-step-results
   "Returns a map from step-ids to step-results"
   [ctx build-number]
-  (:step-results (get-build ctx build-number)))
+  (let [component (state-component ctx)]
+    (if (satisfies? protocols/QueryStepResultsSource component)
+      (protocols/get-step-results component build-number)
+      (get-step-results-from-legacy component build-number))))
 
 (defn get-step-result
   "Returns a map containing the result of one step"
@@ -71,5 +66,7 @@
 (defn get-pipeline-structure
   "Returns a map describing the structure of the pipeline"
   [ctx build-number]
-  (or (:pipeline-structure (get-build ctx build-number))
-      (pipeline-structure/pipeline-display-representation (:pipeline-def ctx))))
+  (let [component (state-component ctx)]
+    (if (satisfies? protocols/PipelineStructureSource component)
+      (protocols/get-pipeline-structure component build-number)
+      (pipeline-structure/pipeline-display-representation (:pipeline-def ctx)))))
