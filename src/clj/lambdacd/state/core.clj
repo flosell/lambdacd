@@ -10,8 +10,7 @@
        (sort)))
 
 (defn- get-step-results-from-legacy [component build-number]
-  (-> (legacy-pipeline-state/get-all component)
-      (get build-number)))
+  (get (legacy-pipeline-state/get-all component) build-number))
 
 ; -------------------------------------------------------------------------
 
@@ -28,7 +27,9 @@
       (protocols/consume-step-result-update component build-number step-id step-result)
       (legacy-pipeline-state/update component build-number step-id step-result))))
 
-(defn consume-pipeline-structure [ctx build-number pipeline-structure-representation]
+(defn consume-pipeline-structure
+  "Update the pipeline structure in the state"
+  [ctx build-number pipeline-structure-representation]
   (let [component (state-component ctx)]
     (if (satisfies? protocols/PipelineStructureConsumer component)
       (protocols/consume-pipeline-structure component build-number pipeline-structure-representation))))
