@@ -159,24 +159,18 @@
           step-ctx (assoc ctx :step-id new-step-id)]
       [step-ctx step])))
 
-(defn- process-inheritance [step-results-channel unify-results-fn]
-  (let [out-ch (async/chan)]
-    (async/go
-      (loop [results {}]
-        (if-let [{step-id     :step-id
-                  step-result :step-result} (async/<! step-results-channel)]
-          (let [new-results (assoc results step-id step-result)
-                old-unified (unify-results-fn results)
-                new-unified (unify-results-fn new-results)]
-            (if (not= old-unified new-unified)
-              (async/>! out-ch new-unified))
-            (recur new-results))
-          (async/close! out-ch))))
-    out-ch))
-
-(defn- inherit-from [step-results-channel own-result-channel unify-status-fn]
-  (let [status-channel (process-inheritance step-results-channel unify-status-fn)]
-    (async/pipe status-channel own-result-channel)))
+(defn- process-inheritance [out-ch step-results-channel unify-results-fn]
+  (async/go
+    (loop [results {}]
+      (if-let [{step-id     :step-id
+                step-result :step-result} (async/<! step-results-channel)]
+        (let [new-results (assoc results step-id step-result)
+              old-unified (unify-results-fn results)
+              new-unified (unify-results-fn new-results)]
+          (if (not= old-unified new-unified)
+            (async/>! out-ch new-unified))
+          (recur new-results))
+        (async/close! out-ch)))))
 
 (defn contexts-for-steps
   "creates contexts for steps"
@@ -290,7 +284,7 @@
                                            (event-bus/only-payload)
                                            (async/filter< (inherit-message-from-parent? ctx)))
         step-contexts (contexts-for-steps steps base-ctx-with-kill-switch)
-        _ (inherit-from children-step-results-channel (:result-channel ctx) unify-results-fn)
+        _ (process-inheritance (:result-channel ctx) children-step-results-channel unify-results-fn)
         step-contexts-with-retrigger-mocks (add-retrigger-mocks retrigger-predicate ctx step-contexts)
         step-results (step-result-producer args step-contexts-with-retrigger-mocks)
         result (reduce merge-two-step-results step-results)]
