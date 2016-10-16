@@ -161,16 +161,18 @@
 
 (defn- process-inheritance [out-ch step-results-channel unify-results-fn]
   (async/go
-    (loop [results {}]
-      (if-let [{step-id     :step-id
-                step-result :step-result} (async/<! step-results-channel)]
-        (let [new-results (assoc results step-id step-result)
-              old-unified (unify-results-fn results)
-              new-unified (unify-results-fn new-results)]
-          (if (not= old-unified new-unified)
-            (async/>! out-ch new-unified))
-          (recur new-results))
-        (async/close! out-ch)))))
+    (let [dropping-output-ch (async/chan (async/sliding-buffer 1))]
+      (async/pipe dropping-output-ch out-ch)
+      (loop [results {}]
+        (if-let [{step-id     :step-id
+                  step-result :step-result} (async/<! step-results-channel)]
+          (let [new-results (assoc results step-id step-result)
+                old-unified (unify-results-fn results)
+                new-unified (unify-results-fn new-results)]
+            (if (not= old-unified new-unified)
+              (async/>! dropping-output-ch new-unified))
+            (recur new-results))
+          (async/close! dropping-output-ch))))))
 
 (defn contexts-for-steps
   "creates contexts for steps"

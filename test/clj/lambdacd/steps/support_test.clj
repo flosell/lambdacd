@@ -1,10 +1,12 @@
 (ns lambdacd.steps.support-test
   (:require [clojure.test :refer :all]
             [lambdacd.steps.support :as step-support :refer :all]
-            [lambdacd.testsupport.test-util :refer [slurp-chan]]
+            [lambdacd.testsupport.test-util :refer [slurp-chan call-with-timeout]]
             [lambdacd.testsupport.data :refer [some-ctx some-ctx-with]]
             [lambdacd.testsupport.matchers :refer [map-containing]]
-            [clojure.core.async :as async]))
+            [clojure.core.async :as async]
+            [lambdacd.testsupport.noop-pipeline-state :as noop-pipeline-state]
+            [lambdacd.execution :as execution]))
 
 (defn some-step [args ctx]
   {:status :success :foo :bar})
@@ -243,6 +245,27 @@
                         (last-step-status-wins {:status :failure :outputs {`(2 42) {:status :success}
                                                                            `(1 42) {:status :failure}}
                                                 :foo    :bar})))))
+
+(defn output-load-test-ctx []
+  (some-ctx-with :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state)))
+
+(defn log-lots-of-output [args ctx]
+  (doall (for [i (range 800)]
+           (if-not-killed ctx
+                          (async/>!! (:result-channel ctx) [:xyz i]))))
+  {:status :success})
+
+(defn log-lots-of-output-in-chaining [args ctx]
+  (chaining args ctx
+                    (log-lots-of-output injected-args injected-ctx)))
+
+(deftest output-stress-test ; reproduces #135
+  (testing "that we don't fail if we come across lots of output for just in general"
+    (is (= :success (:status (call-with-timeout 10000
+                                      (execution/execute-step {} [(output-load-test-ctx) log-lots-of-output]))))))
+  (testing "that we don't fail if we come across lots of output for chaining"
+    (is (= :success (:status (call-with-timeout 10000
+                                      (execution/execute-step {} [(output-load-test-ctx) log-lots-of-output-in-chaining])))))))
 
 (deftest if-not-killed-test
   (testing "that the body will only be executed if step is still alive"
