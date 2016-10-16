@@ -42,9 +42,8 @@
     ;; uncomment this, run and see the magic happen (the first build will immediately run since there is no known state)
     ; wait-for-frontend-repo
 
-    ; do-stuff
-     compare-screenshots
-    ;; this step executes his child-steps (the arguments after the in-parallel) in parallel and waits
+     chaining-long-output
+
     ;; until all of them are done. if one of them fails, the whole step fails.
      (alias "build and publish"
        (in-parallel
