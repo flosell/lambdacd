@@ -14,7 +14,7 @@
 (defprotocol NextBuildNumberSource
   "Components implementing this protocol provide the LambdaCD execution engine with new build numbers"
   (next-build-number [self]
-    "Returns the build number for the next build. Must be comparable and greater than all existing build numbers")) ; TODO: is build number an int?
+    "Returns the build number for the next build. Must be an integer and greater than all existing build numbers"))
 
 (defprotocol QueryAllBuildNumbersSource
   "Components implementing this protocol can supply a list of all build numbers present in the datastore"
