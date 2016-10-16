@@ -10,7 +10,22 @@
 (def some-step-id [0])
 (def some-step-result {:foo :bat})
 (def some-structure {:some :structure})
-(def some-pipeline-def `(foo))
+
+(defn ^{:display-type :container} foo [& _])
+(defn bar [& _])
+(def some-pipeline-def `((foo
+                          bar)))
+
+(def some-pipeline-def-structure [{:name             "foo"
+                                   :type             :container
+                                   :has-dependencies false
+                                   :pipeline-structure-fallback true
+                                   :step-id          `(1)
+                                   :children [{:name             "bar"
+                                               :type             :step
+                                               :has-dependencies false
+                                               :pipeline-structure-fallback true
+                                               :step-id          `(1 1)}]}])
 
 (deftest consume-step-result-update-test
   (testing "that calls to a StepResultUpdateConsumer will just pass through"
@@ -85,8 +100,9 @@
       (is (received? component state-protocols/get-pipeline-structure [1]))))
   (testing "that we get the current pipeline structure if the component doesn't support PipelineStructures"
     (let [component (mock state-protocols/QueryStepResultsSource {:get-step-results {:some :step-results}})]
-      (is (= [{:name             "foo"
-               :type             :unknown
-               :has-dependencies false
-               :step-id          `(1)}] (s/get-pipeline-structure (some-ctx-with :pipeline-state-component component
-                                                                                 :pipeline-def some-pipeline-def) 1))))))
+      (is (= some-pipeline-def-structure (s/get-pipeline-structure (some-ctx-with :pipeline-state-component component
+                                                                                 :pipeline-def some-pipeline-def) 1)))))
+  (testing "that we get the current pipeline structure if the component returns :fallback and annotate the structure accordingly"
+    (let [component (mock state-protocols/PipelineStructureSource {:get-pipeline-structure :fallback})]
+      (is (= some-pipeline-def-structure (s/get-pipeline-structure (some-ctx-with :pipeline-state-component component
+                                                                                            :pipeline-def some-pipeline-def) 1))))))

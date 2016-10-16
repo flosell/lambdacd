@@ -74,10 +74,10 @@
   (testing "that it will return an empty data if no state has been written yet"
     (let [home-dir (utils/create-temp-dir)]
       (is (= {} (read-pipeline-structures home-dir)))))
-  (testing "that it ignores build directories with no pipeline structure (e.g. because they were created before this feature was available)"
+  (testing "that it adds a fallback-marker for build directories with no pipeline structure (e.g. because they were created before this feature was available)"
     (let [home-dir (utils/create-temp-dir)]
       (.mkdirs (io/file home-dir "build-1"))
-      (is (= {} (read-pipeline-structures home-dir))))))
+      (is (= {1 :fallback} (read-pipeline-structures home-dir))))))
 
 (defn- roundtrip-date-time [data]
   (dates->clj-times

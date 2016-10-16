@@ -189,12 +189,18 @@
        [:li [:a {:class (classes "pipeline__controls__control" (control-active-if @expand-active?)) :on-click #(re-frame/dispatch [::db/toggle-expand-active])} "Expand active"]]
        [:li [:a {:class (classes "pipeline__controls__control" (control-active-if @expand-failures?)) :on-click #(re-frame/dispatch [::db/toggle-expand-failures])} "Expand failures"]]])))
 
+(defn old-pipeline-structure-warning [build-steps]
+  (if (:pipeline-structure-fallback (first build-steps))
+    [:ul {:class "pipeline__controls"}
+     [:li {:class "pipeline__controls__control warning"} [:i {:class "fa fa-exclamation warning-icon"}] "This is an old build with no stored pipeline structure. Using current structure as a best guess. Display and retriggering might not work as expected."]]))
+
 (defn pipeline-component []
   (let [build-state-atom (re-frame/subscribe [::db/pipeline-state])
         build-number-subscription (re-frame/subscribe [::db/build-number])]
     (fn []
       [:div {:class "pipeline" :key "build-pipeline"}
        [pipeline-controls]
+       [old-pipeline-structure-warning @build-state-atom]
        [:ol {:class "pipeline__step-container pipeline__step-container--sequential"}
         (doall
           (for [step @build-state-atom]

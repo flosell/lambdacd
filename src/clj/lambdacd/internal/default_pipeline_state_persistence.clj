@@ -98,12 +98,14 @@
     (spit f (pr-str pipeline-structure))))
 
 (defn- read-pipeline-structure-edn [f]
-  {(build-number-from-path f) (edn/read-string (slurp f))})
+  (let [build-number (build-number-from-path f)]
+    (if (file-exists? f)
+      {build-number (edn/read-string (slurp f))}
+      {build-number :fallback})))
 
 (defn read-pipeline-structures [home-dir]
   (->> (build-dirs home-dir)
        (map pipeline-structure-path)
-       (filter file-exists?)
        (map read-pipeline-structure-edn)
        (into {})))
 
