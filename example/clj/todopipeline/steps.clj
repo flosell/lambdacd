@@ -6,7 +6,9 @@
   (:require [lambdacd.steps.shell :as shell]
             [lambdacd.steps.git :as git]
             [lambdacd.steps.manualtrigger :as manualtrigger]
-            [lambdacd.steps.support :as support]))
+            [lambdacd.steps.support :as support :refer [injected-args injected-ctx]]
+            [clojure.java.io :as io]
+            ))
 
 ;; Let's define some constants
 (def backend-repo "git@github.com:flosell/todo-backend-compojure.git")
@@ -40,7 +42,42 @@
     (git/checkout-and-execute backend-repo (:backend-revision args) args ctx steps)))
 
 (defn wait-for-greeting [args ctx]
-  (manualtrigger/parameterized-trigger {:greeting { :desc "some greeting"}} ctx))
+  (manualtrigger/parameterized-trigger {:greeting {:desc "some greeting"}} ctx))
+
+(defn prepare-failure1 [args ctx]
+  (let [home (:home-dir (:config ctx))
+        first-source (-> "first.sh" io/resource io/file)
+        second-source (-> "second.sh" io/resource io/file)
+        dest (fn [name] (io/file home name))
+        ]
+    (io/copy first-source (dest "first.sh"))
+    (io/copy second-source (dest "second.sh"))
+    {:status :success :out (str "Copied '" first-source "' and '" second-source "' to '" (dest "") "'")}))
+
+(defn prepare-failure [args ctx]
+  (let [home (:home-dir (:config ctx))
+        first-source (-> "build.sh" io/resource io/file)
+        second-source (-> "updatedependencies" io/resource io/file)
+        third-source (-> "package.json" io/resource io/file)
+        dest (fn [name] (io/file home name))
+        ]
+    (io/copy first-source (dest "build.sh"))
+    (io/copy second-source (dest "updatedependencies"))
+    (io/copy third-source (dest "package.json"))
+    {:status :success :out (str "Copied '" first-source "' and '" second-source "' to '" (dest "") "'")}))
+
+(defn run-failure [args ctx]
+  (let [home (:home-dir (:config ctx))
+        _ (shell/bash ctx home "chmod +x *")]
+    (shell/bash ctx home "./first.sh")
+    ))
+
+(defn chaining-long-output [args ctx]
+  (support/always-chaining args ctx
+                           (prepare-failure1 injected-args injected-ctx)
+                           (run-failure injected-args injected-ctx))
+  )
+
 
 (defn demonstrate-ansi [args ctx]
   (shell/bash ctx "/"
@@ -99,12 +136,12 @@
 (defn server-test [{cwd :cwd} ctx]
   (println "server test cwd: " cwd)
   (shell/bash ctx cwd
-    "lein test"))
+              "lein test"))
 
 (defn server-package [{cwd :cwd} ctx]
   (println "server package cwd: " cwd)
   (shell/bash ctx cwd
-    "lein uberjar"))
+              "lein uberjar"))
 
 (defn ^{:depends-on-previous-steps true} server-publish [{cwd :cwd} ctx]
   (shell/bash ctx cwd
@@ -123,8 +160,8 @@
 ;; more or less means that some values have special meaning for the UI to display things.
 ;; Check out the implementation of ```shell/bash``` if you want to know more.
 (defn some-step-that-cant-be-reached [& _]
-  { :some-info "hello world"
-    :status :success})
+  {:some-info "hello world"
+   :status    :success})
 
 
 ;; Another step that just fails using bash.
