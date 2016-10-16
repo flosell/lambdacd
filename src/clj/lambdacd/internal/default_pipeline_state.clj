@@ -58,11 +58,10 @@
 
   protocols/StepResultUpdateConsumer
   (consume-step-result-update [self build-number step-id step-result]
-    (if (not (nil? state-atom))                             ; convenience for tests: if no state exists we just do nothing
-      (let [new-state (swap! state-atom #(->> %
-                                              (update-step-result-in-state build-number step-id step-result)
-                                              (truncate-build-history home-dir max-builds)))]
-        (persistence/write-build-history home-dir build-number new-state))))
+    (let [new-state (swap! state-atom #(->> %
+                                            (update-step-result-in-state build-number step-id step-result)
+                                            (truncate-build-history home-dir max-builds)))]
+      (persistence/write-build-history home-dir build-number new-state)))
   protocols/QueryStepResultsSource
   (get-step-results [self build-number]
     (get @state-atom build-number)))

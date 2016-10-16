@@ -21,6 +21,7 @@ The official release will have a defined and more stable API. If you are already
 * Breaking Changes:
   * Moved pipeline-state-updater from `lambdacd.internal.pipeline-state` to `lambdacd.state.internal.pipeline-state-updater` and refactored interface. As this is an internal namespace, it should not affect users unless they customized LambdaCDs startup procedure to a large degree.
   * The fix for #135 changes the behavior of step result inheritance by introducing a sliding window that compresses several step result update events into one: Steps inheriting their childens results via the `:unify-status-fn` or `:unify-results-fn` (e.g. chaining steps) might not pass on intermediate update events; the ultimately resulting unified step result will remain the same.
+  * Removed `nil`-check from `DefaultPipelineState/{update,consume-step-result-update}`: This was meant as a convenience for internal tests that set up incomplete components. Tests have since been fixed so this is no longer necessary. If you are impacted by this issue, make sure you create `DefaultPipelineState` with `new-default-pipeline-state`
 
 ## 0.10.0
 
