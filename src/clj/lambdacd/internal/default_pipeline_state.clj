@@ -40,24 +40,32 @@
 (defrecord DefaultPipelineState [state-atom structure-atom home-dir max-builds]
   old-pipeline-state/PipelineStateComponent
   (update [self build-number step-id new-step-result]
-    (if (not (nil? state-atom))                             ; convenience for tests: if no state exists we just do nothing
-      (let [new-state (swap! state-atom #(->> %
-                                              (update-step-result-in-state build-number step-id new-step-result)
-                                              (truncate-build-history home-dir max-builds)))]
-        (persistence/write-build-history home-dir build-number new-state))))
+    (protocols/consume-step-result-update self build-number step-id new-step-result))
   (get-all [self]
     @state-atom)
   (get-internal-state [self]
     state-atom)
   (next-build-number [self]
     (inc (most-recent-build-number-in-state @state-atom)))
+
   protocols/PipelineStructureConsumer
   (consume-pipeline-structure [self build-number pipeline-structure-representation]
     (swap! structure-atom #(assoc % build-number pipeline-structure-representation))
     (persistence/write-pipeline-structure home-dir build-number pipeline-structure-representation))
   protocols/PipelineStructureSource
   (get-pipeline-structure [self build-number]
-    (get @structure-atom build-number)))
+    (get @structure-atom build-number))
+
+  protocols/StepResultUpdateConsumer
+  (consume-step-result-update [self build-number step-id step-result]
+    (if (not (nil? state-atom))                             ; convenience for tests: if no state exists we just do nothing
+      (let [new-state (swap! state-atom #(->> %
+                                              (update-step-result-in-state build-number step-id step-result)
+                                              (truncate-build-history home-dir max-builds)))]
+        (persistence/write-build-history home-dir build-number new-state))))
+  protocols/QueryStepResultsSource
+  (get-step-results [self build-number]
+    (get @state-atom build-number)))
 
 (defn new-default-pipeline-state [config & {:keys [initial-state-for-testing]}]
   (let [home-dir   (:home-dir config)
