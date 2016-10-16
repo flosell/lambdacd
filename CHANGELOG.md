@@ -5,16 +5,12 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
-## 0.11.1
-* Bug fixes:
-  * Fix deadlock occurring when steps write a lot of step-results in quick succession and step results are inherited by their parents (as in chaining) (#135)
-* Breaking changes:
-  * The fix for #135 changes the behavior of step result inheritance by introducing a sliding window that compresses several step result update events into one: Steps inheriting their childens results via the `:unify-status-fn` or `:unify-results-fn` (e.g. chaining steps) might not pass on intermediate update events; the ultimately resulting unified step result will remain the same.
-
-
 ## 0.11.0
 
-* Keeps a history of pipeline structure if persistence component supports it (#131, #6)
+* Improvements: 
+  * Keeps a history of pipeline structure if persistence component supports it (#131, #6)
+* Bug fixes:
+  * Fix deadlock occurring when steps write a lot of step-results in quick succession and step results are inherited by their parents (as in chaining) (#135)
 * API changes:
   * New state handling (#131): 
     * Protocols in `lambdacd.state.protocols` replace `lambdacd.internal.pipeline-state/PipelineStateComponent` which is now deprecated. Custom persistence-mechanisms need to migrate.
@@ -24,6 +20,7 @@ The official release will have a defined and more stable API. If you are already
   * The current pipeline-definition can now be accessed as `:pipeline-def` in ctx
 * Breaking Changes:
   * Moved pipeline-state-updater from `lambdacd.internal.pipeline-state` to `lambdacd.state.internal.pipeline-state-updater` and refactored interface. As this is an internal namespace, it should not affect users unless they customized LambdaCDs startup procedure to a large degree.
+  * The fix for #135 changes the behavior of step result inheritance by introducing a sliding window that compresses several step result update events into one: Steps inheriting their childens results via the `:unify-status-fn` or `:unify-results-fn` (e.g. chaining steps) might not pass on intermediate update events; the ultimately resulting unified step result will remain the same.
 
 ## 0.10.0
 
