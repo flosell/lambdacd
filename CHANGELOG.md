@@ -8,7 +8,7 @@ The official release will have a defined and more stable API. If you are already
 ## 0.11.0
 
 * Improvements: 
-  * Keeps a history of pipeline structure if persistence component supports it (#131, #6)
+  * Keeps a history of pipeline structure if persistence component supports it (#131, #6); Implemented for default persistence 
 * Bug fixes:
   * Fix deadlock occurring when steps write a lot of step-results in quick succession and step results are inherited by their parents (as in chaining) (#135)
 * API changes:

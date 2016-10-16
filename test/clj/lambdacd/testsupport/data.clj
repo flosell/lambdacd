@@ -23,7 +23,7 @@
 (defn- add-pipeline-state-component [template]
   (if (nil? (:pipeline-state-component template))
     (assoc template :pipeline-state-component
-                    (default-pipeline-state/new-default-pipeline-state template :initial-state-for-testing (:initial-pipeline-state template)))
+                    (default-pipeline-state/new-default-pipeline-state (:config template) :initial-state-for-testing (:initial-pipeline-state template)))
     template))
 
 (defn run-pipeline-state-updater [ctx]

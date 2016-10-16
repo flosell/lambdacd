@@ -38,12 +38,12 @@
   {:status :success :no-arg :passed-in})
 
 (defn some-step-returning-the-context-passed-in [args ctx]
-  {:status :success :the-ctx-1 ctx})
+  {:status :success :the-ctx-1 (:v ctx)})
 (defn some-step-receiving-only-ctx [ctx]
-  {:status :success :the-ctx-1 ctx})
+  {:status :success :the-ctx-1 (:v ctx)})
 
 (defn some-other-step-returning-the-context-passed-in [args ctx]
-  {:status :success :the-ctx-2 ctx})
+  {:status :success :the-ctx-2 (:v ctx)})
 
 (defn some-step-saying-hello [args ctx]
   {:status :success :out "hello"})
@@ -126,10 +126,10 @@
                            {:status :success :out "hello\nhelloworld\n"}] (slurp-chan result-channel)))))
                (testing "that the context is passed to all the steps"
                  (let [result (unit-under-test {} (some-ctx-with :v 42)
-                                              some-step-returning-the-context-passed-in
-                                              some-other-step-returning-the-context-passed-in)]
-                   (is (map-containing {:v 42} (:the-ctx-1 result)))
-                   (is (map-containing {:v 42} (:the-ctx-2 result)))))
+                                               some-step-returning-the-context-passed-in
+                                               some-other-step-returning-the-context-passed-in)]
+                   (is (= 42 (:the-ctx-1 result)))
+                   (is (= 42 (:the-ctx-2 result)))))
                (testing "that the steps individual outputs are available in the end result"
                  (is (map-containing {:outputs {[1 42] {:status :success}
                                                 [2 42] {:status :success :v 42}}}
@@ -186,10 +186,10 @@
                                   (some-step injected-args injected-ctx)
                                   {:status :success :this-is :test}))))
   (testing "that a given context is passed on to the step"
-    (is (map-containing {:v 42} (:the-ctx-1 (chaining {} (some-ctx-with :v 42)
+    (is (= 42 (:the-ctx-1 (chaining {} (some-ctx-with :v 42)
                                                       (some-step-returning-the-context-passed-in injected-args injected-ctx))))))
   (testing "that we can pass in only the ctx"
-    (is (map-containing {:v 42} (:the-ctx-1 (chaining {} (some-ctx-with :v 42)
+    (is (= 42 (:the-ctx-1 (chaining {} (some-ctx-with :v 42)
                                                       (some-step-receiving-only-ctx injected-ctx))))))
   (testing "that we can pass in only the args"
     (is (map-containing {:status :success :the-arg 42}

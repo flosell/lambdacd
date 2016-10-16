@@ -16,7 +16,8 @@
             [lambdacd.event-bus :as event-bus]
             [lambdacd.state.internal.pipeline-state-updater :as pipeline-state-updater]
             [lambdacd.steps.control-flow :as control-flow]
-            [lambdacd.state.core :as state])
+            [lambdacd.state.core :as state]
+            [lambdacd.util :as util])
   (:import java.lang.IllegalStateException))
 
 (defn some-step-processing-input [arg & _]
@@ -460,5 +461,6 @@
     (let [started-steps (atom #{:foo})
           ctx           (some-ctx-with :step-id [3 1]
                                        :started-steps started-steps
-                                       :config {:ms-to-wait-for-shutdown 200})]
+                                       :config {:ms-to-wait-for-shutdown 200
+                                                :home-dir                (util/create-temp-dir)})]
       (is (not= {:status :timeout} (call-with-timeout 1000 (kill-all-pipelines ctx)))))))

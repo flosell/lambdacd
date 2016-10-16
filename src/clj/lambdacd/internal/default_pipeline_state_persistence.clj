@@ -45,14 +45,16 @@
   (into {} (map step-result-with-formatted-step-ids->step-result m)))
 
 (defn- build-number-from-path [path]
-  (util/parse-int (second (re-find #"build-(\d+)" path))))
+  (util/parse-int (second (re-find #"build-(\d+)" (str path)))))
 
 (defn- build-state-path [dir]
-  (str dir "/" "build-state.edn"))
+  (io/file dir "build-state.edn"))
 
-(defn- read-build-edn [dir]
-  (let [path         (build-state-path dir)
-        build-number (build-number-from-path path)
+(defn- pipeline-structure-path [dir]
+  (io/file dir "pipeline-structure.edn"))
+
+(defn- read-build-edn [path]
+  (let [build-number (build-number-from-path path)
         data-str     (slurp path)
         state        (formatted-step-ids->pipeline-state (dates->clj-times (edn/read-string data-str)))]
     {build-number state}))
@@ -69,25 +71,42 @@
         build-dirs          (filter #(.startsWith (.getName %) "build-") directories-in-home)]
     build-dirs))
 
+(defn- build-dir [home-dir build-number]
+  (let [result (str home-dir "/" "build-" build-number)]
+    (.mkdirs (io/file result))
+    result))
+
 (defn write-build-history [home-dir build-number new-state]
   (if home-dir
-    (let [dir   (str home-dir "/" "build-" build-number)
-          edn-path  (build-state-path dir)
-          build (get new-state build-number)]
-      (.mkdirs (io/file dir))
+    (let [dir      (build-dir home-dir build-number)
+          edn-path (build-state-path dir)
+          build    (get new-state build-number)]
       (write-build-edn edn-path build))))
 
-(defn read-build-history-from [home-dir]
-  (let [states              (map read-build-edn (build-dirs home-dir))]
-    (into {} states)))
+(defn file-exists? [f]
+  (.exists f))
 
-(defn clean-up-old-history [home-dir new-state]
-  (if home-dir
-    (let [existing-build-dirs    (map str (build-dirs home-dir))
-          expected-build-numbers (keys new-state)
-          expected-build-dirs    (map #(str (io/file home-dir (str "build-" %))) expected-build-numbers)
-          [only-in-existing _ _] (data/diff (set existing-build-dirs) (set expected-build-dirs))]
-      (doall (for [old-build-dir only-in-existing]
-               (do
-                 (log/info "Cleaning up old build directory" old-build-dir)
-                 (fs/delete-dir old-build-dir)))))))
+(defn read-build-history-from [home-dir]
+  (->> (build-dirs home-dir)
+       (map build-state-path)
+       (filter file-exists?)
+       (map read-build-edn)
+       (into {})))
+
+(defn write-pipeline-structure [home-dir build-number pipeline-structure]
+  (let [f (pipeline-structure-path (build-dir home-dir build-number))]
+    (spit f (pr-str pipeline-structure))))
+
+(defn- read-pipeline-structure-edn [f]
+  {(build-number-from-path f) (edn/read-string (slurp f))})
+
+(defn read-pipeline-structures [home-dir]
+  (->> (build-dirs home-dir)
+       (map pipeline-structure-path)
+       (filter file-exists?)
+       (map read-pipeline-structure-edn)
+       (into {})))
+
+(defn clean-up-old-builds [home-dir old-build-numbers]
+  (doall (map (fn [old-build-number]
+                (fs/delete-dir (build-dir home-dir old-build-number))) old-build-numbers)))

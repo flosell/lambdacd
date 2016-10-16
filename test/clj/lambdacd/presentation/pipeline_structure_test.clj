@@ -61,6 +61,23 @@
      (in-cwd "bar"
         do-other-stuff))))
 
+(def foo-pipeline-display-representation
+  [{:name "in-parallel"
+    :type :parallel
+    :step-id '(1)
+    :has-dependencies false
+    :children
+    [{:name "in-cwd foo"
+      :type :container
+      :step-id '(1 1)
+      :has-dependencies false
+      :children [{:name "do-stuff" :type :step :step-id '(1 1 1) :has-dependencies false}]}
+     {:name "in-cwd bar"
+      :type :container
+      :step-id '(2 1)
+      :has-dependencies false
+      :children [{:name "do-other-stuff" :type :step :step-id '(1 2 1) :has-dependencies true}]}]}])
+
 (def pipeline-with-container-without-display-type
   `((container-without-display-type
       do-stuff)))
@@ -156,21 +173,7 @@
   (testing "that aliasing makes the aliased child disappear"
     (is (= [{:name "do-stuff-alias" :type :step :step-id '(1 1) :has-dependencies false} {:name "do-other-stuff" :type :step :step-id '(2) :has-dependencies true}] (pipeline-display-representation pipeline-with-alias))))
   (testing "that foo-pipeline works"
-    (is (= [{:name "in-parallel"
-             :type :parallel
-             :step-id '(1)
-             :has-dependencies false
-             :children
-               [{:name "in-cwd foo"
-                 :type :container
-                 :step-id '(1 1)
-                 :has-dependencies false
-                 :children [{:name "do-stuff" :type :step :step-id '(1 1 1) :has-dependencies false}]}
-                {:name "in-cwd bar"
-                 :type :container
-                 :step-id '(2 1)
-                 :has-dependencies false
-                 :children [{:name "do-other-stuff" :type :step :step-id '(1 2 1) :has-dependencies true}]}]}] (pipeline-display-representation foo-pipeline))))
+    (is (= foo-pipeline-display-representation (pipeline-display-representation foo-pipeline))))
   (testing "that nesting parallel in sequential containers works (reproduces #47)"
     (is (not (nil? (:children (first (pipeline-display-representation `((run (in-parallel do-stuff))))))))))
   (testing "that display type defaults to :container for container-steps"
