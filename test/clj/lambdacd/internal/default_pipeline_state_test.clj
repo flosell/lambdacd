@@ -2,23 +2,18 @@
   (:use [lambdacd.testsupport.test-util])
   (:require [clojure.test :refer :all]
             [lambdacd.internal.default-pipeline-state :refer :all]
-            [lambdacd.internal.pipeline-state :refer [next-build-number] :as pipeline-state-record]
+            [lambdacd.internal.pipeline-state :refer [next-build-number]]
             [lambdacd.util :as utils]
             [clj-time.core :as t]
             [lambdacd.testsupport.test-util :as tu]
             [lambdacd.testsupport.data :refer [some-ctx-with some-ctx]]
             [clojure.java.io :as io]
-            [clojure.edn :as edn]
-            [lambdacd.state.protocols :as protocols])
-  (:import (java.util Date)))
+            [lambdacd.state.protocols :as protocols]))
 
-(def no-home-dir nil)
-(def keep-all-builds Integer/MAX_VALUE)
-
-(deftest general-pipeline-state-test
+(deftest next-build-number-test
   (testing "that the next buildnumber is the highest build-number currently in the pipeline-state"
-    (is (= 5 (next-build-number (->DefaultPipelineState (atom { 3 {} 4 {} 1 {}}) (atom {}) no-home-dir keep-all-builds))))
-    (is (= 1 (next-build-number (->DefaultPipelineState (atom clean-pipeline-state) (atom {}) no-home-dir keep-all-builds))))))
+    (is (= 1 (next-build-number (new-default-pipeline-state {:home-dir (utils/create-temp-dir)}))))
+    (is (= 5 (next-build-number (new-default-pipeline-state {:home-dir (utils/create-temp-dir)} :initial-state-for-testing { 3 {} 4 {} 1 {}}))))))
 
 (deftest pipeline-structure-state-test
   (testing "that we can consume and retrieve pipeline-structure"

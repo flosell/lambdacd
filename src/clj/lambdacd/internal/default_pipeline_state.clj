@@ -45,8 +45,6 @@
     @state-atom)
   (get-internal-state [self]
     state-atom)
-  (next-build-number [self]
-    (inc (most-recent-build-number-in-state @state-atom)))
 
   protocols/PipelineStructureConsumer
   (consume-pipeline-structure [self build-number pipeline-structure-representation]
@@ -64,7 +62,10 @@
       (persistence/write-build-history home-dir build-number new-state)))
   protocols/QueryStepResultsSource
   (get-step-results [self build-number]
-    (get @state-atom build-number)))
+    (get @state-atom build-number))
+  protocols/NextBuildNumberSource
+  (next-build-number [self]
+    (inc (most-recent-build-number-in-state @state-atom))))
 
 (defn new-default-pipeline-state [config & {:keys [initial-state-for-testing]}]
   (let [home-dir   (:home-dir config)
