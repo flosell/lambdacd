@@ -12,10 +12,27 @@
 (defn- get-step-results-from-legacy [component build-number]
   (get (legacy-pipeline-state/get-all component) build-number))
 
-; -------------------------------------------------------------------------
-
 (defn- state-component [ctx]
   (:pipeline-state-component ctx))
+
+(defn- annotated-step [step]
+  (let [annotate-children (fn [x]
+                            (if (:children x)
+                              (assoc x :children (map annotated-step (:children x)))
+                              x))]
+    (-> step
+        (assoc :pipeline-structure-fallback true)
+        (annotate-children))))
+
+(defn- annotated-fallback-structure [ctx]
+  (let [current-structure (pipeline-structure/pipeline-display-representation (:pipeline-def ctx))]
+    (map annotated-step current-structure)))
+
+(defn- stored-structure-or-fallback [ctx build-number]
+  (let [stored-structure (protocols/get-pipeline-structure (state-component ctx) build-number)]
+    (if (= :fallback stored-structure)
+      (annotated-fallback-structure ctx)
+      stored-structure)))
 
 ; -------------------------------------------------------------------------
 
@@ -63,25 +80,6 @@
   [ctx build-number step-id]
   (get (get-step-results ctx build-number)
        step-id))
-
-(defn- annotated-step [step]
-  (let [annotate-children (fn [x]
-                            (if (:children x)
-                              (assoc x :children (map annotated-step (:children x)))
-                              x))]
-    (-> step
-        (assoc :pipeline-structure-fallback true)
-        (annotate-children))))
-
-(defn- annotated-fallback-structure [ctx]
-  (let [current-structure (pipeline-structure/pipeline-display-representation (:pipeline-def ctx))]
-    (map annotated-step current-structure)))
-
-(defn- stored-structure-or-fallback [ctx build-number]
-  (let [stored-structure (protocols/get-pipeline-structure (state-component ctx) build-number)]
-    (if (= :fallback stored-structure)
-      (annotated-fallback-structure ctx)
-      stored-structure)))
 
 (defn get-pipeline-structure
   "Returns a map describing the structure of the pipeline"
