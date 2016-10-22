@@ -65,7 +65,12 @@
     (get @state-atom build-number))
   protocols/NextBuildNumberSource
   (next-build-number [self]
-    (inc (most-recent-build-number-in-state @state-atom))))
+    (inc (most-recent-build-number-in-state @state-atom)))
+  protocols/QueryAllBuildNumbersSource
+  (all-build-numbers [self]
+    (-> @state-atom
+        (keys)
+        (sort))))
 
 (defn new-default-pipeline-state [config & {:keys [initial-state-for-testing]}]
   (let [home-dir   (:home-dir config)

@@ -12,8 +12,15 @@
 
 (deftest next-build-number-test
   (testing "that the next buildnumber is the highest build-number currently in the pipeline-state"
-    (is (= 1 (next-build-number (new-default-pipeline-state {:home-dir (utils/create-temp-dir)}))))
-    (is (= 5 (next-build-number (new-default-pipeline-state {:home-dir (utils/create-temp-dir)} :initial-state-for-testing { 3 {} 4 {} 1 {}}))))))
+    (is (= 1 (protocols/next-build-number (new-default-pipeline-state {:home-dir (utils/create-temp-dir)}))))
+    (is (= 5 (protocols/next-build-number (new-default-pipeline-state {:home-dir (utils/create-temp-dir)}
+                                                                      :initial-state-for-testing {3 {} 4 {} 1 {}}))))))
+
+(deftest all-build-numbers-test
+  (testing "that we can get a list of all build numbers"
+    (is (= [] (protocols/all-build-numbers (new-default-pipeline-state {:home-dir (utils/create-temp-dir)}))))
+    (is (= [1 3 4] (protocols/all-build-numbers (new-default-pipeline-state {:home-dir (utils/create-temp-dir)}
+                                                                            :initial-state-for-testing (sorted-map-by > 3 {} 4 {} 1 {})))))))
 
 (deftest pipeline-structure-state-test
   (testing "that we can consume and retrieve pipeline-structure"
