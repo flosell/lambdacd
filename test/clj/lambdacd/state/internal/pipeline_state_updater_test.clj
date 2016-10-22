@@ -24,6 +24,19 @@
       (is (= [[1 [1 2] {:status :running}]
               [2 [1 2] {:status :success}]
               [1 [1 2] {:status :running :foo :bar}]] @updates))))
+  (testing "that after a step result is consumed, an event is sent to inform about this"
+    (let [updates        (atom [])
+          pipeline-state (reify protocols/StepResultUpdateConsumer
+                           (consume-step-result-update [self build-number step-id step-result]
+                             (swap! updates #(conj %1 [build-number step-id step-result]))))
+          ctx            (some-ctx-with :pipeline-state-component pipeline-state)
+          consume-events (event-bus/only-payload
+                           (event-bus/subscribe ctx :step-result-update-consumed))
+          update-event   {:build-number 1 :step-id [1 2] :step-result {:status :running}}]
+
+      (event-bus/publish ctx :step-result-updated update-event)
+
+      (is (= [update-event] (slurp-chan-with-size 1 consume-events)))))
   (testing "shutdown behavior"
     (testing "that the pipeline-state-updater can be stopped with a message on the event bus"
       (let [pipeline-state      (reify protocols/StepResultUpdateConsumer

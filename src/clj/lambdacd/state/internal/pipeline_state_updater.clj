@@ -18,6 +18,7 @@
                 build-number (:build-number step-result-update)
                 step-id      (:step-id step-result-update)]
             (state/consume-step-result-update ctx build-number step-id step-result)
+            (event-bus/publish! ctx :step-result-update-consumed step-result-update)
             (recur)))))))
 
 (defn stop-pipeline-state-updater [ctx]

@@ -11,6 +11,7 @@ The official release will have a defined and more stable API. If you are already
   * Keeps a history of pipeline structure if persistence component supports it (#131, #6); Implemented for default persistence
   * Improved performance and resource consumption by compressing and throttling step-result update events (#140). 
     Can be configured with the configuration parameter `:step-updates-per-sec`.
+  * Introduced event `:step-result-update-consumed` to indicate that a step update was consumed and is available in the pipeline state #136
 * Bug fixes:
   * Fix deadlock occurring when steps write a lot of step-results in quick succession and step results are inherited by their parents (as in chaining) (#135, #140)
 * API changes:
