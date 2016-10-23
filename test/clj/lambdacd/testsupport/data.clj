@@ -3,12 +3,14 @@
             [lambdacd.event-bus :as event-bus]
             [clojure.core.async :as async]
             [lambdacd.internal.default-pipeline-state :as default-pipeline-state]
-            [lambdacd.state.internal.pipeline-state-updater :as pipeline-state-updater]))
+            [lambdacd.state.internal.pipeline-state-updater :as pipeline-state-updater]
+            [lambdacd.core :as core]))
 
 
 (defn- some-ctx-template []
-  (let [config {:home-dir    (utils/create-temp-dir)
-                :ms-to-wait-for-shutdown 10000}]
+  (let [config {:home-dir                (utils/create-temp-dir)
+                :ms-to-wait-for-shutdown 10000
+                :step-updates-per-sec    (:step-updates-per-sec core/default-config)}]
     (-> {:initial-pipeline-state   {} ;; only used to assemble pipeline-state, not in real life
          :step-id                  [42]
          :build-number             10

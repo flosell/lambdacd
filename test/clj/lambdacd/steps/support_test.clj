@@ -117,7 +117,9 @@
                                       :out    "hello\nworld"} (unit-under-test {} (some-ctx) some-step-saying-hello some-step-saying-world))))
                (testing "that intermediate outputs are kept while step is running"
                  (let [result-channel (async/chan 100)
-                       ctx (some-ctx-with :result-channel result-channel)]
+                       ctx (some-ctx-with :result-channel result-channel
+                                          :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state)
+                                          :config {:config {:step-updates-per-sec nil}})]
                    (unit-under-test {} ctx some-step-saying-hello some-step-printing-to-intermediate-output)
                    (is (= [{:status :running}
                            {:status :success :out "hello"}

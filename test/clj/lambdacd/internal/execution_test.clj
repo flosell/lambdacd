@@ -168,7 +168,8 @@
   (testing "that the final pipeline-state is properly set for a step returning a static and an async result"
     (let [ctx                  (some-ctx-with :step-id [0 0]
                                               :build-number 5
-                                              :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state))
+                                              :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state)
+                                              :config {:step-updates-per-sec nil})
           step-results-channel (step-result-updates-for ctx)]
       (execute-step {} [ctx some-step-that-sends-failure-on-ch-returns-success])
       (is (= [{ :build-number 5 :step-id [0 0] :step-result {:status :running } }
@@ -181,26 +182,31 @@
     (is (= {:outputs {[0 0] {:status :success } } :status :success }
            (execute-step {} [(some-ctx-with :step-id [0 0]) some-step-that-sends-failure-on-ch-returns-success]))))
   (testing "that the accumulated step-result is sent over the event-bus"
-    (let [ctx (some-ctx-with :step-id [0 0]
-                             :build-number 5
-                             :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state))
+    (let [ctx                  (some-ctx-with :step-id [0 0]
+                                              :build-number 5
+                                              :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state)
+                                              :config {:step-updates-per-sec nil})
           step-results-channel (step-result-updates-for ctx)]
       (execute-step {} [ctx some-step-building-up-result-state-incrementally])
-    (is (= [{:build-number 5 :step-id [0 0] :step-result {:status :running } }
-            {:build-number 5 :step-id [0 0] :step-result {:status :running :out "hello"} }
-            {:build-number 5 :step-id [0 0] :step-result {:status :running :out "hello world"} }
-            {:build-number 5 :step-id [0 0] :step-result {:status :running :some-value 42 :out "hello world"} }
-            {:build-number 5 :step-id [0 0] :step-result {:status :success :some-value 42 :out "hello world"} }] (slurp-chan step-results-channel)))))(testing "that the accumulated step-result is sent over the event-bus and can be resetted"
-    (let [ctx (some-ctx-with :step-id [0 0]
-                             :build-number 5
-                             :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state))
+      (is (= [{:build-number 5 :step-id [0 0] :step-result {:status :running}}
+              {:build-number 5 :step-id [0 0] :step-result {:status :running :out "hello"}}
+              {:build-number 5 :step-id [0 0] :step-result {:status :running :out "hello world"}}
+              {:build-number 5 :step-id [0 0] :step-result {:status :running :some-value 42 :out "hello world"}}
+              {:build-number 5 :step-id [0 0] :step-result {:status :success :some-value 42 :out "hello world"}}]
+             (slurp-chan step-results-channel)))))
+  (testing "that the accumulated step-result is sent over the event-bus and can be resetted"
+    (let [ctx                  (some-ctx-with :step-id [0 0]
+                                              :build-number 5
+                                              :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state)
+                                              :config {:step-updates-per-sec nil})
           step-results-channel (step-result-updates-for ctx)]
       (execute-step {} [ctx some-step-building-up-result-state-incrementally-and-resetting])
-    (is (= [{:build-number 5 :step-id [0 0] :step-result {:status :running } }
-            {:build-number 5 :step-id [0 0] :step-result {:status :running :out "hello"} }
-            {:build-number 5 :step-id [0 0] :step-result {:status :running :some-value 42 :out "hello"} }
-            {:build-number 5 :step-id [0 0] :step-result {:status :running :other-value 21} }
-            {:build-number 5 :step-id [0 0] :step-result {:status :success :other-value 21} }] (slurp-chan step-results-channel)))))
+      (is (= [{:build-number 5 :step-id [0 0] :step-result {:status :running}}
+              {:build-number 5 :step-id [0 0] :step-result {:status :running :out "hello"}}
+              {:build-number 5 :step-id [0 0] :step-result {:status :running :some-value 42 :out "hello"}}
+              {:build-number 5 :step-id [0 0] :step-result {:status :running :other-value 21}}
+              {:build-number 5 :step-id [0 0] :step-result {:status :success :other-value 21}}]
+             (slurp-chan step-results-channel)))))
   (testing "that the event bus is notified when a step finishes"
     (let [ctx (some-ctx-with :build-number 3
                              :step-id [1 2 3])

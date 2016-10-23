@@ -11,6 +11,7 @@
   :test-paths ["test/clj" "example/clj"]
   :jar-exclusions [#"logback.xml"]
   :dependencies [[org.clojure/clojure "1.7.0"]
+                 [throttler "1.0.0"]
                  [hiccup "1.0.5"]
                  [org.clojure/data.json "0.2.6"]
                  [me.raynes/conch "0.8.0"]

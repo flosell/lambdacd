@@ -9,7 +9,8 @@
             [lambdacd.steps.support :as step-support]
             [lambdacd.state.internal.pipeline-state-updater :as pipeline-state-updater]
             [clojure.java.io :as io]
-            [lambdacd.util :as util]))
+            [lambdacd.util :as util]
+            [lambdacd.testsupport.noop-pipeline-state :as noop-pipeline-state]))
 
 (defn some-step [arg & _]
   {:foo :baz :status :undefined})
@@ -126,7 +127,10 @@
     (is (close? 100 100 (my-time ((in-parallel some-step-taking-100ms some-step-taking-100ms some-step-taking-100ms) {} (some-ctx))))))
   (testing "that it can inherit the result status children send over the result channel"
     (let [result-ch (async/chan 100)
-          ctx (some-ctx-with :result-channel result-ch :step-id [333])]
+          ctx (some-ctx-with :result-channel result-ch
+                             :step-id [333]
+                             :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state)
+                             :config {:config {:step-updates-per-sec nil}})]
       ((in-parallel some-step-sending-waiting-on-channel some-step-sending-running-then-waiting-then-finished-on-channel) {} ctx)
       (is (= [{:status :running}
               {:status :waiting}
@@ -211,21 +215,27 @@
            ((either some-step-taking-100ms some-killed-step) {} (some-ctx)))))
   (testing "that it can inherit the result status children send over the result channel"
     (let [result-ch (async/chan 100)
-          ctx (some-ctx-with :result-channel result-ch)]
+          ctx (some-ctx-with :result-channel result-ch
+                             :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state)
+                             :config {:config {:step-updates-per-sec nil}})]
       ((either some-step-sending-waiting-on-channel some-step-sending-running-then-waiting-then-finished-on-channel) {} ctx)
       (is (= [{:status :running}
               {:status :waiting}
               {:status :success}] (slurp-chan result-ch)))))
   (testing "that it doesn't inherit failures on the result channel so it doesn't look like the step has failed just because a child failed"
     (let [result-ch (async/chan 100)
-          ctx (some-ctx-with :result-channel result-ch)]
+          ctx (some-ctx-with :result-channel result-ch
+                             :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state)
+                             :config {:config {:step-updates-per-sec nil}})]
       ((either some-failing-step some-step-sending-running-then-waiting-then-finished-on-channel) {} ctx)
       (is (= [{:status :running}
               {:status :waiting}
               {:status :success}] (slurp-chan result-ch)))))
   (testing "that it doesn't inherit the status of nested children"
     (let [result-ch (async/chan 100)
-          ctx (some-ctx-with :result-channel result-ch)]
+          ctx (some-ctx-with :result-channel result-ch
+                             :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state)
+                             :config {:config {:step-updates-per-sec nil}})]
       ((either (run some-successful-step some-failing-step) some-failing-step) {} ctx)
       (is (= [{:status :running}
               {:status :success}
