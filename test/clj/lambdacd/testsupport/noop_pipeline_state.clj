@@ -1,11 +1,20 @@
 (ns lambdacd.testsupport.noop-pipeline-state
-  (:require [lambdacd.internal.pipeline-state :as pipeline-state]))
+  (:require [lambdacd.internal.pipeline-state :as pipeline-state]
+            [lambdacd.state.protocols :as protocols]))
 
 (defrecord NoOpPipelineState []
-  pipeline-state/PipelineStateComponent
-  (update            [self build-number step-id step-result])
-  (get-all           [self] (throw (IllegalStateException. "not supported by NoOpPipelineState"))) ;; should in the future be replaced with more detailed accessor functions
-  (next-build-number [self] (throw (IllegalStateException. "not supported by NoOpPipelineState"))))
+  protocols/StepResultUpdateConsumer
+  (consume-step-result-update [self build-number step-id step-result])
+  protocols/PipelineStructureConsumer
+  (consume-pipeline-structure [self build-number pipeline-structure-representation])
+  protocols/NextBuildNumberSource
+  (next-build-number [self] (throw (IllegalStateException. "not supported by NoOpPipelineState")))
+  protocols/QueryAllBuildNumbersSource
+  (all-build-numbers [self] (throw (IllegalStateException. "not supported by NoOpPipelineState")))
+  protocols/QueryStepResultsSource
+  (get-step-results [self build-number] (throw (IllegalStateException. "not supported by NoOpPipelineState")))
+  protocols/PipelineStructureSource
+  (get-pipeline-structure [self build-number] (throw (IllegalStateException. "not supported by NoOpPipelineState"))))
 
 (defn new-no-op-pipeline-state []
   (->NoOpPipelineState))

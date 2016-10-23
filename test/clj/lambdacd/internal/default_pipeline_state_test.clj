@@ -1,8 +1,7 @@
 (ns lambdacd.internal.default-pipeline-state-test
   (:use [lambdacd.testsupport.test-util])
   (:require [clojure.test :refer :all]
-            [lambdacd.internal.default-pipeline-state :refer :all]
-            [lambdacd.internal.pipeline-state :refer [next-build-number]]
+            [lambdacd.internal.default-pipeline-state :refer [new-default-pipeline-state]]
             [lambdacd.util :as utils]
             [clj-time.core :as t]
             [lambdacd.testsupport.test-util :as tu]

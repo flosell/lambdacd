@@ -12,9 +12,7 @@
             [clj-time.core :as t]
             [lambdacd.internal.execution :as execution]
             [lambdacd.testsupport.noop-pipeline-state :as noop-pipeline-state]
-            [lambdacd.internal.pipeline-state :as ps]
             [lambdacd.event-bus :as event-bus]
-            [lambdacd.state.internal.pipeline-state-updater :as pipeline-state-updater]
             [lambdacd.steps.control-flow :as control-flow]
             [lambdacd.state.core :as state]
             [lambdacd.util :as util])

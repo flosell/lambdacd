@@ -3,7 +3,6 @@
             [lambdacd.internal.execution :as execution]
             [clojure.core.async :as async]
             [clojure.walk :as w]
-            [lambdacd.internal.pipeline-state :as ps]
             [lambdacd.state.core :as state])
   (:import (java.util.concurrent TimeoutException)))
 
