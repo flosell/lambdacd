@@ -16,9 +16,9 @@
                              (swap! updates #(conj %1 [build-number step-id step-result]))))
           ctx            (some-ctx-with :pipeline-state-component pipeline-state)]
 
-      (event-bus/publish ctx :step-result-updated {:build-number 1 :step-id [1 2] :step-result {:status :running}})
-      (event-bus/publish ctx :step-result-updated {:build-number 2 :step-id [1 2] :step-result {:status :success}})
-      (event-bus/publish ctx :step-result-updated {:build-number 1 :step-id [1 2] :step-result {:status :running :foo :bar}})
+      (event-bus/publish!! ctx :step-result-updated {:build-number 1 :step-id [1 2] :step-result {:status :running}})
+      (event-bus/publish!! ctx :step-result-updated {:build-number 2 :step-id [1 2] :step-result {:status :success}})
+      (event-bus/publish!! ctx :step-result-updated {:build-number 1 :step-id [1 2] :step-result {:status :running :foo :bar}})
 
       (wait-for (= 3 (count @updates)))
       (is (= [[1 [1 2] {:status :running}]
@@ -34,7 +34,7 @@
                            (event-bus/subscribe ctx :step-result-update-consumed))
           update-event   {:build-number 1 :step-id [1 2] :step-result {:status :running}}]
 
-      (event-bus/publish ctx :step-result-updated update-event)
+      (event-bus/publish!! ctx :step-result-updated update-event)
 
       (is (= [update-event] (slurp-chan-with-size 1 consume-events)))))
   (testing "shutdown behavior"

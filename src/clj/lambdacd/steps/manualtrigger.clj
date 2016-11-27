@@ -7,7 +7,7 @@
 
 (defn post-id [ctx id trigger-parameters]
   (log/info "received parameterized trigger with id " id " with data " trigger-parameters)
-  (event-bus/publish ctx :manual-trigger-received {:trigger-id         id
+  (event-bus/publish!! ctx :manual-trigger-received {:trigger-id         id
                                                    :trigger-parameters trigger-parameters}))
 
 (defn- wait-for-trigger-event-while-not-killed [ctx trigger-events expected-trigger-id]

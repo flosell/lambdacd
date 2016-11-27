@@ -23,6 +23,6 @@
 
 (defn stop-pipeline-state-updater [ctx]
   (log/info "Shutting down pipeline state updater...")
-  (event-bus/publish ctx :stop-pipeline-state-updater {})
+  (event-bus/publish!! ctx :stop-pipeline-state-updater {})
   (async/<!! (:pipeline-state-updater ctx))
   (log/info "Pipeline state updater stopped"))

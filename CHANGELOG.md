@@ -5,6 +5,11 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
+## 0.12.0 
+
+* Breaking Changes: 
+  * Removed `lambdacd.event-bus/publish` (deprecated since 0.9.1), use `lambdacd.event-bus/publish!!` instead (or `lambdacd.event-bus/publish!` when being called from a go-block)  
+
 ## 0.11.0
 
 * Improvements: 

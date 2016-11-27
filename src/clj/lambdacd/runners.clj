@@ -47,4 +47,4 @@
 
 (defn stop-runner [ctx]
   (log/info "Stopping runner...")
-  (event-bus/publish ctx :stop-runner {}))
+  (event-bus/publish!! ctx :stop-runner {}))

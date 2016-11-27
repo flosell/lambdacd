@@ -126,17 +126,17 @@
   (event-bus/unsubscribe ctx :kill-step subscription))
 
 (defn- report-step-finished [ctx complete-step-result]
-  (event-bus/publish ctx :step-finished {:step-id             (:step-id ctx)
-                                         :build-number        (:build-number ctx)
-                                         :final-result        complete-step-result
-                                         :rerun-for-retrigger (boolean
-                                                                (and (:retriggered-build-number ctx)
-                                                                     (:retriggered-step-id ctx)))}))
+  (event-bus/publish!! ctx :step-finished {:step-id             (:step-id ctx)
+                                           :build-number        (:build-number ctx)
+                                           :final-result        complete-step-result
+                                           :rerun-for-retrigger (boolean
+                                                                  (and (:retriggered-build-number ctx)
+                                                                       (:retriggered-step-id ctx)))}))
 
 (defn- report-step-started [ctx]
   (send-step-result!! ctx {:status :running})
-  (event-bus/publish ctx :step-started {:step-id      (:step-id ctx)
-                                        :build-number (:build-number ctx)}))
+  (event-bus/publish!! ctx :step-started {:step-id      (:step-id ctx)
+                                          :build-number (:build-number ctx)}))
 
 (defn report-received-kill [ctx]
   (async/>!! (:result-channel ctx) [:received-kill true]))
@@ -341,8 +341,8 @@
     next-build-number))
 
 (defn kill-step [ctx build-number step-id]
-  (event-bus/publish ctx :kill-step {:step-id      step-id
-                                     :build-number build-number}))
+  (event-bus/publish!! ctx :kill-step {:step-id      step-id
+                                       :build-number build-number}))
 
 (defn- timed-out [ctx start-time]
   (let [now        (System/currentTimeMillis)
@@ -363,6 +363,6 @@
 
 (defn kill-all-pipelines [ctx]
   (log/info "Killing all running pipelines...")
-  (event-bus/publish ctx :kill-step {:step-id      :any-root
-                                     :build-number :any})
+  (event-bus/publish!! ctx :kill-step {:step-id      :any-root
+                                       :build-number :any})
   (wait-for-pipelines-to-complete ctx))

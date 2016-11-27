@@ -7,16 +7,11 @@
     (assoc ctx :event-publisher   publisher-ch
                :event-publication publication)))
 
-
 (defmacro publish! [ctx topic payload]
   `(async/>! (:event-publisher ~ctx) {:topic ~topic :payload ~payload}))
 
 (defmacro publish!! [ctx topic payload]
   `(async/>!! (:event-publisher ~ctx) {:topic ~topic :payload ~payload}))
-
-(defn publish [ctx topic payload]
-  "DEPRECATED, will be removed in subsequent versions. use publish!! or publish! instead"
-  (publish!! ctx topic payload))
 
 (defn subscribe [ctx topic]
   (let [result-ch (async/chan)]
