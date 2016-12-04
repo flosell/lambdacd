@@ -79,7 +79,7 @@
   (ch/generate-string v))
 
 (defn buffered [ch]
-  (let [result-ch (async/chan 100)]
+  (let [result-ch (async/chan 1000)]
     (async/pipe ch result-ch)))
 
 (defn json [data]
