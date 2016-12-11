@@ -24,7 +24,8 @@
 (def default-config
   {:ms-to-wait-for-shutdown (* 10 1000)
    :shutdown-sequence default-shutdown-sequence
-   :step-updates-per-sec 10})
+   :step-updates-per-sec 10
+   :use-new-event-bus false})
 
 (defn- initialize-pipeline-state-updater [ctx]
   (let [updater (pipeline-state-updater/start-pipeline-state-updater ctx)]

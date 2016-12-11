@@ -88,7 +88,8 @@
                 :max-builds 20
                 :name "some pipeline"
                 :ui-config {:expand-active-default true
-                            :expand-failures-default true}}
+                            :expand-failures-default true}
+                :use-new-event-bus true}
         ;; wiring everything together everything that's necessary for lambdacd to run
         pipeline (core/assemble-pipeline pipeline-def config)
         ;; the ring handler

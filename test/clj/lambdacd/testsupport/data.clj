@@ -10,7 +10,8 @@
 (defn- some-ctx-template []
   (let [config {:home-dir                (utils/create-temp-dir)
                 :ms-to-wait-for-shutdown 10000
-                :step-updates-per-sec    (:step-updates-per-sec core/default-config)}]
+                :step-updates-per-sec    (:step-updates-per-sec core/default-config)
+                :use-new-event-bus       true}]
     (-> {:initial-pipeline-state   {} ;; only used to assemble pipeline-state, not in real life
          :step-id                  [42]
          :build-number             10
@@ -19,8 +20,7 @@
          :config                   config
          :is-killed                (atom false)
          :_out-acc                 (atom "")
-         :started-steps            (atom #{})}
-        (event-bus/initialize-event-bus))))
+         :started-steps            (atom #{})})))
 
 (defn- add-pipeline-state-component [template]
   (if (nil? (:pipeline-state-component template))
@@ -36,10 +36,12 @@
 (defn some-ctx []
   (-> (some-ctx-template)
       (add-pipeline-state-component)
+      (event-bus/initialize-event-bus)
       (run-pipeline-state-updater)))
 
 (defn some-ctx-with [& args]
   (as-> (some-ctx-template) $
         (apply assoc $ args)
         (add-pipeline-state-component $)
+        (event-bus/initialize-event-bus $)
         (run-pipeline-state-updater $)))

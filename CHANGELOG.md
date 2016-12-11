@@ -8,7 +8,8 @@ The official release will have a defined and more stable API. If you are already
 ## 0.12.0 
 
 * Bug fixes: 
-  * Fixed a race condition in event-bus unsubscribe that had potential to deadlock the system in rare circumstances (#145). 
+  * Fixed a race condition in event-bus unsubscribe that had potential to deadlock the system in rare circumstances (#145).
+  * Rewrote event-bus to prevent deadlocks under heavy load (#144). As this new event-bus is not battle-tested yet, it is not active by default. Use he config setting `:use-new-event-bus true` to activate it. This will become the default in upcoming releases.  
 * Breaking Changes: 
   * Removed `lambdacd.event-bus/publish` (deprecated since 0.9.1), use `lambdacd.event-bus/publish!!` instead (or `lambdacd.event-bus/publish!` when being called from a go-block)  
 

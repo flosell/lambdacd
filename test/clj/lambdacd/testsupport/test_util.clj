@@ -114,7 +114,8 @@
 (defmacro is-eventually [predicate]
   `(try
      (wait-for ~predicate)
-     (catch TimeoutException _#)
+     (catch TimeoutException _#
+       (println "Timed out!"))
      (finally (is ~predicate))))
 
 (defmacro start-waiting-for [body]
