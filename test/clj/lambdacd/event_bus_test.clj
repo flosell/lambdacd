@@ -24,24 +24,12 @@
       (loop [i 0]
         (if (< i 100)
           (do
-            (async/<! payload)
-            (append-to! received-messages i)
+            (append-to! received-messages (async/<! payload))
             (recur (inc i)))))
       (unsubscribe ctx :foo subscription))))
 
 (deftest event-bus-test
   (testing "that we can publish, subscribe and unsubscribe"
-    (let [ctx                (initialize-event-bus (some-ctx))
-          published-messages (atom [])
-          received-messages  (atom [])]
-      (publish-200-messages ctx published-messages)
-      (subscribe-read-100-messages-unsubscribe ctx received-messages)
-
-      (is-eventually (= 200 (count @published-messages)))
-      (is-eventually (= 100 (count @received-messages)))
-
-      (is (= (take 100 @published-messages) @received-messages))))
-  (testing "that we can subscribe first, then publish"
     (let [ctx                (initialize-event-bus (some-ctx))
           published-messages (atom [])
           received-messages  (atom [])]
