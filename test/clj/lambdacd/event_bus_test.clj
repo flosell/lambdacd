@@ -8,23 +8,62 @@
 
 ; TODO: test is too flaky on travis-ci, commented until we find out why
 
-#_(deftest event-bus-test
-  (testing "that we can publish and subscribe to events"
-    (let [ctx (initialize-event-bus (some-ctx))]
-      (let [subscription (subscribe ctx :test-messages)]
-        (publish!!   ctx :test-messages {:message-number 1})
-        (publish!! ctx :other-topic {:other-message "hello"})
-        (unsubscribe ctx :test-messages subscription)
-        (publish!! ctx :test-messages {:message-number 2})
-        (is (= [{:message-number 1}] (slurp-chan-with-size 1 (only-payload subscription)))))))
-  (testing "that messages get delivered to all subscribers if more than one subscribes to the same topic"
-    (let [ctx (initialize-event-bus (some-ctx))
-          subscription-1 (subscribe ctx :test-messages)
-          subscription-2 (subscribe ctx :test-messages)
-          payloads-1 (buffered (only-payload subscription-1))
-          payloads-2 (buffered (only-payload subscription-2))]
-      (publish!! ctx :test-messages {:message-number 1})
-      (publish!! ctx :test-messages {:message-number 2})
+(defn- append-to! [a msg]
+  (swap! a #(conj % msg)))
 
-      (is (= [{:message-number 1} {:message-number 2}] (slurp-chan-with-size 2 payloads-1)))
-      (is (= [{:message-number 1} {:message-number 2}] (slurp-chan-with-size 2 payloads-2))))))
+(defn- publish-200-messages [ctx published-messages]
+  (async/go-loop [i 0]
+    (if (< i 200)
+      (do
+        (publish! ctx :foo i)
+        (append-to! published-messages i)
+        (recur (inc i))))))
+
+(defn- subscribe-read-100-messages-unsubscribe [ctx received-messages]
+  (async/go
+    (let [subscription (subscribe ctx :foo)
+          payload      (only-payload subscription)]
+      (loop [i 0]
+        (if (< i 100)
+          (do
+            (async/<! payload)
+            (append-to! received-messages i)
+            (recur (inc i)))))
+      (unsubscribe ctx :foo subscription))))
+
+(deftest event-bus-test
+  (testing "that we can publish, subscribe and unsubscribe"
+    (let [ctx                (initialize-event-bus (some-ctx))
+          published-messages (atom [])
+          received-messages  (atom [])]
+      (publish-200-messages ctx published-messages)
+      (subscribe-read-100-messages-unsubscribe ctx received-messages)
+
+      (is-eventually (= 200 (count @published-messages)))
+      (is-eventually (= 100 (count @received-messages)))
+
+      (is (= (take 100 @published-messages) @received-messages))))
+  (testing "that we can subscribe first, then publish"
+    (let [ctx                (initialize-event-bus (some-ctx))
+          published-messages (atom [])
+          received-messages  (atom [])]
+      (subscribe-read-100-messages-unsubscribe ctx received-messages)
+      (publish-200-messages ctx published-messages)
+
+      (is-eventually (= 200 (count @published-messages)))
+      (is-eventually (= 100 (count @received-messages)))))
+  (testing "that we can subscribe multiple times and get the same messages"
+    (let [ctx                (initialize-event-bus (some-ctx))
+          published-messages (atom [])
+          received-messages-1  (atom [])
+          received-messages-2  (atom [])]
+      (subscribe-read-100-messages-unsubscribe ctx received-messages-1)
+      (subscribe-read-100-messages-unsubscribe ctx received-messages-2)
+      (publish-200-messages ctx published-messages)
+
+      (is-eventually (= 200 (count @published-messages)))
+      (is-eventually (= 100 (count @received-messages-1)))
+      (is-eventually (= 100 (count @received-messages-2)))
+
+      (is (= (take 100 @published-messages) @received-messages-1))
+      (is (= (take 100 @published-messages) @received-messages-2)))))

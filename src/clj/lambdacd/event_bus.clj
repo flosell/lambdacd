@@ -27,5 +27,12 @@
           (recur))))
     result-ch))
 
+(defn- drain [ch]
+  (async/go-loop []
+    (if (async/<! ch)
+      (recur))))
+
 (defn unsubscribe [ctx topic subscription]
-  (async/unsub (:event-publication ctx) topic subscription))
+  (async/unsub (:event-publication ctx) topic subscription)
+  ; drain channel since maybe a publisher wrote to the subscription between the last read from it and the unsubscribe
+  (drain subscription))

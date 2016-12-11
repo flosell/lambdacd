@@ -111,6 +111,12 @@
          (Thread/sleep 50)
          (recur (+ time-slept# 50))))))
 
+(defmacro is-eventually [predicate]
+  `(try
+     (wait-for ~predicate)
+     (catch TimeoutException _#)
+     (finally (is ~predicate))))
+
 (defmacro start-waiting-for [body]
   `(async/go
      ~body))
