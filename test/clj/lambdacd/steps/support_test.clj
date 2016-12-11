@@ -84,7 +84,7 @@
       (print-to-output ctx printer "World")
       (is (= "Hello\nWorld\n" (printed-output printer))))))
 
-(deftest chain-steps-test
+(deftest chain-steps-test ; TODO: flaky
   (testing "chain-steps and always-chain-steps"
     (doall (for [unit-under-test [chain-steps always-chain-steps]]
              (do
