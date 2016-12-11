@@ -72,7 +72,7 @@
        print-1000-lines-in-clj)
      done-step))
 
-(deftest deadlock-test ; From #143, reproduces deadlock also described in #144
+(deftest ^:smoke deadlock-test ; From #143, reproduces deadlock also described in #144
   (testing "should not end in a deadlock"
     (let [home-dir (util/create-temp-dir)
           config   {:home-dir             home-dir
