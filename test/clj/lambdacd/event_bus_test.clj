@@ -9,6 +9,7 @@
             [lambdacd.util :as util]))
 
 (defn- make-sure-subscriber-has-started []
+  ; TODO: check if this is still necessary once we switch to the new event bus
   (Thread/sleep 100))
 
 (defn- append-to! [a msg]
