@@ -78,7 +78,8 @@
           config   {:home-dir             home-dir
                     :name                 "deadlock pipeline"
                     :step-updates-per-sec 10
-                    :use-new-event-bus    true}
+                    :use-new-event-bus    true
+                    :shutdown-sequence    (fn [& _ ] (println "Shutting down deadlock-test pipeline, doing nothing"))}
           pipeline (lambdacd.core/assemble-pipeline pipeline-def config)
           sub (lambdacd.event-bus/subscribe (:context pipeline) :step-finished)
           count-finished (atom 0)]
