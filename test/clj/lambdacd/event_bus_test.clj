@@ -6,8 +6,6 @@
             [lambdacd.testsupport.data :refer :all]
             [clojure.core.async :as async]))
 
-; TODO: test is too flaky on travis-ci, commented until we find out why
-
 (defn- append-to! [a msg]
   (swap! a #(conj % msg)))
 
