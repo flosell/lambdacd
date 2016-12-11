@@ -91,6 +91,6 @@
       (is (not= :timeout
                   (deref (future
                            (execution/run (:pipeline-def pipeline) (:context pipeline)))
-                         120000 :timeout)))
+                         300000 :timeout)))
 
       (is (= 42 @count-finished)))))
