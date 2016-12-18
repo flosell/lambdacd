@@ -18,9 +18,18 @@
 (defn- server-status []
   (:status (deref (http/get (str url-base "/api/builds/1/")))))
 
-(defn first-build []
-  (let [data (:body (deref (http/get (str url-base "/api/builds/1/"))))]
-    (json/read-str data)))
+(defn- nth-build [n]
+  (let [response (deref (http/get (str url-base "/api/builds/" n "/")))
+        data          (:body response)]
+    (if (= 200 (:status response))
+      (json/read-str data)
+      (throw (Exception. (str "Unexpected status code: " (:status response) response))))))
+
+(defn- first-build []
+  (nth-build 1))
+(defn- second-build []
+  (nth-build 2))
+
 
 (defn- manual-trigger []
   (get (first (first-build)) "result"))
@@ -30,6 +39,12 @@
 
 (defn- manual-trigger-id []
   (get (manual-trigger) "trigger-id"))
+
+(defn- in-parallel-step-result [build]
+  (get (nth build 3) "result"))
+
+(defn- in-parallel-status [build]
+  (get (in-parallel-step-result build) "status"))
 
 (defn- post-empty-json-to [url]
   (:status (deref (http/post
@@ -81,6 +96,8 @@
         (is (= 5 @steps/some-counter))
         (is (= "world\n" @steps/some-value-read-from-git-repo))
         (is (= "hello world\n" @steps/the-global-value))
+        (is (= "success" (in-parallel-status (first-build))))
         (is (= 200 (retrigger-increment-counter-by-three)))
         (wait-a-bit)
+        (is (= "success" (in-parallel-status (second-build))))
         (is (= 10 @steps/some-counter))))))

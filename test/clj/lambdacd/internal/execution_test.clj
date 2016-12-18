@@ -347,6 +347,15 @@
               [1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0}
               [2] { :status :success }}
              (tu/without-ts (state/get-step-results context 1))))))
+  (testing "that retriggering consumes the pipeline structure for the new pipeline-run"
+    (let [initial-state { 0 {[1] { :status :success }
+                             [1 1] {:status :success :out "I am nested"}
+                             [2] { :status :failure }}}
+          pipeline `((some-control-flow some-step) some-successful-step)
+          context (some-ctx-with :initial-pipeline-state initial-state)]
+      (retrigger pipeline context 0 [2] 1)
+      (wait-for (tu/step-success? context 1 [2]))
+      (is (not= nil (state/get-pipeline-structure context 1)))))
   (testing "that we can retrigger a pipeline from the initial step as well"
     (let [pipeline `(some-successful-step some-other-step some-failing-step)
           initial-state { 0 {[1] {:status :to-be-retriggered}

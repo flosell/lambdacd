@@ -327,7 +327,7 @@
 
 (defn retrigger [pipeline context build-number step-id-to-run next-build-number]
   (let [executable-pipeline (map eval pipeline)]
-    (state/consume-pipeline-structure context build-number (pipeline-structure/pipeline-display-representation pipeline))
+    (state/consume-pipeline-structure context next-build-number (pipeline-structure/pipeline-display-representation pipeline))
     (execute-steps executable-pipeline {} (assoc context :step-id []
                                                          :result-channel (async/chan (async/dropping-buffer 0))
                                                          :build-number next-build-number
