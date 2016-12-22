@@ -107,7 +107,7 @@
     (or (= build-number build-number-to-kill)
         (= :any build-number-to-kill))))
 
-(defn kill-step-handling [ctx]
+(defn- kill-step-handling [ctx]
   (let [is-killed     (:is-killed ctx)
         step-id       (:step-id ctx)
         build-number  (:build-number ctx)
@@ -122,7 +122,7 @@
           (recur))))
     subscription))
 
-(defn clean-up-kill-handling [ctx subscription]
+(defn- clean-up-kill-handling [ctx subscription]
   (event-bus/unsubscribe ctx :kill-step subscription))
 
 (defn- report-step-finished [ctx complete-step-result]
@@ -138,10 +138,10 @@
   (event-bus/publish!! ctx :step-started {:step-id      (:step-id ctx)
                                           :build-number (:build-number ctx)}))
 
-(defn report-received-kill [ctx]
+(defn- report-received-kill [ctx]
   (async/>!! (:result-channel ctx) [:received-kill true]))
 
-(defn add-kill-switch-reporter [ctx]
+(defn- add-kill-switch-reporter [ctx]
   (add-watch (:is-killed ctx) (UUID/randomUUID) (fn [_ _ _ new-is-killed-val]
                                                   (if new-is-killed-val
                                                     (report-received-kill ctx)))))

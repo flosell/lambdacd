@@ -5,6 +5,11 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
+## 0.12.1
+
+* Changes in internal API (you shouldn't have dependencies on those unless you are doing something really crazy or advanced)
+  * Made the following functions private (as they were never supposed to be publicly available): `lambdacd.internal.execution/{kill-step-handling,report-received-kill,add-kill-switch-reporter,clean-up-kill-handling}` 
+
 ## 0.12.0 
 
 * Bug fixes: 
