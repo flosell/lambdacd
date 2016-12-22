@@ -1,6 +1,7 @@
 (ns lambdacd.execution
   "Public interface to interact with the execution-engine"
-  (:require [lambdacd.internal.execution :as internal]))
+  (:require [lambdacd.internal.execution :as internal]
+            [lambdacd.execution.internal.execute-step :as execute-step]))
 
 (defn retrigger [pipeline context build-number step-id-to-retrigger]
   (internal/retrigger-async pipeline context build-number step-id-to-retrigger))
@@ -13,9 +14,9 @@
 
 (defn execute-step
   ([args ctx step]
-   (internal/execute-step args [ctx step]))
+   (execute-step/execute-step args [ctx step]))
   ([args [ctx step]]
-   (internal/execute-step args [ctx step])))
+   (execute-step/execute-step args [ctx step])))
 
 (defn run [pipeline context]
   (internal/run pipeline context))

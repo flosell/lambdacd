@@ -5,6 +5,7 @@
             [lambdacd.event-bus :as event-bus]
             [lambdacd.internal.running-builds-tracking :as running-builds-tracking]
             [lambdacd.state.internal.pipeline-state-updater :as pipeline-state-updater]
+            [lambdacd.execution.internal.execute-step :as execute-step]
             [clojure.tools.logging :as log]
             [lambdacd.runners :as runners]))
 
@@ -60,7 +61,7 @@
 (defn execute-step
   ([args ctx step]
    "DEPRECATED, use lambdacd.execution instead"
-   (execution/execute-step args [ctx step]))
+   (execute-step/execute-step args [ctx step]))
   ([args [ctx step]]
    "DEPRECATED, use lambdacd.execution instead"
-   (execution/execute-step args [ctx step])))
+   (execute-step/execute-step args [ctx step])))

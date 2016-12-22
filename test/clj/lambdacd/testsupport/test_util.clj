@@ -1,9 +1,10 @@
 (ns lambdacd.testsupport.test-util
   (:require [clojure.test :refer :all]
-            [lambdacd.internal.execution :as execution]
+            [lambdacd.util :refer [buffered]]
             [clojure.core.async :as async]
             [clojure.walk :as w]
-            [lambdacd.state.core :as state])
+            [lambdacd.state.core :as state]
+            [lambdacd.event-bus :as event-bus])
   (:import (java.util.concurrent TimeoutException)))
 
 (defmacro my-time
@@ -142,6 +143,10 @@
   (= :failure (step-status (assoc ctx :build-number build-number
                                       :step-id step-id))))
 
-
 (defn third [coll]
   (nth coll 2))
+
+(defn events-for [k ctx]
+  (-> (event-bus/subscribe ctx k)
+      (event-bus/only-payload)
+      (buffered)))

@@ -5,161 +5,11 @@
             [clojure.tools.logging :as log]
             [lambdacd.step-id :as step-id]
             [lambdacd.steps.status :as status]
-            [clojure.repl :as repl]
-            [lambdacd.util.internal.exceptions :as util-exceptions]
             [lambdacd.event-bus :as event-bus]
             [lambdacd.steps.result :as step-results]
             [lambdacd.presentation.pipeline-structure :as pipeline-structure]
-            [throttler.core :as throttler])
-  (:import (java.io StringWriter)
-           (java.util UUID)))
-
-(defn- step-output [step-id step-result]
-  {:outputs {step-id step-result}
-   :status  (get step-result :status)})
-
-(defn- attach-wait-indicator-if-necessary [result k v]
-  (if (and (= k :status) (= v :waiting))
-    (assoc result :has-been-waiting true)
-    result))
-
-(defn- send-step-result!! [{step-id :step-id build-number :build-number :as ctx} step-result]
-  (let [payload {:build-number build-number
-                 :step-id      step-id
-                 :step-result  step-result}]
-    (event-bus/publish!! ctx :step-result-updated payload)))
-
-(defn- append-result [cur-result [key value]]
-  (-> cur-result
-      (assoc key value)
-      (attach-wait-indicator-if-necessary key value)))
-
-(defn- drop-and-throttle-ch [step-updates-per-sec in-ch]
-  (let [dropping-ch (async/chan (async/sliding-buffer 1))
-        slow-chan   (throttler/throttle-chan dropping-ch step-updates-per-sec :second)]
-    (async/pipe in-ch dropping-ch)
-    slow-chan))
-
-(defn- publish-from-ch [ctx topic in-ch]
-  (let [updates-per-sec (get-in ctx [:config :step-updates-per-sec])
-        slow-chan       (if updates-per-sec
-                          (drop-and-throttle-ch updates-per-sec in-ch)
-                          in-ch)]
-    (async/go-loop []
-      (if-let [msg (async/<! slow-chan)]
-        (do
-          (event-bus/publish! ctx topic msg)
-          (recur))))))
-
-(defn- process-channel-result-async [c {step-id :step-id build-number :build-number :as ctx}]
-  (let [publisher-ch       (async/chan)
-        publisher-finished (publish-from-ch ctx :step-result-updated publisher-ch)
-        processed-result   (async/go-loop [cur-result {:status :running}]
-                             (let [ev         (async/<! c)
-                                   new-result (if (map? ev)
-                                                ev
-                                                (append-result cur-result ev))]
-                               (if (nil? ev)
-                                 (do
-                                   (async/close! publisher-ch)
-                                   cur-result)
-                                 (do
-                                   (async/>! publisher-ch {:build-number build-number
-                                                           :step-id      step-id
-                                                           :step-result  new-result})
-                                   (recur new-result)))))]
-    (async/go
-      (async/<! publisher-finished)
-      (async/<! processed-result))))
-
-(defn- execute-or-catch [step args ctx]
-  (try
-    (let [step-result (step args ctx)]
-      (if (nil? (:status step-result))
-        {:status :failure :out "step did not return any status!"}
-        step-result))
-    (catch Exception e
-      {:status :failure :out (util-exceptions/stacktrace-to-string e)})
-    (finally
-      (async/close! (:result-channel ctx)))))
-
-(defn- step-id-to-kill? [step-id kill-payload]
-  (let [step-id-to-kill     (:step-id kill-payload)
-
-        exact-step-id-match (= step-id step-id-to-kill)
-
-        any-root-match      (and (= :any-root step-id-to-kill)
-                                 (= 1 (count step-id)))]
-    (or exact-step-id-match
-        any-root-match)))
-
-(defn- build-number-to-kill? [build-number kill-payload]
-  (let [build-number-to-kill (:build-number kill-payload)]
-    (or (= build-number build-number-to-kill)
-        (= :any build-number-to-kill))))
-
-(defn- kill-step-handling [ctx]
-  (let [is-killed     (:is-killed ctx)
-        step-id       (:step-id ctx)
-        build-number  (:build-number ctx)
-        subscription  (event-bus/subscribe ctx :kill-step)
-        kill-payloads (event-bus/only-payload subscription)]
-    (async/go-loop []
-      (if-let [kill-payload (async/<! kill-payloads)]
-        (if (and
-              (step-id-to-kill? step-id kill-payload)
-              (build-number-to-kill? build-number kill-payload))
-          (reset! is-killed true)
-          (recur))))
-    subscription))
-
-(defn- clean-up-kill-handling [ctx subscription]
-  (event-bus/unsubscribe ctx :kill-step subscription))
-
-(defn- report-step-finished [ctx complete-step-result]
-  (event-bus/publish!! ctx :step-finished {:step-id             (:step-id ctx)
-                                           :build-number        (:build-number ctx)
-                                           :final-result        complete-step-result
-                                           :rerun-for-retrigger (boolean
-                                                                  (and (:retriggered-build-number ctx)
-                                                                       (:retriggered-step-id ctx)))}))
-
-(defn- report-step-started [ctx]
-  (send-step-result!! ctx {:status :running})
-  (event-bus/publish!! ctx :step-started {:step-id      (:step-id ctx)
-                                          :build-number (:build-number ctx)}))
-
-(defn- report-received-kill [ctx]
-  (async/>!! (:result-channel ctx) [:received-kill true]))
-
-(defn- add-kill-switch-reporter [ctx]
-  (add-watch (:is-killed ctx) (UUID/randomUUID) (fn [_ _ _ new-is-killed-val]
-                                                  (if new-is-killed-val
-                                                    (report-received-kill ctx)))))
-
-(defn execute-step [args [ctx step]]
-  (let [step-id                   (:step-id ctx)
-        result-ch                 (async/chan)
-        child-kill-switch         (atom false)
-        parent-kill-switch        (:is-killed ctx)
-        watch-key                 (UUID/randomUUID)
-        _                         (add-watch parent-kill-switch watch-key (fn [key reference old new] (reset! child-kill-switch new)))
-        _                         (reset! child-kill-switch @parent-kill-switch) ; make sure kill switch has the parents state in the beginning and is updated through the watch
-        ctx-for-child             (assoc ctx :result-channel result-ch
-                                             :is-killed child-kill-switch)
-        _                         (add-kill-switch-reporter ctx-for-child)
-        processed-async-result-ch (process-channel-result-async result-ch ctx)
-        kill-subscription         (kill-step-handling ctx-for-child)
-        _                         (report-step-started ctx)
-        immediate-step-result     (execute-or-catch step args ctx-for-child)
-        processed-async-result    (async/<!! processed-async-result-ch)
-        complete-step-result      (merge processed-async-result immediate-step-result)]
-    (log/debug (str "executed step " step-id complete-step-result))
-    (clean-up-kill-handling ctx-for-child kill-subscription)
-    (remove-watch parent-kill-switch watch-key)
-    (send-step-result!! ctx complete-step-result)
-    (report-step-finished ctx complete-step-result)
-    (step-output step-id complete-step-result)))
+            [lambdacd.execution.internal.execute-step :as execute-step]
+            [lambdacd.execution.internal.util :as execution-util]))
 
 (defn merge-two-step-results [r1 r2]
   (step-results/merge-two-step-results r1 r2 :resolvers [step-results/status-resolver
@@ -217,7 +67,7 @@
       (if (empty? remaining-steps-with-id)
         result
         (let [ctx-and-step (first remaining-steps-with-id)
-              step-result  (execute-step cur-args ctx-and-step)
+              step-result  (execute-step/execute-step cur-args ctx-and-step)
               step-output  (first (vals (:outputs step-result)))
               new-result   (cons step-result result)
               new-args     (->> step-output
@@ -241,7 +91,7 @@
 (defn- publish-child-step-results!! [ctx retriggered-build-number original-build-result]
   (->> original-build-result
        (filter #(step-id/parent-of? (:step-id ctx) (first %)))
-       (map #(send-step-result!! (assoc ctx :step-id (first %)) (assoc (second %) :retrigger-mock-for-build-number retriggered-build-number)))
+       (map #(execution-util/send-step-result!! (assoc ctx :step-id (first %)) (assoc (second %) :retrigger-mock-for-build-number retriggered-build-number)))
        (doall)))
 
 (defn retrigger-mock-step [retriggered-build-number]
