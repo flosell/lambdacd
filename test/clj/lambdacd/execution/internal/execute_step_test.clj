@@ -9,11 +9,15 @@
                                                     get-or-timeout]]
             [lambdacd.testsupport.matchers :refer [map-containing]]
             [lambdacd.testsupport.noop-pipeline-state :as noop-pipeline-state]
-            [lambdacd.execution.internal.execute-step :refer [execute-step]]
+            [lambdacd.execution.internal.execute-step :refer :all]
             [lambdacd.internal.execution :as internal-execution]
             [clojure.core.async :as async]
+            [clojure.core.async.impl.protocols :as async-protocols]
             [lambdacd.steps.support :as step-support]
             [lambdacd.steps.control-flow :as control-flow]))
+
+(defn some-args []
+  {})
 
 (defn some-step-processing-input [arg & _]
   (assoc arg :foo :baz :status :success))
@@ -30,8 +34,13 @@
 (defn some-step-consuming-the-context [arg ctx]
   {:status :success :context-info (:the-info ctx)})
 
+(def message-thrown-by-some-step-throwing-an-exception
+  "Something went wrong!")
+
 (defn some-step-throwing-an-exception [& _]
-  (throw (Exception. "Something went wrong!")))
+  (throw (Exception. ^String message-thrown-by-some-step-throwing-an-exception)))
+(defn some-step-throwing-an-error [& _]
+  (throw (Error. ^String message-thrown-by-some-step-throwing-an-exception)))
 
 (defn some-step-building-up-result-state-incrementally [_ {c :result-channel}]
   (async/>!! c [:out "hello"])
@@ -82,7 +91,36 @@
                                     (recur (inc counter)))
                                   {:status :waited-too-long}))))
 
-(deftest execute-step-test
+(deftest wrap-failure-if-no-status-test
+  (testing "that a step-result with status will just be passed on"
+    (is (= (some-successful-step (some-args) (some-ctx))
+           ((wrap-failure-if-no-status some-successful-step) (some-args) (some-ctx)))))
+  (testing "that a step without a status will be faileed"
+    (is (= {:status :failure
+            :out "step did not return any status!"}
+           ((wrap-failure-if-no-status some-step-not-returning-status) (some-args) (some-ctx))))))
+
+(deftest wrap-close-result-channel-test
+  (testing "that the result-channel will be closed after the step is executed"
+    (let [ctx (some-ctx)]
+      ((wrap-close-result-channel some-other-step) (some-args) ctx)
+      (is (async-protocols/closed? (:result-channel ctx)))))
+  (testing "that the step result will not be touched"
+    (is (= (some-successful-step (some-args) (some-ctx))
+           ((wrap-close-result-channel some-successful-step) (some-args) (some-ctx))))))
+
+(deftest wrap-exception-handling-test
+  (testing "that exceptions thrown in the step will be caught and converted into proper failure step-results"
+    (let [step-result ((wrap-exception-handling some-step-throwing-an-exception) (some-args) (some-ctx))]
+      (is (= :failure (:status step-result)))
+      (is (.contains (:out step-result) message-thrown-by-some-step-throwing-an-exception))))
+  (testing "that a normal step result will not be touched"
+    (is (= (some-successful-step (some-args) (some-ctx))
+           ((wrap-exception-handling some-successful-step) (some-args) (some-ctx)))))
+  (testing "that we don't catch Error"
+    (is (thrown? Error ((wrap-exception-handling some-step-throwing-an-error) (some-args) (some-ctx))))))
+
+(deftest integrated-execute-step-test
          (testing "that executing returns the step result added to the input args"
                   (is (= {:outputs { [0 0] {:foo :baz :x :y :status :success}} :status :success} (execute-step {:x :y} [(some-ctx-with :step-id [0 0]) some-step-processing-input]))))
          (testing "that executing returns the steps result-status as a special field and leaves it in the output as well"

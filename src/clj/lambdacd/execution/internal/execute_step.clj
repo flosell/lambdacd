@@ -9,17 +9,25 @@
 
 ; ============================================
 
-(defn wrap-execute-or-catch [handler]
+(defn wrap-failure-if-no-status [handler]
+  (fn [args ctx]
+    (let [step-result (handler args ctx)]
+      (if (nil? (:status step-result))
+        {:status :failure :out "step did not return any status!"}
+        step-result))))
+
+(defn wrap-close-result-channel [handler]
+  (fn [args ctx]
+    (let [result (handler args ctx)]
+      (async/close! (:result-channel ctx))
+      result)))
+
+(defn wrap-exception-handling [handler]
   (fn [args ctx]
     (try
-      (let [step-result (handler args ctx)]
-        (if (nil? (:status step-result))
-          {:status :failure :out "step did not return any status!"}
-          step-result))
+      (handler args ctx)
       (catch Exception e
-        {:status :failure :out (util-exceptions/stacktrace-to-string e)})
-      (finally
-        (async/close! (:result-channel ctx))))))
+        {:status :failure :out (util-exceptions/stacktrace-to-string e)}))))
 
 ; ============================================
 
@@ -173,8 +181,10 @@
 
 (defn execute-step [args [ctx step]] ; TODO: this should be in a namespace like lambdacd.execution.core?
   (let [assembled-handler (-> step
-                              (wrap-execute-or-catch)
+                              (wrap-failure-if-no-status)
+                              (wrap-exception-handling)
                               (wrap-kill-handling)
+                              (wrap-close-result-channel)
                               (wrap-step-result-reporting)
                               (wrap-execute-step-logging))]
     (assembled-handler args ctx)))
