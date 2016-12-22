@@ -6,6 +6,7 @@
             [lambdacd.step-id :as step-id]
             [lambdacd.steps.status :as status]
             [clojure.repl :as repl]
+            [lambdacd.util.internal.exceptions :as util-exceptions]
             [lambdacd.event-bus :as event-bus]
             [lambdacd.steps.result :as step-results]
             [lambdacd.presentation.pipeline-structure :as pipeline-structure]
@@ -74,13 +75,6 @@
       (async/<! publisher-finished)
       (async/<! processed-result))))
 
-(defmacro with-err-str
-  [& body]
-  `(let [s# (new StringWriter)]
-     (binding [*err* s#]
-       ~@body
-       (str s#))))
-
 (defn- execute-or-catch [step args ctx]
   (try
     (let [step-result (step args ctx)]
@@ -88,7 +82,7 @@
         {:status :failure :out "step did not return any status!"}
         step-result))
     (catch Throwable e
-      {:status :failure :out (with-err-str (repl/pst e))})
+      {:status :failure :out (util-exceptions/stacktrace-to-string e)})
     (finally
       (async/close! (:result-channel ctx)))))
 
