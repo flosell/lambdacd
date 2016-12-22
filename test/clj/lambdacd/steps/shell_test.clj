@@ -1,7 +1,7 @@
 (ns lambdacd.steps.shell-test
   (:require [clojure.test :refer :all]
             [clojure.core.async :as async]
-            [lambdacd.testsupport.test-util :refer [result-channel->map slurp-chan]]
+            [lambdacd.testsupport.test-util :refer [slurp-chan]]
             [lambdacd.testsupport.data :refer [some-ctx some-ctx-with]]
             [lambdacd.steps.shell :refer :all]
             [lambdacd.event-bus :as event-bus]))

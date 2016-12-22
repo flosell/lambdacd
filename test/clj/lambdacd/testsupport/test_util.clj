@@ -57,26 +57,6 @@
             new-collector
             (recur new-collector)))))))
 
-(defn result-channel->map [ch]
-  (async/<!!
-    (async/go-loop [last {}]
-      (if-let [[key value] (async/<! ch)]
-        (let [new (assoc last key value)]
-          (if (#'execution/is-finished key value)
-            new
-            (recur new)))
-        last))))
-
-
-(defmacro eventually [pred]
-  `(loop [count# 0]
-     (let [result# ~pred]
-        (if (or (not result#) (< count# 10))
-          (do
-            (Thread/sleep 100)
-            (recur (inc count#)))
-          result#))))
-
 (defn- tuple? [x]
   (and (vector? x) (= 2 (count x))))
 

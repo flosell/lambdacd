@@ -18,9 +18,6 @@
   {:outputs {step-id step-result}
    :status  (get step-result :status)})
 
-(defn- is-finished [key value]
-  (and (= key :status) (not= value :waiting)))
-
 (defn- attach-wait-indicator-if-necessary [result k v]
   (if (and (= k :status) (= v :waiting))
     (assoc result :has-been-waiting true)
