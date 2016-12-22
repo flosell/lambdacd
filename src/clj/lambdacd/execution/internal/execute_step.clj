@@ -9,27 +9,24 @@
 
 ; ============================================
 
-(defn- execute-or-catch [step args ctx]
-  (try
-    (let [step-result (step args ctx)]
-      (if (nil? (:status step-result))
-        {:status :failure :out "step did not return any status!"}
-        step-result))
-    (catch Exception e
-      {:status :failure :out (util-exceptions/stacktrace-to-string e)})
-    (finally
-      (async/close! (:result-channel ctx)))))
-
-(defn execute-step-main-handler [args [ctx step]]
-  (let [immediate-step-result (execute-or-catch step args ctx)]
-    immediate-step-result))
+(defn wrap-execute-or-catch [handler]
+  (fn [args ctx]
+    (try
+      (let [step-result (handler args ctx)]
+        (if (nil? (:status step-result))
+          {:status :failure :out "step did not return any status!"}
+          step-result))
+      (catch Exception e
+        {:status :failure :out (util-exceptions/stacktrace-to-string e)})
+      (finally
+        (async/close! (:result-channel ctx))))))
 
 ; ============================================
 
 (defn wrap-execute-step-logging [handler]
-  (fn [args [ctx step]]
+  (fn [args ctx]
     (let [step-id              (:step-id ctx)
-          complete-step-result (handler args [ctx step])]
+          complete-step-result (handler args ctx)]
       (log/debug (str "executed step " step-id complete-step-result))
       complete-step-result)))
 
@@ -102,13 +99,13 @@
    :status  (get step-result :status)})
 
 (defn wrap-step-result-reporting [handler]
-  (fn [args [ctx step]]
+  (fn [args ctx]
     (let [step-id                   (:step-id ctx)
           result-ch                 (async/chan)
           ctx-for-child             (assoc ctx :result-channel result-ch)
           processed-async-result-ch (process-channel-result-async result-ch ctx)
           _                         (report-step-started ctx)
-          immediate-step-result     (handler args [ctx-for-child step])
+          immediate-step-result     (handler args ctx-for-child)
           processed-async-result    (async/<!! processed-async-result-ch)
           complete-step-result      (merge processed-async-result immediate-step-result)]
       (execution-util/send-step-result!! ctx complete-step-result)
@@ -160,7 +157,7 @@
                                                     (report-received-kill ctx)))))
 
 (defn wrap-kill-handling [handler]
-  (fn [args [ctx step]]
+  (fn [args ctx]
     (let [child-kill-switch  (atom false)
           parent-kill-switch (:is-killed ctx)
           watch-key          (UUID/randomUUID)
@@ -169,15 +166,15 @@
           ctx-for-child      (assoc ctx :is-killed child-kill-switch)
           _                  (add-kill-switch-reporter ctx-for-child)
           kill-subscription  (kill-step-handling ctx-for-child)
-          handler-result     (handler args [ctx-for-child step])]
+          handler-result     (handler args ctx-for-child)]
       (clean-up-kill-handling ctx-for-child kill-subscription)
       (remove-watch parent-kill-switch watch-key)
       handler-result)))
 
-
 (defn execute-step [args [ctx step]] ; TODO: this should be in a namespace like lambdacd.execution.core?
-  (let [assembled-handler (-> execute-step-main-handler
+  (let [assembled-handler (-> step
+                              (wrap-execute-or-catch)
                               (wrap-kill-handling)
                               (wrap-step-result-reporting)
                               (wrap-execute-step-logging))]
-    (assembled-handler args [ctx step])))
+    (assembled-handler args ctx)))
