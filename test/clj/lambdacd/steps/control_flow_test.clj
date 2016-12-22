@@ -231,7 +231,7 @@
       (is (= [{:status :running}
               {:status :waiting}
               {:status :success}] (slurp-chan result-ch)))))
-  (testing "that it doesn't inherit the status of nested children"
+  (testing "that it doesn't inherit the status of nested children"; TODO: flaky
     (let [result-ch (async/chan 100)
           ctx (some-ctx-with :result-channel result-ch
                              :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state)
