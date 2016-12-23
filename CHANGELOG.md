@@ -36,8 +36,11 @@ New years cleanup and bug fix release.
     * `lambdacd.util/buffered`
     * `lambdacd.util/fill`
     * `lambdacd.util/merge-with-k-v`
-* Changes in internal API (you shouldn't have dependencies on those unless you are doing something really crazy or advanced)
-  * Made the following functions private (as they were never supposed to be publicly available): `lambdacd.internal.execution/{kill-step-handling,report-received-kill,add-kill-switch-reporter,clean-up-kill-handling}` 
+* Changes in internal API: 
+  * `lambdacd.internal.execution` was refactored into several independent namespaces, functions were moved around, replaced or made private. 
+    You shouldn't have dependencies on those unless you are doing something really crazy or advanced. If you did, please consider using functions in public namespaces (i.e. that don't have `internal` in their name).
+     TODO: point out where to find public functions
+     If you have dependencies on functions that have no public equivalent, please open an issue to get this fixed. 
 
 ## 0.12.0
 
