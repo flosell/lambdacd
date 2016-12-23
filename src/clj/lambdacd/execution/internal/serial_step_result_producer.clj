@@ -5,7 +5,7 @@
 (defn- keep-original-args [old-args step-result]
   (merge old-args step-result))
 
-(defn serial-step-result-producer [& {:keys [stop-predicate]
+(defn serial-step-result-producer [& {:keys [stop-predicate] ; TODO: should this be in a public namespace? 
                                       :or   {stop-predicate execution-util/not-success?}}]
   (fn [args s-with-id]
     (loop [result                  ()

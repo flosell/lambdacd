@@ -94,6 +94,7 @@
     (map (partial replace-step-with-retrigger-mock retrigger-predicate) step-contexts)
     step-contexts))
 
+; TODO: this should be in a namespace like lambdacd.execution.core?
 (defn execute-steps [steps args ctx & {:keys [step-result-producer is-killed unify-status-fn unify-results-fn retrigger-predicate]
                                        :or   {step-result-producer (serial-step-result-producer)
                                               is-killed            (atom false)
