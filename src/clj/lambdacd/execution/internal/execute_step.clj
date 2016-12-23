@@ -102,14 +102,10 @@
   (event-bus/publish!! ctx :step-started {:step-id      (:step-id ctx)
                                           :build-number (:build-number ctx)}))
 
-(defn- step-output [step-id step-result]
-  {:outputs {step-id step-result}
-   :status  (get step-result :status)})
 
 (defn wrap-step-result-reporting [handler]
   (fn [args ctx]
-    (let [step-id                   (:step-id ctx)
-          result-ch                 (async/chan)
+    (let [result-ch                 (async/chan)
           ctx-for-child             (assoc ctx :result-channel result-ch)
           processed-async-result-ch (process-channel-result-async result-ch ctx)
           _                         (report-step-started ctx)
@@ -118,7 +114,17 @@
           complete-step-result      (merge processed-async-result immediate-step-result)]
       (execution-util/send-step-result!! ctx complete-step-result)
       (report-step-finished ctx complete-step-result)
-      (step-output step-id complete-step-result))))
+      complete-step-result)))
+
+; ============================================
+
+(defn- step-output [step-id step-result]
+  {:outputs {step-id step-result}
+   :status  (get step-result :status)})
+
+(defn wrap-convert-to-step-output [handler]
+  (fn [args ctx]
+    (step-output (:step-id ctx) (handler args ctx))))
 
 ; ============================================
 
@@ -179,6 +185,8 @@
       (remove-watch parent-kill-switch watch-key)
       handler-result)))
 
+; ============================================
+
 (defn execute-step [args [ctx step]] ; TODO: this should be in a namespace like lambdacd.execution.core?
   (let [assembled-handler (-> step
                               (wrap-failure-if-no-status)
@@ -186,5 +194,6 @@
                               (wrap-kill-handling)
                               (wrap-close-result-channel)
                               (wrap-step-result-reporting)
-                              (wrap-execute-step-logging))]
+                              (wrap-execute-step-logging)
+                              (wrap-convert-to-step-output))]
     (assembled-handler args ctx)))

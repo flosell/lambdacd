@@ -120,6 +120,12 @@
   (testing "that we don't catch Error"
     (is (thrown? Error ((wrap-exception-handling some-step-throwing-an-error) (some-args) (some-ctx))))))
 
+(deftest wrap-convert-to-step-output-test
+  (testing "that it converts the steps output into a different format" ;TODO: why exactly are we doing this?
+    (is (= {:status :success
+            :outputs {[1 2 3] {:status :success
+                               :foo :baz}}} ((wrap-convert-to-step-output some-other-step) (some-args) (some-ctx-with :step-id [1 2 3]))))))
+
 (deftest integrated-execute-step-test
          (testing "that executing returns the step result added to the input args"
                   (is (= {:outputs { [0 0] {:foo :baz :x :y :status :success}} :status :success} (execute-step {:x :y} [(some-ctx-with :step-id [0 0]) some-step-processing-input]))))
