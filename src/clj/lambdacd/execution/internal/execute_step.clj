@@ -89,7 +89,25 @@
       (async/<! publisher-finished)
       (async/<! processed-result))))
 
+(defn wrap-async-step-result-handling [handler]
+  (fn [args ctx]
+    (let [result-ch                 (async/chan)
+          ctx-for-child             (assoc ctx :result-channel result-ch)
+          processed-async-result-ch (process-channel-result-async result-ch ctx)
+          immediate-step-result     (handler args ctx-for-child)
+          processed-async-result    (async/<!! processed-async-result-ch)
+          complete-step-result      (merge processed-async-result immediate-step-result)]
+      complete-step-result)))
+
+; ============================================
+
+(defn- report-step-started [ctx]
+  (execution-util/send-step-result!! ctx {:status :running})
+  (event-bus/publish!! ctx :step-started {:step-id      (:step-id ctx)
+                                          :build-number (:build-number ctx)}))
+
 (defn- report-step-finished [ctx complete-step-result]
+  (execution-util/send-step-result!! ctx complete-step-result)
   (event-bus/publish!! ctx :step-finished {:step-id             (:step-id ctx)
                                            :build-number        (:build-number ctx)
                                            :final-result        complete-step-result
@@ -97,22 +115,10 @@
                                                                   (and (:retriggered-build-number ctx)
                                                                        (:retriggered-step-id ctx)))}))
 
-(defn- report-step-started [ctx]
-  (execution-util/send-step-result!! ctx {:status :running})
-  (event-bus/publish!! ctx :step-started {:step-id      (:step-id ctx)
-                                          :build-number (:build-number ctx)}))
-
-
-(defn wrap-step-result-reporting [handler]
+(defn wrap-report-step-started-stopped [handler]
   (fn [args ctx]
-    (let [result-ch                 (async/chan)
-          ctx-for-child             (assoc ctx :result-channel result-ch)
-          processed-async-result-ch (process-channel-result-async result-ch ctx)
-          _                         (report-step-started ctx)
-          immediate-step-result     (handler args ctx-for-child)
-          processed-async-result    (async/<!! processed-async-result-ch)
-          complete-step-result      (merge processed-async-result immediate-step-result)]
-      (execution-util/send-step-result!! ctx complete-step-result)
+    (report-step-started ctx)
+    (let [complete-step-result (handler args ctx)]
       (report-step-finished ctx complete-step-result)
       complete-step-result)))
 
@@ -187,13 +193,14 @@
 
 ; ============================================
 
-(defn execute-step [args [ctx step]] ; TODO: this should be in a namespace like lambdacd.execution.core?
+(defn execute-step [args [ctx step]]                        ; TODO: this should be in a namespace like lambdacd.execution.core?
   (let [assembled-handler (-> step
                               (wrap-failure-if-no-status)
                               (wrap-exception-handling)
                               (wrap-kill-handling)
                               (wrap-close-result-channel)
-                              (wrap-step-result-reporting)
+                              (wrap-async-step-result-handling)
+                              (wrap-report-step-started-stopped)
                               (wrap-execute-step-logging)
                               (wrap-convert-to-step-output))]
     (assembled-handler args ctx)))
