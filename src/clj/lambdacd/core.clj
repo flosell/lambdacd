@@ -7,11 +7,12 @@
             [lambdacd.state.internal.pipeline-state-updater :as pipeline-state-updater]
             [lambdacd.execution.internal.execute-step :as execute-step]
             [clojure.tools.logging :as log]
-            [lambdacd.runners :as runners]))
+            [lambdacd.runners :as runners]
+            [lambdacd.execution.internal.execute-steps :as execute-steps]))
 
 (defn- add-shutdown-sequence! [ctx]
   (doto (Runtime/getRuntime)
-    (.addShutdownHook (Thread. (fn []
+    (.addShutdownHook (Thread. ^Runnable (fn []
                                  (log/info "Shutting down LambdaCD...")
                                  ((:shutdown-sequence (:config ctx)) ctx)))))
   ctx)
@@ -56,7 +57,7 @@
 
 (defn execute-steps [steps args ctx & opts]
   "DEPRECATED, use lambdacd.execution instead"
-  (apply execution/execute-steps steps args ctx opts))
+  (apply execute-steps/execute-steps steps args ctx opts))
 
 (defn execute-step
   ([args ctx step]
