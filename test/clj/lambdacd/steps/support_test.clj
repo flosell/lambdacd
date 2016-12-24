@@ -115,7 +115,7 @@
                (testing "that overlapping string-outputs get concatenated"
                  (is (map-containing {:status :success
                                       :out    "hello\nworld"} (unit-under-test {} (some-ctx) some-step-saying-hello some-step-saying-world))))
-               (testing "that intermediate outputs are kept while step is running"
+               (testing "that intermediate outputs are kept while step is running (flaky)"
                  (let [result-channel (async/chan 100)
                        ctx (some-ctx-with :result-channel result-channel
                                           :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state)
