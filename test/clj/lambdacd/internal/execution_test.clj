@@ -10,9 +10,7 @@
             [lambdacd.testsupport.test-util :as tu]
             [lambdacd.execution.internal.execute-steps :as execute-steps]
             [clj-time.core :as t]
-            [lambdacd.internal.execution :as execution]
             [lambdacd.state.core :as state]
-            [lambdacd.util :as util]
             [lambdacd.execution.internal.execute-step :as execute-step]
             [lambdacd.util.internal.temp :as temp-util])
   (:import java.lang.IllegalStateException))
