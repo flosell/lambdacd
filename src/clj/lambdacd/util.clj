@@ -1,108 +1,107 @@
 (ns lambdacd.util
-  (:import (java.nio.file Files LinkOption)
-           (java.nio.file.attribute FileAttribute)
-           (org.joda.time DateTime))
-  (:require [clojure.string :as string]
-            [clojure.java.shell :as jsh]
-            [clojure.tools.logging :as log]
-            [clojure.data.json :as json]
-            [clojure.java.io :as io]
-            [cheshire.core :as ch]
-            [cheshire.generate :as chg]
-            [me.raynes.fs :as fs]
-            [clj-time.format :as f]
-            [clojure.core.async :as async]))
+  (:import (java.nio.file.attribute FileAttribute))
+  (:require [clojure.data.json :as json]
+            [lambdacd.util.internal.bash :as bash-utils]
+            [lambdacd.util.internal.map :as map-utils]
+            [lambdacd.util.internal.sugar :as sugar-utils]
+            [lambdacd.ui.internal.util :as ui-utils]
+            [lambdacd.util.internal.async :as async-utils]
+            [lambdacd.util.internal.temp :as temp-utils]
+            [lambdacd.util.internal.coll :as coll-utils]))
 
-(defn range-from [from len] (range (inc from) (+ (inc from) len)))
+(defn range-from
+  "UNUSED AND DEPRECATED, WILL BE REMOVED SOON" ; only used in tests
+  [from len]
+  (range (inc from) (+ (inc from) len)))
 
-(defn no-file-attributes []
+(defn no-file-attributes
+  "DEPRECATED, WILL BE REMOVED SOON"
+  []
   (into-array FileAttribute []))
 
 
-(def temp-prefix "lambdacd")
+(def temp-prefix temp-utils/temp-prefix) ; DEPRECATED, WILL BE REMOVED SOON
 
 (defn create-temp-dir
+  "DEPRECATED, WILL BE REMOVED SOON"
   ([]
-    (str (Files/createTempDirectory temp-prefix (no-file-attributes))))
+    (temp-utils/create-temp-dir))
   ([parent]
-    (str (Files/createTempDirectory (.toPath (io/file parent)) temp-prefix (into-array FileAttribute [])))))
+   (temp-utils/create-temp-dir parent)))
 
 
 (defn create-temp-file []
-  (str (Files/createTempFile temp-prefix "" (no-file-attributes))))
+  "DEPRECATED, WILL BE REMOVED SOON"
+  (temp-utils/create-temp-file))
 
 (defmacro with-temp
-  "evaluates the body, then deletes the given file or directory.
+  "DEPRECATED, WILL BE REMOVED SOON
+  evaluates the body, then deletes the given file or directory.
   returns the result of the evaluation of the body"
   [f body]
-  `(try
-     (let [result# ~body]
-       result#)
-     (finally
-       (fs/delete-dir ~f LinkOption/NOFOLLOW_LINKS))))
+  `(temp-utils/with-temp ~f ~body))
 
 
-(defn write-as-json [file data]
+(defn write-as-json
+  "UNUSED AND DEPRECATED, WILL BE REMOVED SOON"
+  [file data]
   (spit file (json/write-str data)))
 
 (defn bash
+  "DEPRECATED, WILL BE REMOVED SOON"
   [cwd & commands]
-  (let [combined-command (str "bash -c '" (string/join " && " commands) "' 2>&1") ;; very hacky but it does the job of redirecting stderr to stdout
-        result (jsh/sh "bash" "-c" combined-command  :dir cwd)]
-    (log/debug (str "executed " combined-command " in " cwd " with result " result))
-    result))
+  (apply bash-utils/bash cwd commands))
 
 
 (defn map-if [pred f coll]
-  "applies f to all elements in coll where pred is true"
+  "UNUSED AND DEPRECATED, WILL BE REMOVED SOON" ; only used by test
   (map #(if (pred %)
          (f %)
          %) coll))
 
-(defn put-if-not-present [m k v]
-  (if (contains? m k)
-    m
-    (assoc m k v)))
+(defn put-if-not-present
+  "DEPRECATED, WILL BE REMOVED SOON"
+  [m k v]
+  (map-utils/put-if-not-present m k v))
 
+(defn parse-int
+  "DEPRECATED, WILL BE REMOVED SOON"
+  [int-str]
+  (sugar-utils/parse-int int-str))
 
-(defn parse-int [int-str]
-  (Integer/parseInt int-str))
+(defn contains-value?
+  "DEPRECATED, WILL BE REMOVED SOON"
+  [v coll]
+  (map-utils/contains-value? v coll))
 
-(defn contains-value? [v coll]
-  (some #(= % v) coll))
+(defn to-json
+  "DEPRECATED, WILL BE REMOVED SOON"
+  [v]
+  (ui-utils/to-json v))
 
-(def iso-formatter (f/formatters :date-time))
+(defn buffered
+  "DEPRECATED, WILL BE REMOVED SOON"
+  [ch]
+  (async-utils/buffered ch))
 
-(chg/add-encoder DateTime (fn [v jsonGenerator] (.writeString jsonGenerator (f/unparse iso-formatter v))))
+(defn json
+  "DEPRECATED, WILL BE REMOVED SOON"
+  [data]
+  (ui-utils/json data))
 
-(defn to-json [v]
-  (ch/generate-string v))
-
-(defn buffered [ch]
-  (let [result-ch (async/chan 100)]
-    (async/pipe ch result-ch)))
-
-(defn json [data]
-  {:headers { "Content-Type" "application/json;charset=UTF-8"}
-   :body (to-json data)
-   :status 200 })
-
-(defn ok []
+(defn ok
+  "UNUSED AND DEPRECATED, WILL BE REMOVED SOON"
+  []
   {:headers { "Content-Type" "application/json"}
    :body "{}"
    :status 200 })
 
-(defn fill [coll length filler]
-  (let [missing (- length (count coll))]
-  (concat coll (replicate missing filler))))
+(defn fill
+  "DEPRECATED, WILL BE REMOVED SOON"
+  [coll length filler]
+  (coll-utils/fill coll length filler))
 
-(defn merge-with-k-v [f & maps]
-  (when (some identity maps)
-    (let [merge-entry (fn [m e]
-                        (let [k (key e) v (val e)]
-                          (if (contains? m k)
-                            (assoc m k (f k (get m k) v))
-                            (assoc m k v))))
-          merge2 (fn [m1 m2]
-                   (reduce merge-entry (or m1 {}) (seq m2)))]
-      (reduce merge2 maps))))
+(defn merge-with-k-v
+  "DEPRECATED, WILL BE REMOVED SOON"
+  [f & maps]
+  (apply map-utils/merge-with-k-v f maps))

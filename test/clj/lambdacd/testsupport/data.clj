@@ -4,11 +4,12 @@
             [clojure.core.async :as async]
             [lambdacd.internal.default-pipeline-state :as default-pipeline-state]
             [lambdacd.state.internal.pipeline-state-updater :as pipeline-state-updater]
-            [lambdacd.core :as core]))
+            [lambdacd.core :as core]
+            [lambdacd.util.internal.temp :as temp-util]))
 
 
 (defn- some-ctx-template []
-  (let [config {:home-dir                (utils/create-temp-dir)
+  (let [config {:home-dir                (temp-util/create-temp-dir)
                 :ms-to-wait-for-shutdown 10000
                 :step-updates-per-sec    (:step-updates-per-sec core/default-config)
                 :use-new-event-bus       true}]

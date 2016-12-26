@@ -1,18 +1,15 @@
 (ns lambdacd.internal.default-pipeline-state-persistence
   "stores the current build history on disk"
   (:import (java.util.regex Pattern)
-           (java.io File)
            (org.joda.time DateTime)
            (java.util Date))
   (:require [clojure.string :as str]
-            [lambdacd.util :as util]
+            [lambdacd.util.internal.sugar :as sugar]
             [clojure.java.io :as io]
             [clj-time.coerce :as c]
             [clojure.edn :as edn]
             [clojure.walk :as walk]
-            [clojure.data :as data]
-            [me.raynes.fs :as fs]
-            [clojure.tools.logging :as log]))
+            [me.raynes.fs :as fs]))
 
 (defn convert-if-instance [c f]
   (fn [x]
@@ -30,7 +27,7 @@
   (str/join "-" step-id))
 
 (defn- unformat-step-id [formatted-step-id]
-  (map util/parse-int (str/split formatted-step-id (Pattern/compile "-"))))
+  (map sugar/parse-int (str/split formatted-step-id (Pattern/compile "-"))))
 
 (defn- step-result->step-result-with-formatted-step-ids [[k v]]
   {:step-id (formatted-step-id k) :step-result v})
@@ -45,7 +42,7 @@
   (into {} (map step-result-with-formatted-step-ids->step-result m)))
 
 (defn- build-number-from-path [path]
-  (util/parse-int (second (re-find #"build-(\d+)" (str path)))))
+  (sugar/parse-int (second (re-find #"build-(\d+)" (str path)))))
 
 (defn- build-state-path [dir]
   (io/file dir "build-state.edn"))

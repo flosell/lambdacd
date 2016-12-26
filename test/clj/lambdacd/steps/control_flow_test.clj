@@ -10,7 +10,8 @@
             [lambdacd.state.internal.pipeline-state-updater :as pipeline-state-updater]
             [clojure.java.io :as io]
             [lambdacd.util :as util]
-            [lambdacd.testsupport.noop-pipeline-state :as noop-pipeline-state]))
+            [lambdacd.testsupport.noop-pipeline-state :as noop-pipeline-state]
+            [lambdacd.util.internal.map :as map-util]))
 
 (defn some-step [arg & _]
   {:foo :baz :status :undefined})
@@ -139,7 +140,7 @@
     (let [result-ch (async/chan 100)
           ctx (some-ctx-with :result-channel result-ch :step-id [333])]
       ((in-parallel some-step-sending-failure-but-returning-success some-step-sending-running-then-waiting-then-finished-on-channel) {} ctx)
-      (is (not (util/contains-value? :failure (slurp-chan result-ch))))))
+      (is (not (map-util/contains-value? :failure (slurp-chan result-ch))))))
   (testing "that it kills all children if it is killed"
     (let [is-killed (atom true)
           ctx       (some-ctx-with :is-killed is-killed

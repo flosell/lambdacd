@@ -1,25 +1,19 @@
-(ns lambdacd.util-test
-  (:use [lambdacd.util])
+(ns lambdacd.util.internal.temp-test
   (:require [clojure.test :refer :all]
-            [conjure.core :as c]
-            [me.raynes.fs :as fs]
-            [clojure.java.io :as io]))
+            [lambdacd.util.internal.temp :refer :all]
+            [clojure.java.io :as io]
+            [me.raynes.fs :as fs]))
 
-(deftest range-test
-  (testing "that range produces a range from a value+1 with a defined length"
-    ; TODO: the plus-one is like that because the user wants it, probably shouldn't be like this..
-    (is (= '(6 7 8) (range-from 5 3)))))
-
-(defn some-function [] {})
-
-
-(deftest map-if-test
-  (testing "that is applies a function to all elements that match a predicate"
-    (is (= []      (map-if (identity true) inc [])))
-    (is (= [4 3 5] (map-if #(< % 5) inc [3 2 4])))
-    (is (= [3 2 5] (map-if #(= 4 %) inc [3 2 4])))))
-
-; ======== START DUPLICATE (TO MAKE SURE COMPATIBILITY WITH-TEMP STILL WORKS) ======
+(deftest create-temp-dir-test
+  (testing "creating in default tmp folder"
+    (testing "that we can create a temp-directory"
+      (is (fs/exists? (io/file (create-temp-dir)))))
+    (testing "that it is writable"
+      (is (fs/mkdir (io/file (create-temp-dir) "hello")))))
+  (testing "creating in a defined parent directory"
+    (testing "that it is a child of the parent directory"
+      (let [parent (create-temp-dir)]
+        (is (= parent (.getParent (io/file (create-temp-dir parent)))))))))
 
 (defn- throw-if-not-exists [f]
   (if (not (fs/exists? f))
@@ -52,5 +46,3 @@
                             "some-value-from-function"
                             ))))
       (is (not (fs/exists? f))))))
-
-; ======== END DUPLICATE (TO MAKE SURE COMPATIBILITY WITH-TEMP STILL WORKS) ======

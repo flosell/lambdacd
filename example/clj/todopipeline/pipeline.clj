@@ -17,7 +17,8 @@
 
             [compojure.core :refer [routes GET POST]]
             [ring.util.response :as resp]
-            [compojure.route :as route])
+            [compojure.route :as route]
+            [lambdacd.util.internal.temp :as temp-util])
   (:use [lambdacd.steps.control-flow]
         [todopipeline.steps])
   (:refer-clojure :exclude [alias]))
@@ -78,7 +79,7 @@
     (GET "/styleguide/" [] (resp/resource-response "visualStyleguide.html" {:root "public"}))))
 
 (defn -main [& args]
-  (let [home-dir (utils/create-temp-dir)
+  (let [home-dir (temp-util/create-temp-dir)
         ;; # The Configuration.
         ;; This is where you define the run-time configuration of LambdaCD. This configuration is passed on to the
         ;; individual build-steps in the `:config`-value of the context and will be used by the infrastructure and

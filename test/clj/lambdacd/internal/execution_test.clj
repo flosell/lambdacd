@@ -3,7 +3,7 @@
   (:require [clojure.test :refer :all]
             [lambdacd.internal.execution :refer :all]
             [lambdacd.testsupport.test-util :refer :all]
-            [lambdacd.util :refer [buffered]]
+            [lambdacd.util.internal.async :refer [buffered]]
             [lambdacd.testsupport.matchers :refer :all]
             [clojure.core.async :as async]
             [lambdacd.steps.support :as step-support]
@@ -15,7 +15,8 @@
             [lambdacd.event-bus :as event-bus]
             [lambdacd.steps.control-flow :as control-flow]
             [lambdacd.state.core :as state]
-            [lambdacd.util :as util])
+            [lambdacd.util :as util]
+            [lambdacd.util.internal.temp :as temp-util])
   (:import java.lang.IllegalStateException))
 
 (defn some-step-processing-input [arg & _]
@@ -475,5 +476,5 @@
           ctx           (some-ctx-with :step-id [3 1]
                                        :started-steps started-steps
                                        :config {:ms-to-wait-for-shutdown 200
-                                                :home-dir                (util/create-temp-dir)})]
+                                                :home-dir                (temp-util/create-temp-dir)})]
       (is (not= {:status :timeout} (call-with-timeout 1000 (kill-all-pipelines ctx)))))))

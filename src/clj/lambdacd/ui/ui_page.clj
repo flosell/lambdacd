@@ -2,7 +2,8 @@
   (:require [hiccup.core :as h]
             [hiccup.page :as p]
             [hiccup.element :as e]
-            [lambdacd.util :as utils]))
+            [lambdacd.util :as utils]
+            [lambdacd.ui.internal.util :as ui-utils]))
 
 (defn css-includes []
   (list
@@ -38,7 +39,7 @@
 
 (defn ui-config [ui-config]
   (e/javascript-tag
-    (str "lambdacd_ui_config=" (utils/to-json
+    (str "lambdacd_ui_config=" (ui-utils/to-json
                                  (or ui-config {})))))
 
 (defn ui-page [pipeline]

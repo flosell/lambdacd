@@ -3,7 +3,7 @@
             [lambdacd.execution :as execution]
             [clojure.core.async :as async]
             [lambdacd.steps.control-flow :refer [in-parallel]]
-
+            [lambdacd.util.internal.temp :as temp-utils]
             [lambdacd.steps.support :as support]
             [lambdacd.util :as util]))
 
@@ -74,7 +74,7 @@
 
 (deftest ^:smoke deadlock-test ; From #143, reproduces deadlock also described in #144
   (testing "should not end in a deadlock"
-    (let [home-dir (util/create-temp-dir)
+    (let [home-dir (temp-utils/create-temp-dir)
           config   {:home-dir             home-dir
                     :name                 "deadlock pipeline"
                     :step-updates-per-sec 10

@@ -1,5 +1,5 @@
 (ns lambdacd.step-id
-  (:require [lambdacd.util :as util]))
+  (:require [lambdacd.util.internal.coll :as coll-util]))
 
 (defn parent-of? [parent child]
   (let [cut-off-b (take-last (count parent) child)]
@@ -17,8 +17,8 @@
   (let [length (max (count a) (count b))
         a-parents-first (reverse a)
         b-parents-first (reverse b)
-        equal-length-a (util/fill a-parents-first length -1)
-        equal-length-b (util/fill b-parents-first length -1)
+        equal-length-a (coll-util/fill a-parents-first length -1)
+        equal-length-b (coll-util/fill b-parents-first length -1)
         a-and-b (map vector equal-length-a equal-length-b)
         first-not-equal (first (drop-while (fn [[x y]] (= x y)) a-and-b))
         [x y] first-not-equal]

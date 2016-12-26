@@ -8,22 +8,22 @@
             [clojure.string :as string]
             [lambdacd.util :as util]
             [lambdacd.testsupport.reporter]
-            [lambdacd.util :as utils]
+            [lambdacd.util.internal.bash :as bash-util]
             [lambdacd.testsupport.data :refer [some-ctx some-ctx-with]]
             [clojure.java.io :as io]
             [lambdacd.steps.support :as step-support]
             [lambdacd.testsupport.test-util :as tu]
-            [lambdacd.state.internal.pipeline-state-updater :as pipeline-state-updater]))
+            [lambdacd.util.internal.temp :as temp-util]))
 
 (defn- git-commits [cwd]
-  (reverse (string/split-lines (:out (util/bash cwd "git log --pretty=format:%H")))))
+  (reverse (string/split-lines (:out (bash-util/bash cwd "git log --pretty=format:%H")))))
 
 (defn- git-head-commit [cwd]
   (last (git-commits cwd)))
 
 (defn- create-test-repo []
-  (let [dir (util/create-temp-dir)]
-    (util/bash dir
+  (let [dir (temp-util/create-temp-dir)]
+    (bash-util/bash dir
                     "git init"
                     "echo \"hello\" > foo"
                     "git add -A"
@@ -35,8 +35,8 @@
      :commits (git-commits dir)}))
 
 (defn create-test-repo-with-branch []
-  (let [dir (util/create-temp-dir)]
-    (util/bash dir
+  (let [dir (temp-util/create-temp-dir)]
+    (bash-util/bash dir
                "git init"
                "echo \"hello\" > foo"
                "git add -A"
@@ -53,7 +53,7 @@
   ([git-dir]
    (commit-to git-dir "new commit"))
   ([git-dir commit-msg]
-    (util/bash git-dir
+    (bash-util/bash git-dir
                "echo x >> foo"
                "git add -A"
                (str "git commit -m \"" commit-msg "\""))
@@ -199,7 +199,7 @@
                                   {:status :waited-too-long}))))
 
 (deftest checkout-and-execute-test
-  (let [some-parent-folder (util/create-temp-dir)
+  (let [some-parent-folder (temp-util/create-temp-dir)
         create-output (create-test-repo)
         git-src-dir (:dir create-output)
         repo-uri (repo-uri-for git-src-dir)

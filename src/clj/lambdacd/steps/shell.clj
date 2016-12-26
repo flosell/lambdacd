@@ -5,7 +5,8 @@
             [me.raynes.conch.low-level :as sh]
             [lambdacd.util :as utils]
             [clojure.core.async :as async]
-            [lambdacd.util :as util])
+            [lambdacd.util :as util]
+            [lambdacd.util.internal.temp :as temp-util])
   (:import (java.util UUID)
            (java.io IOException)
            (org.ow2.proactive.process_tree_killer ProcessTree)))
@@ -66,12 +67,12 @@
   "step that executes commands in a bash. arguments are the working-directory and at least one command to execute
   returns stdout and stderr as :out value, the exit code as :exit and succeeds if exit-code was 0"
   [ctx cwd & optional-env-and-commands]
-  (let [temp-file (utils/create-temp-file)
+  (let [temp-file (temp-util/create-temp-file)
         env-or-first-command (first optional-env-and-commands)
         env (if (map? env-or-first-command) env-or-first-command {})
         commands (if (map? env-or-first-command) (rest optional-env-and-commands) optional-env-and-commands)
         command-lines (string/join "\n" commands)]
     (spit temp-file command-lines)
-    (util/with-temp temp-file
-                    (support/capture-output ctx
-                      (execte-shell-command cwd temp-file ctx env)))))
+    (temp-util/with-temp temp-file
+                         (support/capture-output ctx
+                           (execte-shell-command cwd temp-file ctx env)))))

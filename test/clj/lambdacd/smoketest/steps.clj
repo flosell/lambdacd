@@ -1,6 +1,6 @@
 (ns lambdacd.smoketest.steps
   (:require [lambdacd.steps.git :as git]
-            [lambdacd.util :as utils]))
+            [lambdacd.util.internal.temp :as temp-util]))
 
 (defn do-stuff [& _]
   (println "foobar"))
@@ -13,7 +13,7 @@
 (def the-global-value (atom nil))
 
 (def some-repo-location
-  (utils/create-temp-dir))
+  (temp-util/create-temp-dir))
 (def some-repo-uri
   (str "file://" some-repo-location))
 

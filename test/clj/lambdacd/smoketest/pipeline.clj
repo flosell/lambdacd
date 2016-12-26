@@ -1,7 +1,7 @@
 (ns lambdacd.smoketest.pipeline
-  (:require [lambdacd.util :as utils]
-            [lambdacd.steps.control-flow :refer [in-parallel]]
-            [lambdacd.smoketest.steps :refer :all]))
+  (:require [lambdacd.steps.control-flow :refer [in-parallel]]
+            [lambdacd.smoketest.steps :refer :all]
+            [lambdacd.util.internal.temp :as temp-util]))
 
 (def pipeline-def
   `(
@@ -16,4 +16,4 @@
      lambdacd.steps.manualtrigger/wait-for-manual-trigger))
 
 (def config
-  {:home-dir (utils/create-temp-dir)})
+  {:home-dir (temp-util/create-temp-dir)})

@@ -3,10 +3,10 @@
             [clojure.core.async :as async]
             [lambdacd.event-bus :as event-bus]
             [lambdacd.state.core :as state]
-            [lambdacd.util :as util]))
+            [lambdacd.util.internal.async :as async-util]))
 
 (defn start-pipeline-state-updater [ctx]
-  (let [step-updates-channel (util/buffered
+  (let [step-updates-channel (async-util/buffered
                                (event-bus/only-payload
                                  (event-bus/subscribe ctx :step-result-updated)))
         stop-updater-channel (event-bus/only-payload

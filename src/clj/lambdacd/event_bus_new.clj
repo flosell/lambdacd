@@ -1,6 +1,6 @@
 (ns lambdacd.event-bus-new
   (:require [clojure.core.async :as async]
-            [lambdacd.util :as util]))
+            [lambdacd.util.internal.map :as map-util]))
 
 (defn initialize-event-bus [ctx]
   (assoc ctx :event-bus-chans-and-mults (atom {})))
@@ -9,7 +9,7 @@
   (swap! (:event-bus-chans-and-mults ctx) (fn [chans]
                                             (let [ch (async/chan)
                                                   m  (async/mult ch)]
-                                              (util/put-if-not-present chans topic
+                                              (map-util/put-if-not-present chans topic
                                                                        {:publisher-ch    ch
                                                                         :subscriber-mult m})))))
 

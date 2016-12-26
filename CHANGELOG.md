@@ -7,6 +7,27 @@ The official release will have a defined and more stable API. If you are already
 
 ## 0.12.1
 
+* API Changes:
+  * `lambdacd.util` was cleaned up or moved to separate, internal namespaces as most of this functionality was never intended to be part of the public namespace. If you depend on utility functions and feel they should be part of LambdaCDs public API, please open an issue. Specifically, the following functions are now deprecated
+    * `lambdacd.util/write-as-json`
+    * `lambdacd.util/ok`
+    * `lambdacd.util/bash`
+    * `lambdacd.util/range-from`
+    * `lambdacd.util/map-if`
+    * `lambdacd.util/no-file-attributes`
+    * `lambdacd.util/temp-prefix`
+    * `lambdacd.util/create-temp-dir`
+    * `lambdacd.util/create-temp-file`
+    * `lambdacd.util/with-temp`
+    * `lambdacd.util/json`
+    * `lambdacd.util/to-json`
+    * `lambdacd.util/put-if-not-present`
+    * `lambdacd.util/parse-int`
+    * `lambdacd.util/contains-value?`
+    * `lambdacd.util/buffered`
+    * `lambdacd.util/json`
+    * `lambdacd.util/fill`
+    * `lambdacd.util/merge-with-k-v`
 * Changes in internal API (you shouldn't have dependencies on those unless you are doing something really crazy or advanced)
   * Made the following functions private (as they were never supposed to be publicly available): `lambdacd.internal.execution/{kill-step-handling,report-received-kill,add-kill-switch-reporter,clean-up-kill-handling}` 
 

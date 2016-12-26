@@ -1,8 +1,7 @@
 (ns lambdacd.steps.git
   "build-steps that let you work with git repositories"
   (:import (java.io File))
-  (:require [lambdacd.util :as util]
-            [lambdacd.execution :as execution]
+  (:require [lambdacd.execution :as execution]
             [clojure.tools.logging :as log]
             [lambdacd.steps.shell :as shell]
             [clojure.core.async :as async]
@@ -11,12 +10,13 @@
             [clojure.string :as s]
             [clojure.java.io :as io]
             [lambdacd.util :as utils]
-            [lambdacd.core :as core]
-            [lambdacd.steps.status :as status]))
+            [lambdacd.util.internal.bash :as bash-util]
+            [lambdacd.steps.status :as status]
+            [lambdacd.util.internal.temp :as temp-util]))
 
 (defn- current-revision [repo-uri branch]
   (log/debug (str "Polling branch " branch " on " repo-uri))
-  (let [shell-output (util/bash "/"
+  (let [shell-output (bash-util/bash "/"
                        "set -o pipefail"
                        (str "git ls-remote --heads " repo-uri " " branch " | cut -f 1"))
         revision (.trim (:out shell-output))]
@@ -72,7 +72,7 @@
 
 (defn- checkout [ctx repo-uri revision]
   (let [home-dir (home-dir ctx)
-        base-dir (util/create-temp-dir home-dir)
+        base-dir (temp-util/create-temp-dir home-dir)
         sh-result (shell/bash ctx base-dir
                               (str "echo \"Cloning " revision " of " repo-uri "\"")
                               (str "git clone " repo-uri )
@@ -89,7 +89,7 @@
   (let [checkout-result (checkout ctx repo-uri revision)
         repo-location (:cwd checkout-result)
         checkout-exit-code (:exit checkout-result)]
-    (utils/with-temp repo-location
+    (temp-util/with-temp repo-location
       (if (zero? checkout-exit-code)
         (let [execute-steps-result (execution/execute-steps steps (assoc args :cwd repo-location) ctx
                                                        :unify-status-fn status/successful-when-all-successful
@@ -136,7 +136,7 @@
   [ctx repo args]
   (let [old-revision (:old-revision args)
         new-revision (:revision args)
-        dir (util/create-temp-dir (home-dir ctx))
+        dir (temp-util/create-temp-dir (home-dir ctx))
         _ (shell/bash ctx dir (str "git clone --depth 100 " repo " repo"))
         log-result (shell/bash ctx
                                (io/file dir "repo")

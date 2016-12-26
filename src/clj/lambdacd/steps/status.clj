@@ -1,11 +1,12 @@
 (ns lambdacd.steps.status
-  (:require [lambdacd.util :as util]))
+  (:require [lambdacd.util :as util]
+            [lambdacd.util.internal.map :as map-util]))
 
 (defn- all [statuses status]
   (every? #(= % status) statuses))
 
 (defn- one-in [statuses status]
-  (util/contains-value? status statuses))
+  (map-util/contains-value? status statuses))
 
 (defn successful-when-one-successful [statuses]
   (cond

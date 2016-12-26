@@ -1,12 +1,12 @@
 (ns lambdacd.steps.control-flow
   "control flow elements for a pipeline: steps that control the way their child-steps are being run"
-  (:require [lambdacd.core :as core]
-            [lambdacd.execution :as execution]
+  (:require [lambdacd.execution :as execution]
             [clojure.core.async :as async]
             [lambdacd.steps.support :as support]
             [lambdacd.step-id :as step-id]
             [lambdacd.steps.status :as status]
-            [lambdacd.util :as utils])
+            [lambdacd.util :as utils]
+            [lambdacd.util.internal.temp :as temp-util])
   (:refer-clojure :exclude [alias])
   (:import (java.util UUID)))
 
@@ -123,7 +123,7 @@
   [& steps]
   (fn [args ctx]
     (let [home-dir (:home-dir (:config ctx))
-          temp-dir (utils/create-temp-dir home-dir)
+          temp-dir (temp-util/create-temp-dir home-dir)
           new-args  (assoc args :cwd temp-dir)]
-      (utils/with-temp temp-dir
+      (temp-util/with-temp temp-dir
                        (run-steps-in-sequence new-args ctx steps)))))

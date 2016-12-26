@@ -2,11 +2,9 @@
   (:require [clojure.test :refer :all]
             [lambdacd.event-bus :refer :all]
             [lambdacd.testsupport.test-util :refer :all]
-            [lambdacd.util :refer [buffered]]
             [lambdacd.testsupport.data :refer :all]
             [clojure.core.async :as async]
-            [lambdacd.testsupport.noop-pipeline-state :as noop-pipeline-state]
-            [lambdacd.util :as util]))
+            [lambdacd.testsupport.noop-pipeline-state :as noop-pipeline-state]))
 
 (defn- make-sure-subscriber-has-started []
   ; TODO: check if this is still necessary once we switch to the new event bus
