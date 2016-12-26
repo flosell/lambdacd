@@ -25,7 +25,6 @@ The official release will have a defined and more stable API. If you are already
     * `lambdacd.util/parse-int`
     * `lambdacd.util/contains-value?`
     * `lambdacd.util/buffered`
-    * `lambdacd.util/json`
     * `lambdacd.util/fill`
     * `lambdacd.util/merge-with-k-v`
 * Changes in internal API (you shouldn't have dependencies on those unless you are doing something really crazy or advanced)
