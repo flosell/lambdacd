@@ -47,10 +47,10 @@
           watch-ref          (synchronize-atoms parent-kill-switch kill-switch)
           _                  (reset! kill-switch @parent-kill-switch)
           execute-output     (execution/execute-steps steps args ctx
-                                                 :is-killed kill-switch
-                                                 :step-result-producer either-step-result-producer
-                                                 :retrigger-predicate (constantly :rerun)
-                                                 :unify-status-fn status/successful-when-one-successful)]
+                                                      :is-killed kill-switch
+                                                      :step-result-producer either-step-result-producer
+                                                      :retrigger-predicate (constantly :rerun)
+                                                      :unify-results-fn (support/unify-only-status status/successful-when-one-successful))]
       (reset! kill-switch true)
       (remove-watch parent-kill-switch watch-ref)
       (if (= :success (:status execute-output))
@@ -72,10 +72,10 @@
 
 (defn- execute-steps-in-parallel [steps args ctx]
   (execution/execute-steps steps args ctx
-                      :step-result-producer parallel-step-result-producer
-                      :unify-status-fn status/successful-when-all-successful
-                      :retrigger-predicate parallel-retrigger-predicate
-                      :is-killed (:is-killed ctx)))
+                           :step-result-producer parallel-step-result-producer
+                           :unify-results-fn (support/unify-only-status status/successful-when-all-successful)
+                           :retrigger-predicate parallel-retrigger-predicate
+                           :is-killed (:is-killed ctx)))
 
 (defn ^{:display-type :parallel} in-parallel [& steps]
   (fn [args ctx]
@@ -87,13 +87,13 @@
   (fn [args ctx]
     (post-process-container-results
       (execution/execute-steps steps (assoc args :cwd cwd) ctx
-                          :unify-status-fn status/successful-when-all-successful))))
+                               :unify-results-fn (support/unify-only-status status/successful-when-all-successful)))))
 
 (defn- run-steps-in-sequence [args ctx steps]
   (post-process-container-results
     (execution/execute-steps steps args ctx
-                        :unify-status-fn status/successful-when-all-successful
-                        :is-killed (:is-killed ctx))))
+                             :unify-results-fn (support/unify-only-status status/successful-when-all-successful)
+                             :is-killed (:is-killed ctx))))
 
 
 (defn ^{:display-type :container} run [ & steps]

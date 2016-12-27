@@ -163,3 +163,8 @@
                         (do ~@body))]
      (if (associative? body-result#)
        (update body-result# :out #(if (nil? %) (str buffer#) (str buffer# "\n" % ))))))
+
+(defn unify-only-status
+  "Converts a function that can unify statuses into a unify-results-fn suitable for execute-steps"
+  [unify-status-fn]
+  (execute-steps/unify-only-status unify-status-fn))

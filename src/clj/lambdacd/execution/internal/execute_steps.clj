@@ -18,7 +18,7 @@
       (step-id/later-than? cur-step-id retriggered-step-id) :run
       :else :mock)))
 
-(defn- unify-only-status [unify-status-fn]
+(defn unify-only-status [unify-status-fn]
   (fn [step-results]
     {:status (unify-status-fn (->> step-results
                                    (vals)

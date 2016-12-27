@@ -92,8 +92,8 @@
     (temp-util/with-temp repo-location
       (if (zero? checkout-exit-code)
         (let [execute-steps-result (execution/execute-steps steps (assoc args :cwd repo-location) ctx
-                                                       :unify-status-fn status/successful-when-all-successful
-                                                       :is-killed (:is-killed ctx))
+                                                            :unify-results-fn (support/unify-only-status status/successful-when-all-successful)
+                                                            :is-killed (:is-killed ctx))
               result-with-checkout-output (assoc execute-steps-result :out (:out checkout-result))
               step-ids-and-outputs (:outputs execute-steps-result)
               step-ids (keys step-ids-and-outputs)
