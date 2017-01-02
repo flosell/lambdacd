@@ -95,14 +95,12 @@
     step-contexts))
 
 ; TODO: this should be in a namespace like lambdacd.execution.core?
-(defn execute-steps [steps args ctx & {:keys [step-result-producer is-killed unify-status-fn unify-results-fn retrigger-predicate]
+(defn execute-steps [steps args ctx & {:keys [step-result-producer is-killed unify-results-fn retrigger-predicate]
                                        :or   {step-result-producer (serial-step-result-producer)
                                               is-killed            (atom false)
-                                              ; unify-status-fn is DEPRECATED since 0.9.4
-                                              unify-status-fn      status/successful-when-all-successful
-                                              unify-results-fn     nil ; dependent on unify-status-fn, can't have it here for now
+                                              unify-results-fn     (unify-only-status status/successful-when-all-successful)
                                               retrigger-predicate  sequential-retrigger-predicate}}]
-  (let [unify-results-fn                   (or unify-results-fn (unify-only-status unify-status-fn))
+  (let [unify-results-fn                   (or unify-results-fn )
         steps                              (filter not-nil? steps)
         base-ctx-with-kill-switch          (assoc ctx :is-killed is-killed)
         subscription                       (event-bus/subscribe ctx :step-result-updated)

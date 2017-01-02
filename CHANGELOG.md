@@ -5,10 +5,17 @@ However, as this is still an experimental library, breaking changes may occur wi
 
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
-## 0.12.2
+## 0.13.0
 
 * Bug fixes:
   * Catch Exception instead of Throwable in build steps to avoid catching Errors which cannot be handled (#148), thanks @hgsy!
+* Breaking Changes: 
+  * Removed `:unify-status-fn` parameter in `execute-steps` (deprecated since 0.9.4). Use `:unify-results-fn` instead. `lambdacd.steps.support/unify-only-status` can help with migrating unify-status-fns. 
+* Changes in internal API: 
+  * `lambdacd.internal.execution` was refactored into several independent namespaces, functions were moved around, replaced or made private. 
+    You shouldn't have dependencies on those unless you are doing something really crazy or advanced. If you did, please consider using functions in public namespaces (i.e. that don't have `internal` in their name).
+    If you have dependencies on functions that have no public equivalent, please open an issue to get this fixed. 
+
 
 ## 0.12.1
 
@@ -36,11 +43,6 @@ New years cleanup and bug fix release.
     * `lambdacd.util/buffered`
     * `lambdacd.util/fill`
     * `lambdacd.util/merge-with-k-v`
-* Changes in internal API: 
-  * `lambdacd.internal.execution` was refactored into several independent namespaces, functions were moved around, replaced or made private. 
-    You shouldn't have dependencies on those unless you are doing something really crazy or advanced. If you did, please consider using functions in public namespaces (i.e. that don't have `internal` in their name).
-     TODO: point out where to find public functions
-     If you have dependencies on functions that have no public equivalent, please open an issue to get this fixed. 
 
 ## 0.12.0
 
