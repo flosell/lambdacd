@@ -1,6 +1,5 @@
 (ns lambdacd.steps.status
-  (:require [lambdacd.util :as util]
-            [lambdacd.util.internal.map :as map-util]))
+  (:require [lambdacd.util.internal.map :as map-util]))
 
 (defn- all [statuses status]
   (every? #(= % status) statuses))
