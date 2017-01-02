@@ -7,22 +7,20 @@
             [lambdacd.presentation.pipeline-structure :as pipeline-structure]
             [lambdacd.execution.internal.execute-steps :as execute-steps]))
 
-(defn run [pipeline context]
-  (let [build-number (state/next-build-number context)]
-    (state/consume-pipeline-structure context build-number (pipeline-structure/pipeline-display-representation pipeline))
-    (let [runnable-pipeline (map eval pipeline)]
-      (execute-steps/execute-steps runnable-pipeline {} (merge context {:result-channel (async/chan (async/dropping-buffer 0))
-                                                          :step-id                      []
-                                                          :build-number                 build-number})))))
+(defn- run-with-build-number [pipeline ctx build-number]
+  (let [runnable-pipeline (map eval pipeline)]
+    (state/consume-pipeline-structure ctx build-number (pipeline-structure/pipeline-display-representation pipeline))
+    (execute-steps/execute-steps runnable-pipeline {} (assoc ctx :result-channel (async/chan (async/dropping-buffer 0))
+                                                                 :step-id []
+                                                                 :build-number build-number))))
+
+(defn run [pipeline ctx]
+  (run-with-build-number pipeline ctx (state/next-build-number ctx)))
 
 (defn retrigger [pipeline context build-number step-id-to-run next-build-number]
-  (let [executable-pipeline (map eval pipeline)]
-    (state/consume-pipeline-structure context next-build-number (pipeline-structure/pipeline-display-representation pipeline))
-    (execute-steps/execute-steps executable-pipeline {} (assoc context :step-id []
-                                                         :result-channel (async/chan (async/dropping-buffer 0))
-                                                         :build-number next-build-number
-                                                         :retriggered-build-number build-number
-                                                         :retriggered-step-id step-id-to-run))))
+  (let [new-ctx (assoc context :retriggered-build-number build-number
+                               :retriggered-step-id step-id-to-run)]
+    (run-with-build-number pipeline new-ctx next-build-number)))
 
 (defn retrigger-async [pipeline context build-number step-id-to-run]
   (let [next-build-number (state/next-build-number context)]
