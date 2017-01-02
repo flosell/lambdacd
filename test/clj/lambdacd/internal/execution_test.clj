@@ -5,14 +5,11 @@
             [lambdacd.testsupport.test-util :refer :all]
             [lambdacd.util.internal.async :refer [buffered]]
             [lambdacd.testsupport.matchers :refer :all]
-            [lambdacd.steps.support :as step-support]
             [lambdacd.testsupport.data :refer [some-ctx-with some-ctx]]
             [lambdacd.testsupport.test-util :as tu]
             [lambdacd.execution.internal.execute-steps :as execute-steps]
             [clj-time.core :as t]
-            [lambdacd.state.core :as state]
-            [lambdacd.execution.internal.execute-step :as execute-step]
-            [lambdacd.util.internal.temp :as temp-util])
+            [lambdacd.state.core :as state])
   (:import java.lang.IllegalStateException))
 
 (defn some-step [arg & _]
@@ -33,14 +30,6 @@
 (defn some-step-caring-about-retrigger-metadata [_ {retriggered-build-number :retriggered-build-number retriggered-step-id :retriggered-step-id}]
   {:status :success :retriggered-build-number retriggered-build-number :retriggered-step-id retriggered-step-id})
 
-(defn some-step-waiting-to-be-killed [_ ctx]
-  (loop [counter 0]
-    (step-support/if-not-killed ctx
-                                (if (< counter 100) ;; make sure the step always eventually finishes
-                                  (do
-                                    (Thread/sleep 100)
-                                    (recur (inc counter)))
-                                  {:status :waited-too-long}))))
 
 (defn some-pipeline-state []
   (atom {}))
@@ -138,41 +127,3 @@
       (let [new-container-step-result (state/get-step-result context 1 [1])]
         (is (= :success (:status new-container-step-result)))
         (is (not= 1970 (t/year (:first-updated-at new-container-step-result))))))))
-
-
-(deftest kill-all-pipelines-test
-  (testing "that it kills root build steps in any pipeline"
-    (let [ctx                (some-ctx-with :step-id [3])
-          future-step-result (start-waiting-for (execute-step/execute-step {} [ctx some-step-waiting-to-be-killed]))]
-      (wait-for (tu/step-running? ctx))
-      (kill-all-pipelines ctx)
-      (is (map-containing {:status :killed} (get-or-timeout future-step-result :timeout 1000)))))
-  (testing "that it doesn't kill nested steps as they are killed by their parents"
-    (let [ctx                (some-ctx-with :step-id [3 1])
-          future-step-result (start-waiting-for (execute-step/execute-step {} [ctx some-step-waiting-to-be-killed]))]
-      (wait-for (tu/step-running? ctx))
-      (kill-all-pipelines ctx)
-      (is (map-containing {:status :timeout} (get-or-timeout future-step-result :timeout 1000)))))
-  (testing "that killing is idempotent"
-    (let [ctx                (some-ctx-with :step-id [3])
-          future-step-result (start-waiting-for (execute-step/execute-step {} [ctx some-step-waiting-to-be-killed]))]
-      (wait-for (tu/step-running? ctx))
-      (kill-all-pipelines ctx)
-      (kill-all-pipelines ctx)
-      (is (map-containing {:status :killed} (get-or-timeout future-step-result :timeout 1000)))
-      (kill-all-pipelines ctx)))
-  (testing "that it waits until all running pipelines are done"
-    (let [started-steps (atom #{:foo})
-          ctx           (some-ctx-with :step-id [3 1]
-                                       :started-steps started-steps)]
-      ; still running, should time out
-      (is (map-containing {:status :timeout} (call-with-timeout 300 (kill-all-pipelines ctx))))
-      (reset! started-steps #{})
-      (is (not= {:status :timeout} (call-with-timeout 500 (kill-all-pipelines ctx))))))
-  (testing "that waiting for pipeline completion times out"
-    (let [started-steps (atom #{:foo})
-          ctx           (some-ctx-with :step-id [3 1]
-                                       :started-steps started-steps
-                                       :config {:ms-to-wait-for-shutdown 200
-                                                :home-dir                (temp-util/create-temp-dir)})]
-      (is (not= {:status :timeout} (call-with-timeout 1000 (kill-all-pipelines ctx)))))))

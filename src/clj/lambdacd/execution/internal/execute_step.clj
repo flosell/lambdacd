@@ -4,6 +4,7 @@
             [clojure.tools.logging :as log]
             [lambdacd.event-bus :as event-bus]
             [lambdacd.execution.internal.util :as execution-util]
+            [lambdacd.execution.internal.kill :as kill]
             [throttler.core :as throttler])
   (:import (java.util UUID)))
 
@@ -134,70 +135,11 @@
 
 ; ============================================
 
-
-(defn- step-id-to-kill? [step-id kill-payload]
-  (let [step-id-to-kill     (:step-id kill-payload)
-
-        exact-step-id-match (= step-id step-id-to-kill)
-
-        any-root-match      (and (= :any-root step-id-to-kill)
-                                 (= 1 (count step-id)))]
-    (or exact-step-id-match
-        any-root-match)))
-
-(defn- build-number-to-kill? [build-number kill-payload]
-  (let [build-number-to-kill (:build-number kill-payload)]
-    (or (= build-number build-number-to-kill)
-        (= :any build-number-to-kill))))
-
-(defn- kill-step-handling [ctx]
-  (let [is-killed     (:is-killed ctx)
-        step-id       (:step-id ctx)
-        build-number  (:build-number ctx)
-        subscription  (event-bus/subscribe ctx :kill-step)
-        kill-payloads (event-bus/only-payload subscription)]
-    (async/go-loop []
-      (if-let [kill-payload (async/<! kill-payloads)]
-        (if (and
-              (step-id-to-kill? step-id kill-payload)
-              (build-number-to-kill? build-number kill-payload))
-          (reset! is-killed true)
-          (recur))))
-    subscription))
-
-(defn- clean-up-kill-handling [ctx subscription]
-  (event-bus/unsubscribe ctx :kill-step subscription))
-
-(defn- report-received-kill [ctx]
-  (async/>!! (:result-channel ctx) [:received-kill true]))
-
-(defn- add-kill-switch-reporter [ctx]
-  (add-watch (:is-killed ctx) (UUID/randomUUID) (fn [_ _ _ new-is-killed-val]
-                                                  (if new-is-killed-val
-                                                    (report-received-kill ctx)))))
-
-(defn wrap-kill-handling [handler]
-  (fn [args ctx]
-    (let [child-kill-switch  (atom false)
-          parent-kill-switch (:is-killed ctx)
-          watch-key          (UUID/randomUUID)
-          _                  (add-watch parent-kill-switch watch-key (fn [key reference old new] (reset! child-kill-switch new)))
-          _                  (reset! child-kill-switch @parent-kill-switch) ; make sure kill switch has the parents state in the beginning and is updated through the watch
-          ctx-for-child      (assoc ctx :is-killed child-kill-switch)
-          _                  (add-kill-switch-reporter ctx-for-child)
-          kill-subscription  (kill-step-handling ctx-for-child)
-          handler-result     (handler args ctx-for-child)]
-      (clean-up-kill-handling ctx-for-child kill-subscription)
-      (remove-watch parent-kill-switch watch-key)
-      handler-result)))
-
-; ============================================
-
 (defn execute-step [args [ctx step]]                        ; TODO: this should be in a namespace like lambdacd.execution.core?
   (let [assembled-handler (-> step
                               (wrap-failure-if-no-status)
                               (wrap-exception-handling)
-                              (wrap-kill-handling)
+                              (kill/wrap-kill-handling)
                               (wrap-close-result-channel)
                               (wrap-async-step-result-handling)
                               (wrap-report-step-started-stopped)

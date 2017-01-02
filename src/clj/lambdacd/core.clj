@@ -8,7 +8,8 @@
             [lambdacd.execution.internal.execute-step :as execute-step]
             [clojure.tools.logging :as log]
             [lambdacd.runners :as runners]
-            [lambdacd.execution.internal.execute-steps :as execute-steps]))
+            [lambdacd.execution.internal.execute-steps :as execute-steps]
+            [lambdacd.execution.internal.kill :as kill]))
 
 (defn- add-shutdown-sequence! [ctx]
   (doto (Runtime/getRuntime)
@@ -20,7 +21,7 @@
 (def default-shutdown-sequence
   (fn [ctx]
     (runners/stop-runner ctx)
-    (execution/kill-all-pipelines ctx)
+    (kill/kill-all-pipelines ctx)
     (pipeline-state-updater/stop-pipeline-state-updater ctx)))
 
 (def default-config
@@ -53,7 +54,7 @@
 
 (defn kill-step [ctx build-number step-id]
   "DEPRECATED, use lambdacd.execution instead"
-  (execution/kill-step ctx build-number step-id))
+  (kill/kill-step ctx build-number step-id))
 
 (defn execute-steps [steps args ctx & opts]
   "DEPRECATED, use lambdacd.execution instead"

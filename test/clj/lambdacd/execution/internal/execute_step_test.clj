@@ -70,9 +70,6 @@
     (async/>!! result-ch [:out "hello world"])
     {:status :success}))
 
-(defn some-step-flipping-the-kill-switch [_ {is-killed :is-killed}]
-  (reset! is-killed true))
-
 (defn- step-finished-events-for [ctx]
   (events-for :step-finished ctx))
 
@@ -82,14 +79,7 @@
 (defn- step-result-updates-for [ctx]
   (events-for :step-result-updated ctx))
 
-(defn some-step-waiting-to-be-killed [_ ctx]
-  (loop [counter 0]
-    (step-support/if-not-killed ctx
-                                (if (< counter 100) ;; make sure the step always eventually finishes
-                                  (do
-                                    (Thread/sleep 100)
-                                    (recur (inc counter)))
-                                  {:status :waited-too-long}))))
+
 
 (deftest wrap-failure-if-no-status-test
   (testing "that a step-result with status will just be passed on"
@@ -258,42 +248,4 @@
                         step-started-events (step-started-events-for ctx)]
                     (execute-step {} [ctx some-other-step])
                     (is (= [{:build-number 3
-                             :step-id [1 2 3]}] (slurp-chan step-started-events)))))
-         (testing "that a running step can be killed"
-                  (let [is-killed (atom false)
-                        ctx (some-ctx-with :step-id [3 2 1]
-                                           :build-number 3
-                                           :is-killed is-killed)
-                        future-step-result (start-waiting-for (execute-step {} [ctx some-step-waiting-to-be-killed]))]
-                    (wait-for (step-running? ctx))
-                    (internal-execution/kill-step ctx 3 [3 2 1])
-                    (is (map-containing {:status :killed} (get-or-timeout future-step-result)))))
-         (testing "that killing a step sets a marker that can be used to determine if a kill was received even if the step didnt handle it"
-                  (testing "a simple step"
-                           (let [is-killed          (atom false)
-                                 ctx                (some-ctx-with :step-id [3 2 1]
-                                                                   :build-number 3
-                                                                   :is-killed is-killed)
-                                 future-step-result (start-waiting-for (execute-step {} [ctx some-step-waiting-to-be-killed]))]
-                             (wait-for (step-running? ctx))
-                             (internal-execution/kill-step ctx 3 [3 2 1])
-
-                             (is (map-containing {:received-kill true} (first (vals (:outputs (get-or-timeout future-step-result))))))))
-                  (testing "that it works for child steps that are killed along with the parent"
-                           (let [is-killed          (atom false)
-                                 parent-step-id     [3 2 1]
-                                 child-step-id      [1 3 2 1]
-                                 ctx                (some-ctx-with :step-id parent-step-id
-                                                                   :build-number 3
-                                                                   :is-killed is-killed)
-                                 child-ctx          (assoc ctx :step-id child-step-id)
-                                 future-step-result (start-waiting-for (execute-step {} [ctx (control-flow/run some-step-waiting-to-be-killed)]))]
-                             (wait-for (step-running? ctx))
-                             (wait-for (step-running? child-ctx))
-                             (internal-execution/kill-step ctx 3 [3 2 1])
-                             (is (map-containing {:received-kill true} (first (vals (:outputs (first (vals (:outputs (get-or-timeout future-step-result))))))))))))
-         (testing "that a step using the kill-switch does not bubble up to the parents passing in the kill-switch"
-                  (let [is-killed (atom false)
-                        ctx (some-ctx-with :is-killed is-killed)]
-                    (execute-step {} [ctx some-step-flipping-the-kill-switch])
-                    (is (= false @is-killed)))))
+                             :step-id [1 2 3]}] (slurp-chan step-started-events))))))

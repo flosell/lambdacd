@@ -27,30 +27,3 @@
     (async/thread
       (retrigger pipeline context build-number step-id-to-run next-build-number))
     next-build-number))
-
-(defn kill-step [ctx build-number step-id]
-  (event-bus/publish!! ctx :kill-step {:step-id      step-id
-                                       :build-number build-number}))
-
-(defn- timed-out [ctx start-time]
-  (let [now        (System/currentTimeMillis)
-        ms-elapsed (- now start-time)
-        timeout    (:ms-to-wait-for-shutdown (:config ctx))
-        result     (> ms-elapsed timeout)]
-    (if result
-      (log/warn "Waiting for pipelines to complete timed out after" timeout "ms! Most likely a build step did not react quickly to kill signals"))
-    result))
-
-(defn- wait-for-pipelines-to-complete [ctx]
-  (let [start-time (System/currentTimeMillis)]
-    (while (and
-             (not-empty @(:started-steps ctx))
-             (not (timed-out ctx start-time)))
-      (log/debug "Waiting for steps to complete:" @(:started-steps ctx))
-      (Thread/sleep 100))))
-
-(defn kill-all-pipelines [ctx]
-  (log/info "Killing all running pipelines...")
-  (event-bus/publish!! ctx :kill-step {:step-id      :any-root
-                                       :build-number :any})
-  (wait-for-pipelines-to-complete ctx))
