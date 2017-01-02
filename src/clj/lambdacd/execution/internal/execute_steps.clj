@@ -94,23 +94,54 @@
     (map (partial replace-step-with-retrigger-mock retrigger-predicate) step-contexts)
     step-contexts))
 
+(defn- call-step-result-producer [step-result-producer]
+  (fn [step-contexts-and-steps args _]
+    (let [step-results (step-result-producer args step-contexts-and-steps)]
+      (reduce execution-util/merge-two-step-results step-results))))
+
+(defn- wrap-inheritance [handler unify-results-fn]
+  (fn [step-contexts-and-steps args ctx]
+    (let [subscription                  (event-bus/subscribe ctx :step-result-updated)
+          children-step-results-channel (->> subscription
+                                             (event-bus/only-payload)
+                                             (async/filter< (inherit-message-from-parent? ctx)))
+          _                             (process-inheritance (:result-channel ctx) children-step-results-channel unify-results-fn)
+          result                        (handler step-contexts-and-steps args ctx)]
+      (event-bus/unsubscribe ctx :step-result-updated subscription)
+      result)))
+
+
+(defn- add-kill-switch [is-killed]
+  (fn [[ctx step]]
+    [(assoc ctx :is-killed is-killed) step]))
+
+(defn- wrap-kill-handling [handler is-killed]
+  (fn [step-contexts-and-steps args ctx]
+    (handler (map (add-kill-switch is-killed) step-contexts-and-steps)
+             args
+             ctx)))
+
+(defn- wrap-retrigger-handling [handler retrigger-predicate]
+  (fn [step-contexts-and-steps args ctx]
+    (handler (add-retrigger-mocks retrigger-predicate ctx step-contexts-and-steps)
+             args
+             ctx)))
+
+(defn- wrap-filter-nil-steps [handler]
+  (fn [step-contexts-and-steps args ctx]
+    (handler (filter (fn [[_ step]] (not-nil? step)) step-contexts-and-steps)
+             args
+             ctx)))
+
 ; TODO: this should be in a namespace like lambdacd.execution.core?
 (defn execute-steps [steps args ctx & {:keys [step-result-producer is-killed unify-results-fn retrigger-predicate]
                                        :or   {step-result-producer (serial-step-result-producer)
                                               is-killed            (atom false)
                                               unify-results-fn     (unify-only-status status/successful-when-all-successful)
                                               retrigger-predicate  sequential-retrigger-predicate}}]
-  (let [unify-results-fn                   (or unify-results-fn )
-        steps                              (filter not-nil? steps)
-        base-ctx-with-kill-switch          (assoc ctx :is-killed is-killed)
-        subscription                       (event-bus/subscribe ctx :step-result-updated)
-        children-step-results-channel      (->> subscription
-                                                (event-bus/only-payload)
-                                                (async/filter< (inherit-message-from-parent? ctx)))
-        step-contexts                      (contexts-for-steps steps base-ctx-with-kill-switch)
-        _                                  (process-inheritance (:result-channel ctx) children-step-results-channel unify-results-fn)
-        step-contexts-with-retrigger-mocks (add-retrigger-mocks retrigger-predicate ctx step-contexts)
-        step-results                       (step-result-producer args step-contexts-with-retrigger-mocks)
-        result                             (reduce execution-util/merge-two-step-results step-results)]
-    (event-bus/unsubscribe ctx :step-result-updated subscription)
-    result))
+  (let [handler-chain (-> (call-step-result-producer step-result-producer)
+                          (wrap-inheritance unify-results-fn)
+                          (wrap-kill-handling is-killed)
+                          (wrap-retrigger-handling retrigger-predicate)
+                          (wrap-filter-nil-steps))]
+    (handler-chain (contexts-for-steps steps ctx) args ctx)))
