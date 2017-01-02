@@ -1,5 +1,5 @@
 (ns lambdacd.runners
-  (:require [lambdacd.execution :as execution]
+  (:require [lambdacd.execution.core :as execution]
             [clojure.core.async :as async]
             [lambdacd.event-bus :as event-bus]
             [clojure.tools.logging :as log]))
@@ -32,7 +32,7 @@
   (let [subscription         (event-bus/subscribe context :step-finished)
         steps-finished       (event-bus/only-payload subscription)
         first-steps-finisehd (async/filter< should-trigger-next-build? steps-finished)
-        pipeline-run-fn      (fn [] (async/thread (execution/run pipeline-def context)))]
+        pipeline-run-fn      (fn [] (async/thread (execution/run-pipeline pipeline-def context)))]
     (async/thread
       (while-not-stopped context
         (pipeline-run-fn)
@@ -43,7 +43,7 @@
   [{pipeline-def :pipeline-def context :context}]
  (async/thread
    (while-not-stopped context
-     (execution/run pipeline-def context))))
+     (execution/run-pipeline pipeline-def context))))
 
 (defn stop-runner [ctx]
   (log/info "Stopping runner...")

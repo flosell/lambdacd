@@ -5,7 +5,7 @@
             [todopipeline.steps :as steps]
             [todopipeline.pipeline :as pipeline]
             [lambdacd.steps.shell :as shell]
-            [lambdacd.internal.execution :as execution]
+            [lambdacd.execution.core :as execution]
             [lambdacd.testsupport.data :refer [some-ctx]]))
 
 (deftest todopipeline-test
@@ -13,5 +13,5 @@
     (c/stubbing [git/wait-with-details {:status :success}
                  shell/bash {:status :success
                              :exit 0}]
-                (is (= :success (:status (execution/run pipeline/pipeline-def (some-ctx)))))
+                (is (= :success (:status (execution/run-pipeline pipeline/pipeline-def (some-ctx)))))
                 (is (c/verify-called-once-with-args shell/bash )))))

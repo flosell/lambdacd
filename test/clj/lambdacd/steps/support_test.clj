@@ -6,7 +6,7 @@
             [lambdacd.testsupport.matchers :refer [map-containing]]
             [clojure.core.async :as async]
             [lambdacd.testsupport.noop-pipeline-state :as noop-pipeline-state]
-            [lambdacd.execution :as execution]))
+            [lambdacd.execution.core :as execution]))
 
 (defn some-step [args ctx]
   {:status :success :foo :bar})

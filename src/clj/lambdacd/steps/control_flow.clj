@@ -1,11 +1,10 @@
 (ns lambdacd.steps.control-flow
   "control flow elements for a pipeline: steps that control the way their child-steps are being run"
-  (:require [lambdacd.execution :as execution]
+  (:require [lambdacd.execution.core :as execution]
             [clojure.core.async :as async]
             [lambdacd.steps.support :as support]
             [lambdacd.step-id :as step-id]
             [lambdacd.steps.status :as status]
-            [lambdacd.util :as utils]
             [lambdacd.util.internal.temp :as temp-util])
   (:refer-clojure :exclude [alias])
   (:import (java.util UUID)))

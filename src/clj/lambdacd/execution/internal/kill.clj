@@ -45,7 +45,7 @@
                                                   (if new-is-killed-val
                                                     (report-received-kill ctx)))))
 
-(defn wrap-kill-handling [handler]
+(defn wrap-execute-step-with-kill-handling [handler]
   (fn [args ctx]
     (let [child-kill-switch  (atom false)
           parent-kill-switch (:is-killed ctx)
@@ -60,10 +60,13 @@
       (remove-watch parent-kill-switch watch-key)
       handler-result)))
 
+; ============================================
+
 (defn kill-step [ctx build-number step-id]
   (event-bus/publish!! ctx :kill-step {:step-id      step-id
                                        :build-number build-number}))
 
+; ============================================
 
 (defn- timed-out [ctx start-time]
   (let [now        (System/currentTimeMillis)
@@ -87,3 +90,15 @@
   (event-bus/publish!! ctx :kill-step {:step-id      :any-root
                                        :build-number :any})
   (wait-for-pipelines-to-complete ctx))
+
+; ============================================
+
+(defn- add-kill-switch [is-killed]
+  (fn [[ctx step]]
+    [(assoc ctx :is-killed is-killed) step]))
+
+(defn wrap-execute-steps-with-kill-handling [handler is-killed]
+  (fn [step-contexts-and-steps args ctx]
+    (handler (map (add-kill-switch is-killed) step-contexts-and-steps)
+             args
+             ctx)))

@@ -9,6 +9,8 @@ The official release will have a defined and more stable API. If you are already
 
 * Bug fixes:
   * Catch Exception instead of Throwable in build steps to avoid catching Errors which cannot be handled (#148), thanks @hgsy!
+* Deprecated: 
+  * `lambdacd.execution` was deprecated in favor of `lambdacd.execution.core`
 * Breaking Changes: 
   * Removed `:unify-status-fn` parameter in `execute-steps` (deprecated since 0.9.4). Use `:unify-results-fn` instead. `lambdacd.steps.support/unify-only-status` can help with migrating unify-status-fns. 
 * Changes in internal API: 

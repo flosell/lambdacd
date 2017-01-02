@@ -1,7 +1,7 @@
 (ns lambdacd.steps.git
   "build-steps that let you work with git repositories"
   (:import (java.io File))
-  (:require [lambdacd.execution :as execution]
+  (:require [lambdacd.execution.core :as execution]
             [clojure.tools.logging :as log]
             [lambdacd.steps.shell :as shell]
             [clojure.core.async :as async]

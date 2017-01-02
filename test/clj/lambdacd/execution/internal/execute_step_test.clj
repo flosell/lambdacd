@@ -10,11 +10,8 @@
             [lambdacd.testsupport.matchers :refer [map-containing]]
             [lambdacd.testsupport.noop-pipeline-state :as noop-pipeline-state]
             [lambdacd.execution.internal.execute-step :refer :all]
-            [lambdacd.internal.execution :as internal-execution]
             [clojure.core.async :as async]
-            [clojure.core.async.impl.protocols :as async-protocols]
-            [lambdacd.steps.support :as step-support]
-            [lambdacd.steps.control-flow :as control-flow]))
+            [clojure.core.async.impl.protocols :as async-protocols]))
 
 (defn some-args []
   {})

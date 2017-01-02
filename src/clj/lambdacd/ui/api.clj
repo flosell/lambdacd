@@ -4,7 +4,7 @@
             [clojure.string :as string]
             [ring.middleware.json :as ring-json]
             [lambdacd.presentation.pipeline-state :as state-presentation]
-            [lambdacd.execution :as execution]
+            [lambdacd.execution.core :as execution]
             [lambdacd.steps.manualtrigger :as manualtrigger]
             [clojure.walk :as w]
             [compojure.core :refer [routes GET POST]]
@@ -29,7 +29,7 @@
       (GET "/builds/" [] (ui-util/json (state-presentation/history-for ctx)))
       (GET "/builds/:buildnumber/" [buildnumber] (build-infos ctx buildnumber))
       (POST "/builds/:buildnumber/:step-id/retrigger" [buildnumber step-id]
-        (let [new-buildnumber (execution/retrigger pipeline-def ctx (sugar/parse-int buildnumber) (to-internal-step-id step-id))]
+        (let [new-buildnumber (execution/retrigger-pipeline-async pipeline-def ctx (sugar/parse-int buildnumber) (to-internal-step-id step-id))]
           (ui-util/json {:build-number new-buildnumber})))
       (POST "/builds/:buildnumber/:step-id/kill" [buildnumber step-id]
         (do

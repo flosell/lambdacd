@@ -139,7 +139,7 @@
   (let [assembled-handler (-> step
                               (wrap-failure-if-no-status)
                               (wrap-exception-handling)
-                              (kill/wrap-kill-handling)
+                              (kill/wrap-execute-step-with-kill-handling)
                               (wrap-close-result-channel)
                               (wrap-async-step-result-handling)
                               (wrap-report-step-started-stopped)

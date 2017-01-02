@@ -1,6 +1,6 @@
 (ns lambdacd.stress-test
   (:require [clojure.test :refer :all]
-            [lambdacd.execution :as execution]
+            [lambdacd.execution.core :as execution]
             [clojure.core.async :as async]
             [lambdacd.steps.control-flow :refer [in-parallel]]
             [lambdacd.util.internal.temp :as temp-utils]
@@ -91,7 +91,7 @@
 
       (is (not= :timeout
                   (deref (future
-                           (execution/run (:pipeline-def pipeline) (:context pipeline)))
+                           (execution/run-pipeline (:pipeline-def pipeline) (:context pipeline)))
                          300000 :timeout)))
 
       (is (= 42 @count-finished)))))

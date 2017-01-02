@@ -1,6 +1,5 @@
 (ns lambdacd.steps.support
   (:require [clojure.core.async :as async]
-            [lambdacd.internal.execution :as execution]
             [lambdacd.execution.internal.execute-steps :as execute-steps]
             [lambdacd.execution.internal.serial-step-result-producer :as serial-step-result-producer]
             [clojure.walk :as walk]

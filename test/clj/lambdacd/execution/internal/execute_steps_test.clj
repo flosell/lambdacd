@@ -4,20 +4,11 @@
             [lambdacd.testsupport.test-util :refer :all]
             [lambdacd.util :refer [buffered]]
             [lambdacd.testsupport.matchers :refer :all]
-            [lambdacd.steps.support :as step-support]
-            [lambdacd.testsupport.data :refer [some-ctx-with some-ctx]]
-            [lambdacd.testsupport.test-util :as tu]
-            [clj-time.core :as t]
-            [lambdacd.internal.execution :as execution]
-            [lambdacd.state.core :as state]
-            [lambdacd.util :as util]
-            [lambdacd.execution.internal.execute-step :as execute-step]))
+            [lambdacd.testsupport.data :refer [some-ctx-with some-ctx]]))
 
 (defn some-step [arg & _]
   {:foo :baz})
 
-(defn- step-result-updates-for [ctx]
-  (events-for :step-result-updated ctx))
 
 (deftest context-for-steps-test
          (testing "that we can generate proper contexts for steps and keep other context info as it is"
@@ -91,32 +82,4 @@
            (execute-steps [some-successful-step nil] {} (some-ctx-with :step-id [0]))))))
 
 
-(deftest retrigger-mock-step-test
-  (testing "that it returns the result of the original step"
-    (let [some-original-result {:foo :bar}
-          initial-state        { 0 {[1] some-original-result
-                                    [2] {:some :other :steps :result}}
-                                1 {[1] {:some :other :builds :result}}}
-          ctx                  (some-ctx-with :initial-pipeline-state initial-state
-                                              :step-id [1])
-          mock-step            (retrigger-mock-step 0)]
-      (is (= (assoc some-original-result :retrigger-mock-for-build-number 0)
-             (mock-step {} ctx)))))
-  (testing "that it reports the results of its children"
-    (let [some-original-result  {:foo :bar}
-          some-childs-result    {:bar :baz}
-          initial-state         {0 {[1] some-original-result
-                                    [1 1] some-childs-result
-                                    [2] {:some :other :steps :result}}
-                                 1 {[1] {:some :other :builds :result}}}
-          ctx                   (some-ctx-with :initial-pipeline-state initial-state
-                                               :build-number 1
-                                               :step-id [1])
-          step-finished-events  (step-result-updates-for ctx)
-          mock-step             (retrigger-mock-step 0)
-          expected-child-result (assoc some-childs-result :retrigger-mock-for-build-number 0)]
-      (mock-step {} ctx)
-      (is (= [{:build-number 1
-               :step-id      [1 1]
-               :step-result expected-child-result}]
-             (slurp-chan step-finished-events))))))
+
