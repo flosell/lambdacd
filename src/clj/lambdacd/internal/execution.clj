@@ -78,7 +78,7 @@
       (if (nil? (:status step-result))
         {:status :failure :out "step did not return any status!"}
         step-result))
-    (catch Throwable e
+    (catch Exception e
       {:status :failure :out (util-exceptions/stacktrace-to-string e)})
     (finally
       (async/close! (:result-channel ctx)))))
