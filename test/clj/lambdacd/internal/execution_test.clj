@@ -65,7 +65,7 @@
   {:status :success :retriggered-build-number retriggered-build-number :retriggered-step-id retriggered-step-id})
 
 (defn some-step-throwing-an-exception [& _]
-  (throw (Throwable. "Something went wrong!")))
+  (throw (Exception. "Something went wrong!")))
 
 (defn some-step-building-up-result-state-incrementally [_ {c :result-channel}]
   (async/>!! c [:out "hello"])
