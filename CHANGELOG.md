@@ -6,7 +6,8 @@ However, as this is still an experimental library, breaking changes may occur wi
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
 ## 0.13.0
-
+* Improvements: 
+  * Added support for build-level metadata (#138). See [Build Metadata](https://github.com/flosell/lambdacd/wiki/Build%20Metadata) for details
 * Bug fixes:
   * Catch Exception instead of Throwable in build steps to avoid catching Errors which cannot be handled (#148), thanks @hgsy!
 * Deprecated: 
