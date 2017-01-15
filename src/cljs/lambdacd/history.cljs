@@ -32,6 +32,11 @@
   (and build-metadata
        (not= {} build-metadata)))
 
+(defn- build-label [build-number {build-label :human-readable-build-label}]
+  (if build-label
+    (str build-label " (#" build-number ")")
+    (str "Build " build-number)))
+
 (defn history-item-component [active-build-number
                               {build-number          :build-number
                                status                :status
@@ -43,7 +48,7 @@
    [:a {:href (route/for-build-number build-number) :class "history--item--container"}
     [:div {:class "history--item--line"}
      [icon (status-icon status)]
-     [:h3 {:class "history--item--line--item" } (str "Build " build-number)]]
+     [:h3 {:class "history--item--line--item" } (build-label build-number build-metadata)]]
     [:div {:class "history--item--line"}
      [icon "fa fa-play"]
      [:p {:class "history--item--line--item" } (if first-updated-at
