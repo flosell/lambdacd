@@ -113,42 +113,42 @@
             :outputs {[1 2 3] {:status :success
                                :foo :baz}}} ((wrap-convert-to-step-output some-other-step) (some-args) (some-ctx-with :step-id [1 2 3]))))))
 
+(deftest wrap-report-step-started-test
+  (testing "that it sends a step-started event"
+    (let [ctx                    (some-ctx-with :step-id [1]
+                                                :build-number 2)
+          step-started-events-ch (step-started-events-for ctx)]
+      ((wrap-report-step-started some-other-step) (some-args) ctx)
+      (is (= [{:step-id [1] :build-number 2}] (slurp-chan step-started-events-ch)))))
+  (testing "that it reports an initial running step result"
+    (let [ctx                    (some-ctx-with :step-id [1]
+                                                :build-number 2)
+          step-result-updates-ch (step-result-updates-for ctx)]
+      ((wrap-report-step-started some-other-step) (some-args) ctx)
+      (is (= {:step-id      [1]
+              :build-number 2
+              :step-result  {:status :running}} (first (slurp-chan step-result-updates-ch)))))))
+
 (deftest wrap-report-step-started-stopped-test
-  (testing "the start of a step"
-    (testing "that it sends a step-started event"
-      (let [ctx                    (some-ctx-with :step-id [1]
-                                                  :build-number 2)
-            step-started-events-ch (step-started-events-for ctx)]
-        ((wrap-report-step-started-stopped some-other-step) (some-args) ctx)
-        (is (= [{:step-id [1] :build-number 2}] (slurp-chan step-started-events-ch)))))
-    (testing "that it reports an initial running step result"
-      (let [ctx                    (some-ctx-with :step-id [1]
-                                                  :build-number 2)
-            step-result-updates-ch (step-result-updates-for ctx)]
-        ((wrap-report-step-started-stopped some-other-step) (some-args) ctx)
-        (is (= {:step-id      [1]
-                :build-number 2
-                :step-result  {:status :running}} (first (slurp-chan step-result-updates-ch)))))))
-  (testing "the end of a step"
-    (testing "that it sends a step-finished event"
-      (let [ctx                    (some-ctx-with :step-id [1]
-                                                  :build-number 2)
-            step-finished-events-ch (step-finished-events-for ctx)]
-        ((wrap-report-step-started-stopped some-other-step) (some-args) ctx)
-        (is (= [{:step-id [1]
-                 :build-number 2
-                 :rerun-for-retrigger false
-                 :final-result {:status :success
-                                :foo :baz}}] (slurp-chan step-finished-events-ch)))))
-    (testing "that it reports a final step update"
-      (let [ctx                    (some-ctx-with :step-id [1]
-                                                  :build-number 2)
-            step-result-updates-ch (step-result-updates-for ctx)]
-        ((wrap-report-step-started-stopped some-other-step) (some-args) ctx)
-        (is (= {:step-id      [1]
-                :build-number 2
-                :step-result  {:status :success
-                               :foo :baz}} (last (slurp-chan step-result-updates-ch))))))))
+  (testing "that it sends a step-finished event"
+    (let [ctx                    (some-ctx-with :step-id [1]
+                                                :build-number 2)
+          step-finished-events-ch (step-finished-events-for ctx)]
+      ((wrap-report-step-stopped some-other-step) (some-args) ctx)
+      (is (= [{:step-id [1]
+               :build-number 2
+               :rerun-for-retrigger false
+               :final-result {:status :success
+                              :foo :baz}}] (slurp-chan step-finished-events-ch)))))
+  (testing "that it reports a final step update"
+    (let [ctx                    (some-ctx-with :step-id [1]
+                                                :build-number 2)
+          step-result-updates-ch (step-result-updates-for ctx)]
+      ((wrap-report-step-stopped some-other-step) (some-args) ctx)
+      (is (= {:step-id      [1]
+              :build-number 2
+              :step-result  {:status :success
+                             :foo :baz}} (last (slurp-chan step-result-updates-ch)))))))
 
 ;(deftest wrap-async-step-result-handling-test) ; TODO: add tests here, possibly migrate from integration-level tests below
 

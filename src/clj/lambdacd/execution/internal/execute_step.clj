@@ -116,9 +116,13 @@
                                                                   (and (:retriggered-build-number ctx)
                                                                        (:retriggered-step-id ctx)))}))
 
-(defn wrap-report-step-started-stopped [handler]
+(defn wrap-report-step-started [handler]
   (fn [args ctx]
     (report-step-started ctx)
+    (handler args ctx)))
+
+(defn wrap-report-step-stopped [handler]
+  (fn [args ctx]
     (let [complete-step-result (handler args ctx)]
       (report-step-finished ctx complete-step-result)
       complete-step-result)))
@@ -137,12 +141,13 @@
 
 (defn execute-step [args [ctx step]]                        ; TODO: this should be in a namespace like lambdacd.execution.core?
   (let [assembled-handler (-> step
+                              (wrap-report-step-started)
                               (wrap-failure-if-no-status)
                               (wrap-exception-handling)
                               (kill/wrap-execute-step-with-kill-handling)
                               (wrap-close-result-channel)
                               (wrap-async-step-result-handling)
-                              (wrap-report-step-started-stopped)
+                              (wrap-report-step-stopped)
                               (wrap-execute-step-logging)
                               (wrap-convert-to-step-output))]
     (assembled-handler args ctx)))
