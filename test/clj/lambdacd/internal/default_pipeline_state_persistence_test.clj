@@ -26,14 +26,14 @@
             home-dir            (temp-util/create-temp-dir)]
         (write-build-history home-dir 3 some-pipeline-state)
         (is (= some-pipeline-state (read-build-history-from home-dir))))))
-  (testing "pipeline-structure"
+  (testing "generic build-data"
     (testing "the standard case"
-      (let [home-dir (temp-util/create-temp-dir)
-            some-pipeline-structure    pipeline-structure-test/foo-pipeline-display-representation]
-        (write-pipeline-structure home-dir 1 some-pipeline-structure)
-        (write-pipeline-structure home-dir 2 some-pipeline-structure)
-        (is (= some-pipeline-structure (get (read-pipeline-structures home-dir) 1)))
-        (is (= some-pipeline-structure (get (read-pipeline-structures home-dir) 2)))))))
+      (let [home-dir                (temp-util/create-temp-dir)
+            some-pipeline-structure pipeline-structure-test/foo-pipeline-display-representation]
+        (write-build-data-edn home-dir 1 some-pipeline-structure "pipeline-structure.edn")
+        (write-build-data-edn home-dir 2 some-pipeline-structure "pipeline-structure.edn")
+        (is (= some-pipeline-structure (get (read-build-datas home-dir "pipeline-structure.edn") 1)))
+        (is (= some-pipeline-structure (get (read-build-datas home-dir "pipeline-structure.edn") 2)))))))
 
 (deftest clean-up-old-builds-test
   (testing "cleaning up old history"
@@ -71,14 +71,14 @@
       (.mkdirs (io/file home-dir "build-1"))
       (is (= {} (read-build-history-from home-dir))))))
 
-(deftest read-pipeline-structures-test ; covers only edge-cases that aren't covered by roundtrip
+(deftest read-pipeline-datas-test ; covers only edge-cases that aren't covered by roundtrip
   (testing "that it will return an empty data if no state has been written yet"
     (let [home-dir (temp-util/create-temp-dir)]
-      (is (= {} (read-pipeline-structures home-dir)))))
+      (is (= {} (read-build-datas home-dir "pipeline-structure.edn")))))
   (testing "that it adds a fallback-marker for build directories with no pipeline structure (e.g. because they were created before this feature was available)"
     (let [home-dir (temp-util/create-temp-dir)]
       (.mkdirs (io/file home-dir "build-1"))
-      (is (= {1 :fallback} (read-pipeline-structures home-dir))))))
+      (is (= {1 :fallback} (read-build-datas home-dir "pipeline-structure.edn"))))))
 
 (defn- roundtrip-date-time [data]
   (dates->clj-times

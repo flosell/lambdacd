@@ -34,6 +34,12 @@
       (annotated-fallback-structure ctx)
       stored-structure)))
 
+(defn- stored-metadata-or-fallback [ctx build-number]
+  (let [stored-metadata (protocols/get-build-metadata (state-component ctx) build-number)]
+    (if (= :fallback stored-metadata)
+      {}
+      stored-metadata)))
+
 ; -------------------------------------------------------------------------
 
 (defn consume-step-result-update
@@ -50,6 +56,13 @@
   (let [component (state-component ctx)]
     (if (satisfies? protocols/PipelineStructureConsumer component)
       (protocols/consume-pipeline-structure component build-number pipeline-structure-representation))))
+
+(defn consume-build-metadata
+  "Update build metdata in the state"
+  [ctx build-number metadata]
+  (let [component (state-component ctx)]
+    (if (satisfies? protocols/BuildMetadataConsumer component)
+      (protocols/consume-build-metadata component build-number metadata))))
 
 (defn next-build-number
   "Returns the build number for the next build"
@@ -88,3 +101,11 @@
     (if (satisfies? protocols/PipelineStructureSource component)
       (stored-structure-or-fallback ctx build-number)
       (annotated-fallback-structure ctx))))
+
+(defn get-build-metadata
+  "Returns a map describing metadata of a build"
+  [ctx build-number]
+  (let [component (state-component ctx)]
+    (if (satisfies? protocols/BuildMetadataSource component)
+      (stored-metadata-or-fallback ctx build-number)
+      {})))

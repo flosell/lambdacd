@@ -14,7 +14,7 @@
   (persistence/read-build-history-from home-dir))
 
 (defn- update-step-result [new-step-result current-step-result]
-  (let [now                       (t/now)]
+  (let [now (t/now)]
     (-> new-step-result
         (assoc :most-recent-update-at now)
         (assoc :first-updated-at (or (:first-updated-at current-step-result) now))
@@ -37,7 +37,7 @@
     current-build-number
     0))
 
-(defrecord DefaultPipelineState [state-atom structure-atom home-dir max-builds]
+(defrecord DefaultPipelineState [state-atom structure-atom build-metadata-atom home-dir max-builds]
   old-pipeline-state/PipelineStateComponent
   (update [self build-number step-id new-step-result]
     (protocols/consume-step-result-update self build-number step-id new-step-result))
@@ -49,10 +49,17 @@
   protocols/PipelineStructureConsumer
   (consume-pipeline-structure [self build-number pipeline-structure-representation]
     (swap! structure-atom #(assoc % build-number pipeline-structure-representation))
-    (persistence/write-pipeline-structure home-dir build-number pipeline-structure-representation))
+    (persistence/write-build-data-edn home-dir build-number pipeline-structure-representation "pipeline-structure.edn"))
   protocols/PipelineStructureSource
   (get-pipeline-structure [self build-number]
     (get @structure-atom build-number))
+  protocols/BuildMetadataConsumer
+  (consume-build-metadata [self build-number metadata]
+    (swap! build-metadata-atom #(assoc % build-number metadata))
+    (persistence/write-build-data-edn home-dir build-number metadata "build-metadata.edn"))
+  protocols/BuildMetadataSource
+  (get-build-metadata [self build-number]
+    (get @build-metadata-atom build-number))
 
   protocols/StepResultUpdateConsumer
   (consume-step-result-update [self build-number step-id step-result]
@@ -60,6 +67,7 @@
                                             (update-step-result-in-state build-number step-id step-result)
                                             (truncate-build-history home-dir max-builds)))]
       (persistence/write-build-history home-dir build-number new-state)))
+
   protocols/QueryStepResultsSource
   (get-step-results [self build-number]
     (get @state-atom build-number))
@@ -73,9 +81,10 @@
         (sort))))
 
 (defn new-default-pipeline-state [config & {:keys [initial-state-for-testing]}]
-  (let [home-dir   (:home-dir config)
-        state-atom (atom (or initial-state-for-testing (initial-pipeline-state config)))
-        structure-atom (atom (persistence/read-pipeline-structures home-dir))
-        max-builds (or (:max-builds config) Integer/MAX_VALUE)
-        instance   (->DefaultPipelineState state-atom structure-atom home-dir max-builds)]
+  (let [home-dir            (:home-dir config)
+        state-atom          (atom (or initial-state-for-testing (initial-pipeline-state config)))
+        structure-atom      (atom (persistence/read-build-datas home-dir "pipeline-structure.edn"))
+        build-metadata-atom (atom (persistence/read-build-datas home-dir "build-metadata.edn"))
+        max-builds          (or (:max-builds config) Integer/MAX_VALUE)
+        instance            (->DefaultPipelineState state-atom structure-atom build-metadata-atom home-dir max-builds)]
     instance))

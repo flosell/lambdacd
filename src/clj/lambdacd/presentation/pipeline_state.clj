@@ -73,22 +73,23 @@
        (reduce +)))
 
 (defn- history-entry
-  ([build-number step-ids-and-results]
+  ([build-number step-ids-and-results metadata]
    {:build-number          build-number
     :status                (overall-build-status step-ids-and-results)
     :most-recent-update-at (latest-most-recent-update step-ids-and-results)
     :first-updated-at      (earliest-first-update step-ids-and-results)
     :retriggered           (build-that-was-retriggered step-ids-and-results)
-    :duration-in-sec       (build-duration step-ids-and-results)})
+    :duration-in-sec       (build-duration step-ids-and-results)
+    :build-metadata        metadata})
   ([[build-number step-ids-and-results]]
-   (history-entry build-number step-ids-and-results)))
+   (history-entry build-number step-ids-and-results {})))
 
 (defn- legacy-history-for [state]
   (sort-by :build-number (map history-entry state)))
 
 (defn- history-for-pipeline-state-component [ctx]
   (for [build-number (state/all-build-numbers ctx)]
-    (history-entry build-number (state/get-step-results ctx build-number))))
+    (history-entry build-number (state/get-step-results ctx build-number) (state/get-build-metadata ctx build-number))))
 
 (defn history-for
   "Returns a build history for a given build state (the result of get-all) or a ctx;

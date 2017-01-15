@@ -43,6 +43,7 @@
     ;; uncomment this, run and see the magic happen (the first build will immediately run since there is no known state)
     ; wait-for-frontend-repo
 
+    set-build-name
     ; do-stuff
      compare-screenshots
     ;; this step executes his child-steps (the arguments after the in-parallel) in parallel and waits

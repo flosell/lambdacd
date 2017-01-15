@@ -10,22 +10,23 @@
 (def some-step-id [0])
 (def some-step-result {:foo :bat})
 (def some-structure {:some :structure})
+(def some-metadata {:some :metadata})
 
 (defn ^{:display-type :container} foo [& _])
 (defn bar [& _])
 (def some-pipeline-def `((foo
-                          bar)))
+                           bar)))
 
-(def some-pipeline-def-structure [{:name             "foo"
-                                   :type             :container
-                                   :has-dependencies false
+(def some-pipeline-def-structure [{:name                        "foo"
+                                   :type                        :container
+                                   :has-dependencies            false
                                    :pipeline-structure-fallback true
-                                   :step-id          `(1)
-                                   :children [{:name             "bar"
-                                               :type             :step
-                                               :has-dependencies false
-                                               :pipeline-structure-fallback true
-                                               :step-id          `(1 1)}]}])
+                                   :step-id                     `(1)
+                                   :children                    [{:name                        "bar"
+                                                                  :type                        :step
+                                                                  :has-dependencies            false
+                                                                  :pipeline-structure-fallback true
+                                                                  :step-id                     `(1 1)}]}])
 
 (deftest consume-step-result-update-test
   (testing "that calls to a StepResultUpdateConsumer will just pass through"
@@ -49,6 +50,17 @@
     (let [component (mock legacy-pipeline-state/PipelineStateComponent)]
       (s/consume-pipeline-structure (some-ctx-with :pipeline-state-component component)
                                     some-build-number some-structure))))
+
+(deftest consume-build-metadata-test
+  (testing "that calls to a BuildMetadataConsumer will just pass through"
+    (let [component (mock state-protocols/BuildMetadataConsumer)]
+      (s/consume-build-metadata (some-ctx-with :pipeline-state-component component)
+                                some-build-number some-metadata)
+      (is (received? component state-protocols/consume-build-metadata [some-build-number some-metadata]))))
+  (testing "that calls to a legacy PipelineStateComponent are ignored"
+    (let [component (mock legacy-pipeline-state/PipelineStateComponent)]
+      (s/consume-build-metadata (some-ctx-with :pipeline-state-component component)
+                                some-build-number some-metadata))))
 
 (deftest next-build-number-test
   (testing "that calls to a BuildNumberSource will just pass through"
@@ -101,8 +113,20 @@
   (testing "that we get the current pipeline structure if the component doesn't support PipelineStructures"
     (let [component (mock state-protocols/QueryStepResultsSource {:get-step-results {:some :step-results}})]
       (is (= some-pipeline-def-structure (s/get-pipeline-structure (some-ctx-with :pipeline-state-component component
-                                                                                 :pipeline-def some-pipeline-def) 1)))))
+                                                                                  :pipeline-def some-pipeline-def) 1)))))
   (testing "that we get the current pipeline structure if the component returns :fallback and annotate the structure accordingly"
     (let [component (mock state-protocols/PipelineStructureSource {:get-pipeline-structure :fallback})]
       (is (= some-pipeline-def-structure (s/get-pipeline-structure (some-ctx-with :pipeline-state-component component
-                                                                                            :pipeline-def some-pipeline-def) 1))))))
+                                                                                  :pipeline-def some-pipeline-def) 1))))))
+
+(deftest get-pipeline-structure-test
+  (testing "that calls to BuildMetadataSource will just pass through"
+    (let [component (mock state-protocols/BuildMetadataSource {:get-build-metadata {:some :metadata}})]
+      (is (= {:some :metadata} (s/get-build-metadata (some-ctx-with :pipeline-state-component component) 1)))
+      (is (received? component state-protocols/get-build-metadata [1]))))
+  (testing "that we get an empty map if BuildMetadata is not supported"
+    (let [component (mock legacy-pipeline-state/PipelineStateComponent)]
+      (is (= {} (s/get-build-metadata (some-ctx-with :pipeline-state-component component) 1)))))
+  (testing "that we get an empty map if the component returns :fallback"
+    (let [component (mock state-protocols/PipelineStructureSource {:get-build-metadata :fallback})]
+      (is (= {} (s/get-build-metadata (some-ctx-with :pipeline-state-component component) 1))))))

@@ -11,6 +11,11 @@
   (consume-pipeline-structure [self build-number pipeline-structure-representation]
     "Tells the component to update the structure of a particular build."))
 
+(defprotocol BuildMetadataConsumer
+  "Components implementing this protocol can update the metadata for a particular build"
+  (consume-build-metadata [self build-number metadata]
+    "Tells the component to update the metadata of a particular build."))
+
 (defprotocol NextBuildNumberSource
   "Components implementing this protocol provide the LambdaCD execution engine with new build numbers"
   (next-build-number [self]
@@ -30,4 +35,9 @@
   "Components implementing this protocol can supply the structure of the pipeline for a particular build"
   (get-pipeline-structure [self build-number]
     "Returns a map describing the pipeline of for a particular build"))
+
+(defprotocol BuildMetadataSource
+  "Components implementing this protocol can supply metadata for a particular build"
+  (get-build-metadata [self build-number]
+    "Returns a map describing the metadata for a particular build"))
 

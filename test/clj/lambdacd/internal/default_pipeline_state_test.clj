@@ -37,6 +37,18 @@
       (let [other-component (new-default-pipeline-state {:home-dir home})]
         (is (= {:some-pipeline :structure} (protocols/get-pipeline-structure other-component 1)))))))
 
+(deftest build-metadata-test
+  (testing "that we can consume and retrieve build metadata"
+    (let [component (new-default-pipeline-state {:home-dir (temp-util/create-temp-dir)})]
+      (protocols/consume-build-metadata component 1 {:some :metadata})
+      (is (= {:some :metadata} (protocols/get-build-metadata component 1)))))
+  (testing "that we can retrieve the build-metadata from disk"
+    (let [home-dir  (temp-util/create-temp-dir)
+          component (new-default-pipeline-state {:home-dir home-dir})]
+      (protocols/consume-build-metadata component 1 {:some :metadata})
+      (let [other-component (new-default-pipeline-state {:home-dir home-dir})]
+        (is (= {:some :metadata} (tu/without-ts (protocols/get-build-metadata other-component 1))))))))
+
 (deftest step-result-state-test
   (testing "that we can consume and retrieve step results"
     (let [component (new-default-pipeline-state {:home-dir (temp-util/create-temp-dir)})]
@@ -97,7 +109,7 @@
         (protocols/consume-step-result-update state 5 [0] {:foo :baz :build 5})
 
         (is (.exists pipeline-structure-file)))))
-  (testing "that we can retrieve the pipeline-structure from disk"
+  (testing "that we can retrieve step-results from disk"
     (let [home-dir     (temp-util/create-temp-dir)
           component (new-default-pipeline-state {:home-dir home-dir})]
       (protocols/consume-step-result-update component 1 [1 1] {:some :step-result})

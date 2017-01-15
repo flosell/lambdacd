@@ -43,6 +43,21 @@
                (is (dom/found-in div #"fa-check"))
                (is (dom/found-in div #"fa-cog"))
                (is (dom/found-in div #"fa-pause")))))
+  (testing "that we can display metadata"
+    (tu/with-mounted-component
+      [:div (history/build-history-renderer
+              [{:build-number 1
+                :build-metadata {:some-metadata "foo"}}] 1)]
+      (fn [c div]
+        (is (dom/found-in div #"Metadata"))
+        (is (dom/found-in div #"some-metadata"))
+        (is (dom/found-in div #"foo")))))
+  (testing "that metadata is not shown if none exists"
+    (tu/with-mounted-component
+      [:div (history/build-history-renderer
+              [{:build-number 1}] 1)]
+      (fn [c div]
+        (is (dom/not-found-in div #"Metadata")))))
   (testing "that we render a loading-screen if no history is definde"
            (tu/with-mounted-component
              [:div

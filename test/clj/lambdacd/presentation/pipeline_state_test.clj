@@ -19,16 +19,22 @@
 (def after-one-minute-and-30-sec (t/plus start-time (t/minutes 1) (t/seconds 30)))
 (def after-one-minute-and-40-sec (t/plus start-time (t/minutes 1) (t/seconds 40)))
 
-(defrecord in-memory-pipeline-state [state]
+(defrecord in-memory-pipeline-state [state build-metadata]
   protocols/QueryAllBuildNumbersSource
   (all-build-numbers [self]
     (keys state))
   protocols/QueryStepResultsSource
   (get-step-results [self build-number]
-    (get state build-number)))
+    (get state build-number))
+  protocols/BuildMetadataSource
+  (get-build-metadata [self build-number]
+    (get build-metadata build-number)))
 
-(defn ctx-with-state [state]
-  (some-ctx-with :pipeline-state-component (->in-memory-pipeline-state state)))
+(defn ctx-with-state
+  ([state build-metadata]
+   (some-ctx-with :pipeline-state-component (->in-memory-pipeline-state state build-metadata)))
+  ([state]
+   (ctx-with-state state {})))
 
 (deftest history-for-ctx-test
   (testing "that we can aggregate the pipeline state into a nice history representation"
@@ -37,15 +43,19 @@
              :most-recent-update-at stop-time
              :first-updated-at      start-time
              :retriggered           nil
-             :duration-in-sec       10}
+             :duration-in-sec       10
+             :build-metadata {:some :metadata}}
             {:build-number          9
              :status                :running
              :most-recent-update-at stop-time
              :first-updated-at      start-time
              :retriggered           nil
-             :duration-in-sec       10}]
+             :duration-in-sec       10
+             :build-metadata {}}]
            (history-for (ctx-with-state {8 {'(0) {:status :waiting :most-recent-update-at stop-time :first-updated-at start-time}}
-                                         9 {'(0) {:status :running :most-recent-update-at stop-time :first-updated-at start-time}}})))))
+                                         9 {'(0) {:status :running :most-recent-update-at stop-time :first-updated-at start-time}}}
+                                        {8 {:some :metadata}
+                                         9 {}})))))
   (testing "that the timestamps are accumulated correctly"
     (testing "that the earliest start time is the start time of the pipeline"
       (is (= before-start-time (:first-updated-at (first
@@ -77,13 +87,15 @@
              :most-recent-update-at stop-time
              :first-updated-at start-time
              :retriggered nil
-             :duration-in-sec 10}
+             :duration-in-sec 10
+             :build-metadata {}}
             {:build-number 9
              :status :running
              :most-recent-update-at stop-time
              :first-updated-at start-time
              :retriggered nil
-             :duration-in-sec 10}]
+             :duration-in-sec 10
+             :build-metadata {}}]
            (history-for {8  {'(0)   { :status :waiting :most-recent-update-at stop-time :first-updated-at start-time}}
                          9  {'(0)   { :status :running :most-recent-update-at stop-time :first-updated-at start-time}}}))))
   (testing "that the timestamps are accumulated correctly"

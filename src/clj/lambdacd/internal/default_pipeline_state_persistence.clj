@@ -90,9 +90,10 @@
        (map read-build-edn)
        (into {})))
 
-(defn write-pipeline-structure [home-dir build-number pipeline-structure]
-  (let [f (pipeline-structure-path (build-dir home-dir build-number))]
-    (spit f (pr-str pipeline-structure))))
+
+(defn write-build-data-edn [home-dir build-number pipeline-data filename]
+  (let [f (io/file (build-dir home-dir build-number) filename)]
+    (spit f (pr-str pipeline-data))))
 
 (defn- read-pipeline-structure-edn [f]
   (let [build-number (build-number-from-path f)]
@@ -100,9 +101,9 @@
       {build-number (edn/read-string (slurp f))}
       {build-number :fallback})))
 
-(defn read-pipeline-structures [home-dir]
+(defn read-build-datas [home-dir filename]
   (->> (build-dirs home-dir)
-       (map pipeline-structure-path)
+       (map #(io/file % filename))
        (map read-pipeline-structure-edn)
        (into {})))
 

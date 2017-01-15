@@ -7,7 +7,8 @@
             [re-frame.core :as re-frame]
             [lambdacd.output :as output]
             [lambdacd.testutils :refer [mock-subscriptions]]
-            [clojure.walk :as walk]))
+            [clojure.walk :as walk]
+            [lambdacd.utils :as utils]))
 
 (def some-step-id [4 2])
 
@@ -48,9 +49,9 @@
 
 (deftest stringify-keys-test
   (testing "that keywords in maps are properly stringified for rendering"
-    (is (= { ":foo" 42} (output/stringify-keys {:foo 42}))))
+    (is (= { ":foo" 42} (utils/stringify-keys {:foo 42}))))
   (testing "that strange keywords with namespaces are supported (#100)"
-    (is (= { ":refs/heads/master" "some-sha"} (output/stringify-keys { (keyword "refs/heads/master") "some-sha" })))))
+    (is (= { ":refs/heads/master" "some-sha"} (utils/stringify-keys { (keyword "refs/heads/master") "some-sha" })))))
 
 (deftest console-component-test
   (testing "that we can display the :out output of a step"

@@ -167,3 +167,7 @@
   "Converts a function that can unify statuses into a unify-results-fn suitable for execute-steps"
   [unify-status-fn]
   (execute-steps/unify-only-status unify-status-fn))
+
+
+(defn assoc-metadata! [ctx & kvs]
+  (swap! (:build-metadata-atom ctx) #(apply assoc % kvs)))

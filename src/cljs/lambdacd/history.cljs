@@ -27,12 +27,18 @@
 (defn- icon [class]
   [:div {:class "history--item--status-icon history--item--line--item" } [:i {:class class}]])
 
+
+(defn- has-metadata? [build-metadata]
+  (and build-metadata
+       (not= {} build-metadata)))
+
 (defn history-item-component [active-build-number
                               {build-number          :build-number
                                status                :status
                                first-updated-at      :first-updated-at
                                retriggered           :retriggered
-                               duration-in-seconds   :duration-in-sec}]
+                               duration-in-seconds   :duration-in-sec
+                               build-metadata        :build-metadata}]
   [:li {:key build-number :class (str "history--item" (if (= build-number active-build-number) " history--item--active"))}
    [:a {:href (route/for-build-number build-number) :class "history--item--container"}
     [:div {:class "history--item--line"}
@@ -49,6 +55,11 @@
                                                  (str "Duration: " (time/format-duration-long
                                                                      duration-in-seconds))
                                                  "Duration: 0sec")]]
+    (if (has-metadata? build-metadata)
+      [:div {:class "history--item--line tooltip"}
+       [icon "fa fa-info-circle"]
+       [:p {:class "history--item--line--item"} "Metadata"]
+       [:span [:pre (utils/pretty-print-map build-metadata)]]])
     (if retriggered
       [:div {:class "history--item--line"}
        [icon "fa fa-repeat"]
