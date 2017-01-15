@@ -11,7 +11,7 @@
 
 [![Clojars Project](http://clojars.org/lambdacd/latest-version.svg)](http://clojars.org/lambdacd)
 
-[![Build Status](https://travis-ci.org/flosell/lambdacd.svg?branch=master)](https://travis-ci.org/flosell/lambdacd) [![Join the chat at https://gitter.im/flosell/lambdacd](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/flosell/lambdacd?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/flosell/lambdacd.svg?branch=master)](https://travis-ci.org/flosell/lambdacd)
 
 This project is still under active development so don't rely on everything working flawlessly out of the box.
 Also, things might change along the way so when you upgrade, make sure you check out the [changelog](CHANGELOG.md)
@@ -64,6 +64,10 @@ And if you notice something, please open bug reports, feature requests or just g
 
 ![Screenshot](doc/img/readme-screenshot.png)
 
+## Chat
+
+* `#lambdacd` on the [clojurians slack](https://clojurians.slack.com/messages/lambdacd/)
+* `#lambdacd` on [gitter](https://gitter.im/flosell/lambdacd)
 
 ## Resources
 
