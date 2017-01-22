@@ -5,7 +5,10 @@
             [shrubbery.core :refer [mock received?]]
             [lambdacd.state.protocols :as state-protocols]
             [lambdacd.util.internal.sugar :refer [not-nil?]]
-            [lambdacd.presentation.pipeline-structure :as pipeline-structure])
+            [lambdacd.testsupport.test-util :refer [events-for
+                                                    slurp-chan]]
+            [lambdacd.presentation.pipeline-structure :as pipeline-structure]
+            [lambdacd.event-bus :as event-bus])
   (:import (clojure.lang Atom)))
 
 (defn step-pipeline
@@ -47,8 +50,19 @@
                                    state-protocols/StepResultUpdateConsumer)
           expected-structure (pipeline-structure/pipeline-display-representation some-pipeline)]
       (run-pipeline some-pipeline (some-ctx-with :pipeline-state-component state-component) some-build-number)
-
       (is (received? state-component state-protocols/consume-pipeline-structure [some-build-number expected-structure]))))
+  (testing "that it sends events about the pipeline starting and stopping"
+    (let [ctx (some-ctx)
+          started-events (events-for :pipeline-started ctx)
+          stopped-events (events-for :pipeline-finished ctx)]
+      (run-pipeline some-pipeline ctx some-build-number)
+      (is (= [{:build-number 10}] (slurp-chan started-events)))
+      (is (= [{:build-number 10
+               :status  :success
+               :outputs {[1] {:status :success
+                              :step   1}
+                         [2] {:status :success
+                              :step   2}}}] (slurp-chan stopped-events)))))
   (testing "that it passes the build-number on to steps"
     (is (= :success (:status (run-pipeline (step-pipeline `some-step-expecting-a-build-number) (some-ctx) some-build-number)))))
   (testing "that it passes a build-metadata atom to steps"
