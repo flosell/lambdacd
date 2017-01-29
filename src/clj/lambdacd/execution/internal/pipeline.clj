@@ -9,11 +9,11 @@
 (defn run-pipeline [pipeline ctx build-number]
   (let [runnable-pipeline (map eval pipeline)]
     (state/consume-pipeline-structure ctx build-number (pipeline-structure/pipeline-display-representation pipeline))
-    (event-bus/publish!! ctx :pipeline-started {:build-number (:build-number ctx)})
+    (event-bus/publish!! ctx :pipeline-started {:build-number build-number})
     (let [full-result (execute-steps/execute-steps runnable-pipeline {} (-> ctx
                                                           (assoc :result-channel (async/chan (async/dropping-buffer 0)))
                                                           (assoc :build-number build-number)
                                                           (assoc :step-id [])
                                                           (build-metadata/add-metadata-atom)))]
-      (event-bus/publish!! ctx :pipeline-finished (assoc full-result :build-number (:build-number ctx)))
+      (event-bus/publish!! ctx :pipeline-finished (assoc full-result :build-number build-number))
       full-result)))

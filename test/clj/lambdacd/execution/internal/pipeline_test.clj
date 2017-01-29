@@ -52,12 +52,12 @@
       (run-pipeline some-pipeline (some-ctx-with :pipeline-state-component state-component) some-build-number)
       (is (received? state-component state-protocols/consume-pipeline-structure [some-build-number expected-structure]))))
   (testing "that it sends events about the pipeline starting and stopping"
-    (let [ctx (some-ctx)
+    (let [ctx (some-ctx-with :build-number nil) ; the ctx doesn't have a build number yet, that's why we pass it in
           started-events (events-for :pipeline-started ctx)
           stopped-events (events-for :pipeline-finished ctx)]
       (run-pipeline some-pipeline ctx some-build-number)
-      (is (= [{:build-number 10}] (slurp-chan started-events)))
-      (is (= [{:build-number 10
+      (is (= [{:build-number some-build-number}] (slurp-chan started-events)))
+      (is (= [{:build-number some-build-number
                :status  :success
                :outputs {[1] {:status :success
                               :step   1}
