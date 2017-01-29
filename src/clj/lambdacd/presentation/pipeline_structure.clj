@@ -125,7 +125,20 @@
     (container-step-representation part id)
     (simple-step-representation part id)))
 
-
 (defn pipeline-display-representation
   ([part]
    (seq-to-display-representations '() part)))
+
+(defn flatten-pipeline-representation [reps]
+  (flatten
+    (for [rep reps]
+      (if (:children rep)
+        (conj (flatten-pipeline-representation (:children rep)) rep)
+        [rep]))))
+
+(defn step-display-representation-by-step-id [pipeline-def step-id]
+  (->> pipeline-def
+       (pipeline-display-representation)
+       (flatten-pipeline-representation)
+       (filter #(= (:step-id %) step-id))
+       (first)))

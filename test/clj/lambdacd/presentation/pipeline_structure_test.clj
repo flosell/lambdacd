@@ -78,6 +78,40 @@
       :has-dependencies false
       :children [{:name "do-other-stuff" :type :step :step-id '(1 2 1) :has-dependencies true}]}]}])
 
+(def flat-foo-pipeline-display-representation
+  [{:name "in-parallel"
+    :type :parallel
+    :step-id '(1)
+    :has-dependencies false
+    :children
+    [{:name "in-cwd foo"
+      :type :container
+      :step-id '(1 1)
+      :has-dependencies false
+      :children [{:name "do-stuff" :type :step :step-id '(1 1 1) :has-dependencies false}]}
+     {:name "in-cwd bar"
+      :type :container
+      :step-id '(2 1)
+      :has-dependencies false
+      :children [{:name "do-other-stuff" :type :step :step-id '(1 2 1) :has-dependencies true}]}]}
+   {:name "in-cwd foo"
+    :type :container
+    :step-id '(1 1)
+    :has-dependencies false
+    :children [{:name "do-stuff" :type :step :step-id '(1 1 1) :has-dependencies false}]}
+   {:name "in-cwd bar"
+    :type :container
+    :step-id '(2 1)
+    :has-dependencies false
+    :children [{:name "do-other-stuff" :type :step :step-id '(1 2 1) :has-dependencies true}]}
+   {:name "do-stuff" :type :step :step-id '(1 1 1) :has-dependencies false}
+   {:name "do-other-stuff" :type :step :step-id '(1 2 1) :has-dependencies true}])
+
+(def simple-pipeline-representation
+  [{:name "do-stuff" :type :step :step-id '(1) :has-dependencies false}
+   {:name "do-other-stuff" :type :step :step-id '(2) :has-dependencies true}
+   {:name "do-stuff-that-has-a-different-display-type" :type :some-display-type :step-id '(3) :has-dependencies false}])
+
 (def pipeline-with-container-without-display-type
   `((container-without-display-type
       do-stuff)))
@@ -200,3 +234,46 @@
              :has-dependencies false
              :children [{:name "do-stuff" :type :step :step-id '(1 1) :has-dependencies false}]}]
            (pipeline-display-representation pipeline-with-nil-children)))))
+
+(deftest flatten-pipeline-representation-test
+  (testing "that it works for flat pipelines"
+    (is (= simple-pipeline-representation (flatten-pipeline-representation (pipeline-display-representation simple-pipeline)))))
+  (testing "that it works for nested pipelines and we do not care about the order of nesting"
+    (is (= (into #{} flat-foo-pipeline-display-representation)
+           (into #{} (flatten-pipeline-representation (pipeline-display-representation foo-pipeline)))))))
+
+(deftest step-by-id-test
+  (testing "that it returns nil if the step is not found"
+    (testing "a root id"
+      (is (= nil
+             (step-display-representation-by-step-id `() [1]))))
+    (testing "a child id"
+      (is (= nil
+             (step-display-representation-by-step-id `() [1 1])))))
+  (testing "that it can find a root-step"
+    (is (= (step-display-representation `do-stuff [1])
+           (step-display-representation-by-step-id simple-pipeline [1]))))
+  (testing "that it can find a nested step"
+    (is (= (step-display-representation `do-more-stuff [2 2 1])
+           (step-display-representation-by-step-id pipeline [2 2 1]))))
+  (testing "that it can deal with nils at the root"
+    (is (= (step-display-representation `do-other-stuff [2])
+           (step-display-representation-by-step-id pipeline-with-nils [2]))))
+  (testing "that it can deal with nested nils"
+    (is (= (step-display-representation `do-stuff [1 1])
+           (step-display-representation-by-step-id pipeline-with-nil-children [1 1]))))
+  (testing "that it can deal with aliases"
+    (is (= {:name "do-stuff-alias" :type :step :step-id '(1 1) :has-dependencies false}
+           (step-display-representation-by-step-id pipeline-with-alias [1 1]))))
+  (testing "that it behaves just like the pipeline representations do"
+    (doseq [p [simple-pipeline
+               foo-pipeline
+               pipeline
+               pipeline-with-alias
+               pipeline-with-nil-children
+               pipeline-with-nils]]
+      (testing (str p)
+        (doseq [rep (flatten-pipeline-representation (pipeline-display-representation p))]
+          (let [step-id (:step-id rep)]
+            (testing (str step-id rep)
+              (is (= rep (step-display-representation-by-step-id p step-id))))))))))
