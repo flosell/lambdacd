@@ -11,7 +11,11 @@ The official release will have a defined and more stable API. If you are already
   * UI support for some kinds of metadata: 
     * `:human-readable-build-label`
   * Added events `:pipeline-started` and `:pipeline-finished` (#155)
-  * Added `lambdacd.presentation.pipeline-structure/flatten-pipeline-representation` and `lambdacd.presentation.pipeline-structure/step-display-representation-by-step-id` to simplify getting information about a specific step
+  * Added function to simplify handling of nested step-results (e.g. the information received from `:pipeline-finished` events (#155, #154): 
+    * `lambdacd.steps.result/flatten-step-result-outputs`
+  * Added functions to simplify getting information about a specific step (#154):
+    * `lambdacd.presentation.pipeline-structure/flatten-pipeline-representation`
+    * `lambdacd.presentation.pipeline-structure/step-display-representation-by-step-id`
 * Bug fixes:
   * Catch Exception instead of Throwable in build steps to avoid catching Errors which cannot be handled (#148), thanks @hgsy!
 * Deprecated: 

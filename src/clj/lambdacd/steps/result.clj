@@ -43,4 +43,9 @@
 (defn merge-step-results [step-results merger] ; TODO: test this!
   (reduce merger {} step-results))
 
-
+(defn flatten-step-result-outputs [outputs]
+  (into {}
+        (for [[k v] outputs]
+          (if (:outputs v)
+            (assoc (flatten-step-result-outputs (:outputs v)) k v)
+            {k v}))))
