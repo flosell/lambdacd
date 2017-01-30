@@ -30,7 +30,9 @@
   :test-selectors {:default (complement :smoke)
                    :smoke :smoke
                    :all (constantly true)}
-  :plugins [
+  :codox {:namespaces [#"^(?!.*\.internal\.).*$"]
+          :source-uri "https://github.com/flosell/lambdacd/blob/master/{filepath}#L{line}"}
+  :plugins [[lein-codox "0.10.2"]
             [lein-cljsbuild "1.1.3"]
             [lein-doo "0.1.4"]
             [lein-environ "1.0.2"]

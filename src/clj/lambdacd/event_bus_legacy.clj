@@ -1,4 +1,4 @@
-(ns lambdacd.event-bus-legacy
+(ns ^:no-doc lambdacd.event-bus-legacy
   (:require [clojure.core.async :as async]))
 
 (defn initialize-event-bus [ctx]

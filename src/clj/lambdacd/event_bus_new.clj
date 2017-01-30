@@ -1,4 +1,4 @@
-(ns lambdacd.event-bus-new
+(ns ^:no-doc lambdacd.event-bus-new
   (:require [clojure.core.async :as async]
             [lambdacd.util.internal.map :as map-util]))
 

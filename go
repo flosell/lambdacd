@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 set -e
 
@@ -164,6 +164,10 @@ generate-howto-toc() {
   gh-md-toc ${SCRIPT_DIR}/doc/howto.md
 }
 
+generate-api-documentation() {
+   lein codox
+}
+
 if [ "$1" == "clean" ]; then
     clean
 elif [ "$1" == "setup" ]; then
@@ -198,6 +202,8 @@ elif [ "$1" == "setupTodopipelineEnv" ]; then
     setupTodopipelineEnv
 elif [ "$1" == "generate-howto-toc" ]; then
     generate-howto-toc
+elif [ "$1" == "generate-api-doc" ]; then
+    generate-api-documentation
 elif [ "$1" == "test-clj-unit-repeat" ]; then
     testunitRepeat
 else
@@ -221,6 +227,7 @@ goal:
     release-local        -- install current version in local repository
     repl-server          -- start a repl cursive can use to run tests in
     setupTodopipelineEnv -- setup everything you need to make the demo pipeline green
-    generate-howto-toc   -- generate table of contents for howto"
+    generate-howto-toc   -- generate table of contents for howto
+    generate-api-doc     -- generate api documentation"
     exit 1
 fi

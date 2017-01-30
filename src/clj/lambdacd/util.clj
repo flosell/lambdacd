@@ -11,6 +11,7 @@
 
 (defn range-from
   "UNUSED AND DEPRECATED, WILL BE REMOVED SOON" ; only used in tests
+  {:deprecated "0.12.1"}
   [from len]
   (range (inc from) (+ (inc from) len)))
 
