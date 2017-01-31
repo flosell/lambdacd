@@ -256,15 +256,24 @@
   (testing "that it can find a nested step"
     (is (= (step-display-representation `do-more-stuff [2 2 1])
            (step-display-representation-by-step-id pipeline [2 2 1]))))
-  (testing "that it can deal with nils at the root"
-    (is (= (step-display-representation `do-other-stuff [2])
-           (step-display-representation-by-step-id pipeline-with-nils [2]))))
-  (testing "that it can deal with nested nils"
-    (is (= (step-display-representation `do-stuff [1 1])
-           (step-display-representation-by-step-id pipeline-with-nil-children [1 1]))))
-  (testing "that it can deal with aliases"
-    (is (= {:name "do-stuff-alias" :type :step :step-id '(1 1) :has-dependencies false}
-           (step-display-representation-by-step-id pipeline-with-alias [1 1]))))
+  (testing "nil handling"
+    (testing "that it can deal with nils at the root"
+      (is (= (step-display-representation `do-other-stuff [2])
+             (step-display-representation-by-step-id pipeline-with-nils [2]))))
+    (testing "that it can deal with nested nils"
+      (is (= (step-display-representation `do-stuff [1 1])
+             (step-display-representation-by-step-id pipeline-with-nil-children [1 1])))))
+  (testing "alias handling"
+    (testing "that it returns the right information for an aliased step"
+      (is (= {:name "do-stuff-alias" :type :step :step-id '(1 1) :has-dependencies false}
+             (step-display-representation-by-step-id pipeline-with-alias [1 1]))))
+    (testing "that it returns tha right information for an alias"
+      (is (= {:name "alias"
+              :type :container
+              :step-id '(1)
+              :has-dependencies false
+              :children [{:name "do-stuff-alias" :type :step :step-id '(1 1) :has-dependencies false}]}
+             (step-display-representation-by-step-id pipeline-with-alias [1])))))
   (testing "that it behaves just like the pipeline representations do"
     (doseq [p [simple-pipeline
                foo-pipeline

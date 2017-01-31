@@ -79,10 +79,10 @@
         depends-on-previous-steps (:depends-on-previous-steps (metadata f))]
     (boolean depends-on-previous-steps)))
 
-(declare step-display-representation)                       ; mutual recursion
+(declare step-display-representation-internal)                       ; mutual recursion
 
-(defn- seq-to-display-representations [parent-step-id part]
-  (map-indexed #(step-display-representation %2 (conj parent-step-id (inc %1))) (remove nil? part)))
+(defn- seq-to-display-representations [parent-step-id include-alias? part]
+  (map-indexed #(step-display-representation-internal %2 (conj parent-step-id (inc %1)) include-alias?) (remove nil? part)))
 
 (defn- is-container-step? [x]
   (let [dt (display-type x)]
@@ -107,27 +107,37 @@
     (sequential? part)
     (is-alias-fun? (first part))))
 
-(defn- container-step-representation [part id]
+(defn- container-step-representation [part id include-alias?]
   (let [children-representations (->> part
                                       (rest)
                                       (filter is-child?)
-                                      (seq-to-display-representations id))]
+                                      (seq-to-display-representations id include-alias?))]
     (if (is-alias-part? part)
-      (assoc (first children-representations) :name (display-name part))
+      (if include-alias?
+        {:name             "alias"
+         :type             (display-type part)
+         :step-id          id
+         :has-dependencies false
+         :children         [(assoc (first children-representations) :name (display-name part))]}
+        (assoc (first children-representations) :name (display-name part)))
       {:name             (display-name part)
        :type             (display-type part)
        :step-id          id
        :has-dependencies false
        :children         children-representations})))
 
-(defn step-display-representation [part id]
+(defn step-display-representation-internal [part id include-alias?]
   (if (is-container-step? part)
-    (container-step-representation part id)
-    (simple-step-representation part id)))
+    (container-step-representation part id include-alias?)
+    (simple-step-representation part id))
+  )
+
+(defn step-display-representation [part id]
+  (step-display-representation-internal part id false))
 
 (defn pipeline-display-representation
   ([part]
-   (seq-to-display-representations '() part)))
+   (seq-to-display-representations '() false part)))
 
 (defn flatten-pipeline-representation [reps]
   (flatten
@@ -137,8 +147,7 @@
         [rep]))))
 
 (defn step-display-representation-by-step-id [pipeline-def step-id]
-  (->> pipeline-def
-       (pipeline-display-representation)
+  (->> (seq-to-display-representations '() true pipeline-def)
        (flatten-pipeline-representation)
        (filter #(= (:step-id %) step-id))
        (first)))
