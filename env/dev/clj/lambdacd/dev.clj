@@ -1,4 +1,4 @@
-(ns lambdacd.dev
+(ns  ^:no-doc lambdacd.dev
   (:require [cemerick.piggieback :as piggieback]
             [weasel.repl.websocket :as weasel]
             [leiningen.core.main :as lein]))
