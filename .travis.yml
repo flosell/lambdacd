@@ -2,7 +2,6 @@ before_script:
 - ./scripts/travis_prebuild.sh
 language: clojure
 script: ./go test && ./go check-style && ./go test-clj-unit-repeat
-after_success: ./go generate-api-doc && ./go publish-api-doc
 sudo: required
 cache:
   directories:

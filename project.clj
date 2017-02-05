@@ -49,7 +49,16 @@
                                         :jar true
                                         :optimizations :advanced
                                         :pretty-print  false}}}}
-  :profiles {:release  {:hooks [leiningen.cljsbuild]}
+  :profiles {:release  {:hooks [leiningen.cljsbuild]
+                        :release-tasks [["vcs" "assert-committed"]
+                                        ["change" "version" "leiningen.release/bump-version" "release"]
+                                        ["vcs" "commit"]
+                                        ["vcs" "tag"]
+                                        ["deploy"]
+                                        ["codox"]
+                                        ["change" "version" "leiningen.release/bump-version"]
+                                        ["vcs" "commit"]
+                                        ["vcs" "push"]]}
              ;; the namespace for all the clojurescript-dependencies,
              ;; we don't want them as dependencies of the final library as cljs is already compiled then
              :provided {:dependencies [[bidi "1.18.7"]

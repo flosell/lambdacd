@@ -128,7 +128,7 @@ checkGPG() {
   fi
 }
 release() {
-  checkGPG && testall && clean && buildCss && lein with-profile +release release $1 && scripts/github-release.sh
+  checkGPG && testall && clean && buildCss && lein with-profile +release release $1 && scripts/github-release.sh && publish-api-doc $(chag latest)
 }
 releaseLocal() {
   buildCss && lein with-profile +release install
@@ -169,17 +169,16 @@ generate-api-documentation() {
 }
 
 publish-api-doc() {
-set -x
-    DOC_LABEL="${TRAVIS_TAG:-${TRAVIS_BRANCH}}"
+    DOC_LABEL="$1"
     DOC_DIR="api-docs/${DOC_LABEL}"
 
     if [ -z "${DOC_LABEL}" ]; then
-        echob "Building neither branch nor tag, not publishing apid docs"
+        echob "need to set doc-label"
         exit 1
     fi
 
     rm -rf gh-pages-api-doc-release
-#    git clone --branch gh-pages "https://flosell:${GITHUB_API_KEY}@github.com/flosell/lambdacd" gh-pages-api-doc-release
+
     git clone --single-branch --depth 1 --branch gh-pages git@github.com:flosell/lambdacd.git gh-pages-api-doc-release
     rm -rf gh-pages-api-doc-release/${DOC_DIR}
     mkdir -p gh-pages-api-doc-release/${DOC_DIR}
@@ -188,7 +187,10 @@ set -x
 
     pushd gh-pages-api-doc-release > /dev/null
 
-    git add ${DOC_DIR}
+    rm -rf api-docs/latest
+    ln -s ${DOC_LABEL} api-docs/latest
+
+    git add ${DOC_DIR} api-docs/latest
     git commit -m "Update generated API Doc for ${DOC_LABEL}"
     git push origin gh-pages
 
@@ -232,7 +234,7 @@ elif [ "$1" == "generate-howto-toc" ]; then
 elif [ "$1" == "generate-api-doc" ]; then
     generate-api-documentation
 elif [ "$1" == "publish-api-doc" ]; then
-    publish-api-doc
+    publish-api-doc $2
 elif [ "$1" == "test-clj-unit-repeat" ]; then
     testunitRepeat
 else
