@@ -169,5 +169,5 @@
   (execute-steps/unify-only-status unify-status-fn))
 
 
-(defn assoc-metadata! [ctx & kvs]
+(defn assoc-build-metadata! [ctx & kvs]
   (swap! (:build-metadata-atom ctx) #(apply assoc % kvs)))

@@ -19,7 +19,7 @@
 
 ; Let's try out some custom metadata:
 (defn set-build-name [args ctx]
-  (support/assoc-metadata! ctx :human-readable-build-label (build-label ctx))
+  (support/assoc-build-metadata! ctx :human-readable-build-label (build-label ctx))
   {:status :success})
 
 ;; This step does nothing more than to delegate to a library-function.
