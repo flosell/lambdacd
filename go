@@ -192,12 +192,12 @@ publish-api-doc() {
 
     (
       echo "<html><head><title>LambdaCD API Docs</title></head><body><h1>LambdaCD API Docs</h1><ul>";
-      for i in $(find . -depth 1 -type d -or -type l ); do
+      for i in $(find . -depth 1 -type d -or -type l | sort --reverse   ); do
         echo "<li><a href=\"$i\">$(basename $i)</a></li>";
       done;
       echo "</ul></body></html>"
     ) > index.html
-    
+
     git add ${DOC_LABEL} latest index.html
     git commit -m "Update generated API Doc for ${DOC_LABEL}"
     git push origin gh-pages
