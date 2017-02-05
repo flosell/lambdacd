@@ -185,12 +185,20 @@ publish-api-doc() {
 
     cp -R ${SCRIPT_DIR}/target/doc/ gh-pages-api-doc-release/${DOC_DIR}
 
-    pushd gh-pages-api-doc-release > /dev/null
+    pushd gh-pages-api-doc-release/api-docs > /dev/null
 
-    rm -rf api-docs/latest
-    ln -s ${DOC_LABEL} api-docs/latest
+    (
+      echo "<html><head><title>LambdaCD API Docs</title></head><body><h1>LambdaCD API Docs</h1><ul>";
+      for i in $(find . -depth 1 -type d -or -type l ); do
+        echo "<li><a href=\"$i\">$(basename $i)</a></li>";
+      done;
+      echo "</ul></body></html>"
+    ) > index.html
 
-    git add ${DOC_DIR} api-docs/latest
+    rm -rf latest
+    ln -s ${DOC_LABEL} latest
+
+    git add ${DOC_LABEL} latest index.html
     git commit -m "Update generated API Doc for ${DOC_LABEL}"
     git push origin gh-pages
 
