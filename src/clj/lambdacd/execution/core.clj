@@ -5,7 +5,8 @@
             [lambdacd.execution.internal.pipeline :as pipeline]
             [lambdacd.execution.internal.execute-step :as execute-step]
             [lambdacd.execution.internal.execute-steps :as execute-steps]
-            [lambdacd.execution.internal.kill :as kill]))
+            [lambdacd.execution.internal.kill :as kill]
+            [lambdacd.execution.internal.retrigger :as retrigger]))
 
 (defn run-pipeline
   "Execute a complete run of the pipeline.
@@ -19,15 +20,18 @@
   ```"
   {:doc/format :markdown}
   [pipeline ctx]
-  (pipeline/run-pipeline pipeline ctx (state/next-build-number ctx)))
+  (pipeline/run-pipeline pipeline ctx (state/next-build-number ctx) {}))
 
 (defn retrigger-pipeline
   "Retriggers a previous build of the pipeline, starting from a particular step-id.
   Returns the full results of the pipeline execution (see run-pipeline for details)"
   [pipeline context build-number step-id-to-run next-build-number]
-  (let [new-ctx (assoc context :retriggered-build-number build-number
-                               :retriggered-step-id step-id-to-run)]
-    (pipeline/run-pipeline pipeline new-ctx next-build-number)))
+  (let [new-ctx                (assoc context :retriggered-build-number build-number
+                                              :retriggered-step-id step-id-to-run)
+        initial-build-metadata (or
+                                 (state/get-build-metadata new-ctx (:retriggered-build-number new-ctx))
+                                 {})]
+    (pipeline/run-pipeline pipeline new-ctx next-build-number initial-build-metadata)))
 
 (defn retrigger-pipeline-async
   "Retriggers a previous build of the pipeline asynchronously and returning only the build number of the new pipeline-execution."

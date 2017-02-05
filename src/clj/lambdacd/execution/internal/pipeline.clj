@@ -6,7 +6,7 @@
             [lambdacd.state.core :as state]
             [lambdacd.event-bus :as event-bus]))
 
-(defn run-pipeline [pipeline ctx build-number]
+(defn run-pipeline [pipeline ctx build-number initial-build-metadata]
   (let [runnable-pipeline (map eval pipeline)]
     (state/consume-pipeline-structure ctx build-number (pipeline-structure/pipeline-display-representation pipeline))
     (event-bus/publish!! ctx :pipeline-started {:build-number build-number})
@@ -14,6 +14,6 @@
                                                           (assoc :result-channel (async/chan (async/dropping-buffer 0)))
                                                           (assoc :build-number build-number)
                                                           (assoc :step-id [])
-                                                          (build-metadata/add-metadata-atom)))]
+                                                          (build-metadata/add-metadata-atom initial-build-metadata)))]
       (event-bus/publish!! ctx :pipeline-finished (assoc full-result :build-number build-number))
       full-result)))

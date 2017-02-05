@@ -31,6 +31,7 @@
 
 (defn some-successful-step [arg & _]
   {:status :success})
+
 (defn some-failing-step [arg & _]
   {:status :failure})
 
@@ -163,4 +164,17 @@
       (wait-for (step-success? context 1 [2]))
       (let [new-container-step-result (state/get-step-result context 1 [1])]
         (is (= :success (:status new-container-step-result)))
-        (is (not= 1970 (t/year (:first-updated-at new-container-step-result))))))))
+        (is (not= 1970 (t/year (:first-updated-at new-container-step-result)))))))
+  (testing "that build metadata gets duplicated from the retriggered build"
+    (let [initial-state {0 {[1]   {:status :success}
+                            [1 1] {:status :success :out "I am nested"}
+                            [2]   {:status :failure}}}
+          pipeline      `((some-control-flow some-step) some-successful-step)
+          context       (some-ctx-with :initial-pipeline-state initial-state)]
+      (state/consume-build-metadata context 0 {:some :metadata})
+      (execution-core/retrigger-pipeline pipeline context 0 [2] 1)
+      (wait-for (step-success? context 1 [2]))
+      (is (= {:some :metadata}
+             (without-ts (state/get-build-metadata context 0))))
+      (is (= {:some :metadata}
+             (without-ts (state/get-build-metadata context 1)))))))
