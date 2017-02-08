@@ -9,6 +9,7 @@ The official release will have a defined and more stable API. If you are already
 * API Changes: 
   * `lambdacd.presentation.pipeline-state/not-retriggered?` is too specific to be part of the API and probably not used anywhere else. Deprecated and will become private in the future
   * `lambdacd.presentation.pipeline-structure/pad` is an internal utility function that was never supposed to be part of the public UI. Deprecated and will become private in the future
+  * `lambdacd.presentation.pipeline-structure/step-display-representation-internal` is an internal utility function that was never supposed to be part of the public UI. Deprecated and will become private in the future
 ## 0.13.0
 * Improvements: 
   * Added support for build-level metadata (#138). See [Build Metadata](https://github.com/flosell/lambdacd/wiki/Build%20Metadata) for details

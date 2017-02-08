@@ -129,7 +129,11 @@
        :has-dependencies false
        :children         children-representations})))
 
-(defn step-display-representation-internal [part id include-alias?]
+(defn step-display-representation-internal
+  ; TODO: should be private
+  "DEPRECATED"
+  {:deprecated "0.13.1"}
+  [part id include-alias?]
   (if (is-container-step? part)
     (container-step-representation part id include-alias?)
     (simple-step-representation part id))
