@@ -5,8 +5,7 @@
             [lambdacd.execution.internal.pipeline :as pipeline]
             [lambdacd.execution.internal.execute-step :as execute-step]
             [lambdacd.execution.internal.execute-steps :as execute-steps]
-            [lambdacd.execution.internal.kill :as kill]
-            [lambdacd.execution.internal.retrigger :as retrigger]))
+            [lambdacd.execution.internal.kill :as kill]))
 
 (defn run-pipeline
   "Execute a complete run of the pipeline.
