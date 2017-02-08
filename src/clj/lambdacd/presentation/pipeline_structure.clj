@@ -136,24 +136,65 @@
   [part id include-alias?]
   (if (is-container-step? part)
     (container-step-representation part id include-alias?)
-    (simple-step-representation part id))
-  )
+    (simple-step-representation part id)))
 
-(defn step-display-representation [part id]
+(defn step-display-representation
+  "Takes a part of a pipeline and its step-id and returns a map-representation with data about this part of the pipeline:
+  ```clojure
+  > (step-display-representation `do-stuff `(1)])
+  {:name \"do-stuff\" :type :step :step-id '(1) :has-dependencies false}
+  ```"
+  [part id]
   (step-display-representation-internal part id false))
 
 (defn pipeline-display-representation
+  "Takes a pipeline-structure and returns a nested list of step representations (i.e. the result of `step-display-representation`):
+  ```clojure
+  > (pipeline-display-representation `((in-parallel
+                                         (in-cwd \"foo\"
+                                                 do-stuff)
+                                         (in-cwd \"bar\"
+                                                 do-other-stuff)))
+
+  [{:name \"in-parallel\"
+    :type :parallel
+    :step-id '(1)
+    :has-dependencies false
+    :children
+    [{:name \"in-cwd foo\"
+      :type :container
+      :step-id '(1 1)
+      :has-dependencies false
+      :children [{:name \"do-stuff\" :type :step :step-id '(1 1 1) :has-dependencies false}]}
+     {:name \"in-cwd bar\"
+      :type :container
+      :step-id '(2 1)
+      :has-dependencies false
+      :children [{:name \"do-other-stuff\" :type :step :step-id '(1 2 1) :has-dependencies true}]}]}]
+  ```"
   ([part]
    (seq-to-display-representations '() false part)))
 
-(defn flatten-pipeline-representation [reps]
+(defn flatten-pipeline-representation
+  "Takes a pipeline-representation as returned by `pipeline-display-representation` (which is hierarchical, containing
+  only representations for the root-steps which then contain the representation of their children) and returns a collection
+  of pipeline representations, this time containing all child steps as well."
+  [reps]
   (flatten
     (for [rep reps]
       (if (:children rep)
         (conj (flatten-pipeline-representation (:children rep)) rep)
         [rep]))))
 
-(defn step-display-representation-by-step-id [pipeline-def step-id]
+(defn step-display-representation-by-step-id
+  "Returns a information about step (as returned by `step-display-representation`) for a specific step (identified by a step-id) in a pipeline:
+  ```clojure
+  > (step-display-representation-by-step-id `(do-stuff
+                                                do-other-stuff
+                                                do-stuff-that-has-a-different-display-type) `(1))
+  {:name \"do-stuff\" :type :step :step-id '(1) :has-dependencies false}
+  ```"
+  [pipeline-def step-id]
   (->> (seq-to-display-representations '() true pipeline-def)
        (flatten-pipeline-representation)
        (filter #(= (:step-id %) step-id))
