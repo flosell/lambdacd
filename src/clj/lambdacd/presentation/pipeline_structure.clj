@@ -1,6 +1,6 @@
 (ns lambdacd.presentation.pipeline-structure
-  "this namespace is responsible for converting the pipeline
-  into a nice, map-format that we can use to display the pipeline
+  "This namespace is responsible for converting the pipeline
+  into a nice map-format that we can use to display the pipeline
   in a UI"
   (:require [clojure.string :as s]))
 
@@ -37,7 +37,10 @@
            (nil? x)
            (sequential? x))))
 
-(defn pad [coll val]
+(defn pad ; TODO: should be private
+  "DEPRECATED"
+  {:deprecated "0.13.1"}
+  [coll val]
   (concat coll (repeat val)))
 
 (defn- visible-args-bitmap [fun]

@@ -43,7 +43,7 @@
 (defn- not-waiting? [result]
   (not (:has-been-waiting result)))
 
-(defn not-retriggered?
+(defn not-retriggered? ; TODO: should be private
   "DEPRECATED"
   {:deprecated "0.13.1"}
   [result]
