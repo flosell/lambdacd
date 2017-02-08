@@ -32,7 +32,8 @@
                    :all (constantly true)}
   :codox {:namespaces [#"^(?!.*\.internal\.).*$"]
           :source-uri "https://github.com/flosell/lambdacd/blob/master/{filepath}#L{line}"
-          :project    {:name "LambdaCD"}}
+          :project    {:name "LambdaCD"}
+          :metadata   {:doc/format :markdown}}
   :plugins [[lein-codox "0.10.2"]
             [lein-cljsbuild "1.1.3"]
             [lein-doo "0.1.4"]

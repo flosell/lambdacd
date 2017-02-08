@@ -18,7 +18,6 @@
              [2] {:status :success
                   :outputs {[1 2} {:status :success}}
   ```"
-  {:doc/format :markdown}
   [pipeline ctx]
   (pipeline/run-pipeline pipeline ctx (state/next-build-number ctx) {}))
 
@@ -59,7 +58,6 @@
   * `:is-killed` An atom with vaule true or false if the parent step needs control over when child steps are killed. Optional
   * `:unify-results-fn` A function that takes a collection of step results and returns a single step result that will be the result of the step while it is in progress. Used to control the parent
   * `:retrigger-predicate` A function that takes a steps context and the step itself and returns a keyword on what to do when retriggering: `:run` if the step should just run normally, `:rerun` if we rerun a step that ran before or `:mock` if we just mock the steps run by returning the previous result. Defaults to behavior that makes sense of steps run in sequence."
-  {:doc/format :markdown}
   [steps args ctx & opts]
   (apply execute-steps/execute-steps steps args ctx opts))
 

@@ -1,4 +1,4 @@
-(ns ^{:doc/format :markdown} lambdacd.event-bus
+(ns lambdacd.event-bus
   "Entry-point into the LambdaCD event bus.
 
   The event-bus exists to decouple communication between various parts of LambdaCD and

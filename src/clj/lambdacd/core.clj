@@ -37,7 +37,7 @@
 (defn assemble-pipeline
   "Assemble various internal LambdaCD components into a unit ready to run.
 
-  Returns a map that contains :context and :pipeline-def"
+  Returns a map that contains `:context` and `:pipeline-def`"
   ([pipeline-def config]
    (assemble-pipeline pipeline-def config (default-pipeline-state/new-default-pipeline-state config)))
   ([pipeline-def config pipeline-state-component]
@@ -52,25 +52,25 @@
       :pipeline-def           pipeline-def})))
 
 (defn retrigger
-  "DEPRECATED, use lambdacd.execution.core/retrigger instead"
+  "DEPRECATED, use `lambdacd.execution.core/retrigger` instead"
   {:deprecated "0.9.5"}
   [pipeline context build-number step-id-to-retrigger]
   (execution-core/retrigger-pipeline-async pipeline context build-number step-id-to-retrigger))
 
 (defn kill-step
-  "DEPRECATED, use lambdacd.execution.core/kill-step instead"
+  "DEPRECATED, use `lambdacd.execution.core/kill-step` instead"
   {:deprecated "0.9.5"}
   [ctx build-number step-id]
   (execution-core/kill-step ctx build-number step-id))
 
 (defn execute-steps
-  "DEPRECATED, use lambdacd.execution.core instead"
+  "DEPRECATED, use `lambdacd.execution.core` instead"
   {:deprecated "0.9.5"}
   [steps args ctx & opts]
   (apply execution-core/execute-steps steps args ctx opts))
 
 (defn execute-step
-   "DEPRECATED, use lambdacd.execution.core instead"
+   "DEPRECATED, use `lambdacd.execution.core` instead"
    {:deprecated "0.9.5"}
   ([args ctx step]
    (execution-core/execute-step args [ctx step]))
