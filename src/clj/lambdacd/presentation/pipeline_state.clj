@@ -32,7 +32,10 @@
 (defn- not-waiting? [result]
   (not (:has-been-waiting result)))
 
-(defn not-retriggered? [result]
+(defn not-retriggered?
+  "DEPRECATED"
+  {:deprecated "0.13.1"}
+  [result]
   (not (:retrigger-mock-for-build-number result)))
 
 (defn- first-with-key-ordered-by [comp key steps]
