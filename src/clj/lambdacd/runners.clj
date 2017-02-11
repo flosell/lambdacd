@@ -12,7 +12,9 @@
     (not (:retrigger-mock-for-build-number (:final-result step-finished-msg)))
     (not (:rerun-for-retrigger step-finished-msg))))
 
-(def should-trigger-next-build?
+(def ^{:deprecated "0.13.1"
+       :doc "Deprecated, should be private"}
+  should-trigger-next-build?
   (every-pred is-first-step? is-not-retriggered?))
 
 (defmacro while-not-stopped [ctx & body]
