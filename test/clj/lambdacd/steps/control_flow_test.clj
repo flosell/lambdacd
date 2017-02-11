@@ -248,16 +248,17 @@
                                    :step-id [0])]
       (is (map-containing {:status :killed} ((either some-step-waiting-to-be-killed some-step-waiting-to-be-killed) {} ctx)))))
   (testing "that it kills all children if it being killed later"
-    (let [is-killed     (atom false)
-          ctx           (some-ctx-with :is-killed is-killed
-                                       :step-id [0])
-          child-ctx     (assoc ctx :step-id [2 0])
-          _ (pipeline-state-updater/start-pipeline-state-updater ctx)
-          either-result (start-waiting-for ((either some-step-waiting-to-be-killed some-step-waiting-to-be-killed) {} ctx))]
-      (wait-for (step-running? child-ctx))
+    (without-dead-steps
+      (let [is-killed     (atom false)
+            ctx           (some-ctx-with :is-killed is-killed
+                                         :step-id [0])
+            child-ctx     (assoc ctx :step-id [2 0])
+            _             (pipeline-state-updater/start-pipeline-state-updater ctx)
+            either-result (start-waiting-for ((either some-step-waiting-to-be-killed some-step-waiting-to-be-killed) {} ctx))]
+        (wait-for (step-running? child-ctx))
 
-      (reset! is-killed true)
-      (is (map-containing {:status :killed} (async/<!! either-result)))))
+        (reset! is-killed true)
+        (is (map-containing {:status :killed} (async/<!! either-result))))))
   (testing "that it kills its children in the end"
     (let [was-killed (atom false)]
       ((either some-successful-step (some-step-indicating-killed was-killed)) {} (some-ctx))

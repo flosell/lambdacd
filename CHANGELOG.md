@@ -6,6 +6,10 @@ However, as this is still an experimental library, breaking changes may occur wi
 The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
 
 ## 0.13.1
+* Improvements: 
+  * Marking builds as dead if the datastore sees them as running but they are not (e.g. because LambdaCD was not cleanly shut down previously). 
+    This introduces the new `:status :dead` (#134) 
+    
 * Deprecated: 
   * `lambdacd.presentation.pipeline-state/not-retriggered?` is too specific to be part of the API and probably not used anywhere else. Deprecated and will become private in the future
   * `lambdacd.presentation.pipeline-structure/pad` is an internal utility function that was never supposed to be part of the public UI. Deprecated and will become private in the future

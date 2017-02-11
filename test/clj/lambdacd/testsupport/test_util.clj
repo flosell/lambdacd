@@ -4,7 +4,8 @@
             [clojure.core.async :as async]
             [clojure.walk :as w]
             [lambdacd.state.core :as state]
-            [lambdacd.event-bus :as event-bus])
+            [lambdacd.event-bus :as event-bus]
+            [lambdacd.state.internal.dead-steps-marking :as dead-steps-marking])
   (:import (java.util.concurrent TimeoutException)))
 
 (defmacro my-time
@@ -150,3 +151,11 @@
   (-> (event-bus/subscribe ctx k)
       (event-bus/only-payload)
       (buffered)))
+
+(defn no-dead-steps [_ _ x]
+  x)
+
+(defmacro without-dead-steps [& body]
+  `(with-redefs [dead-steps-marking/mark-dead-steps no-dead-steps]
+     ~@body))
+

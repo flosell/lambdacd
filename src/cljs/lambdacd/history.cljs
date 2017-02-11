@@ -22,6 +22,7 @@
     "running" "fa fa-cog fa-spin running-blue"
     "waiting" "fa fa-pause waiting-yellow"
     "killed"  "fa fa-bug"
+    "dead"    "fa fa-bug"
     "fa fa-question"))
 
 (defn- icon [class]

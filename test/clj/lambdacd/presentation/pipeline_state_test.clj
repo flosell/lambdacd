@@ -37,25 +37,26 @@
    (ctx-with-state state {})))
 
 (deftest history-for-ctx-test
-  (testing "that we can aggregate the pipeline state into a nice history representation"
-    (is (= [{:build-number          8
-             :status                :waiting
-             :most-recent-update-at stop-time
-             :first-updated-at      start-time
-             :retriggered           nil
-             :duration-in-sec       10
-             :build-metadata {:some :metadata}}
-            {:build-number          9
-             :status                :running
-             :most-recent-update-at stop-time
-             :first-updated-at      start-time
-             :retriggered           nil
-             :duration-in-sec       10
-             :build-metadata {}}]
-           (history-for (ctx-with-state {8 {'(0) {:status :waiting :most-recent-update-at stop-time :first-updated-at start-time}}
-                                         9 {'(0) {:status :running :most-recent-update-at stop-time :first-updated-at start-time}}}
-                                        {8 {:some :metadata}
-                                         9 {}})))))
+  (without-dead-steps
+    (testing "that we can aggregate the pipeline state into a nice history representation"
+      (is (= [{:build-number          8
+               :status                :waiting
+               :most-recent-update-at stop-time
+               :first-updated-at      start-time
+               :retriggered           nil
+               :duration-in-sec       10
+               :build-metadata        {:some :metadata}}
+              {:build-number          9
+               :status                :running
+               :most-recent-update-at stop-time
+               :first-updated-at      start-time
+               :retriggered           nil
+               :duration-in-sec       10
+               :build-metadata        {}}]
+             (history-for (ctx-with-state {8 {'(0) {:status :waiting :most-recent-update-at stop-time :first-updated-at start-time}}
+                                           9 {'(0) {:status :running :most-recent-update-at stop-time :first-updated-at start-time}}}
+                                          {8 {:some :metadata}
+                                           9 {}}))))))
   (testing "that the timestamps are accumulated correctly"
     (testing "that the earliest start time is the start time of the pipeline"
       (is (= before-start-time (:first-updated-at (first

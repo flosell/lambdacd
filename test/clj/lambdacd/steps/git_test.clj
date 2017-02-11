@@ -212,27 +212,28 @@
     (testing "that the git repo is checked out somewhere within the home folder"
       (is (= some-parent-folder (.getParent (.getParentFile (io/file (:thecwd (checkout-and-execute repo-uri "HEAD" args ctx [some-step-that-returns-the-cwd]))))))))
     (testing "that the children can be killed"
-      (let [is-killed (atom false)
-            ctx (some-ctx-with :config {:home-dir some-parent-folder}
-                               :step-id [0]
-                               :is-killed is-killed)
-            future-result (start-waiting-for (checkout-and-execute repo-uri "HEAD" args ctx [some-step-waiting-to-be-killed]))]
-        (wait-for (tu/child-step-running? ctx [1 0]))
-        (reset! is-killed true)
-        (is (map-containing {:status  :killed
-                             :outputs {[1 0] {:status :killed
-                                              :received-kill true}}} (get-or-timeout future-result)))))))
+      (without-dead-steps
+        (let [is-killed     (atom false)
+              ctx           (some-ctx-with :config {:home-dir some-parent-folder}
+                                           :step-id [0]
+                                           :is-killed is-killed)
+              future-result (start-waiting-for (checkout-and-execute repo-uri "HEAD" args ctx [some-step-waiting-to-be-killed]))]
+          (wait-for (tu/child-step-running? ctx [1 0]))
+          (reset! is-killed true)
+          (is (map-containing {:status  :killed
+                               :outputs {[1 0] {:status        :killed
+                                                :received-kill true}}} (get-or-timeout future-result))))))))
 
 
-  (deftest with-commit-details-test
+(deftest with-commit-details-test
   (testing "that we can get the details between two commits and whatever we put in"
-    (let [test-repo (create-test-repo)
+    (let [test-repo    (create-test-repo)
           old-revision (last (:commits test-repo))
-          git-dir (:dir test-repo)
-          commit (commit-to git-dir "some commit")
+          git-dir      (:dir test-repo)
+          commit       (commit-to git-dir "some commit")
           other-commit (commit-to git-dir "some other commit")
-          args {:status :success :foo :bar :revision other-commit :old-revision old-revision}
-          result (with-commit-details (some-ctx) (repo-uri-for git-dir) args)]
+          args         {:status :success :foo :bar :revision other-commit :old-revision old-revision}
+          result       (with-commit-details (some-ctx) (repo-uri-for git-dir) args)]
       (is (= :success (:status result)))
       (is (= :bar (:foo result)))
       (is (= other-commit (:revision result)))

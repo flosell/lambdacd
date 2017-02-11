@@ -2,7 +2,8 @@
   "Facade for all functions related to dealing with LambdaCDs state. Wraps the related interfaces to simplify compatibility and API."
   (:require [lambdacd.state.protocols :as protocols]
             [lambdacd.internal.pipeline-state :as legacy-pipeline-state]
-            [lambdacd.presentation.pipeline-structure :as pipeline-structure]))
+            [lambdacd.presentation.pipeline-structure :as pipeline-structure]
+            [lambdacd.state.internal.dead-steps-marking :as dead-steps-marking]))
 
 (defn- all-build-numbers-from-legacy [component]
   (->> (legacy-pipeline-state/get-all component)
@@ -83,10 +84,11 @@
 (defn get-step-results
   "Returns a map from step-ids to step-results"
   [ctx build-number]
-  (let [component (state-component ctx)]
-    (if (satisfies? protocols/QueryStepResultsSource component)
-      (protocols/get-step-results component build-number)
-      (get-step-results-from-legacy component build-number))))
+  (dead-steps-marking/mark-dead-steps ctx build-number
+                                      (let [component (state-component ctx)]
+                                          (if (satisfies? protocols/QueryStepResultsSource component)
+                                            (protocols/get-step-results component build-number)
+                                            (get-step-results-from-legacy component build-number)))))
 
 (defn get-step-result
   "Returns a map containing the result of one step"

@@ -8,7 +8,8 @@
                                                     slurp-chan
                                                     wait-for
                                                     events-for
-                                                    step-failure?]]
+                                                    step-failure?
+                                                    without-dead-steps]]
             [lambdacd.util.internal.async :refer [buffered]]
             [lambdacd.testsupport.matchers :refer :all]
             [lambdacd.testsupport.data :refer [some-ctx-with some-ctx]]
@@ -57,34 +58,35 @@
   {:status :success :the-some (:some args)})
 
 (deftest retrigger-mock-step-test
-  (testing "that it returns the result of the original step"
-    (let [some-original-result {:foo :bar}
-          initial-state        {0 {[1] some-original-result
-                                   [2] {:some :other :steps :result}}
-                                1 {[1] {:some :other :builds :result}}}
-          ctx                  (some-ctx-with :initial-pipeline-state initial-state
-                                              :step-id [1])
-          mock-step            (retrigger-mock-step 0)]
-      (is (= (assoc some-original-result :retrigger-mock-for-build-number 0)
-             (mock-step {} ctx)))))
-  (testing "that it reports the results of its children"
-    (let [some-original-result  {:foo :bar}
-          some-childs-result    {:bar :baz}
-          initial-state         {0 {[1]   some-original-result
-                                    [1 1] some-childs-result
-                                    [2]   {:some :other :steps :result}}
-                                 1 {[1] {:some :other :builds :result}}}
-          ctx                   (some-ctx-with :initial-pipeline-state initial-state
-                                               :build-number 1
-                                               :step-id [1])
-          step-finished-events  (step-result-updates-for ctx)
-          mock-step             (retrigger-mock-step 0)
-          expected-child-result (assoc some-childs-result :retrigger-mock-for-build-number 0)]
-      (mock-step {} ctx)
-      (is (= [{:build-number 1
-               :step-id      [1 1]
-               :step-result  expected-child-result}]
-             (slurp-chan step-finished-events))))))
+  (without-dead-steps
+    (testing "that it returns the result of the original step"
+      (let [some-original-result {:foo :bar}
+            initial-state        {0 {[1] some-original-result
+                                     [2] {:some :other :steps :result}}
+                                  1 {[1] {:some :other :builds :result}}}
+            ctx                  (some-ctx-with :initial-pipeline-state initial-state
+                                                :step-id [1])
+            mock-step            (retrigger-mock-step 0)]
+        (is (= (assoc some-original-result :retrigger-mock-for-build-number 0)
+               (mock-step {} ctx)))))
+    (testing "that it reports the results of its children"
+      (let [some-original-result  {:foo :bar}
+            some-childs-result    {:bar :baz}
+            initial-state         {0 {[1]   some-original-result
+                                      [1 1] some-childs-result
+                                      [2]   {:some :other :steps :result}}
+                                   1 {[1] {:some :other :builds :result}}}
+            ctx                   (some-ctx-with :initial-pipeline-state initial-state
+                                                 :build-number 1
+                                                 :step-id [1])
+            step-finished-events  (step-result-updates-for ctx)
+            mock-step             (retrigger-mock-step 0)
+            expected-child-result (assoc some-childs-result :retrigger-mock-for-build-number 0)]
+        (mock-step {} ctx)
+        (is (= [{:build-number 1
+                 :step-id      [1 1]
+                 :step-result  expected-child-result}]
+               (slurp-chan step-finished-events)))))))
 
 (deftest retrigger-test
   (testing "that retriggering results in a completely new pipeline-run where not all the steps are executed"

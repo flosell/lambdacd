@@ -30,3 +30,6 @@
     (if (= s2 :success)
       s1
       s2)))
+
+(defn is-active? [status]
+  (contains? #{:running :waiting} status))

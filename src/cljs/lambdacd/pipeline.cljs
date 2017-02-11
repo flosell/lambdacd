@@ -12,19 +12,23 @@
             [lambdacd.utils :as utils]))
 
 (defn is-finished [step]
-  (let [status (:status (:result step))
-        is-finished (or (= "success" status) (= "failure" status) (= "killed" status))]
-    is-finished))
+  (let [status (:status (:result step))]
+    (or (= "success" status)
+        (= "failure" status)
+        (= "killed" status)
+        (= "dead" status))))
 
-(defn is-already-killed [{result :result}]
+(defn is-already-killed [{result :result
+                          status :status}]
   (or
+    (= "dead" status)
     (:received-kill result)
     (:processed-kill result)))
 
 (defn is-being-killed? [{result :result}]
-  (and
-    (:received-kill result)
-    (not= "killed" (:status result))))
+  (and (:received-kill result)
+       (not= "killed" (:status result))
+       (not= "dead" (:status result))))
 
 (defn has-dependencies [step]
   (:has-dependencies step))

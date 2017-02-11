@@ -2,7 +2,7 @@
   (:require [lambdacd.event-bus :as event-bus]
             [clojure.core.async :as async]))
 
-(defn running-step-record [payload]
+(defn- running-step-record [payload]
   {:step-id      (:step-id payload)
    :build-number (:build-number payload)})
 
@@ -24,3 +24,7 @@
             (swap! started-steps #(disj % (running-step-record payload)))
             (recur))))
       (assoc ctx :started-steps started-steps)))
+
+(defn is-running? [ctx build-number step-id]
+  (contains? @(:started-steps ctx) {:step-id step-id
+                                    :build-number build-number}))

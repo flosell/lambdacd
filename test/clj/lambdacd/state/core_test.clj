@@ -89,16 +89,27 @@
 
 (deftest get-step-results-test
   (testing "that calls to QueryStepResultSource will just pass through"
-    (let [component (mock state-protocols/QueryStepResultsSource {:get-step-results {:some :step-results}})]
-      (is (= {:some :step-results} (s/get-step-results (some-ctx-with :pipeline-state-component component) 1)))
+    (let [component (mock state-protocols/QueryStepResultsSource {:get-step-results {:some {:step   :results
+                                                                                            :status :success}}})]
+      (is (= {:some {:step   :results
+                     :status :success}} (s/get-step-results (some-ctx-with :pipeline-state-component component) 1)))
+      (is (received? component state-protocols/get-step-results [1]))))
+  (testing "that dead steps that are still active in persistence are marked as dead"
+    (let [component (mock state-protocols/QueryStepResultsSource {:get-step-results {:some {:step   :results
+                                                                                            :status :running}}})]
+      (is (= {:some {:step   :results
+                     :status :dead}} (s/get-step-results (some-ctx-with :pipeline-state-component component
+                                                                        :started-steps (atom #{})) 1)))
       (is (received? component state-protocols/get-step-results [1]))))
   (testing "compatibility with PipelineStateComponent"
     (testing "an empty state"
       (let [component (mock legacy-pipeline-state/PipelineStateComponent {:get-all {}})]
         (is (= nil (s/get-step-results (some-ctx-with :pipeline-state-component component) 1)))))
     (testing "state with builds returns sorted list"
-      (let [component (mock legacy-pipeline-state/PipelineStateComponent {:get-all {1 {:some :build}}})]
-        (is (= {:some :build} (s/get-step-results (some-ctx-with :pipeline-state-component component) 1)))))))
+      (let [component (mock legacy-pipeline-state/PipelineStateComponent {:get-all {1 {:some-build {:step   :results
+                                                                                                    :status :success}}}})]
+        (is (= {:some-build {:step   :results
+                             :status :success}} (s/get-step-results (some-ctx-with :pipeline-state-component component) 1)))))))
 
 (deftest get-step-result-test
   (testing "that we can get a simple step-result"

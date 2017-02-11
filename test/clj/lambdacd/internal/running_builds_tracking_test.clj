@@ -13,6 +13,12 @@
       (event-bus/publish!! ctx :step-started {:step-id [2 2] :build-number 2})
 
       (wait-for (= 2 (count @(:started-steps ctx))))
+
+      (is (is-running? ctx 1 [1]))
+      (is (is-running? ctx 2 [2 2]))
+      (is (not (is-running? ctx 3 [1])))
+      (is (not (is-running? ctx 1 [2])))
+
       (is (= #{{:step-id [1] :build-number 1}
                {:step-id [2 2] :build-number 2}} @(:started-steps ctx)))
 
@@ -20,4 +26,6 @@
 
       (wait-for (= 1 (count @(:started-steps ctx))))
 
-      (is (= #{{:step-id [1] :build-number 1}} @(:started-steps ctx))))))
+      (is (= #{{:step-id [1] :build-number 1}} @(:started-steps ctx)))
+      (is (is-running? ctx 1 [1]))
+      (is (not (is-running? ctx 2 [2 2]))))))

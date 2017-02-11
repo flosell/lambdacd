@@ -4,7 +4,6 @@
             [lambdacd.internal.default-pipeline-state-persistence :refer :all]
             [lambdacd.presentation.pipeline-structure-test :as pipeline-structure-test]
             [clj-time.core :as t]
-            [lambdacd.util :as utils]
             [lambdacd.util.internal.temp :as temp-util]
             [clojure.java.io :as io]))
 
