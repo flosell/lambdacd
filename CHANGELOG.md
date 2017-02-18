@@ -1,46 +1,61 @@
 # Changelog
 
 This changelog contains a loose collection of changes in every release. I will also try and document all breaking changes to the API.
-However, as this is still an experimental library, breaking changes may occur without warning between 0.X.Y releases.
 
-The official release will have a defined and more stable API. If you are already relying on a particular API, please let me know.
+The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to a "shifted" version of semantic versioning while the major version remains at 0: Minor version changes indicate breaking changes, patch version changes should not contain breaking changes.
 
-## 0.13.1
-* Improvements: 
-  * Marking builds as dead if the datastore sees them as running but they are not (e.g. because LambdaCD was not cleanly shut down previously). 
-    This introduces the new `:status :dead` (#134) 
-    
-* Deprecated: 
-  * `lambdacd.presentation.pipeline-state/not-retriggered?` is too specific to be part of the API and probably not used anywhere else. Deprecated and will become private in the future
-  * `lambdacd.presentation.pipeline-structure/pad` is an internal utility function that was never supposed to be part of the public UI. Deprecated and will become private in the future
-  * `lambdacd.presentation.pipeline-structure/step-display-representation-internal` is an internal utility function that was never supposed to be part of the public UI. Deprecated and will become private in the future
-  * `lambdacd.presentation.unified/unified-presentation` is unused and therefore deprecated and will be removed in the future. Use `pipeline-structure-with-step-results` instead.
-  * `lambdacd.runners/should-trigger-next-build?` is public by accident. Deprecated and will become private in the future.
-  * `lambdacd.steps.control-flow/synchronize-atoms` is public by accident. Deprecated and will become private in the future.
-## 0.13.0
-* Improvements: 
-  * Added support for build-level metadata (#138). See [Build Metadata](https://github.com/flosell/lambdacd/wiki/Build%20Metadata) for details
-  * UI support for some kinds of metadata: 
-    * `:human-readable-build-label`
-  * Added events `:pipeline-started` and `:pipeline-finished` (#155)
-  * Added function to simplify handling of nested step-results (e.g. the information received from `:pipeline-finished` events (#155, #154): 
-    * `lambdacd.steps.result/flatten-step-result-outputs`
-  * Added functions to simplify getting information about a specific step (#154):
-    * `lambdacd.presentation.pipeline-structure/flatten-pipeline-representation`
-    * `lambdacd.presentation.pipeline-structure/step-display-representation-by-step-id`
-* Bug fixes:
-  * Catch Exception instead of Throwable in build steps to avoid catching Errors which cannot be handled (#148), thanks @hgsy!
-* Deprecated: 
-  * `lambdacd.execution` was deprecated in favor of `lambdacd.execution.core`
-* Breaking Changes: 
-  * Removed `:unify-status-fn` parameter in `execute-steps` (deprecated since 0.9.4). Use `:unify-results-fn` instead. `lambdacd.steps.support/unify-only-status` can help with migrating unify-status-fns. 
-* Changes in internal API: 
-  * `lambdacd.internal.execution` was refactored into several independent namespaces, functions were moved around, replaced or made private. 
+## [Unreleased] (0.13.1)
+
+### Fixed
+ 
+* Marking builds as dead if the datastore sees them as running but they are not (e.g. because LambdaCD was not cleanly shut down previously). 
+    This introduces the new `:status :dead` (#134)
+
+### Deprecated
+
+* A couple of functions were only public by accident and should not be considered part of the public API. They will be moved or become private in the future: 
+  * `lambdacd.presentation.pipeline-state/not-retriggered?`
+  * `lambdacd.presentation.pipeline-structure/pad`
+  * `lambdacd.presentation.pipeline-structure/step-display-representation-internal`
+  * `lambdacd.runners/should-trigger-next-build?`
+  * `lambdacd.steps.control-flow/synchronize-atoms`
+  
+* `lambdacd.presentation.unified/unified-presentation` is unused and therefore deprecated and will be removed in the future. Use `pipeline-structure-with-step-results` instead.
+
+## [0.13.0]
+
+### Added
+
+* Added support for build-level metadata (#138). See [Build Metadata](https://github.com/flosell/lambdacd/wiki/Build%20Metadata) for details
+* UI support for some kinds of metadata: 
+  * `:human-readable-build-label`
+* Added events `:pipeline-started` and `:pipeline-finished` (#155)
+* Added function to simplify handling of nested step-results (e.g. the information received from `:pipeline-finished` events (#155, #154): 
+* `lambdacd.steps.result/flatten-step-result-outputs`
+* Added functions to simplify getting information about a specific step (#154):
+* `lambdacd.presentation.pipeline-structure/flatten-pipeline-representation`
+* `lambdacd.presentation.pipeline-structure/step-display-representation-by-step-id`
+
+### Fixed
+
+* Catch Exception instead of Throwable in build steps to avoid catching Errors which cannot be handled (#148), thanks @hgsy!
+
+### Changed
+* Changes in internal API:
+ `lambdacd.internal.execution` was refactored into several independent namespaces, functions were moved around, replaced or made private. 
     You shouldn't have dependencies on those unless you are doing something really crazy or advanced. If you did, please consider using functions in public namespaces (i.e. that don't have `internal` in their name).
     If you have dependencies on functions that have no public equivalent, please open an issue to get this fixed. 
 
+### Deprecated
 
-## 0.12.1
+* `lambdacd.execution` was deprecated in favor of `lambdacd.execution.core`
+
+### Removed
+
+* Removed `:unify-status-fn` parameter in `execute-steps` (deprecated since 0.9.4). Use `:unify-results-fn` instead. `lambdacd.steps.support/unify-only-status` can help with migrating unify-status-fns.
+
+
+## [0.12.1]
 
 New years cleanup and bug fix release.
 
@@ -67,7 +82,9 @@ New years cleanup and bug fix release.
     * `lambdacd.util/fill`
     * `lambdacd.util/merge-with-k-v`
 
-## 0.12.0
+## [0.12.0]
+
+**This release was released without proper CSS, use 0.12.1**
 
 * Bug fixes: 
   * Fixed retriggering: Retriggering did not work if the new pipeline state was used as it did not save the pipeline structure for the retriggered build (#146). 
@@ -587,3 +604,9 @@ no breaking API changes
  (def app (:ring-handler pipeline))
  (def start-pipeline-thread (:init pipeline))
  ```
+
+
+[Unreleased]: https://github.com/flosell/lambdacd/compare/0.13.0...HEAD
+[0.13.0]: https://github.com/flosell/lambdacd/compare/0.12.1...0.13.0
+[0.12.1]: https://github.com/flosell/lambdacd/compare/0.12.0...0.12.1
+[0.12.0]: https://github.com/flosell/lambdacd/compare/0.11.0...0.12.0
