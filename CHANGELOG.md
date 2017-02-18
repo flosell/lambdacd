@@ -4,7 +4,7 @@ This changelog contains a loose collection of changes in every release. I will a
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to a "shifted" version of semantic versioning while the major version remains at 0: Minor version changes indicate breaking changes, patch version changes should not contain breaking changes.
 
-## [Unreleased] (0.13.1)
+## Unreleased (0.13.1)
 
 ### Fixed
  
@@ -22,7 +22,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
   
 * `lambdacd.presentation.unified/unified-presentation` is unused and therefore deprecated and will be removed in the future. Use `pipeline-structure-with-step-results` instead.
 
-## [0.13.0]
+## 0.13.0
 
 ### Added
 
@@ -55,7 +55,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 * Removed `:unify-status-fn` parameter in `execute-steps` (deprecated since 0.9.4). Use `:unify-results-fn` instead. `lambdacd.steps.support/unify-only-status` can help with migrating unify-status-fns.
 
 
-## [0.12.1]
+## 0.12.1
 
 New years cleanup and bug fix release.
 
@@ -82,7 +82,7 @@ New years cleanup and bug fix release.
     * `lambdacd.util/fill`
     * `lambdacd.util/merge-with-k-v`
 
-## [0.12.0]
+## 0.12.0
 
 **This release was released without proper CSS, use 0.12.1**
 
@@ -604,9 +604,3 @@ no breaking API changes
  (def app (:ring-handler pipeline))
  (def start-pipeline-thread (:init pipeline))
  ```
-
-
-[Unreleased]: https://github.com/flosell/lambdacd/compare/0.13.0...HEAD
-[0.13.0]: https://github.com/flosell/lambdacd/compare/0.12.1...0.13.0
-[0.12.1]: https://github.com/flosell/lambdacd/compare/0.12.0...0.12.1
-[0.12.0]: https://github.com/flosell/lambdacd/compare/0.11.0...0.12.0
