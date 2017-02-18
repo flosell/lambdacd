@@ -16,6 +16,7 @@ The official release will have a defined and more stable API. If you are already
   * `lambdacd.presentation.pipeline-structure/step-display-representation-internal` is an internal utility function that was never supposed to be part of the public UI. Deprecated and will become private in the future
   * `lambdacd.presentation.unified/unified-presentation` is unused and therefore deprecated and will be removed in the future. Use `pipeline-structure-with-step-results` instead.
   * `lambdacd.runners/should-trigger-next-build?` is public by accident. Deprecated and will become private in the future.
+  * `lambdacd.steps.control-flow/synchronize-atoms` is public by accident. Deprecated and will become private in the future.
 ## 0.13.0
 * Improvements: 
   * Added support for build-level metadata (#138). See [Build Metadata](https://github.com/flosell/lambdacd/wiki/Build%20Metadata) for details
