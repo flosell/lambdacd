@@ -13,7 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ### Deprecated
 
-* Built-in Git-Suppot (`lambdacd.steps.git`) should be considered deprecated now and will be removed in the future. Use the more modern [`lambdacd-git` library](https://github.com/flosell/lambdacd-git) instead.
+* Built-in Git-Support (`lambdacd.steps.git`) should be considered deprecated now and will be removed in the future. Use the more modern [`lambdacd-git` library](https://github.com/flosell/lambdacd-git) instead.
 * A couple of functions were only public by accident and should not be considered part of the public API. They will be moved or become private in the future: 
   * `lambdacd.presentation.pipeline-state/not-retriggered?`
   * `lambdacd.presentation.pipeline-structure/pad`
