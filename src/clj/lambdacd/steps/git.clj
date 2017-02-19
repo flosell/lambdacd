@@ -1,5 +1,6 @@
-(ns lambdacd.steps.git
-  "build-steps that let you work with git repositories"
+(ns ^{:deprecated "0.13.1"} lambdacd.steps.git
+  "DEPRECATED: Build-steps that let you work with git repositories.
+  Use the [`lambdacd-git` library](https://github.com/flosell/lambdacd-git) instead."
   (:import (java.io File))
   (:require [lambdacd.execution.core :as execution]
             [clojure.tools.logging :as log]
