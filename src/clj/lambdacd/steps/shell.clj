@@ -18,7 +18,10 @@
     (zero? exit-code) :success
     :default :failure))
 
-(defn kill [was-killed-indicator proc ctx kill-cookie]
+(defn kill
+  "DEPRECATED."
+  {:deprecated "0.13.1"}
+  [was-killed-indicator proc ctx kill-cookie]
   (reset! was-killed-indicator true)
   (async/>!! (:result-channel ctx) [:processed-kill true])
   (.destroy proc)

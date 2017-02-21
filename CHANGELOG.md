@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
   * `lambdacd.presentation.pipeline-structure/step-display-representation-internal`
   * `lambdacd.runners/should-trigger-next-build?`
   * `lambdacd.steps.control-flow/synchronize-atoms`
+  * `lambdacd.steps.shell/kill`
   
 * `lambdacd.presentation.unified/unified-presentation` is unused and therefore deprecated and will be removed in the future. Use `pipeline-structure-with-step-results` instead.
 
