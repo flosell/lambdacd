@@ -1,6 +1,7 @@
 (ns lambdacd.execution.internal.util
   (:require [lambdacd.event-bus :as event-bus]
-            [lambdacd.steps.result :as step-results]))
+            [lambdacd.steps.result :as step-results]
+            [lambdacd.stepresults.merge-resolvers :as merge-resolvers]))
 
 (defn send-step-result!! [{step-id :step-id build-number :build-number :as ctx} step-result]
   (let [payload {:build-number build-number
@@ -19,7 +20,7 @@
     args-with-old-and-new-globals))
 
 (defn merge-two-step-results [r1 r2]
-  (step-results/merge-two-step-results r1 r2 :resolvers [step-results/status-resolver
-                                                         step-results/merge-nested-maps-resolver
-                                                         step-results/combine-to-list-resolver
-                                                         step-results/second-wins-resolver]))
+  (step-results/merge-two-step-results r1 r2 :resolvers [merge-resolvers/status-resolver
+                                                         merge-resolvers/merge-nested-maps-resolver
+                                                         merge-resolvers/combine-to-list-resolver
+                                                         merge-resolvers/second-wins-resolver]))

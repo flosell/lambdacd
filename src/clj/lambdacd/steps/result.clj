@@ -3,31 +3,39 @@
             [clojure.string :as s]
             [lambdacd.util :as utils]
             [lambdacd.stepresults.flatten :as flatten]
-            [lambdacd.stepresults.merge :as merge]))
+            [lambdacd.stepresults.merge :as merge]
+            [lambdacd.stepresults.merge-resolvers :as merge-resolvers]))
 
 ; --- common ---
-(defn merge-nested-maps-resolver [_ v1 v2]
-  (when (and (map? v1) (map? v2))
-    (merge v1 v2)))
+(defn merge-nested-maps-resolver
+  "DEPRECATED, use `lambdacd.stepresults.merge-resolvers/merge-nested-maps-resolver` instead."
+  {:deprecated "0.13.1"}
+  [k v1 v2]
+  (merge-resolvers/merge-nested-maps-resolver k v1 v2))
 
-(defn status-resolver [k v1 v2]
-  (when (= k :status)
-    (status/choose-last-or-not-success v1 v2)))
+(defn status-resolver
+  "DEPRECATED, use `lambdacd.stepresults.merge-resolvers/status-resolver` instead."
+  {:deprecated "0.13.1"}
+  [k v1 v2]
+  (merge-resolvers/status-resolver k v1 v2))
 
-(defn second-wins-resolver [_ _ v2]
-  v2)
+(defn second-wins-resolver
+  "DEPRECATED, use `lambdacd.stepresults.merge-resolvers/second-wins-resolver` instead."
+  {:deprecated "0.13.1"}
+  [k v1 v2]
+  (merge-resolvers/second-wins-resolver k v1 v2))
 
-(defn combine-to-list-resolver [_ v1 v2]
-  (cond
-    (and (coll? v1) (coll? v2)) (into v1 v2)
-    (coll? v1) (merge v1 v2)
-    :else nil))
+(defn combine-to-list-resolver
+  "DEPRECATED, use `lambdacd.stepresults.merge-resolvers/combine-to-list-resolver` instead."
+  {:deprecated "0.13.1"}
+  [k v1 v2]
+  (merge-resolvers/combine-to-list-resolver k v1 v2))
 
-(defn join-output-resolver [k v1 v2]
-  (when (and (= :out k)
-             (string? v1)
-             (string? v2))
-    (s/join "\n" [v1 v2])))
+(defn join-output-resolver
+  "DEPRECATED, use `lambdacd.stepresults.merge-resolvers/join-output-resolver` instead."
+  {:deprecated "0.13.1"}
+  [k v1 v2]
+  (merge-resolvers/join-output-resolver k v1 v2))
 
 (defn- resolve-first-matching [resolvers]
   (fn [k v1 v2]
@@ -37,9 +45,9 @@
          (first))))
 
 (defn merge-two-step-results [a b & {:keys [resolvers]
-                                     :or   {resolvers [status-resolver
-                                                       merge-nested-maps-resolver
-                                                       second-wins-resolver]}}]
+                                     :or   {resolvers [merge-resolvers/status-resolver
+                                                       merge-resolvers/merge-nested-maps-resolver
+                                                       merge-resolvers/second-wins-resolver]}}]
   (utils/merge-with-k-v (resolve-first-matching resolvers) a b))
 
 (defn merge-step-results

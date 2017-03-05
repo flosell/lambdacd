@@ -34,14 +34,5 @@
                                                   :resolvers [])))))))
 
 
-(deftest join-output-resolver-test
-  (testing "that :out gets resolved by joining strings with newlines"
-    (is (= "foo\nbar" (join-output-resolver :out "foo" "bar"))))
-  (testing "that other keys don't resolve"
-    (is (= nil (join-output-resolver :other-key "foo" "bar"))))
-  (testing "that outs that arent strings don't resolve"
-    (is (= nil (join-output-resolver :other-key 1 "bar")))
-    (is (= nil (join-output-resolver :other-key "foo" :bar)))))
-
 
 

@@ -5,14 +5,15 @@
             [clojure.walk :as walk]
             [lambdacd.step-id :as step-id]
             [lambdacd.steps.result :as step-results]
-            [lambdacd.execution.internal.util :as execution-util])
+            [lambdacd.execution.internal.util :as execution-util]
+            [lambdacd.stepresults.merge-resolvers :as merge-resolvers])
   (:import (java.io Writer StringWriter)))
 
 (defn- merge-step-results-with-joined-output [a b]
-  (step-results/merge-two-step-results a b :resolvers [step-results/status-resolver
-                                                       step-results/merge-nested-maps-resolver
-                                                       step-results/join-output-resolver
-                                                       step-results/second-wins-resolver]))
+  (step-results/merge-two-step-results a b :resolvers [merge-resolvers/status-resolver
+                                                       merge-resolvers/merge-nested-maps-resolver
+                                                       merge-resolvers/join-output-resolver
+                                                       merge-resolvers/second-wins-resolver]))
 
 (defn- wrap-step-to-allow-nil-values [step]
   (fn [args ctx]
