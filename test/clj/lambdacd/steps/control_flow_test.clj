@@ -22,6 +22,9 @@
 (defn some-step-returning-cwd [{cwd :cwd} & _]
   {:given-cwd cwd :status :success})
 
+(defn some-step-returning-its-args [args ctx]
+  {:status :success :args args})
+
 (defn some-step-taking-100ms [arg & _]
   (Thread/sleep 100)
   {:foo :bar :status :success})
@@ -193,6 +196,19 @@
   (testing "that it stops after the first failure"
     (is (map-containing {:outputs { [1 0 0] {:status :success} [2 0 0] {:status :failure}} :status :failure}
                         ((run some-successful-step some-failing-step some-other-step) {} (some-ctx-with :step-id [0 0])))))
+  (testing "that it pipes its args ito the first step"
+    (is (map-containing {:outputs {[1 0 0] {:status :success :args {:initial :args}}}}
+                        ((run some-step-returning-its-args)
+                          {:initial :args} (some-ctx-with :step-id [0 0])))))
+  (testing "that it pipes the initial arguments as well as the result of the previous step into subsequent steps"
+    (is (map-containing {:outputs {[1 0 0] {:status :success :the-number 42}
+                                   [2 0 0] {:status :success :args {:initial :args
+                                                                    :status :success
+                                                                    :the-number 42
+                                                                    :global nil}}}}
+                        ((run some-step-that-returns-42
+                              some-step-returning-its-args)
+                          {:initial :args} (some-ctx-with :step-id [0 0])))))
   (testing "that it kills all children if it is killed"
     (let [is-killed (atom true)
           ctx       (some-ctx-with :is-killed is-killed
@@ -291,6 +307,17 @@
   (testing "that it executes the failure-step if the condition is a failure"
     (is (map-containing {:outputs {[3 0 0] {:status :success :message :bar}}}
                         ((junction some-failing-step some-step-that-returns-foo some-step-that-returns-bar) {} (some-ctx-with :step-id [0 0])))))
+  (testing "that branches receive the junctions arguments"
+    (is (map-containing {:outputs {[2 0 0] {:status :success
+                                            :args {:some :arg}}}}
+                        ((junction some-successful-step
+                                   some-step-returning-its-args
+                                   some-step-that-returns-bar) {:some :arg} (some-ctx-with :step-id [0 0]))))
+    (is (map-containing {:outputs {[3 0 0] {:status :success
+                                            :args {:some :arg}}}}
+                        ((junction some-failing-step
+                                   some-step-that-returns-foo
+                                   some-step-returning-its-args) {:some :arg} (some-ctx-with :step-id [0 0])))))
   (testing "that it kills all children if it is killed"
     (let [is-killed (atom true)
           ctx       (some-ctx-with :is-killed is-killed
