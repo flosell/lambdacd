@@ -34,10 +34,8 @@
 (defn- do-chain-steps-with-execute-steps [args ctx steps step-result-producer]
   (let [execute-step-result (execute-steps/execute-steps steps args ctx
                                                      :step-result-producer step-result-producer
-                                                     :unify-results-fn unify-results)
-        sorted-step-results (step-results-sorted-by-id (:outputs execute-step-result))
-        merged-step-results (step-results/merge-step-results sorted-step-results merge-step-results-with-joined-output)]
-    (merge merged-step-results execute-step-result)))
+                                                     :unify-results-fn unify-results)]
+    (merge (unify-results (:outputs execute-step-result)) execute-step-result)))
 
 (defn chain-steps
   ([args ctx & steps]
