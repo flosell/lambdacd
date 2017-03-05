@@ -26,6 +26,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 * `lambdacd.presentation.unified/unified-presentation` is unused and therefore deprecated and will be removed in the future. Use `pipeline-structure-with-step-results` instead.
 * A couple of functions were moved to make the package structure more clear: 
   * `lambdacd.steps.result/flatten-step-result-outputs` moved to `lambdacd.stepresults.flatten/flatten-step-result-outputs`
+  * `lambdacd.steps.result/merge-step-results` moved to `lambdacd.stepresults.merge/merge-step-results`
+  
 
 ## 0.13.0
 
