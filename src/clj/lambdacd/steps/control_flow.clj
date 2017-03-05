@@ -5,7 +5,8 @@
             [lambdacd.steps.support :as support]
             [lambdacd.step-id :as step-id]
             [lambdacd.steps.status :as status]
-            [lambdacd.util.internal.temp :as temp-util])
+            [lambdacd.util.internal.temp :as temp-util]
+            [lambdacd.execution.internal.serial-step-result-producer :as serial-step-result-producer])
   (:refer-clojure :exclude [alias])
   (:import (java.util UUID)))
 
@@ -190,10 +191,11 @@
   [condition-step success-step failure-step]
   (fn [args ctx]
     (post-process-container-results
-      (let [condition-step-result (execution/execute-step args (child-context ctx 1) condition-step)]
+      (let [condition-step-result (execution/execute-step args (child-context ctx 1) condition-step)
+            new-args (serial-step-result-producer/args-for-subsequent-step args args condition-step-result)]
         (if (= :success (:status condition-step-result))
-          (execution/execute-step args (child-context ctx 2) success-step)
-          (execution/execute-step args (child-context ctx 3) failure-step))))))
+          (execution/execute-step new-args (child-context ctx 2) success-step)
+          (execution/execute-step new-args (child-context ctx 3) failure-step))))))
 
 (defn ^{:is-alias true} alias
   "Just runs child but child is displayed with the given alias in visualization.

@@ -5,7 +5,12 @@
 (defn- keep-original-args [old-args step-result]
   (merge old-args step-result))
 
-(defn serial-step-result-producer [& {:keys [stop-predicate] ; TODO: should this be in a public namespace? 
+(defn args-for-subsequent-step [parent-step-args current-step-args execute-step-result]
+  (->> (first (vals (:outputs execute-step-result)))
+       (execution-util/keep-globals current-step-args)
+       (keep-original-args parent-step-args)))
+
+(defn serial-step-result-producer [& {:keys [stop-predicate] ; TODO: should this be in a public namespace?
                                       :or   {stop-predicate execution-util/not-success?}}]
   (fn [args s-with-id]
     (loop [result                  ()
@@ -15,11 +20,8 @@
         result
         (let [ctx-and-step (first remaining-steps-with-id)
               step-result  (execute-step/execute-step cur-args ctx-and-step)
-              step-output  (first (vals (:outputs step-result)))
               new-result   (cons step-result result)
-              new-args     (->> step-output
-                                (execution-util/keep-globals cur-args)
-                                (keep-original-args args))]
+              new-args     (args-for-subsequent-step args cur-args step-result)]
           (if (stop-predicate step-result)
             new-result
             (recur (cons step-result result) (rest remaining-steps-with-id) new-args)))))))
