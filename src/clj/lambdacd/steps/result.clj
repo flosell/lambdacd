@@ -1,7 +1,8 @@
 (ns lambdacd.steps.result
   (:require [lambdacd.steps.status :as status]
             [clojure.string :as s]
-            [lambdacd.util :as utils]))
+            [lambdacd.util :as utils]
+            [lambdacd.stepresults.flatten :as flatten]))
 
 ; --- common ---
 (defn merge-nested-maps-resolver [_ v1 v2]
@@ -43,9 +44,8 @@
 (defn merge-step-results [step-results merger] ; TODO: test this!
   (reduce merger {} step-results))
 
-(defn flatten-step-result-outputs [outputs]
-  (into {}
-        (for [[k v] outputs]
-          (if (:outputs v)
-            (assoc (flatten-step-result-outputs (:outputs v)) k v)
-            {k v}))))
+(defn flatten-step-result-outputs
+  "DEPRECATED, use `lambdacd.stepresults.flatten/flatten-step-result-outputs` instead."
+  {:deprecated "0.13.1"}
+  [outputs]
+  (flatten/flatten-step-result-outputs outputs))
