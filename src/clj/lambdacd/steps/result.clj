@@ -37,18 +37,12 @@
   [k v1 v2]
   (merge-resolvers/join-output-resolver k v1 v2))
 
-(defn- resolve-first-matching [resolvers]
-  (fn [k v1 v2]
-    (->> resolvers
-         (map #(% k v1 v2))
-         (filter (complement nil?))
-         (first))))
 
-(defn merge-two-step-results [a b & {:keys [resolvers]
-                                     :or   {resolvers [merge-resolvers/status-resolver
-                                                       merge-resolvers/merge-nested-maps-resolver
-                                                       merge-resolvers/second-wins-resolver]}}]
-  (utils/merge-with-k-v (resolve-first-matching resolvers) a b))
+(defn merge-two-step-results
+  "DEPRECATED, use `lambdacd.stepresults.merge/merge-two-step-results` instead."
+  {:deprecated "0.13.1"}
+  [a b & resolvers]
+  (apply merge/merge-two-step-results a b resolvers))
 
 (defn merge-step-results
   "DEPRECATED, use `lambdacd.stepresults.merge/merge-step-results` instead."

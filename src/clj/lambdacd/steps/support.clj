@@ -4,13 +4,13 @@
             [lambdacd.execution.internal.serial-step-result-producer :as serial-step-result-producer]
             [clojure.walk :as walk]
             [lambdacd.step-id :as step-id]
-            [lambdacd.steps.result :as step-results]
             [lambdacd.execution.internal.util :as execution-util]
-            [lambdacd.stepresults.merge-resolvers :as merge-resolvers])
+            [lambdacd.stepresults.merge-resolvers :as merge-resolvers]
+            [lambdacd.stepresults.merge :as merge])
   (:import (java.io Writer StringWriter)))
 
 (defn- merge-step-results-with-joined-output [a b]
-  (step-results/merge-two-step-results a b :resolvers [merge-resolvers/status-resolver
+  (merge/merge-two-step-results a b :resolvers [merge-resolvers/status-resolver
                                                        merge-resolvers/merge-nested-maps-resolver
                                                        merge-resolvers/join-output-resolver
                                                        merge-resolvers/second-wins-resolver]))
@@ -30,7 +30,7 @@
 (defn unify-results [step-results]
   (-> step-results
       (step-results-sorted-by-id)
-      (step-results/merge-step-results merge-step-results-with-joined-output)))
+      (merge/merge-step-results merge-step-results-with-joined-output)))
 
 (defn- do-chain-steps-with-execute-steps [args ctx steps step-result-producer]
   (let [execute-step-result (execute-steps/execute-steps steps args ctx
