@@ -7,7 +7,8 @@
             [lambdacd.step-id :as step-id]
             [lambdacd.execution.internal.util :as execution-util]
             [lambdacd.execution.internal.kill :as kill]
-            [lambdacd.execution.internal.retrigger :as retrigger]))
+            [lambdacd.execution.internal.retrigger :as retrigger]
+            [lambdacd.stepstatus.unify :as unify]))
 
 (defn unify-only-status [unify-status-fn]
   (fn [step-results]
@@ -80,7 +81,7 @@
 (defn execute-steps [steps args ctx & {:keys [step-result-producer is-killed unify-results-fn retrigger-predicate]
                                        :or   {step-result-producer (serial-step-result-producer)
                                               is-killed            (atom false)
-                                              unify-results-fn     (unify-only-status status/successful-when-all-successful)
+                                              unify-results-fn     (unify-only-status unify/successful-when-all-successful)
                                               retrigger-predicate  retrigger/sequential-retrigger-predicate}}]
   (let [handler-chain (-> (call-step-result-producer step-result-producer)
                           (wrap-inheritance unify-results-fn)

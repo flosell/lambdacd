@@ -13,7 +13,8 @@
             [lambdacd.util :as utils]
             [lambdacd.util.internal.bash :as bash-util]
             [lambdacd.steps.status :as status]
-            [lambdacd.util.internal.temp :as temp-util]))
+            [lambdacd.util.internal.temp :as temp-util]
+            [lambdacd.stepstatus.unify :as unify]))
 
 (defn- current-revision [repo-uri branch]
   (log/debug (str "Polling branch " branch " on " repo-uri))
@@ -93,7 +94,7 @@
     (temp-util/with-temp repo-location
       (if (zero? checkout-exit-code)
         (let [execute-steps-result (execution/execute-steps steps (assoc args :cwd repo-location) ctx
-                                                            :unify-results-fn (support/unify-only-status status/successful-when-all-successful)
+                                                            :unify-results-fn (support/unify-only-status unify/successful-when-all-successful)
                                                             :is-killed (:is-killed ctx))
               result-with-checkout-output (assoc execute-steps-result :out (:out checkout-result))
               step-ids-and-outputs (:outputs execute-steps-result)

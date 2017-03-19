@@ -1,35 +1,31 @@
 (ns lambdacd.steps.status
-  (:require [lambdacd.util.internal.map :as map-util]))
+  (:require [lambdacd.stepstatus.predicates :as predicates]
+            [lambdacd.stepstatus.unify :as unify]))
 
-(defn- all [statuses status]
-  (every? #(= % status) statuses))
+(defn successful-when-one-successful
+  "DEPRECATED, use `lambdacd.stepstatus.unify/successful-when-one-successful` instead"
+  {:deprecated "0.13.1"}
+  [statuses]
+  (unify/successful-when-one-successful statuses))
 
-(defn- one-in [statuses status]
-  (map-util/contains-value? status statuses))
+(defn successful-when-all-successful
+  "DEPRECATED, use `lambdacd.stepstatus.unify/successful-when-all-successful` instead"
+  {:deprecated "0.13.1"}
+  [statuses]
+  (unify/successful-when-all-successful statuses))
 
-(defn successful-when-one-successful [statuses]
-  (cond
-    (all statuses :failure) :failure
-    (all statuses :killed) :killed
-    (one-in statuses :success) :success
-    (one-in statuses :running) :running
-    (one-in statuses :waiting) :waiting
-    :else :unknown))
-
-(defn successful-when-all-successful [statuses]
-  (cond
-    (one-in statuses :running) :running
-    (one-in statuses :waiting) :waiting
-    (one-in statuses :failure) :failure
-    (all    statuses :success) :success
-    :else                      :unknown))
-
-(defn choose-last-or-not-success [s1 s2]
+(defn choose-last-or-not-success
+  "DEPRECATED"
+  {:deprecated "0.13.1"}
+  [s1 s2]
   (if (= s1 :success)
     s2
     (if (= s2 :success)
       s1
       s2)))
 
-(defn is-active? [status]
-  (contains? #{:running :waiting} status))
+(defn is-active?
+  "DEPRECATED, use `lambdacd.stepstatus.predicates/is-active?` instead"
+  {:deprecated "0.13.1"}
+  [status]
+  (predicates/is-active? status))

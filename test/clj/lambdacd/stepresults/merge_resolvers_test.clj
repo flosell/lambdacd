@@ -1,7 +1,9 @@
 (ns lambdacd.stepresults.merge-resolvers-test
   (:require [clojure.test :refer :all]
             [lambdacd.stepresults.merge-resolvers :refer :all]
-            [lambdacd.steps.status :as status]))
+            [lambdacd.steps.status :as status]
+            [lambdacd.stepresults.merge-resolvers :as merge-resolvers]
+            [lambdacd.testsupport.test-util :refer [with-private-fns]]))
 
 (deftest some-key :k)
 
@@ -28,11 +30,22 @@
                                                    {:nested {:foo :bar}}
                                                    {:nested {:bar :baz}})))))
 
+(with-private-fns [lambdacd.stepresults.merge-resolvers [choose-last-or-not-success]]
+  (deftest choose-last-or-not-success-test
+    (testing "everything not success wins over success"
+      (is (= :success (choose-last-or-not-success :success :success)))
+      (is (= :failure (choose-last-or-not-success :success :failure)))
+      (is (= :failure (choose-last-or-not-success :failure :success)))
+      (is (= :unknown (choose-last-or-not-success :unknown :success))))
+    (testing "that if none of the two is success, choose the latter"
+      (is (= :unknown (choose-last-or-not-success :failure :unknown)))
+      (is (= :failure (choose-last-or-not-success :unknown :failure))))))
+
 (deftest status-resolver-test
   (testing "that it returns nil if the key to be merged is not status"
     (is (= nil (status-resolver :hello :success :failure))))
   (testing "that it delegates if it is a status"
-    (with-redefs [status/choose-last-or-not-success (fn [s1 s2] (str s1 s2))]
+    (with-redefs [merge-resolvers/choose-last-or-not-success (fn [s1 s2] (str s1 s2))]
       (is (= ":success:failure" (status-resolver :status :success :failure))))))
 
 (deftest second-wins-resolver-test

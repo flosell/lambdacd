@@ -22,12 +22,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
   * `lambdacd.runners/should-trigger-next-build?`
   * `lambdacd.steps.control-flow/synchronize-atoms`
   * `lambdacd.steps.shell/kill`
+  * `lambdacd.steps.status/choose-last-or-not-success`
   
 * `lambdacd.presentation.unified/unified-presentation` is unused and therefore deprecated and will be removed in the future. Use `pipeline-structure-with-step-results` instead.
 * A couple of functions were moved to make the package structure more clear. The existing functions still exist but are now deprecated and will be removed in the future.
   * `lambdacd.steps.result/flatten-step-result-outputs` moved to `lambdacd.stepresults.flatten`
   * `lambdacd.steps.result/{merge-step-results,merge-two-step-results}` moved to `lambdacd.stepresults.merge`
   * `lambdacd.steps.result/*-resolver` moved to `lambdacd.stepresults.merge-resolvers`
+  * `lambdacd.steps.status/successful-when-*` moved to `lambdacd.stepstatus.unify`
+  * `lambdacd.steps.status/is-active?` moved to `lambdacd.stepstatus.predicates`
+  
   
 
 ## 0.13.0

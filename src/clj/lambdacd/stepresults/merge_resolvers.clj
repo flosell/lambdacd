@@ -4,6 +4,14 @@
   (:require [clojure.string :as s]
             [lambdacd.steps.status :as status]))
 
+(defn- choose-last-or-not-success
+  ([s1 s2]
+   (if (= s1 :success)
+     s2
+     (if (= s2 :success)
+       s1
+       s2))))
+
 (defn merge-nested-maps-resolver
   "Resolver that merges two given maps with the default clojure `merge`."
   [_ v1 v2]
@@ -11,10 +19,10 @@
     (merge v1 v2)))
 
 (defn status-resolver
-  "Resolver that resolves only the :status key with the `choose-last-or-not-success` function."
+  "Resolver that resolves only the :status key with the `last-or-not-success` function."
   [k v1 v2]
   (when (= k :status)
-    (status/choose-last-or-not-success v1 v2)))
+    (choose-last-or-not-success v1 v2)))
 
 (defn second-wins-resolver
   "Resolver that always returns the second (usually newer) value."
