@@ -141,7 +141,10 @@
        {:status :killed})
      ~@body))
 
-(defn merge-globals [step-results]
+(defn merge-globals
+  "Deprecated, this should not be necessary, a normal call to `merge-step-results` should keep all the globals."
+  {:deprecated "0.13.1"}
+  [step-results]
   (or (:global (reduce execution-util/keep-globals {} step-results)) {}))
 
 (defn merge-step-results

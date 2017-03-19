@@ -72,6 +72,8 @@
 
 (defn some-step-that-returns-a-global-value [& _]
   {:status :success :global {:some :value}})
+(defn some-step-that-returns-another-global-value [& _]
+  {:status :success :global {:some-other :value}})
 
 (defn some-step-that-returns-42 [args ctx]
   {:status :success :the-number 42})
@@ -128,6 +130,10 @@
     (is (map-containing {:outputs { [1 0 0] {:status :success} [2 0 0] {:status :failure}} :status :failure} ((in-parallel some-successful-step some-failing-step) {} (some-ctx-with :step-id [0 0])))))
   (testing "global values are returned properly"
     (is (map-containing {:global {:some :value}} ((in-parallel some-step-that-returns-a-global-value some-successful-step) {} (some-ctx)))))
+  (testing "that globals get merged"
+    (is (map-containing {:global {:some :value
+                                  :some-other :value}} ((in-parallel some-step-that-returns-a-global-value
+                                                                     some-step-that-returns-another-global-value) {} (some-ctx)))))
   (testing "that all the result-values are merged together into a new result"
     (is (map-containing {:the-number 42 :foo :baz} ((in-parallel some-step-that-returns-42 some-other-step) {} (some-ctx)))))
   (testing "that it executes things faster than it would serially"

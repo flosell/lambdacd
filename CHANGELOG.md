@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
   * `lambdacd.steps.status/choose-last-or-not-success`
   
 * `lambdacd.presentation.unified/unified-presentation` is unused and therefore deprecated and will be removed in the future. Use `pipeline-structure-with-step-results` instead.
+* `lambdacd.steps.support/merge-globals` is no longer necessary, normal step result merging (`merge-step-results`,`merge-two-step-results`) should already conserve and merge globals just fine
 * A couple of functions were moved to make the package structure more clear. The existing functions still exist but are now deprecated and will be removed in the future.
   * `lambdacd.steps.result/flatten-step-result-outputs` moved to `lambdacd.stepresults.flatten`
   * `lambdacd.steps.result/{merge-step-results,merge-two-step-results}` moved to `lambdacd.stepresults.merge`

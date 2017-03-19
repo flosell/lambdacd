@@ -14,9 +14,8 @@
 
 (defn- post-process-container-results [result]
   (let [outputs (vals (:outputs result))
-        globals (support/merge-globals outputs)
         merged-step-results (merge/merge-step-results outputs merge/merge-two-step-results)]
-    (merge merged-step-results result {:global globals})))
+    (merge merged-step-results result)))
 
 (defn- wait-for-finished-on [step-result-chs]
   (let [all-resp-results-ch    (async/merge step-result-chs)
