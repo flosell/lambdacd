@@ -7,14 +7,15 @@
 
             [lambdacd.util.internal.temp :as temp-util]
             [lambdacd.execution.internal.serial-step-result-producer :as serial-step-result-producer]
-            [lambdacd.stepstatus.unify :as unify])
+            [lambdacd.stepstatus.unify :as unify]
+            [lambdacd.stepresults.merge :as merge])
   (:refer-clojure :exclude [alias])
   (:import (java.util UUID)))
 
 (defn- post-process-container-results [result]
   (let [outputs (vals (:outputs result))
         globals (support/merge-globals outputs)
-        merged-step-results (support/merge-step-results outputs)]
+        merged-step-results (merge/merge-step-results outputs merge/merge-two-step-results)]
     (merge merged-step-results result {:global globals})))
 
 (defn- wait-for-finished-on [step-result-chs]

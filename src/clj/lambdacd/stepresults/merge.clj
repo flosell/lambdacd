@@ -49,5 +49,6 @@
   [a b & {:keys [resolvers]
           :or   {resolvers [merge-resolvers/status-resolver
                             merge-resolvers/merge-nested-maps-resolver
+                            merge-resolvers/combine-to-list-resolver
                             merge-resolvers/second-wins-resolver]}}]
   (map-utils/merge-with-k-v (resolve-first-matching resolvers) a b))

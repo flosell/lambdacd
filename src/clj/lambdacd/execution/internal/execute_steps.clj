@@ -8,7 +8,8 @@
             [lambdacd.execution.internal.util :as execution-util]
             [lambdacd.execution.internal.kill :as kill]
             [lambdacd.execution.internal.retrigger :as retrigger]
-            [lambdacd.stepstatus.unify :as unify]))
+            [lambdacd.stepstatus.unify :as unify]
+            [lambdacd.stepresults.merge :as merge]))
 
 (defn- inherit-message-from-parent? [parent-ctx]
   (fn [msg]
@@ -51,7 +52,7 @@
 (defn- call-step-result-producer [step-result-producer]
   (fn [step-contexts-and-steps args _]
     (let [step-results (step-result-producer args step-contexts-and-steps)]
-      (reduce execution-util/merge-two-step-results step-results))))
+      (reduce merge/merge-two-step-results step-results))))
 
 (defn- wrap-inheritance [handler unify-results-fn]
   (fn [step-contexts-and-steps args ctx]

@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 * Marking builds as dead if the datastore sees them as running but they are not (e.g. because LambdaCD was not cleanly shut down previously). 
     This introduces the new `:status :dead` (#134)
 * `junction` did not behave like a sequential step, i.e. it did not pass the results of the condition to the arguments of the branch steps (#162)
+* made `lambdacd.stepresults.merge/merge-step-results` default behavior consistent with other step-result merging strategies: should concatenate colliding lists
 
 ### Deprecated
 

@@ -18,9 +18,3 @@
         merged-globals                (merge existing-globals new-globals)
         args-with-old-and-new-globals (assoc step-result :global merged-globals)]
     args-with-old-and-new-globals))
-
-(defn merge-two-step-results [r1 r2]
-  (merge/merge-two-step-results r1 r2 :resolvers [merge-resolvers/status-resolver
-                                                         merge-resolvers/merge-nested-maps-resolver
-                                                         merge-resolvers/combine-to-list-resolver
-                                                         merge-resolvers/second-wins-resolver]))
