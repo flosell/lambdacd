@@ -148,9 +148,9 @@
   (or (:global (reduce execution-util/keep-globals {} step-results)) {}))
 
 (defn merge-step-results
-  [step-results]
   "Deprecated, use `lambdacd.stepresults.merge/merge-step-results` instead."
   {:deprecated "0.13.1"}
+  [step-results]
   (merge/merge-step-results step-results merge/merge-two-step-results))
 
 ; not part of the public interface, just public for the macro
