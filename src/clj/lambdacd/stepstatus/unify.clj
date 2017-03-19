@@ -34,3 +34,11 @@
     (one-in statuses :failure) :failure
     (all    statuses :success) :success
     :else                      :unknown))
+
+(defn unify-only-status
+  "Converts a function that can unify statuses into a unify-results-fn suitable for execute-steps"
+  [unify-status-fn]
+  (fn [step-results]
+    {:status (unify-status-fn (->> step-results
+                                   (vals)
+                                   (map :status)))}))

@@ -31,6 +31,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
   * `lambdacd.steps.result/*-resolver` moved to `lambdacd.stepresults.merge-resolvers`
   * `lambdacd.steps.status/successful-when-*` moved to `lambdacd.stepstatus.unify`
   * `lambdacd.steps.status/is-active?` moved to `lambdacd.stepstatus.predicates`
+  * `lambdacd.steps.support/assoc-build-metadata!` moved to `lambdacd.stepsupport.metadata`
+  * `lambdacd.steps.support/unify-only-status` moved to `lambdacd.stepstatus.unify`
+  * `lambdacd.steps.support/{capture-output,printed-output,print-to-output,set-output,new-printer}` moved to `lambdacd.stepsupport.output`
   
   
 

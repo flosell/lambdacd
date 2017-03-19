@@ -66,7 +66,7 @@
   (throw (IllegalStateException. "do not call me!")))
 
 
-(deftest print-to-output-test
+(deftest print-to-output-test-legacy
   (testing "that it writes to the result-channel with every call and accumulates writes"
     (let [result-channel (async/chan 100)
           printer (new-printer)
@@ -76,7 +76,7 @@
       (is (= [[:out "Hello\n"]
               [:out "Hello\nWorld\n"]] (slurp-chan result-channel))))))
 
-(deftest printed-output-test
+(deftest printed-output-test-legacy
   (testing "that we can get the things we printed before"
     (let [printer (new-printer)
           ctx (some-ctx)]
@@ -84,7 +84,7 @@
       (print-to-output ctx printer "World")
       (is (= "Hello\nWorld\n" (printed-output printer))))))
 
-(deftest chain-steps-test ; TODO: flaky
+(deftest chain-steps-test-legacy ; TODO: flaky
   (testing "chain-steps and always-chain-steps"
     (doall (for [unit-under-test [chain-steps always-chain-steps]]
              (do
@@ -158,7 +158,7 @@
                                               some-failling-step
                                               some-other-step))))))
 
-(deftest chaining-test
+(deftest chaining-test-legacy
   (testing "that we can just call a single step"
     (is (map-containing {:status :success :foo :bar} (chaining {} (some-ctx) (some-step injected-args injected-ctx)))))
   (testing "that the results of two steps get merged"
@@ -229,7 +229,7 @@
                                     (print "foo-value:" (:foo injected-args))
                                     (some-other-step injected-args injected-ctx)))))))
 
-(deftest always-chaining-test
+(deftest always-chaining-test-legacy
   (testing "that a failing step doesnt stop the execution"
     (is (map-containing {:status :failure :foo :baz}
                         (always-chaining {} (some-ctx)
@@ -237,7 +237,7 @@
                           (some-failling-step injected-args injected-ctx)
                           (some-other-step injected-args injected-ctx))))))
 
-(deftest last-step-status-wins-test
+(deftest last-step-status-wins-test-legacy
   (testing "that it changes the step result to one where the status of the last step result wins"
     (is (map-containing {:status :success}
                         (last-step-status-wins {:status :failure :outputs {`(2 42) {:status :success}
@@ -261,7 +261,7 @@
   (chaining args ctx
                     (log-lots-of-output injected-args injected-ctx)))
 
-(deftest output-stress-test ; reproduces #135
+(deftest output-stress-test-legacy ; reproduces #135
   (testing "that we don't fail if we come across lots of output for just in general"
     (is (= :success (:status (call-with-timeout 10000
                                       (execution/execute-step {} [(output-load-test-ctx) log-lots-of-output]))))))
@@ -269,7 +269,7 @@
     (is (= :success (:status (call-with-timeout 10000
                                       (execution/execute-step {} [(output-load-test-ctx) log-lots-of-output-in-chaining])))))))
 
-(deftest if-not-killed-test
+(deftest if-not-killed-test-legacy
   (testing "that the body will only be executed if step is still alive"
     (let [killed-ctx (some-ctx-with :is-killed (atom true))
           alive-ctx (some-ctx-with :is-killed (atom false))]
@@ -282,7 +282,7 @@
       (if-not-killed killed-ctx  {:status :success})
       (is (= [:status :killed] (async/<!! output))))))
 
-(deftest merge-globals-test
+(deftest merge-globals-test-legacy
   (testing "that only global values are returned"
     (is (= {:foo :bar} (merge-globals [{:x :y :global {:foo :bar}}]))))
   (testing "that it can merge global values from the outputs of several steps"
@@ -294,7 +294,7 @@
     (is (= {} (merge-globals [ ])))
     (is (= {} (merge-globals [{:x :y } {} {:z 1} ])))))
 
-(deftest merge-step-results-test
+(deftest merge-step-results-test-legacy
   (testing "that step-results are merged"
     (is (= {:foo :bar :bar :baz} (merge-step-results [{:foo :bar} {:bar :baz}]))))
   (testing "that nothing bad happens from empty results"
@@ -312,7 +312,7 @@
     (is (= {:status :unknown} (merge-step-results [{:status :failure} {:status :unknown}]))) ; non-success overwrites in order
     (is (= {:status :failure} (merge-step-results [{:status :failure} {:status :success}]))))) ; non-success trumps order
 
-(deftest capture-output-test
+(deftest capture-output-test-legacy-legacy
   (testing "that the original step result is kept"
     (is (map-containing {:foo :bar :status :success}
                         (capture-output (some-ctx)
@@ -359,9 +359,3 @@
     (is (= nil (capture-output (some-ctx)
                                "this is not a map")))))
 
-
-(deftest unify-only-status-test
-  (testing "that the converted function returns a proper step-result"
-    (is (= {:status :some-status} ((unify-only-status (constantly :some-status)) {}))))
-  (testing "that it converts the given function into one that receives only statuses"
-    (is (= [:foo :bar] (:status ((unify-only-status identity) {[0]{:status :foo} [1]{:status :bar}}))))))

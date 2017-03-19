@@ -42,3 +42,8 @@
   (testing "undefined otherwise"
     (is (= :unknown (successful-when-all-successful [:foo :bar])))))
 
+(deftest unify-only-status-test
+  (testing "that the converted function returns a proper step-result"
+    (is (= {:status :some-status} ((unify-only-status (constantly :some-status)) {}))))
+  (testing "that it converts the given function into one that receives only statuses"
+    (is (= [:foo :bar] (:status ((unify-only-status identity) {[0]{:status :foo} [1]{:status :bar}}))))))

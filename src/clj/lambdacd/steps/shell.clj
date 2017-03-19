@@ -5,7 +5,8 @@
             [clojure.string :as string]
             [me.raynes.conch.low-level :as sh]
             [clojure.core.async :as async]
-            [lambdacd.util.internal.temp :as temp-util])
+            [lambdacd.util.internal.temp :as temp-util]
+            [lambdacd.stepsupport.output :as output])
   (:import (java.util UUID)
            (java.io IOException)
            (org.ow2.proactive.process_tree_killer ProcessTree)))
@@ -76,5 +77,5 @@
         command-lines (string/join "\n" commands)]
     (spit temp-file command-lines)
     (temp-util/with-temp temp-file
-                         (support/capture-output ctx
+                         (output/capture-output ctx
                            (execte-shell-command cwd temp-file ctx env)))))

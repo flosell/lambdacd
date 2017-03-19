@@ -8,7 +8,9 @@
             [lambdacd.steps.manualtrigger :as manualtrigger]
             [lambdacd.steps.support :as support]
             [clj-time.format :as time-format]
-            [clj-time.core :as time]))
+            [clj-time.core :as time]
+            [lambdacd.stepsupport.metadata :as metadata]
+            [lambdacd.stepsupport.output :as output]))
 
 ;; Let's define some constants and utility-functions
 (def backend-repo "git@github.com:flosell/todo-backend-compojure.git")
@@ -19,7 +21,7 @@
 
 ; Let's try out some custom metadata:
 (defn set-build-name [args ctx]
-  (support/assoc-build-metadata! ctx :human-readable-build-label (build-label ctx))
+  (metadata/assoc-build-metadata! ctx :human-readable-build-label (build-label ctx))
   {:status :success})
 
 ;; This step does nothing more than to delegate to a library-function.
@@ -94,7 +96,7 @@
 ;; The steps that do the real work testing, packaging, publishing our code.
 ;; They get the :cwd argument from the ```with-*-git steps``` we defined above.
 (defn client-package [{cwd :cwd greeting :greeting} ctx]
-  (support/capture-output ctx
+  (output/capture-output ctx
                           (println "This is an optional greeting: " greeting)
                           (shell/bash ctx cwd
                                       "bower install"

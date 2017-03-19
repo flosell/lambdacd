@@ -1,12 +1,15 @@
 (ns lambdacd.steps.support
   (:require [clojure.core.async :as async]
+            [lambdacd.stepsupport.output :as output]
+            [lambdacd.stepsupport.metadata :as metadata]
             [lambdacd.execution.internal.execute-steps :as execute-steps]
             [lambdacd.execution.internal.serial-step-result-producer :as serial-step-result-producer]
             [clojure.walk :as walk]
             [lambdacd.step-id :as step-id]
             [lambdacd.execution.internal.util :as execution-util]
             [lambdacd.stepresults.merge-resolvers :as merge-resolvers]
-            [lambdacd.stepresults.merge :as merge])
+            [lambdacd.stepresults.merge :as merge]
+            [lambdacd.stepstatus.unify :as unify])
   (:import (java.io Writer StringWriter)))
 
 (defn- merge-step-results-with-joined-output [a b]
@@ -104,23 +107,29 @@
                            :status)]
     (assoc step-result :status winning-status)))
 
-(defn- append-output [msg]
-  (fn [old-output]
-    (str old-output msg "\n")))
+(defn new-printer
+  "Deprecated, use `lambdacd.stepsupport.output/new-printer` instead."
+  {:deprecated "0.13.1"}
+  []
+  (output/new-printer))
 
-(defn new-printer []
-  (atom ""))
+(defn set-output
+  "Deprecated, use `lambdacd.stepsupport.output/set-output` instead."
+  {:deprecated "0.13.1"}
+  [ctx msg]
+  (output/set-output ctx msg))
 
-(defn set-output [ctx msg]
-  (async/>!! (:result-channel ctx) [:out msg]))
+(defn print-to-output
+  "Deprecated, use `lambdacd.stepsupport.output/printed-output` instead."
+  {:deprecated "0.13.1"}
+  [ctx printer msg]
+  (output/print-to-output ctx printer msg))
 
-(defn print-to-output [ctx printer msg]
-  (let [new-out (swap! printer (append-output msg))]
-    (set-output ctx new-out)))
-
-(defn printed-output [printer]
-  @printer)
-
+(defn printed-output
+  "Deprecated, use `lambdacd.stepsupport.output/printed-output` instead."
+  {:deprecated "0.13.1"}
+  [printer]
+  (output/printed-output printer))
 
 (defn killed? [ctx]
   @(:is-killed ctx))
@@ -139,22 +148,16 @@
   (reduce execution-util/merge-two-step-results {} step-results))
 
 ; not part of the public interface, just public for the macro
-(defn writer-to-ctx [ctx]
-  (let [buf (StringWriter.)]
-    {:writer (proxy [Writer] []
-              (write [& [x ^Integer off ^Integer len]]
-                (cond
-                  (number? x) (.append buf (char x))
-                  (not off) (.append buf x)
-                  ; the CharSequence overload of append takes an *end* idx, not length!
-                  (instance? CharSequence x) (.append buf ^CharSequence x (int off) (int (+ len off)))
-                  :else (do
-                          (.append buf (String. ^chars x) off len))))
-              (flush []
-                (set-output ctx (.toString (.getBuffer buf)))))
-     :buffer (.getBuffer buf)}))
+(defn ^:no-doc writer-to-ctx
+  {:deprecated "0.13.1"}
+  [ctx]
+  (output/writer-to-ctx ctx))
 
-(defmacro capture-output [ctx & body]
+(defmacro capture-output
+  "Deprecated, use `lambdacd.stepsupport.output/capture-output` instead."
+  {:deprecated "0.13.1"}
+  [ctx & body]
+  ; CODE DUPLICATED because it's tricky delegating this to another macro. Get rid of this deprecated code the next time you feel like changing it
   `(let [{x#      :writer
           buffer# :buffer} (writer-to-ctx ~ctx)
          body-result# (binding [*out* x#]
@@ -163,10 +166,14 @@
        (update body-result# :out #(if (nil? %) (str buffer#) (str buffer# "\n" % ))))))
 
 (defn unify-only-status
-  "Converts a function that can unify statuses into a unify-results-fn suitable for execute-steps"
+  "DEPRECATED, use `lambdacd.stepstatus.unify/unify-only-status` instead."
+  {:deprecated "0.13.1"}
   [unify-status-fn]
-  (execute-steps/unify-only-status unify-status-fn))
+  (unify/unify-only-status unify-status-fn))
 
 
-(defn assoc-build-metadata! [ctx & kvs]
-  (swap! (:build-metadata-atom ctx) #(apply assoc % kvs)))
+(defn assoc-build-metadata!
+  "DEPRECATED, use `lambdacd.stepsupport.metadata/assoc-build-metadata!` instead."
+  {:deprecated "0.13.1"}
+  [ctx & kvs]
+  (apply metadata/assoc-build-metadata! ctx kvs))

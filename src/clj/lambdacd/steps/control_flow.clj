@@ -69,7 +69,7 @@
                                                       :is-killed kill-switch
                                                       :step-result-producer either-step-result-producer
                                                       :retrigger-predicate (constantly :rerun)
-                                                      :unify-results-fn (support/unify-only-status unify/successful-when-one-successful))]
+                                                      :unify-results-fn (unify/unify-only-status unify/successful-when-one-successful))]
       (reset! kill-switch true)
       (remove-watch parent-kill-switch watch-ref)
       (if (= :success (:status execute-output))
@@ -92,7 +92,7 @@
 (defn- execute-steps-in-parallel [steps args ctx]
   (execution/execute-steps steps args ctx
                            :step-result-producer parallel-step-result-producer
-                           :unify-results-fn (support/unify-only-status unify/successful-when-all-successful)
+                           :unify-results-fn (unify/unify-only-status unify/successful-when-all-successful)
                            :retrigger-predicate parallel-retrigger-predicate
                            :is-killed (:is-killed ctx)))
 
@@ -137,12 +137,12 @@
   (fn [args ctx]
     (post-process-container-results
       (execution/execute-steps steps (assoc args :cwd cwd) ctx
-                               :unify-results-fn (support/unify-only-status unify/successful-when-all-successful)))))
+                               :unify-results-fn (unify/unify-only-status unify/successful-when-all-successful)))))
 
 (defn- run-steps-in-sequence [args ctx steps]
   (post-process-container-results
     (execution/execute-steps steps args ctx
-                             :unify-results-fn (support/unify-only-status unify/successful-when-all-successful)
+                             :unify-results-fn (unify/unify-only-status unify/successful-when-all-successful)
                              :is-killed (:is-killed ctx))))
 
 
