@@ -13,12 +13,13 @@
             [lambdacd.steps.support :as step-support]
             [lambdacd.steps.control-flow :as control-flow]
             [lambdacd.util.internal.temp :as temp-util]
-            [lambdacd.state.internal.dead-steps-marking :as dead-steps-marking]))
+            [lambdacd.state.internal.dead-steps-marking :as dead-steps-marking]
+            [lambdacd.stepsupport.killable :as killable]))
 
 (defn some-step-waiting-to-be-killed [_ ctx]
   (loop [counter 0]
-    (step-support/if-not-killed ctx
-                                (if (< counter 100)         ;; make sure the step always eventually finishes
+    (killable/if-not-killed ctx
+                            (if (< counter 100)         ;; make sure the step always eventually finishes
                                   (do
                                     (Thread/sleep 100)
                                     (recur (inc counter)))

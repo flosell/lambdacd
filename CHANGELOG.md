@@ -36,6 +36,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
   * `lambdacd.steps.support/assoc-build-metadata!` moved to `lambdacd.stepsupport.metadata`
   * `lambdacd.steps.support/unify-only-status` moved to `lambdacd.stepstatus.unify`
   * `lambdacd.steps.support/{capture-output,printed-output,print-to-output,set-output,new-printer}` moved to `lambdacd.stepsupport.output`
+  * `lambdacd.steps.support/{killed?,if-not-killed}` moved to `lambdacd.stepsupport.killable`
   
   
 

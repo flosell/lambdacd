@@ -7,6 +7,7 @@
             [lambdacd.steps.control-flow :refer :all]
             [clojure.core.async :as async]
             [lambdacd.steps.support :as step-support]
+            [lambdacd.stepsupport.killable :as killable]
             [lambdacd.state.internal.pipeline-state-updater :as pipeline-state-updater]
             [clojure.java.io :as io]
             [lambdacd.util :as util]
@@ -90,7 +91,7 @@
 (defn some-step-indicating-killed [was-killed]
   (fn [_ ctx]
     (loop [counter 0]
-      (if (step-support/killed? ctx)
+      (if (killable/killed? ctx)
         (do
           (reset! was-killed true))
         (do
@@ -102,7 +103,7 @@
 
 (defn some-step-waiting-to-be-killed [_ ctx]
   (loop [counter 0]
-    (step-support/if-not-killed ctx
+    (killable/if-not-killed ctx
                                 (if (< counter 100) ;; make sure the step always eventually finishes
                                   (do
                                     (Thread/sleep 100)

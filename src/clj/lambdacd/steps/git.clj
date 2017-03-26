@@ -8,6 +8,7 @@
             [clojure.core.async :as async]
             [lambdacd.presentation.pipeline-state :as pipeline-state]
             [lambdacd.steps.support :as support]
+            [lambdacd.stepsupport.killable :as killable]
             [clojure.string :as s]
             [clojure.java.io :as io]
             [lambdacd.util :as utils]
@@ -40,7 +41,7 @@
     (async/>!! (:result-channel ctx) [:status :waiting])
     (async/>!! (:result-channel ctx) [:out initial-output])
     (loop [result (revision-changed-from last-seen-revision repo-uri branch)]
-      (support/if-not-killed ctx
+      (killable/if-not-killed ctx
         (if (= :success (:status result))
           (do
             (async/>!! (:result-channel ctx) [:out (str initial-output "\nFound new commit: " (:revision result) ".")])

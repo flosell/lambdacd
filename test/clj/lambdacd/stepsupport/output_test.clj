@@ -7,7 +7,8 @@
             [clojure.core.async :as async]
             [lambdacd.testsupport.noop-pipeline-state :as noop-pipeline-state]
             [lambdacd.execution.core :as execution]
-            [lambdacd.steps.support :as support]))
+            [lambdacd.steps.support :as support]
+            [lambdacd.stepsupport.killable :as killable]))
 
 (defn some-step [args ctx]
   {:status :success :foo :bar})
@@ -90,7 +91,7 @@
 
 (defn log-lots-of-output [args ctx]
   (doall (for [i (range 800)]
-           (support/if-not-killed ctx
+           (killable/if-not-killed ctx
                           (async/>!! (:result-channel ctx) [:xyz i]))))
   {:status :success})
 

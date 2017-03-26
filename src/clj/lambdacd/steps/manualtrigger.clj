@@ -10,7 +10,8 @@
   (:require [clojure.core.async :as async]
             [clojure.tools.logging :as log]
             [lambdacd.event-bus :as event-bus]
-            [lambdacd.steps.support :as support])
+            [lambdacd.steps.support :as support]
+            [lambdacd.stepsupport.killable :as killable])
   (:import (java.util UUID)))
 
 (defn post-id
@@ -24,7 +25,7 @@
   (loop []
     (let [[result _] (async/alts!! [trigger-events
                                     (async/timeout 1000)] :priority true)]
-      (support/if-not-killed ctx
+      (killable/if-not-killed ctx
         (if (and result (= expected-trigger-id (:trigger-id result)))
           (assoc (:trigger-parameters result) :status :success)
           (recur))))))

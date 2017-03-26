@@ -131,10 +131,16 @@
   [printer]
   (output/printed-output printer))
 
-(defn killed? [ctx]
+(defn killed?
+  "Deprecated, use `lambdacd.stepsupport.killable/killed?` instead."
+  {:deprecated "0.13.1"}
+  [ctx]
   @(:is-killed ctx))
 
-(defmacro if-not-killed [ctx & body]
+(defmacro if-not-killed
+  "Deprecated, use `lambdacd.stepsupport.killable/if-not-killed` instead."
+  {:deprecated "0.13.1"}
+  [ctx & body]
   `(if (killed? ~ctx)
      (do
        (async/>!! (:result-channel ~ctx) [:status :killed])

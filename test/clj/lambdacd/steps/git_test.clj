@@ -13,7 +13,8 @@
             [clojure.java.io :as io]
             [lambdacd.steps.support :as step-support]
             [lambdacd.testsupport.test-util :as tu]
-            [lambdacd.util.internal.temp :as temp-util]))
+            [lambdacd.util.internal.temp :as temp-util]
+            [lambdacd.stepsupport.killable :as killable]))
 
 (defn- git-commits [cwd]
   (reverse (string/split-lines (:out (bash-util/bash cwd "git log --pretty=format:%H")))))
@@ -191,12 +192,12 @@
 
 (defn some-step-waiting-to-be-killed [_ ctx]
   (loop [counter 0]
-    (step-support/if-not-killed ctx
-                                (if (< counter 100) ;; make sure the step always eventually finishes
-                                  (do
-                                    (Thread/sleep 100)
-                                    (recur (inc counter)))
-                                  {:status :waited-too-long}))))
+    (killable/if-not-killed ctx
+      (if (< counter 100) ;; make sure the step always eventually finishes
+        (do
+          (Thread/sleep 100)
+          (recur (inc counter)))
+        {:status :waited-too-long}))))
 
 (deftest checkout-and-execute-test
   (let [some-parent-folder (temp-util/create-temp-dir)
