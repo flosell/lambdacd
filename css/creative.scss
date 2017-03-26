@@ -14,7 +14,7 @@ body {
 }
 
 body {
-    @include serif-font;
+    @include sans-serif-font;
 }
 
 hr {
@@ -184,7 +184,7 @@ header {
                 margin: 30px auto;
             }
             p {
-                font-weight: 300;
+                font-weight: 400;
                 color: fade-out(white, 0.3);
                 font-size: 16px;
                 margin-bottom: 50px;
