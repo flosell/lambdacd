@@ -1,7 +1,10 @@
 (ns lambdacd.steps.support
+  "DEPRECATED, use the namespaces under `lambdacd.stepsupport.*` instead. See CHANGELOG.md for details."
+  {:deprecated "0.13.1"}
   (:require [clojure.core.async :as async]
             [lambdacd.stepsupport.output :as output]
             [lambdacd.stepsupport.metadata :as metadata]
+            [lambdacd.stepsupport.chaining :as chaining]
             [lambdacd.execution.internal.execute-steps :as execute-steps]
             [lambdacd.execution.internal.serial-step-result-producer :as serial-step-result-producer]
             [clojure.walk :as walk]
@@ -30,41 +33,61 @@
        (into (sorted-map-by step-id/before?))
        (vals)))
 
-(defn unify-results [step-results]
+; Duplicated instead of delegating because of injected-args, injected-ctx
+(defn unify-results
+  "Deprecated, this was never meant to be public."
+  {:deprecated "0.13.1"}
+  [step-results]
   (-> step-results
       (step-results-sorted-by-id)
       (merge/merge-step-results merge-step-results-with-joined-output)))
 
+; Duplicated instead of delegating because of injected-args, injected-ctx
 (defn- do-chain-steps-with-execute-steps [args ctx steps step-result-producer]
   (let [execute-step-result (execute-steps/execute-steps steps args ctx
                                                      :step-result-producer step-result-producer
                                                      :unify-results-fn unify-results)]
     (merge (unify-results (:outputs execute-step-result)) execute-step-result)))
 
+
+; Duplicated instead of delegating because of injected-args, injected-ctx
 (defn chain-steps
-  ([args ctx & steps]
+  "Deprecated, use `lambdacd.stepsupport.chaining/chain-steps` instead."
+  {:deprecated "0.13.1"}
+  [args ctx & steps]
    (do-chain-steps-with-execute-steps args ctx
                                       (map wrap-step-to-allow-nil-values steps)
-                                      (serial-step-result-producer/serial-step-result-producer))))
+                                      (serial-step-result-producer/serial-step-result-producer)))
 
+; Duplicated instead of delegating because of injected-args, injected-ctx
 (defn always-chain-steps
+  "Deprecated, use `lambdacd.stepsupport.chaining/always-chain-steps` instead."
+  {:deprecated "0.13.1"}
   ([args ctx & steps]
    (do-chain-steps-with-execute-steps args ctx
                                       (map wrap-step-to-allow-nil-values steps)
                                       (serial-step-result-producer/serial-step-result-producer :stop-predicate (constantly false)))))
 
-(defn to-fn [form]
+(defn to-fn
+  "Deprecated, this was never meant to be public."
+  {:deprecated "0.13.1"}
+  [form]
   (let [f# (first form)
         r# (next form)]
     (if (map? form)
       `(fn [& _# ] ~form)
       `(fn [args# ctx#] (~f# args# ctx# ~@r#)))))
 
-;; Placeholders where args and ctx are injected by the chaining-macro.
-(def injected-args)
-(def injected-ctx)
+(def ^{:doc "Deprecated, use `lambdacd.stepsupport.chaining/injected-args` instead."
+       :deprecated "0.13.1"} injected-args)
+(def ^{:doc "Deprecated, use `lambdacd.stepsupport.chaining/injected-ctx` instead."
+       :deprecated "0.13.1"} injected-ctx)
 
-(defn replace-args-and-ctx [args ctx]
+; Duplicated instead of delegating because of injected-args, injected-ctx
+(defn replace-args-and-ctx
+  "Deprecated, this was never meant to be public."
+  {:deprecated "0.13.1"}
+  [args ctx]
   (fn [x]
     (cond
       (and
@@ -75,7 +98,11 @@
         (= (var injected-ctx) (resolve x))) ctx
       :else x)))
 
-(defn to-fn-with-args [form]
+; Duplicated instead of delegating because of injected-args, injected-ctx
+(defn to-fn-with-args
+  "Deprecated, this was never meant to be public."
+  {:deprecated "0.13.1"}
+  [form]
   (let [f# (first form)
         ctx (gensym "ctx")
         args (gensym "args")
@@ -86,26 +113,28 @@
       `(fn [& _# ] ~form)
       `(fn [~args ~ctx] (~f# ~@r#)))))
 
+; Duplicated instead of delegating because of injected-args, injected-ctx
 (defn- do-chaining [chain-fn args ctx forms]
   (let [fns (vec (map to-fn-with-args forms))]
     `(apply ~chain-fn ~args ~ctx ~fns)))
 
-(defmacro chaining [args ctx & forms]
-  "syntactic sugar for chain-steps. can work with arbitrary code and can inject args and ctx"
+(defmacro chaining
+  "Deprecated, use `lambdacd.stepsupport.chaining/chaining` instead."
+  {:deprecated "0.13.1"}
+  [args ctx & forms]
   (do-chaining chain-steps args ctx forms))
 
-(defmacro always-chaining [args ctx & forms]
-  "syntactic sugar for always-chain-steps. can work with arbitrary code and can inject args and ctx"
+(defmacro always-chaining
+  "Deprecated, use `lambdacd.stepsupport.chaining/always-chaining` instead."
+  {:deprecated "0.13.1"}
+  [args ctx & forms]
   (do-chaining always-chain-steps args ctx forms))
 
-(defn last-step-status-wins [step-result]
-  (let [winning-status (->> step-result
-                           :outputs
-                           (sort-by #(vec (first %)))
-                           last
-                           second
-                           :status)]
-    (assoc step-result :status winning-status)))
+(defn last-step-status-wins
+  "Deprecated, use `lambdacd.stepsupport.chaining/last-step-status-wins` instead."
+  {:deprecated "0.13.1"}
+  [step-result]
+  (chaining/last-step-status-wins step-result))
 
 (defn new-printer
   "Deprecated, use `lambdacd.stepsupport.output/new-printer` instead."

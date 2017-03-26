@@ -8,7 +8,8 @@
             [lambdacd.testsupport.noop-pipeline-state :as noop-pipeline-state]
             [lambdacd.execution.core :as execution]
             [lambdacd.steps.support :as support]
-            [lambdacd.stepsupport.killable :as killable]))
+            [lambdacd.stepsupport.killable :as killable]
+            [lambdacd.stepsupport.chaining :as chaining]))
 
 (defn some-step [args ctx]
   {:status :success :foo :bar})
@@ -96,8 +97,8 @@
   {:status :success})
 
 (defn log-lots-of-output-in-chaining [args ctx]
-  (support/chaining args ctx
-                    (log-lots-of-output support/injected-args support/injected-ctx)))
+  (chaining/chaining args ctx
+                     (log-lots-of-output chaining/injected-args chaining/injected-ctx)))
 
 (deftest output-stress-test ; reproduces #135
   (testing "that we don't fail if we come across lots of output for just in general"

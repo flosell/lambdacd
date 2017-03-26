@@ -1,4 +1,6 @@
 (ns lambdacd.steps.status
+  "DEPRECATED, use `lambdacd.stepstatus.predicates` and `lambdacd.stepstatus.unify` instead."
+  {:deprecated "0.13.1"}
   (:require [lambdacd.stepstatus.predicates :as predicates]
             [lambdacd.stepstatus.unify :as unify]))
 

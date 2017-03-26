@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
   * `lambdacd.steps.control-flow/synchronize-atoms`
   * `lambdacd.steps.shell/kill`
   * `lambdacd.steps.status/choose-last-or-not-success`
+  * `lambdacd.steps.support/{replace-args-and-ctx,to-fn,to-fn-with-args,unify-results}`
   
 * `lambdacd.presentation.unified/unified-presentation` is unused and therefore deprecated and will be removed in the future. Use `pipeline-structure-with-step-results` instead.
 * `lambdacd.steps.support/merge-globals` is no longer necessary, normal step result merging (`merge-step-results`,`merge-two-step-results`) should already conserve and merge globals just fine
@@ -37,6 +38,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
   * `lambdacd.steps.support/unify-only-status` moved to `lambdacd.stepstatus.unify`
   * `lambdacd.steps.support/{capture-output,printed-output,print-to-output,set-output,new-printer}` moved to `lambdacd.stepsupport.output`
   * `lambdacd.steps.support/{killed?,if-not-killed}` moved to `lambdacd.stepsupport.killable`
+  * `lambdacd.steps.support/{chaining,chain-steps,always-chaining,always-chain-steps,injected-args,injected-ctx,last-step-status-wins}` moved to `lambdacd.stepsupport.chaining`
   
   
 

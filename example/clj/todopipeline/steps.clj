@@ -6,11 +6,11 @@
   (:require [lambdacd.steps.shell :as shell]
             [lambdacd.steps.git :as git]
             [lambdacd.steps.manualtrigger :as manualtrigger]
-            [lambdacd.steps.support :as support]
             [clj-time.format :as time-format]
             [clj-time.core :as time]
             [lambdacd.stepsupport.metadata :as metadata]
-            [lambdacd.stepsupport.output :as output]))
+            [lambdacd.stepsupport.output :as output]
+            [lambdacd.stepsupport.chaining :as chaining]))
 
 ;; Let's define some constants and utility-functions
 (def backend-repo "git@github.com:flosell/todo-backend-compojure.git")
@@ -163,14 +163,14 @@
   {:status :success})
 
 (defn do-stuff [args ctx]
-  (support/chaining args ctx
-                    (shell/bash support/injected-ctx "/" "echo one && sleep 10 && echo  two")
-                    (shell/bash support/injected-ctx "/" "echo three && sleep 10 && echo four")))
+  (chaining/chaining args ctx
+                    (shell/bash chaining/injected-ctx "/" "echo one && sleep 10 && echo  two")
+                    (shell/bash chaining/injected-ctx "/" "echo three && sleep 10 && echo four")))
 
 (defn compare-screenshots [args ctx]
-  (support/last-step-status-wins
-    (support/always-chaining args ctx
-      (check-greeting support/injected-args support/injected-ctx)
-      (if (= :failure (:status support/injected-args))
-        (manualtrigger/wait-for-manual-trigger support/injected-args support/injected-ctx)
+  (chaining/last-step-status-wins
+    (chaining/always-chaining args ctx
+      (check-greeting chaining/injected-args chaining/injected-ctx)
+      (if (= :failure (:status chaining/injected-args))
+        (manualtrigger/wait-for-manual-trigger chaining/injected-args chaining/injected-ctx)
         {:status :success})))) ; else-branch seems to be necessary at the moment, otherwise nil will be returned
