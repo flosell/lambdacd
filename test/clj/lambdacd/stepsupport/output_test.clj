@@ -7,7 +7,6 @@
             [clojure.core.async :as async]
             [lambdacd.testsupport.noop-pipeline-state :as noop-pipeline-state]
             [lambdacd.execution.core :as execution]
-            [lambdacd.steps.support :as support]
             [lambdacd.stepsupport.killable :as killable]
             [lambdacd.stepsupport.chaining :as chaining]))
 

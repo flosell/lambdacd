@@ -11,7 +11,6 @@
             [lambdacd.util.internal.bash :as bash-util]
             [lambdacd.testsupport.data :refer [some-ctx some-ctx-with]]
             [clojure.java.io :as io]
-            [lambdacd.steps.support :as step-support]
             [lambdacd.testsupport.test-util :as tu]
             [lambdacd.util.internal.temp :as temp-util]
             [lambdacd.stepsupport.killable :as killable]))

@@ -77,7 +77,7 @@ For details, check out the documentation in the [wiki](https://github.com/flosel
 LambdaCD comes with a small utility that can rebind `*out*` to pipe the clojure standard out into LambdaCD: 
 
 ```clojure
-(:require [lambdacd.steps.support :refer [capture-output]])
+(:require [lambdacd.stepsupport.output :refer [capture-output]])
 
 (defn some-step [args ctx]
   ; create a printer that accumulates your output
@@ -95,7 +95,7 @@ If you need more control over the output, you can write directly to the [result 
 or use the printer-utilities: 
 
 ```clojure
-(:require [lambdacd.steps.support :refer [new-printer print-to-output printed-output]])
+(:require [lambdacd.stepsupport.output :refer [new-printer print-to-output printed-output]])
 
 (defn some-step [args ctx]
   ; create a printer that accumulates your output

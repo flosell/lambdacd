@@ -1,7 +1,6 @@
 (ns lambdacd.steps.shell
   "Build step to run scripts in a separate shell process. Needs `bash` to run."
-  (:require [lambdacd.steps.support :as support]
-            [clojure.java.io :as io]
+  (:require [clojure.java.io :as io]
             [clojure.string :as string]
             [me.raynes.conch.low-level :as sh]
             [clojure.core.async :as async]

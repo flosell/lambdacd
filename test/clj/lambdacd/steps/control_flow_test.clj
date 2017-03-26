@@ -6,7 +6,6 @@
             [lambdacd.testsupport.data :refer [some-ctx-with some-ctx]]
             [lambdacd.steps.control-flow :refer :all]
             [clojure.core.async :as async]
-            [lambdacd.steps.support :as step-support]
             [lambdacd.stepsupport.killable :as killable]
             [lambdacd.state.internal.pipeline-state-updater :as pipeline-state-updater]
             [clojure.java.io :as io]

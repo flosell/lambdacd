@@ -2,7 +2,6 @@
   "Control-flow elements for a pipeline: steps that control the way their child-steps are being run."
   (:require [lambdacd.execution.core :as execution]
             [clojure.core.async :as async]
-            [lambdacd.steps.support :as support]
             [lambdacd.step-id :as step-id]
 
             [lambdacd.util.internal.temp :as temp-util]

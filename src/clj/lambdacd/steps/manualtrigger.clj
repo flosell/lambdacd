@@ -10,7 +10,6 @@
   (:require [clojure.core.async :as async]
             [clojure.tools.logging :as log]
             [lambdacd.event-bus :as event-bus]
-            [lambdacd.steps.support :as support]
             [lambdacd.stepsupport.killable :as killable])
   (:import (java.util UUID)))
 

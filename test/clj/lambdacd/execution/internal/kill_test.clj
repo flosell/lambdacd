@@ -10,7 +10,6 @@
                                                     get-or-timeout
                                                     call-with-timeout
                                                     without-dead-steps]]
-            [lambdacd.steps.support :as step-support]
             [lambdacd.steps.control-flow :as control-flow]
             [lambdacd.util.internal.temp :as temp-util]
             [lambdacd.state.internal.dead-steps-marking :as dead-steps-marking]
