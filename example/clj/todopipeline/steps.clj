@@ -19,10 +19,15 @@
 (defn build-label [ctx]
   (str (time-format/unparse (time-format/formatters :date) (time/now)) "." (:build-number ctx)))
 
+(defn- pass-on-previous [args]
+  ; previous steps need what came back from the initial trigger so we just pass this stuff on to the next step...
+  ; Could also use :global instead
+  args)
+
 ; Let's try out some custom metadata:
 (defn set-build-name [args ctx]
   (metadata/assoc-build-metadata! ctx :human-readable-build-label (build-label ctx))
-  {:status :success})
+  (pass-on-previous args))
 
 ;; This step does nothing more than to delegate to a library-function.
 ;; It's a function that just waits until something changes in the repo.
