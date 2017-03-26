@@ -31,6 +31,7 @@
                    :smoke :smoke
                    :all (constantly true)}
   :codox {:namespaces [#"^(?!.*\.internal\.).*$"]
+          :doc-files []
           :source-uri "https://github.com/flosell/lambdacd/blob/master/{filepath}#L{line}"
           :project    {:name "LambdaCD"}
           :themes [:rdash]
