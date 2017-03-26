@@ -1,4 +1,5 @@
 (ns lambdacd.ui.api
+  "REST-API into the current state, structure and history of the pipeline for use by the UI."
   (:require [lambdacd.presentation.unified :as unified]
             [ring.util.response :as resp]
             [clojure.string :as string]
@@ -23,7 +24,9 @@
 (defn- to-internal-step-id [dash-seperated-step-id]
   (map sugar/parse-int (string/split dash-seperated-step-id #"-")))
 
-(defn rest-api [{pipeline-def :pipeline-def ctx :context}]
+(defn rest-api
+  "Returns a ring-handler offering a rest-api for the UI."
+  [{pipeline-def :pipeline-def ctx :context}]
   (ring-json/wrap-json-params
     (routes
       (GET "/builds/" [] (ui-util/json (state-presentation/history-for ctx)))

@@ -1,12 +1,10 @@
 (ns lambdacd.ui.ui-server
-  (:require [compojure.route :as route]
-            [lambdacd.ui.api :as api]
-            [lambdacd.ui.ui-page :as ui-page]
-            [compojure.core :refer [routes GET context]]))
+  "Deprecated, use `lambdacd.ui.core` instead."
+  {:deprecated "0.13.1"}
+  (:require [lambdacd.ui.core :as ui-core]))
 
 (defn ui-for
-  ([pipeline]
-   (routes
-     (context "/api" [] (api/rest-api pipeline))
-     (route/resources "/" {:root "public"})
-     (GET "/" [] (ui-page/ui-page pipeline)))))
+  "Deprecated, use `lambdacd.ui.core/ui-for` instead."
+  {:deprecated "0.13.1"}
+  [pipeline]
+  (ui-core/ui-for pipeline))
