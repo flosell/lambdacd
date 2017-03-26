@@ -1,4 +1,5 @@
 (ns lambdacd.util
+  {:deprecated "0.12.1"}
   (:import (java.nio.file.attribute FileAttribute))
   (:require [clojure.data.json :as json]
             [lambdacd.util.internal.bash :as bash-utils]
