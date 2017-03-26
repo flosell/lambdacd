@@ -128,7 +128,7 @@ checkGPG() {
   fi
 }
 release() {
-  checkGPG && testall && clean && buildCss && lein with-profile +release release $1 && scripts/github-release.sh && publish-api-doc $(chag latest)
+  checkGPG && testall && clean && buildCss && lein with-profile +release release $1 && scripts/github-release.sh && generate-api-documentation &&   publish-api-doc $(chag latest)
 }
 releaseLocal() {
   buildCss && lein with-profile +release install
@@ -191,16 +191,15 @@ publish-api-doc() {
     ln -s ${DOC_LABEL} latest
 
     (
-      echo "<html><head><title>LambdaCD API Docs</title></head><body><h1>LambdaCD API Docs</h1><ul>";
+      echo "version"; # header
       for i in $(find . -depth 1 -type d -or -type l | sort --reverse   ); do
-        echo "<li><a href=\"$i\">$(basename $i)</a></li>";
+        echo $(basename ${i});
       done;
-      echo "</ul></body></html>"
-    ) > index.html
+    ) > ../_data/apidoc-versions.csv
 
-    git add ${DOC_LABEL} latest index.html
+    git add ${DOC_LABEL} latest ../_data/apidoc-versions.csv
     git commit -m "Update generated API Doc for ${DOC_LABEL}"
-    git push origin gh-pages
+#    git push origin gh-pages
 
     popd > /dev/null
 }
