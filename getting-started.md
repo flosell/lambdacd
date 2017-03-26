@@ -1,6 +1,7 @@
 ---
 layout: page
 title: Getting Started
+navtitle: Getting Started
 permalink: /getting-started/
 ---
 

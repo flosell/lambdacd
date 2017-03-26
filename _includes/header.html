@@ -26,14 +26,14 @@
           <a class="page-scroll" href="{{ "/#example" | prepend: site.baseurl }}">Example</a>
         </li>
         {% for page in site.pages %}
-          {% if page.title %}
+          {% if page.navtitle %}
             <li>
-              <a href="{{ page.url | prepend: site.baseurl }}">{{ page.title }}</a>
+              <a href="{{ page.url | prepend: site.baseurl }}">{{ page.navtitle }}</a>
             </li>
           {% endif %}
         {% endfor %}
         <li>
-          <a class="page-scroll" href="https://github.com/flosell/lambdacd/wiki">Documentation</a>
+          <a class="page-scroll" href="https://github.com/flosell/lambdacd/wiki">Wiki</a>
         </li>
         <li>
           <a class="page-scroll" href="https://github.com/flosell/lambdacd"><i class="fa fa-2x fa-github"></i></a>
