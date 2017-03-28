@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## 0.13.1
 
+### Added
+
+* Proper API Documentation: http://www.lambda.cd/api-docs/0.13.1/
+
 ### Fixed
  
 * Marking builds as dead if the datastore sees them as running but they are not (e.g. because LambdaCD was not cleanly shut down previously). 
