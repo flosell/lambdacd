@@ -4,8 +4,8 @@ set -e
 
 SCRIPT_DIR=$(dirname "$0")
 
-bold=$(tput bold)
-normal=$(tput sgr0)
+bold="\033[1m"
+normal="\033[0m"
 
 checkmark="\xe2\x98\x91"
 cross="\xe2\x98\x92"
