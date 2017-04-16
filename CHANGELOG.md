@@ -4,6 +4,12 @@ This changelog contains a loose collection of changes in every release. I will a
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to a "shifted" version of semantic versioning while the major version remains at 0: Minor version changes indicate breaking changes, patch version changes should not contain breaking changes.
 
+## 0.13.2
+
+### Fixed
+
+* `java.lang.ClassNotFoundException: clojure.test` in `lambdacd.presentation.pipeline-structure` under some circumstances (#169)
+
 ## 0.13.1
 
 ### Added

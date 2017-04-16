@@ -2,7 +2,8 @@
   "This namespace is responsible for converting the pipeline
   into a nice map-format that we can use to display the pipeline
   in a UI"
-  (:require [clojure.string :as s]))
+  (:require [clojure.string :as s]
+            [clojure.test :as clojure-test]))
 
 (defn- metadata [fun]
   (meta (find-var fun)))
@@ -23,7 +24,7 @@
 (defn- display-type [x]
   (cond
     (nil? x) :unknown
-    (clojure.test/function? x) (or (display-type-by-metadata x) :step)
+    (clojure-test/function? x) (or (display-type-by-metadata x) :step)
     (is-nested-with-children x) (or (display-type-by-metadata (first x)) :container)
     (sequential? x) :step
     :else :unknown))
