@@ -202,7 +202,7 @@ First, we add the [lambdacd-git](https://github.com/flosell/lambdacd-git) librar
 {% highlight clojure %}
 ; [...]
 :dependencies [; [...]
-               [lambdacd-git "0.1.6"]
+               [lambdacd-git "0.2.0"]
                ; [...]
                ]
 {% endhighlight %}
