@@ -13,20 +13,15 @@
 
 [![Build Status](https://travis-ci.org/flosell/lambdacd.svg?branch=master)](https://travis-ci.org/flosell/lambdacd)
 
-This project is still under active development so don't rely on everything working flawlessly out of the box.
-Also, things might change along the way so when you upgrade, make sure you check out the [changelog](CHANGELOG.md)
-
-However, people do use LambdaCD in their day to day work and are happy with it, so give it a try!
-And if you notice something, please open bug reports, feature requests or just give feedback!
-
-## Setup
+## Getting started
 
 * Make sure you have [Leiningen](http://leiningen.org) and a recent version of 
   [JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) installed
 * `lein new lambdacd <NAME>` will create a new pipeline-project
 * `cd <NAME>`
 * `lein run` downloads all dependencies and starts the server; the UI is then served on on [http://localhost:8080](http://localhost:8080)
-* your pipeline is defined in `src/<NAME>/`. Have a look around, change some steps or add some steps on your own.
+* your pipeline is defined in `src/<NAME>/`. Have a look around, change some steps or add some steps on your own
+* For more details, check out the resources and related projects below 
 
 
 ## Example
