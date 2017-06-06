@@ -2,6 +2,8 @@
 
 # LambdaCD
 
+[![Join the chat at https://gitter.im/flosell/lambdacd](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/flosell/lambdacd?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 
 * it's a continuous delivery pipeline, in code
 * it's your own custom built Jenkins/Go/TeamCity/..., in clojure
