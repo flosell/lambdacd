@@ -1,7 +1,13 @@
 before_script:
 - ./scripts/travis_prebuild.sh
 language: clojure
-script: ./go test && ./go check-style && ./go test-clj-unit-repeat
+jobs:
+  include:
+    - stage: test & check style
+      script: ./go test
+    - script: ./go check-style
+    - stage: check for flakyness
+      script: ./go test-clj-unit-repeat
 sudo: required
 group: edge
 cache:
