@@ -379,7 +379,9 @@ body {
 .lein-new-command pre {
     background-color: white;
 }
-
+.lein-new-command code {
+    white-space: pre-line;
+}
 .getting-started-or p {
     margin-top: 10px;
     margin-bottom: 10px;
