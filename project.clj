@@ -40,7 +40,7 @@
             [lein-cljsbuild "1.1.3"]
             [lein-doo "0.1.4"]
             [lein-environ "1.0.2"]
-            [lein-kibit "0.1.2"]
+            [lein-kibit "0.1.6-beta1"]
             [quickie "0.3.6"]]
   :clean-targets ^{:protect false} [:target-path :compile-path "resources/public/js-gen"]
 
