@@ -104,11 +104,10 @@
     []))
 
 (defn ansi-fragment->classes [fragment]
-  (->> (concat
-         (fragment-style->classes fragment)
-         (background-color->classes fragment)
-         (foreground-color->classes fragment))
-       (s/join " ")))
+  (s/join " " (concat
+                (fragment-style->classes fragment)
+                (background-color->classes fragment)
+                (foreground-color->classes fragment))))
 
 (defn- console-output-line-fragment [idx fragment]
   [:span {:key (str idx "-" (hash fragment)) :class (ansi-fragment->classes fragment)} (:text fragment)])
@@ -120,7 +119,7 @@
 (defn console-component []
   (let [current-step-result (re-frame/subscribe [::db/current-step-result])]
     (fn []
-      (if (not (nil? (:out (:result @current-step-result))))
+      (if-not (nil? (:out (:result @current-step-result)))
         [:div
          [:h3 "Console Output"]
          (let [lines (console-output-processor/process-ascii-escape-characters (enhanced-output (:result @current-step-result)))]
