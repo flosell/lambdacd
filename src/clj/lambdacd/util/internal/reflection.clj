@@ -2,5 +2,5 @@
 
 (defn private-field [obj fn-name-string]
   (let [m (.. obj getClass (getDeclaredField fn-name-string))]
-    (. m (setAccessible true))
-    (. m (get obj))))
+    (.setAccessible m true)
+    (.get m obj)))
