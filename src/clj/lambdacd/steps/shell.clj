@@ -5,10 +5,11 @@
             [me.raynes.conch.low-level :as sh]
             [clojure.core.async :as async]
             [lambdacd.util.internal.temp :as temp-util]
-            [lambdacd.stepsupport.output :as output])
+            [lambdacd.stepsupport.output :as output]
+            [lambdacd.util.internal.reflection :as reflection-util])
   (:import (java.util UUID)
            (java.io IOException)
-           (org.ow2.proactive.process_tree_killer ProcessTree)))
+           (com.jezhumble.javasysmon JavaSysMon)))
 
 
 (defn- exit-code->status [exit-code was-killed]
@@ -17,23 +18,27 @@
     (zero? exit-code) :success
     :default :failure))
 
-(defn kill
-  "DEPRECATED."
-  {:deprecated "0.13.1"}
-  [was-killed-indicator proc ctx kill-cookie]
-  (reset! was-killed-indicator true)
-  (async/>!! (:result-channel ctx) [:processed-kill true])
-  (.destroy proc)
-  (.killAll (ProcessTree/get) {"killcookie" kill-cookie}))
+(defn- pid-of-process [proc]
+  (reflection-util/private-field proc "pid"))
 
-(defn- add-kill-handling [ctx proc was-killed watch-ref kill-cookie]
+(defn kill
+  "DEPRECATED, shouldn't be public"
+  {:deprecated "0.13.1"}
+  [was-killed-indicator proc ctx]
+  (let [pid (pid-of-process proc)]
+    (reset! was-killed-indicator true)
+    (async/>!! (:result-channel ctx) [:processed-kill true])
+    (.destroy proc)
+    (.killProcessTree (JavaSysMon.) pid false)))
+
+(defn- add-kill-handling [ctx proc was-killed watch-ref]
   (let [is-killed (:is-killed ctx)]
     (dosync
       (if @is-killed
-        (kill was-killed proc ctx kill-cookie)
+        (kill was-killed proc ctx)
         (add-watch is-killed watch-ref (fn [_ _ _ new]
                                            (if new
-                                             (kill was-killed proc ctx kill-cookie))))))))
+                                             (kill was-killed proc ctx))))))))
 
 (defn- safe-read-line [reader]
   (try
@@ -49,16 +54,15 @@
           (recur))))))
 
 (defn- execte-shell-command [cwd shell-script ctx env]
-  (let [kill-cookie (str (UUID/randomUUID))
-        x (sh/proc "bash" "-e" shell-script
+  (let [x (sh/proc "bash" "-e" shell-script
                    :dir cwd
-                   :env (assoc env "killcookie" kill-cookie)
+                   :env env
                    :redirect-err true)
         proc (:process x)
         was-killed (atom false)
         kill-switch (:is-killed ctx)
         watch-ref (UUID/randomUUID)
-        _ (add-kill-handling ctx proc was-killed watch-ref kill-cookie)
+        _ (add-kill-handling ctx proc was-killed watch-ref)
         out (read-and-print-shell-output x)
         exit-code (sh/exit-code x)
         status (exit-code->status exit-code @was-killed)]
