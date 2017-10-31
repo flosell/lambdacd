@@ -52,6 +52,7 @@
        (in-parallel
         ;; these child steps do some actual work with the checked out git repo
         (with-frontend-git
+          nil
           create-some-details
           client-package
           client-publish)

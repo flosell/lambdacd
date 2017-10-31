@@ -79,7 +79,7 @@
            (execute-steps [some-successful-step step-that-expects-a-kill-switch] {} (some-ctx-with :step-id [0])))))
   (testing "that nil values (e.g. from an optional step in the structure) do not cause problems and are ignored"
     (is (= {:outputs { [1 0] {:status :success}} :status :success}
-           (execute-steps [some-successful-step nil] {} (some-ctx-with :step-id [0]))))))
+           (execute-steps [nil some-successful-step] {} (some-ctx-with :step-id [0]))))))
 
 
 

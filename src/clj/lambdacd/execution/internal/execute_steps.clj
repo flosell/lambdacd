@@ -81,6 +81,5 @@
   (let [handler-chain (-> (call-step-result-producer step-result-producer)
                           (wrap-inheritance unify-results-fn)
                           (kill/wrap-execute-steps-with-kill-handling is-killed)
-                          (retrigger/wrap-retrigger-handling retrigger-predicate)
-                          (wrap-filter-nil-steps))]
-    (handler-chain (contexts-for-steps steps ctx) args ctx)))
+                          (retrigger/wrap-retrigger-handling retrigger-predicate))]
+    (handler-chain (contexts-for-steps (filter not-nil? steps) ctx) args ctx)))
