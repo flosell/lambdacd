@@ -4,6 +4,12 @@ This changelog contains a loose collection of changes in every release. I will a
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to a "shifted" version of semantic versioning while the major version remains at 0: Minor version changes indicate breaking changes, patch version changes should not contain breaking changes.
 
+## 0.13.4
+
+### Fixed
+
+* `nil`-values in the pipeline-structure (e.g. from conditionals when creating it) led to step-information being in the wrong place for the UI (#172)
+
 ## 0.13.3
 
 ### Fixed
