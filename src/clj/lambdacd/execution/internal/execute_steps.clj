@@ -65,21 +65,15 @@
       (event-bus/unsubscribe ctx :step-result-updated subscription)
       result)))
 
-
-(defn- wrap-filter-nil-steps [handler]
-  (fn [step-contexts-and-steps args ctx]
-    (handler (filter (fn [[_ step]] (not-nil? step)) step-contexts-and-steps)
-             args
-             ctx)))
-
 ; TODO: this should be in a namespace like lambdacd.execution.core?
 (defn execute-steps [steps args ctx & {:keys [step-result-producer is-killed unify-results-fn retrigger-predicate]
                                        :or   {step-result-producer (serial-step-result-producer)
                                               is-killed            (atom false)
                                               unify-results-fn     (unify/unify-only-status unify/successful-when-all-successful)
                                               retrigger-predicate  retrigger/sequential-retrigger-predicate}}]
-  (let [handler-chain (-> (call-step-result-producer step-result-producer)
-                          (wrap-inheritance unify-results-fn)
-                          (kill/wrap-execute-steps-with-kill-handling is-killed)
-                          (retrigger/wrap-retrigger-handling retrigger-predicate))]
-    (handler-chain (contexts-for-steps (filter not-nil? steps) ctx) args ctx)))
+  (let [handler-chain      (-> (call-step-result-producer step-result-producer)
+                               (wrap-inheritance unify-results-fn)
+                               (kill/wrap-execute-steps-with-kill-handling is-killed)
+                               (retrigger/wrap-retrigger-handling retrigger-predicate))
+        contexts-and-steps (contexts-for-steps (filter not-nil? steps) ctx)]
+    (handler-chain contexts-and-steps args ctx)))
