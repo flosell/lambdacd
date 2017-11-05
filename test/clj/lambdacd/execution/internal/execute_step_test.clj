@@ -33,9 +33,16 @@
 
 (def message-thrown-by-some-step-throwing-an-exception
   "Something went wrong!")
+(def output-written-before-throwing-an-exception
+  "some output before throwing exception")
 
 (defn some-step-throwing-an-exception [& _]
   (throw (Exception. ^String message-thrown-by-some-step-throwing-an-exception)))
+
+(defn some-step-writing-output-then-throwing-an-exception [_ {c :result-channel}]
+  (async/>!! c [:out output-written-before-throwing-an-exception])
+  (throw (Exception. ^String message-thrown-by-some-step-throwing-an-exception)))
+
 (defn some-step-throwing-an-error [& _]
   (throw (Error. ^String message-thrown-by-some-step-throwing-an-exception)))
 
@@ -163,9 +170,10 @@
          (testing "that the result indicates that a step has been waiting"
                   (is (= {:outputs { [0 0] {:status :success :has-been-waiting true}} :status :success} (execute-step {} [(some-ctx-with :step-id [0 0]) some-step-sending-a-wait] ))))
          (testing "that if an exception is thrown in the step, it will result in a failure and the exception output is logged"
-                  (let [output (execute-step {} [(some-ctx-with :step-id [0 0]) some-step-throwing-an-exception])]
+                  (let [output (execute-step {} [(some-ctx-with :step-id [0 0]) some-step-writing-output-then-throwing-an-exception])]
                     (is (= :failure (get-in output [:outputs [0 0] :status])))
-                    (is (.contains (get-in output [:outputs [0 0] :out]) "Something went wrong"))))
+                    (is (.contains (get-in output [:outputs [0 0] :out]) message-thrown-by-some-step-throwing-an-exception))
+                    (is (.contains (get-in output [:outputs [0 0] :out]) output-written-before-throwing-an-exception))))
          (testing "that the context passed to the step contains an output-channel and that results passed into this channel are merged into the result"
                   (is (= {:outputs { [0 0] {:out "hello world" :status :success}} :status :success} (execute-step {} [(some-ctx-with :step-id [0 0]) some-step-writing-to-the-result-channel]))))
          (testing "that the context data is being passed on to the step"

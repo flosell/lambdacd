@@ -28,7 +28,9 @@
     (try
       (handler args ctx)
       (catch Exception e
-        {:status :failure :out (util-exceptions/stacktrace-to-string e)}))))
+        {:status :failure
+         :out (util-exceptions/stacktrace-to-string e)
+         ::append-out-to-async-out true}))))
 
 ; ============================================
 
@@ -98,7 +100,11 @@
           immediate-step-result     (handler args ctx-for-child)
           processed-async-result    (async/<!! processed-async-result-ch)
           complete-step-result      (merge processed-async-result immediate-step-result)]
-      complete-step-result)))
+      (if (::append-out-to-async-out immediate-step-result)
+        (-> complete-step-result
+            (assoc :out (str (:out processed-async-result) (:out immediate-step-result)))
+            (dissoc ::append-out-to-async-out))
+        complete-step-result))))
 
 ; ============================================
 
