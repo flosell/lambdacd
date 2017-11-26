@@ -127,7 +127,7 @@ checkGPG() {
   fi
 }
 release() {
-  checkGPG && testall && clean && buildCss && lein with-profile +release release $1 && scripts/github-release.sh && generate-api-documentation &&   publish-api-doc $(chag latest)
+  checkGPG && testall && clean && buildCss && lein with-profile +release release $1 && scripts/github-release.sh &&  publish-api-doc $(chag latest)
 }
 releaseLocal() {
   buildCss && lein with-profile +release install
@@ -198,7 +198,7 @@ publish-api-doc() {
 
     git add ${DOC_LABEL} latest ../_data/apidoc-versions.csv
     git commit -m "Update generated API Doc for ${DOC_LABEL}"
-#    git push origin gh-pages
+    git push origin gh-pages
 
     popd > /dev/null
 }
