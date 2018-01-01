@@ -3,7 +3,6 @@
   i.e. what's currently running, what are the results of each step, ..."
   (:require [lambdacd.internal.default-pipeline-state-persistence :as persistence]
             [clj-time.core :as t]
-            [lambdacd.internal.pipeline-state :as old-pipeline-state]
             [lambdacd.state.protocols :as protocols]
             [lambdacd.util :as util]
             [clojure.data :as data]))
@@ -38,14 +37,6 @@
     0))
 
 (defrecord DefaultPipelineState [state-atom structure-atom build-metadata-atom home-dir max-builds]
-  old-pipeline-state/PipelineStateComponent
-  (update [self build-number step-id new-step-result]
-    (protocols/consume-step-result-update self build-number step-id new-step-result))
-  (get-all [self]
-    @state-atom)
-  (get-internal-state [self]
-    state-atom)
-
   protocols/PipelineStructureConsumer
   (consume-pipeline-structure [self build-number pipeline-structure-representation]
     (swap! structure-atom #(assoc % build-number pipeline-structure-representation))

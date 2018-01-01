@@ -1,6 +1,5 @@
 (ns lambdacd.testsupport.noop-pipeline-state
-  (:require [lambdacd.internal.pipeline-state :as pipeline-state]
-            [lambdacd.state.protocols :as protocols]))
+  (:require [lambdacd.state.protocols :as protocols]))
 
 (defrecord NoOpPipelineState []
   protocols/StepResultUpdateConsumer

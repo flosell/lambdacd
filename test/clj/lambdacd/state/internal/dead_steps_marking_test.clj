@@ -1,10 +1,7 @@
 (ns lambdacd.state.internal.dead-steps-marking-test
   (:require [clojure.test :refer :all]
             [lambdacd.state.internal.dead-steps-marking :refer :all]
-            [shrubbery.core :refer [mock received?]]
-            [lambdacd.testsupport.data :refer [some-ctx-with]]
-            [lambdacd.state.protocols :as state-protocols]
-            [lambdacd.internal.pipeline-state :as legacy-pipeline-state]))
+            [lambdacd.testsupport.data :refer [some-ctx-with]]))
 
 (deftest mark-dead-steps-test
   (testing "that active steps that don't show up in active build step tracking are marked as dead"

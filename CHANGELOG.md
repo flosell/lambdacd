@@ -4,6 +4,16 @@ This changelog contains a loose collection of changes in every release. I will a
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to a "shifted" version of semantic versioning while the major version remains at 0: Minor version changes indicate breaking changes, patch version changes should not contain breaking changes.
 
+## 0.14.0
+
+**House-Keeping Release**. 
+
+This release contains no new functionality but only cleans up the codebase and removes deprecated interfaces.
+
+### Removed
+
+* `lambdacd.internal.pipeline-state/PipelineStateComponent` (deprecated since 0.11.0). Use the functions in `lambdacd.state.core` access state or the protocols in `lambdacd.state.protocols` to implement custom persistence functionality.
+
 ## 0.13.5
 
 ### Fixed

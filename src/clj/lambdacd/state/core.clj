@@ -1,17 +1,8 @@
 (ns lambdacd.state.core
   "Facade for all functions related to dealing with LambdaCDs state. Wraps the related interfaces to simplify compatibility and API."
   (:require [lambdacd.state.protocols :as protocols]
-            [lambdacd.internal.pipeline-state :as legacy-pipeline-state]
             [lambdacd.presentation.pipeline-structure :as pipeline-structure]
             [lambdacd.state.internal.dead-steps-marking :as dead-steps-marking]))
-
-(defn- all-build-numbers-from-legacy [component]
-  (->> (legacy-pipeline-state/get-all component)
-       (keys)
-       (sort)))
-
-(defn- get-step-results-from-legacy [component build-number]
-  (get (legacy-pipeline-state/get-all component) build-number))
 
 (defn- state-component [ctx]
   (:pipeline-state-component ctx))
@@ -48,8 +39,7 @@
   [ctx build-number step-id step-result]
   (let [component (state-component ctx)]
     (if (satisfies? protocols/StepResultUpdateConsumer component)
-      (protocols/consume-step-result-update component build-number step-id step-result)
-      (legacy-pipeline-state/update component build-number step-id step-result))))
+      (protocols/consume-step-result-update component build-number step-id step-result))))
 
 (defn consume-pipeline-structure
   "Update the pipeline structure in the state"
@@ -70,16 +60,14 @@
   [ctx]
   (let [component (state-component ctx)]
     (if (satisfies? protocols/NextBuildNumberSource component)
-      (protocols/next-build-number component)
-      (legacy-pipeline-state/next-build-number component))))
+      (protocols/next-build-number component))))
 
 (defn all-build-numbers
   "Returns all existing build numbers"
   [ctx]
   (let [component (state-component ctx)]
     (if (satisfies? protocols/QueryAllBuildNumbersSource component)
-      (protocols/all-build-numbers component)
-      (all-build-numbers-from-legacy component))))
+      (protocols/all-build-numbers component))))
 
 (defn get-step-results
   "Returns a map from step-ids to step-results"
@@ -87,8 +75,7 @@
   (dead-steps-marking/mark-dead-steps ctx build-number
                                       (let [component (state-component ctx)]
                                           (if (satisfies? protocols/QueryStepResultsSource component)
-                                            (protocols/get-step-results component build-number)
-                                            (get-step-results-from-legacy component build-number)))))
+                                            (protocols/get-step-results component build-number)))))
 
 (defn get-step-result
   "Returns a map containing the result of one step"
@@ -101,8 +88,7 @@
   [ctx build-number]
   (let [component (state-component ctx)]
     (if (satisfies? protocols/PipelineStructureSource component)
-      (stored-structure-or-fallback ctx build-number)
-      (annotated-fallback-structure ctx))))
+      (stored-structure-or-fallback ctx build-number))))
 
 (defn get-build-metadata
   "Returns a map describing metadata of a build"

@@ -47,9 +47,6 @@
 (defn- build-state-path [dir]
   (io/file dir "build-state.edn"))
 
-(defn- pipeline-structure-path [dir]
-  (io/file dir "pipeline-structure.edn"))
-
 (defn- read-build-edn [path]
   (let [build-number (build-number-from-path path)
         data-str     (slurp path)
