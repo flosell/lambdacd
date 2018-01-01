@@ -5,7 +5,6 @@
             [clojure.test :refer :all]
             [clojure.data.json :as json]
             [lambdacd.smoketest.pipeline :as pipeline]
-            [lambdacd.util :as util]
             [lambdacd.util.internal.bash :as bash-util]
             [lambdacd.core :as core]
             [lambdacd.ui.ui-server :as ui]

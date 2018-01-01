@@ -2,7 +2,7 @@
   (:require [clojure.test :refer :all]
             [lambdacd.execution.internal.execute-steps :refer :all]
             [lambdacd.testsupport.test-util :refer :all]
-            [lambdacd.util :refer [buffered]]
+            [lambdacd.util.internal.async :refer [buffered]]
             [lambdacd.testsupport.matchers :refer :all]
             [lambdacd.testsupport.data :refer [some-ctx-with some-ctx]]))
 

@@ -1,7 +1,6 @@
 (ns lambdacd.stepresults.merge
   "Functions that can help merge several step results into one"
-  (:require [lambdacd.util :as utils]
-            [lambdacd.stepresults.merge-resolvers :as merge-resolvers]
+  (:require [lambdacd.stepresults.merge-resolvers :as merge-resolvers]
             [lambdacd.util.internal.map :as map-utils]))
 
 (defn merge-step-results

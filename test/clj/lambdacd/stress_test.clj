@@ -4,7 +4,6 @@
             [clojure.core.async :as async]
             [lambdacd.steps.control-flow :refer [in-parallel]]
             [lambdacd.util.internal.temp :as temp-utils]
-            [lambdacd.util :as util]
             [lambdacd.stepsupport.output :as output]))
 
 

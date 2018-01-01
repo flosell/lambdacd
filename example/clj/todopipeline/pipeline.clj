@@ -9,7 +9,6 @@
 
 (ns todopipeline.pipeline
   (:require [lambdacd.core :as core]
-            [lambdacd.util :as utils]
             [ring.server.standalone :as ring-server]
             [lambdacd.ui.ui-server :as ui]
             [lambdacd.runners :as runners]

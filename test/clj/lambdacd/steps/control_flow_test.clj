@@ -9,7 +9,6 @@
             [lambdacd.stepsupport.killable :as killable]
             [lambdacd.state.internal.pipeline-state-updater :as pipeline-state-updater]
             [clojure.java.io :as io]
-            [lambdacd.util :as util]
             [lambdacd.testsupport.noop-pipeline-state :as noop-pipeline-state]
             [lambdacd.util.internal.map :as map-util]))
 

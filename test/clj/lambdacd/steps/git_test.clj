@@ -6,7 +6,6 @@
             [lambdacd.steps.git :refer :all]
             [clojure.core.async :as async]
             [clojure.string :as string]
-            [lambdacd.util :as util]
             [lambdacd.testsupport.reporter]
             [lambdacd.util.internal.bash :as bash-util]
             [lambdacd.testsupport.data :refer [some-ctx some-ctx-with]]

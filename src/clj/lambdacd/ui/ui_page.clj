@@ -2,7 +2,6 @@
   (:require [hiccup.core :as h]
             [hiccup.page :as p]
             [hiccup.element :as e]
-            [lambdacd.util :as utils]
             [lambdacd.ui.internal.util :as ui-utils]))
 
 (defn css-includes

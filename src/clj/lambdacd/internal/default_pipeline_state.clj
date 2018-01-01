@@ -4,7 +4,6 @@
   (:require [lambdacd.internal.default-pipeline-state-persistence :as persistence]
             [clj-time.core :as t]
             [lambdacd.state.protocols :as protocols]
-            [lambdacd.util :as util]
             [clojure.data :as data]))
 
 (def clean-pipeline-state {})

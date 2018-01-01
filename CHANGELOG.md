@@ -12,7 +12,8 @@ This release contains no new functionality but only cleans up the codebase and r
 
 ### Removed
 
-* `lambdacd.internal.pipeline-state/PipelineStateComponent` (deprecated since 0.11.0). Use the functions in `lambdacd.state.core` access state or the protocols in `lambdacd.state.protocols` to implement custom persistence functionality.
+* Removed `lambdacd.internal.pipeline-state/PipelineStateComponent` (deprecated since 0.11.0). Use the functions in `lambdacd.state.core` access state or the protocols in `lambdacd.state.protocols` to implement custom persistence functionality.
+* Removed `lambdacd.util` (deprecated since 0.12.1).
 
 ## 0.13.5
 

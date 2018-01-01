@@ -1,6 +1,5 @@
 (ns lambdacd.testsupport.data
-  (:require [lambdacd.util :as utils]
-            [lambdacd.event-bus :as event-bus]
+  (:require [lambdacd.event-bus :as event-bus]
             [clojure.core.async :as async]
             [lambdacd.internal.default-pipeline-state :as default-pipeline-state]
             [lambdacd.state.internal.pipeline-state-updater :as pipeline-state-updater]

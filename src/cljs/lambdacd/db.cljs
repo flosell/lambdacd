@@ -1,8 +1,7 @@
 (ns lambdacd.db
   (:require-macros [reagent.ratom :refer [reaction]])
   (:require [re-frame.core :as re-frame]
-            [lambdacd.state :as state]
-            [lambdacd.utils :as utils]))
+            [lambdacd.state :as state]))
 
 
 (def default-db

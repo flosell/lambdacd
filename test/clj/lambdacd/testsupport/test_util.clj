@@ -1,6 +1,6 @@
 (ns lambdacd.testsupport.test-util
   (:require [clojure.test :refer :all]
-            [lambdacd.util :refer [buffered]]
+            [lambdacd.util.internal.async :refer [buffered]]
             [clojure.core.async :as async]
             [clojure.walk :as w]
             [lambdacd.state.core :as state]

@@ -11,9 +11,7 @@
             [lambdacd.stepsupport.killable :as killable]
             [clojure.string :as s]
             [clojure.java.io :as io]
-            [lambdacd.util :as utils]
             [lambdacd.util.internal.bash :as bash-util]
-            [lambdacd.steps.status :as status]
             [lambdacd.util.internal.temp :as temp-util]
             [lambdacd.stepstatus.unify :as unify]))
 

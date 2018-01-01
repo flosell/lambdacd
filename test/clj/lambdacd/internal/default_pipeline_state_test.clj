@@ -2,7 +2,6 @@
   (:use [lambdacd.testsupport.test-util])
   (:require [clojure.test :refer :all]
             [lambdacd.internal.default-pipeline-state :refer [new-default-pipeline-state]]
-            [lambdacd.util :as utils]
             [lambdacd.util.internal.temp :as temp-util]
             [clj-time.core :as t]
             [lambdacd.testsupport.test-util :as tu]

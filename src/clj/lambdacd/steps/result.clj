@@ -1,8 +1,5 @@
 (ns lambdacd.steps.result
-  (:require [lambdacd.steps.status :as status]
-            [clojure.string :as s]
-            [lambdacd.util :as utils]
-            [lambdacd.stepresults.flatten :as flatten]
+  (:require [lambdacd.stepresults.flatten :as flatten]
             [lambdacd.stepresults.merge :as merge]
             [lambdacd.stepresults.merge-resolvers :as merge-resolvers]))
 
