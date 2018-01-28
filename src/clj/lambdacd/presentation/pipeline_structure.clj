@@ -38,10 +38,7 @@
            (nil? x)
            (sequential? x))))
 
-(defn pad ; TODO: should be private
-  "DEPRECATED"
-  {:deprecated "0.13.1"}
-  [coll val]
+(defn- pad [coll val]
   (concat coll (repeat val)))
 
 (defn- visible-args-bitmap [fun]
