@@ -1,8 +1,7 @@
 (ns lambdacd.presentation.unified
   "This namespace contains functions to convert the current internal state of a pipeline and it's structure
   into a form that's easier to handle. Unifies the information from `lambdacd.presentation.pipeline-state` and `lambdacd.presentation.pipeline-structure`.
-  Used for example to be able to display a pipeline and it's current state in a UI."
-  (:require [lambdacd.presentation.pipeline-structure :as pipeline-structure]))
+  Used for example to be able to display a pipeline and it's current state in a UI.")
 
 (defn- unify-step [step build-state]
   (let [step-id          (:step-id step)
@@ -46,9 +45,3 @@
   [pipeline-structure step-results]
   (map #(unify-step % step-results) pipeline-structure))
 
-(defn unified-presentation
-  "Deprecated and unused. Use `pipeline-structure-with-step-results` instead."
-  {:deprecated "0.13.1"}
-  [pipeline-def step-results]
-  (let [structure (pipeline-structure/pipeline-display-representation pipeline-def)]
-    (pipeline-structure-with-step-results structure step-results)))

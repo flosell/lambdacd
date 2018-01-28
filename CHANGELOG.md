@@ -26,6 +26,7 @@ This release contains no new functionality but only cleans up the codebase and r
 * Made helper-functions in `lambdacd.presentation.pipeline-structure` private (use was deprecated since 0.13.1)
 * Made helper-functions in `lambdacd.steps.control-flow` private (use was deprecated since 0.13.1)
 * Made helper-functions in `lambdacd.steps.shell` private (use was deprecated since 0.13.1)
+* Removed hepler functions in `lambdacd.presentation.unified` private (were deprecated since 0.13.1)
 
 ## 0.13.5
 

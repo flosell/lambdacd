@@ -78,7 +78,5 @@
 
 (deftest unified-presentation-test
   (testing "that we can merge structure and state to a unified view on a pipeline-run"
-    (testing "deprecated call with pipeline-def"
-      (is (= expected-unified-foo-pipeline-presentation (unified-presentation foo-pipeline foo-pipeline-build-state))))
     (testing "call with build-result"
       (is (= expected-unified-foo-pipeline-presentation (pipeline-structure-with-step-results foo-pipeline-structure foo-pipeline-build-state))))))
