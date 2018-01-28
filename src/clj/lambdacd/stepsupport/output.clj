@@ -74,8 +74,6 @@
   ```
   "
   [ctx & body]
-  ; CODE DUPLICATED in `lambdacd.steps.support` because it's tricky delegating it to this macro.
-  ; Get rid of the deprecated code the next time you feel like changing it
   `(let [{x#      :writer
           buffer# :buffer} (writer-to-ctx ~ctx)
          body-result# (binding [*out* x#]
