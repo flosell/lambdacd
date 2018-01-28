@@ -21,10 +21,7 @@
 (defn- pid-of-process [proc]
   (reflection-util/private-field proc "pid"))
 
-(defn kill
-  "DEPRECATED, shouldn't be public"
-  {:deprecated "0.13.1"}
-  [was-killed-indicator proc ctx]
+(defn- kill [was-killed-indicator proc ctx]
   (let [pid (pid-of-process proc)]
     (reset! was-killed-indicator true)
     (async/>!! (:result-channel ctx) [:processed-kill true])
