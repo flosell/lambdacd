@@ -1,11 +1,9 @@
 (ns lambdacd.execution.internal.execute-steps
   (:require [lambdacd.event-bus :as event-bus]
             [clojure.core.async :as async]
-            [lambdacd.steps.status :as status]
             [lambdacd.util.internal.sugar :refer [not-nil?]]
             [lambdacd.execution.internal.serial-step-result-producer :refer [serial-step-result-producer]]
             [lambdacd.step-id :as step-id]
-            [lambdacd.execution.internal.util :as execution-util]
             [lambdacd.execution.internal.kill :as kill]
             [lambdacd.execution.internal.retrigger :as retrigger]
             [lambdacd.stepstatus.unify :as unify]

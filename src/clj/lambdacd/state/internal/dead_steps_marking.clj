@@ -1,10 +1,10 @@
 (ns lambdacd.state.internal.dead-steps-marking
   (:require [lambdacd.internal.running-builds-tracking :as running-builds-tracking]
-            [lambdacd.steps.status :as step-status]))
+            [lambdacd.stepstatus.predicates :as predicates]))
 
 (defn- old-status-or-dead [ctx build-number step-id status]
   (if (and (not (running-builds-tracking/is-running? ctx build-number step-id))
-           (step-status/is-active? status))
+           (predicates/is-active? status))
     :dead
     status))
 

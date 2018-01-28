@@ -1,8 +1,7 @@
 (ns lambdacd.stepresults.merge-resolvers
   "Contains functions that can act as resolvers in merge-two-step-results
   by returning a merged result of two values if they match or nil if they don't."
-  (:require [clojure.string :as s]
-            [lambdacd.steps.status :as status]))
+  (:require [clojure.string :as s]))
 
 (defn- choose-last-or-not-success
   ([s1 s2]

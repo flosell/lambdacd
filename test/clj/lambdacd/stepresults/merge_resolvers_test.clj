@@ -1,7 +1,6 @@
 (ns lambdacd.stepresults.merge-resolvers-test
   (:require [clojure.test :refer :all]
             [lambdacd.stepresults.merge-resolvers :refer :all]
-            [lambdacd.steps.status :as status]
             [lambdacd.stepresults.merge-resolvers :as merge-resolvers]
             [lambdacd.testsupport.test-util :refer [with-private-fns]]))
 
