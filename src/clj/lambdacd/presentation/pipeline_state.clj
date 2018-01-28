@@ -43,10 +43,7 @@
 (defn- not-waiting? [result]
   (not (:has-been-waiting result)))
 
-(defn not-retriggered? ; TODO: should be private
-  "DEPRECATED"
-  {:deprecated "0.13.1"}
-  [result]
+(defn- not-retriggered? [result]
   (not (:retrigger-mock-for-build-number result)))
 
 (defn- first-with-key-ordered-by [comp key steps]
