@@ -103,16 +103,8 @@
   ([[build-number step-ids-and-results]]
    (history-entry build-number step-ids-and-results {})))
 
-(defn- legacy-history-for [state]
-  (sort-by :build-number (map history-entry state)))
-
-(defn- history-for-pipeline-state-component [ctx]
-  (for [build-number (state/all-build-numbers ctx)]
-    (history-entry build-number (state/get-step-results ctx build-number) (state/get-build-metadata ctx build-number))))
-
 (defn history-for
   "Returns a build history for a given ctx;
-  Calling this with a complete build state (the get-all-result) is now DEPRECATED.
 
   Example:
   ```clojure
@@ -132,10 +124,9 @@
     :duration-in-sec       10
     :build-metadata {}}]
   ```"
-  [all-state-or-ctx]
-  (if (:pipeline-state-component all-state-or-ctx)
-    (history-for-pipeline-state-component all-state-or-ctx)
-    (legacy-history-for all-state-or-ctx)))
+  [ctx]
+  (for [build-number (state/all-build-numbers ctx)]
+    (history-entry build-number (state/get-step-results ctx build-number) (state/get-build-metadata ctx build-number))))
 
 (defn most-recent-step-result-with
   "Searches the build history for the current build-step (as denoted by the `:step-id` in `ctx`) for a step result with a particular key and returns the complete step result."

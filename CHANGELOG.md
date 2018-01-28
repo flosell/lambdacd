@@ -27,7 +27,8 @@ This release contains no new functionality but only cleans up the codebase and r
 * Made helper-functions in `lambdacd.steps.control-flow` private (use was deprecated since 0.13.1)
 * Made helper-functions in `lambdacd.steps.shell` private (use was deprecated since 0.13.1)
 * Made helper-functions in `lambdacd.presentation.pipeline-state` private (use was deprecated since 0.13.1)
-* Removed hepler functions in `lambdacd.presentation.unified` private (were deprecated since 0.13.1)
+* Removed helper functions in `lambdacd.presentation.unified` private (were deprecated since 0.13.1)
+* Remove behavior that allowed calling `lambdacd.presentation.pipeline-state/history-for` with state instead of ctx (deprecated since 0.11.0)
 
 ## 0.13.5
 

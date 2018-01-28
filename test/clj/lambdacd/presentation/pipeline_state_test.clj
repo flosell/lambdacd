@@ -81,48 +81,6 @@
                                (history-for (ctx-with-state {7 {'(2) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
                                                                 '(1) {:status :success :most-recent-update-at stop-time :first-updated-at before-start-time :retrigger-mock-for-build-number 3}}})))))))))
 
-(deftest history-test-legacy
-  (testing "that we can aggregate the pipeline state into a nice history representation"
-    (is (= [{:build-number 8
-             :status :waiting
-             :most-recent-update-at stop-time
-             :first-updated-at start-time
-             :retriggered nil
-             :duration-in-sec 10
-             :build-metadata {}}
-            {:build-number 9
-             :status :running
-             :most-recent-update-at stop-time
-             :first-updated-at start-time
-             :retriggered nil
-             :duration-in-sec 10
-             :build-metadata {}}]
-           (history-for {8  {'(0)   { :status :waiting :most-recent-update-at stop-time :first-updated-at start-time}}
-                         9  {'(0)   { :status :running :most-recent-update-at stop-time :first-updated-at start-time}}}))))
-  (testing "that the timestamps are accumulated correctly"
-    (testing "that the earliest start time is the start time of the pipeline"
-      (is (= before-start-time (:first-updated-at (first
-                                                    (history-for {7 {'(2) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
-                                                                     '(1) {:status :success :most-recent-update-at stop-time :first-updated-at before-start-time}}}))))))
-    (testing "that retriggered steps are ignored when searching the earliest start time"
-      (is (= start-time (:first-updated-at (first
-                                             (history-for {7 {'(2) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
-                                                              '(1) {:status :success :most-recent-update-at stop-time :first-updated-at before-start-time :retrigger-mock-for-build-number 42}}}))))))
-    (testing "that the most recent update will be the pipelines most recent update"
-      (is (= after-stop-time (:most-recent-update-at (first
-                                                       (history-for {5 {'(0) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
-                                                                        '(1) {:status :success :most-recent-update-at after-stop-time :first-updated-at start-time}}})))))))
-  (testing "that the build-status is accumulated correctly"
-    (testing "that a pipeline will be a failure once there is a failed step"
-      (is (= :failure (:status (first
-                                 (history-for {7 {'(1) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
-                                                  '(2) {:status :failure :most-recent-update-at stop-time :first-updated-at start-time}}})))))))
-  (testing "that we detect retriggered steps"
-    (testing "that a pipeline will be treated as retriggered if the first step has a retrigger-mock"
-      (is (= 3 (:retriggered (first
-                               (history-for {7 {'(2) {:status :success :most-recent-update-at stop-time :first-updated-at start-time}
-                                                '(1) {:status :success :most-recent-update-at stop-time :first-updated-at before-start-time :retrigger-mock-for-build-number 3}}}))))))))
-
 (deftest last-step-result-with-test
   (testing "that we can access the last step result for a particular step that has a value with a particular key and that it is independent of implemented order of the history-map"
     (let [history (into (sorted-map-by <) { 5 { [0 2] {:status :success :foo :foobar} [0 1] { :status :failure}}
