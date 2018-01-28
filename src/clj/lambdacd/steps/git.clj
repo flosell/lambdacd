@@ -7,13 +7,13 @@
             [lambdacd.steps.shell :as shell]
             [clojure.core.async :as async]
             [lambdacd.presentation.pipeline-state :as pipeline-state]
-            [lambdacd.steps.support :as support]
             [lambdacd.stepsupport.killable :as killable]
             [clojure.string :as s]
             [clojure.java.io :as io]
             [lambdacd.util.internal.bash :as bash-util]
             [lambdacd.util.internal.temp :as temp-util]
-            [lambdacd.stepstatus.unify :as unify]))
+            [lambdacd.stepstatus.unify :as unify]
+            [lambdacd.execution.internal.util :as execution-util]))
 
 (defn- current-revision [repo-uri branch]
   (log/debug (str "Polling branch " branch " on " repo-uri))
@@ -86,6 +86,9 @@
 (defn- last-step-id-of [step-ids]
   (last (sort-by first step-ids)))
 
+(defn- merge-globals [step-results]
+  (or (:global (reduce execution-util/keep-globals {} step-results)) {}))
+
 (defn checkout-and-execute [repo-uri revision args ctx steps]
   (let [checkout-result (checkout ctx repo-uri revision)
         repo-location (:cwd checkout-result)
@@ -101,7 +104,7 @@
               outputs (vals step-ids-and-outputs)
               last-step-id (last-step-id-of step-ids)
               output-of-last-step (get-in execute-steps-result [:outputs last-step-id])
-              globals (support/merge-globals outputs)]
+              globals (merge-globals outputs)]
           (merge result-with-checkout-output output-of-last-step {:global globals}))
         {:status :failure
          :out (:out checkout-result)
