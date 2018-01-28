@@ -35,10 +35,7 @@
   (let [step-result-chs (map #(async/thread (execution/execute-step args %)) steps-and-ids)]
     (wait-for-finished-on step-result-chs)))
 
-(defn synchronize-atoms
-  "Deprecated, will be private or moved in the future."
-  {:deprecated "0.13.1"}
-  [source target]
+(defn- synchronize-atoms [source target]
   (let [key (UUID/randomUUID)]
     (add-watch source key #(reset! target %4))
     key))
