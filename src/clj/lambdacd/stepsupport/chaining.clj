@@ -76,8 +76,7 @@
                                      (serial-step-result-producer/serial-step-result-producer :stop-predicate (constantly false))))
 
 ;; Placeholders where args and ctx are injected by the chaining-macro.
-(def ^{:doc        "Placeholder for `args` for use in `chaining` and `always-chaining`"
-       :deprecated "0.13.1"} injected-args)
+(def ^{:doc "Placeholder for `args` for use in `chaining` and `always-chaining`"} injected-args)
 (def ^{:doc "Placeholder for `ctx` for use in `chaining` and `always-chaining`"} injected-ctx)
 
 (defn- replace-args-and-ctx [args ctx]
