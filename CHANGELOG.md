@@ -16,6 +16,7 @@ This release contains no new functionality but only cleans up the codebase and r
 * Removed `lambdacd.util` (deprecated since 0.12.1)
 * Removed `lambdacd.ui.ui-server` (deprecated since 0.13.1)
 * Removed `lambdacd.execution` (deprecated since 0.13.0)
+* Removed `lambdacd.steps.result` (deprecated since 0.13.1)
 * Removed functions in  `lambdacd.core` (deprecated since 0.9.5)
 * Made helper-functions in `lambdacd.ui.ui-page` private (use was deprecated since 0.13.1)
 * Made helper-functions in `lambdacd.presentation.pipeline-structure` private (use was deprecated since 0.13.1)
