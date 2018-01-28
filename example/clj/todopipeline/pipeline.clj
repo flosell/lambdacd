@@ -10,14 +10,14 @@
 (ns todopipeline.pipeline
   (:require [lambdacd.core :as core]
             [ring.server.standalone :as ring-server]
-            [lambdacd.ui.ui-server :as ui]
             [lambdacd.runners :as runners]
             [clojure.tools.logging :as log]
 
             [compojure.core :refer [routes GET POST]]
             [ring.util.response :as resp]
             [compojure.route :as route]
-            [lambdacd.util.internal.temp :as temp-util])
+            [lambdacd.util.internal.temp :as temp-util]
+            [lambdacd.ui.core :as ui-core])
   (:use [lambdacd.steps.control-flow]
         [todopipeline.steps])
   (:refer-clojure :exclude [alias]))
@@ -99,7 +99,7 @@
                        (POST "/shutdown" [] (let [shutdown-sequence (get-in pipeline [:context :config :shutdown-sequence])]
                                               (shutdown-sequence (:context pipeline))
                                               "OK"))
-                       (ui/ui-for pipeline))]
+                       (ui-core/ui-for pipeline))]
     (log/info "LambdaCD Home Directory is " home-dir)
     (runners/start-new-run-after-first-step-finished pipeline)
     (ring-server/serve ring-handler {:open-browser? false

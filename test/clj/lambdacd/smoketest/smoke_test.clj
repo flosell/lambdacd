@@ -7,9 +7,8 @@
             [lambdacd.smoketest.pipeline :as pipeline]
             [lambdacd.util.internal.bash :as bash-util]
             [lambdacd.core :as core]
-            [lambdacd.ui.ui-server :as ui]
-            [lambdacd.runners :as runners]))
-
+            [lambdacd.runners :as runners]
+            [lambdacd.ui.core :as ui-core]))
 
 (def url-base "http://localhost:3000")
 (defn- test-server [handler]
@@ -85,7 +84,7 @@
     (create-test-repo-at steps/some-repo-location)
     (let [pipeline (core/assemble-pipeline pipeline/pipeline-def pipeline/config)]
       (runners/start-one-run-after-another pipeline)
-      (with-server (test-server (ui/ui-for pipeline))
+      (with-server (test-server (ui-core/ui-for pipeline))
         (is (= 200 (server-status)))
         (is (= "waiting" (manual-trigger-state)))
         (is (= 200 (trigger-manual-trigger)))
