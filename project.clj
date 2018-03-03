@@ -1,3 +1,7 @@
+(def clojure-version-to-use (or
+                       (System/getenv "CLOJURE_VERSION")
+                       "1.7.0"))
+
 (defproject lambdacd "0.14.0-SNAPSHOT"
   :description "A library to create a continous delivery pipeline in code."
   :url "http://github.com/flosell/lambdacd"
@@ -10,7 +14,7 @@
   :source-paths ["src/clj" "src/cljs"]
   :test-paths ["test/clj" "example/clj"]
   :jar-exclusions [#"logback.xml"]
-  :dependencies [[org.clojure/clojure "1.7.0"]
+  :dependencies [[org.clojure/clojure ~clojure-version-to-use]
                  [throttler "1.0.0"]
                  [hiccup "1.0.5"]
                  [org.clojure/data.json "0.2.6"]
