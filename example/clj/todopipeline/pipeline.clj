@@ -76,7 +76,6 @@
   (routes
     (route/resources "/styleguide/" {:root "public"})
     (GET "/" [] (resp/redirect "/styleguide/"))
-    (GET "" [] (resp/redirect "/styleguide/"))
     (GET "/styleguide/" [] (resp/resource-response "visualStyleguide.html" {:root "public"}))))
 
 (defn -main [& args]

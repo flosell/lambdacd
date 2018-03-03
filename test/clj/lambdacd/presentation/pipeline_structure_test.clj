@@ -7,7 +7,7 @@
             [lambdacd.steps.control-flow :as control-flow])
   (:refer-clojure :exclude [alias]))
 
-(defn do-stuff [& ] {})
+(defn do-stuff [_ _] {})
 (defn ^{:depends-on-previous-steps true} do-other-stuff [] {})
 (defn ^{:depends-on-previous-steps false} step-that-declares-it-doesnt-depend [] {})
 (defn do-more-stuff [] {})
