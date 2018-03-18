@@ -69,13 +69,13 @@
              ;; the namespace for all the clojurescript-dependencies,
              ;; we don't want them as dependencies of the final library as cljs is already compiled then
              :provided {:dependencies [[bidi "1.18.7"]
-                                       [cljs-ajax "0.3.10"]
+                                       [cljs-ajax "0.7.3"]
                                        [re-frame "0.4.1"]
                                        [reagent "0.5.1"]
                                        [reagent-utils "0.1.8"]
-                                       [com.andrewmcveigh/cljs-time "0.3.5"]
+                                       [com.andrewmcveigh/cljs-time "0.5.2"]
                                        [cljsjs/ansiparse "0.0.5-1-0"]
-                                       [org.clojure/clojurescript "1.7.48"]]}
+                                       [org.clojure/clojurescript "1.10.145"]]}
              :dev      {:main         todopipeline.pipeline
                         :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
                         :dependencies [[org.clojure/core.match "0.3.0-alpha4"]
@@ -98,8 +98,7 @@
                                        [ch.qos.logback/logback-classic "1.0.13"]]
 
                         :source-paths ["env/dev/clj"]
-                        :plugins      [[lein-figwheel "0.4.0"]
-                                       [com.cemerick/clojurescript.test "0.3.3"]]
+                        :plugins      [[lein-figwheel "0.4.0"]]
 
                         :injections   [(require 'pjstadig.humane-test-output)
                                        (pjstadig.humane-test-output/activate!)]
