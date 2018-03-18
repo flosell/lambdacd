@@ -1,6 +1,6 @@
 (def clojure-version-to-use (or
                        (System/getenv "CLOJURE_VERSION")
-                       "1.7.0"))
+                       "1.8.0"))
 
 (defproject lambdacd "0.14.0-SNAPSHOT"
   :description "A library to create a continous delivery pipeline in code."

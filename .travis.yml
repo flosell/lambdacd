@@ -3,7 +3,6 @@ before_script:
 language: clojure
 env:
   matrix:
-  - CLOJURE_VERSION: 1.7.0
   - CLOJURE_VERSION: 1.8.0
   - CLOJURE_VERSION: 1.9.0
 
