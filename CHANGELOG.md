@@ -12,6 +12,10 @@ This release contains no new functionality but only cleans up the dependencies, 
 
 These are **breaking changes** so if you are still using deprecated features or rely on some very specific behavior, take care when upgrading.
 
+### Added
+
+* Support for Clojure 1.9 (#178)
+
 ### Changed
 
 * LambdaCD now depends on Clojure 1.8 by default. Clojure 1.7 is no longer officially supported but might still work.  
