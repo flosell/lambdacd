@@ -23,9 +23,8 @@
 (defmacro with-temp
   "evaluates the body, then deletes the given file or directory.
   returns the result of the evaluation of the body"
-  [f body]
+  [f & body]
   `(try
-     (let [result# ~body]
-       result#)
+     ~@body
      (finally
        (fs/delete-dir ~f LinkOption/NOFOLLOW_LINKS))))
