@@ -1,11 +1,11 @@
 {
   "name": "lambdacd",
   "devDependencies": {
-    "watch":"1.0.1",
+    "watch": "1.0.1",
     "postcss-cli": "2.6.0",
     "autoprefixer": "6.6.0",
-    "less":"2.7.1",
-    "phantomjs":"2.1.7"
+    "less": "2.7.1",
+    "phantomjs": "2.1.7"
   },
   "scripts": {
     "build:css": "node_modules/less/bin/lessc src/less/main.less | node_modules/postcss-cli/bin/postcss --use autoprefixer -o resources/public/css/main.css",

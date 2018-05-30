@@ -1,13 +1,12 @@
 (ns lambdacd.db
-  (:require-macros [reagent.ratom :refer [reaction]])
   (:require [re-frame.core :as re-frame]
             [lambdacd.state :as state]))
-
 
 (def default-db
   {:history nil
    :pipeline-state nil
    :connection-state :lost
+   :update-in-progress? false
    :displayed-build-number nil
    :raw-step-results-visible false
    :expanded-step-ids #{}
@@ -49,7 +48,7 @@
       (set-connection-state-active)))
 
 (defn history-subscription [db _]
-  (reaction (:history @db)))
+  (:history db))
 
 (defn pipeline-state-updated-handler [db [_ new-history]]
   (-> db
@@ -57,16 +56,19 @@
       (set-connection-state-active)))
 
 (defn pipeline-state-subscription [db _]
-  (reaction (:pipeline-state @db)))
+  (:pipeline-state db))
 
 (defn lost-connection-handler [db _]
   (assoc db :connection-state :lost))
 
 (defn connection-state-subscription [db _]
-  (reaction (:connection-state @db)))
+  (:connection-state db))
+
+(defn update-in-progress?-subscription [db _]
+  (:update-in-progress? db))
 
 (defn build-number-subscription [db _]
-  (reaction (:displayed-build-number @db)))
+  (:displayed-build-number db))
 
 (defn build-number-update-handler [db [_ new-buildnumber]]
   (-> db
@@ -74,20 +76,20 @@
       (assoc :pipeline-state nil)))
 
 (defn step-id-subscription [db _] ; TODO: maybe we don't need this in the long run and can instead just subscribe on the current step result?
-  (reaction (:step-id @db)))
+  (:step-id db))
 
 (defn step-id-update-handler [db [_ new-buildnumber]]
   (assoc db :step-id new-buildnumber))
 
 (defn raw-step-result-visible-subscription [db _]
-  (reaction (:raw-step-results-visible @db)))
+  (:raw-step-results-visible db))
 
 (defn toggle-raw-step-results-visible-handler [db [_ _]]
   (let [is-visible (:raw-step-results-visible db)]
     (assoc db :raw-step-results-visible (not is-visible))))
 
 (defn current-step-result-subscription [db _]
-  (reaction (state/find-by-step-id (:pipeline-state @db) (:step-id @db))))
+  (state/find-by-step-id (:pipeline-state db) (:step-id db)))
 
 (defn- expand-active? [db step-id]
   (and
@@ -99,12 +101,11 @@
     (:expand-failures db)
     (state/is-failure? (state/find-by-step-id (:pipeline-state db) step-id))))
 
-(defn step-expanded-subscription [db-atom [_ step-id]]
-  (reaction (let [db @db-atom]
-              (or
-                (contains? (:expanded-step-ids db) step-id)
-                (expand-active? db step-id)
-                (expand-failed? db step-id)))))
+(defn step-expanded-subscription [db [_ step-id]]
+  (or
+    (contains? (:expanded-step-ids db) step-id)
+    (expand-active? db step-id)
+    (expand-failed? db step-id)))
 
 (defn all-step-ids [{state :pipeline-state}]
   (->> state
@@ -113,10 +114,10 @@
        (into #{})))
 
 (defn all-expanded-subscription [db _]
-  (reaction (= (all-step-ids @db) (:expanded-step-ids @db))))
+  (= (all-step-ids db) (:expanded-step-ids db)))
 
 (defn all-collapsed-subscription [db _]
-  (reaction (empty? (:expanded-step-ids @db))))
+  (empty? (:expanded-step-ids db)))
 
 (defn toggle-step-expanded [db [_ step-id]]
   (let [cur-expanded (:expanded-step-ids db)
@@ -138,33 +139,34 @@
   (update db :expand-failures not))
 
 (defn expand-active-active-subscription [db _]
-  (reaction (:expand-active @db)))
+  (:expand-active db))
 
 (defn expand-failure-active-subscription [db _]
-  (reaction (:expand-failures @db)))
+  (:expand-failures db))
 
-(re-frame/register-handler ::history-updated history-updated-handler)
-(re-frame/register-handler ::initialize-db initialize-db-handler)
-(re-frame/register-handler ::pipeline-state-updated pipeline-state-updated-handler)
-(re-frame/register-handler ::connection-lost lost-connection-handler)
-(re-frame/register-handler ::build-number-updated build-number-update-handler)
-(re-frame/register-handler ::step-id-updated step-id-update-handler)
-(re-frame/register-handler ::toggle-raw-step-results-visible toggle-raw-step-results-visible-handler)
-(re-frame/register-handler ::toggle-step-expanded toggle-step-expanded)
-(re-frame/register-handler ::set-all-expanded set-all-expanded-handler)
-(re-frame/register-handler ::set-all-collapsed set-all-collapsed-handler)
-(re-frame/register-handler ::toggle-expand-active toggle-expand-active-handler)
-(re-frame/register-handler ::toggle-expand-failures toggle-expand-failure-handler)
+(re-frame/reg-event-db ::history-updated history-updated-handler)
+(re-frame/reg-event-db ::initialize-db initialize-db-handler)
+(re-frame/reg-event-db ::pipeline-state-updated pipeline-state-updated-handler)
+(re-frame/reg-event-db ::connection-lost lost-connection-handler)
+(re-frame/reg-event-db ::build-number-updated build-number-update-handler)
+(re-frame/reg-event-db ::step-id-updated step-id-update-handler)
+(re-frame/reg-event-db ::toggle-raw-step-results-visible toggle-raw-step-results-visible-handler)
+(re-frame/reg-event-db ::toggle-step-expanded toggle-step-expanded)
+(re-frame/reg-event-db ::set-all-expanded set-all-expanded-handler)
+(re-frame/reg-event-db ::set-all-collapsed set-all-collapsed-handler)
+(re-frame/reg-event-db ::toggle-expand-active toggle-expand-active-handler)
+(re-frame/reg-event-db ::toggle-expand-failures toggle-expand-failure-handler)
 
-(re-frame/register-sub ::history history-subscription)
-(re-frame/register-sub ::pipeline-state pipeline-state-subscription)
-(re-frame/register-sub ::connection-state connection-state-subscription)
-(re-frame/register-sub ::build-number build-number-subscription)
-(re-frame/register-sub ::step-id step-id-subscription)
-(re-frame/register-sub ::raw-step-results-visible raw-step-result-visible-subscription)
-(re-frame/register-sub ::current-step-result current-step-result-subscription)
-(re-frame/register-sub ::step-expanded? step-expanded-subscription)
-(re-frame/register-sub ::all-expanded? all-expanded-subscription)
-(re-frame/register-sub ::all-collapsed? all-collapsed-subscription)
-(re-frame/register-sub ::expand-active-active? expand-active-active-subscription)
-(re-frame/register-sub ::expand-failures-active? expand-failure-active-subscription)
+(re-frame/reg-sub ::history history-subscription)
+(re-frame/reg-sub ::pipeline-state pipeline-state-subscription)
+(re-frame/reg-sub ::connection-state connection-state-subscription)
+(re-frame/reg-sub ::update-in-progress? update-in-progress?-subscription)
+(re-frame/reg-sub ::build-number build-number-subscription)
+(re-frame/reg-sub ::step-id step-id-subscription)
+(re-frame/reg-sub ::raw-step-results-visible raw-step-result-visible-subscription)
+(re-frame/reg-sub ::current-step-result current-step-result-subscription)
+(re-frame/reg-sub ::step-expanded? step-expanded-subscription)
+(re-frame/reg-sub ::all-expanded? all-expanded-subscription)
+(re-frame/reg-sub ::all-collapsed? all-collapsed-subscription)
+(re-frame/reg-sub ::expand-active-active? expand-active-active-subscription)
+(re-frame/reg-sub ::expand-failures-active? expand-failure-active-subscription)

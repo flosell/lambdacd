@@ -19,11 +19,10 @@
 (defn- parse-step-id [step-id-string]
   (vec (map js/parseInt (string/split step-id-string #"-"))))
 
-(defn dispatch-route [state-atom path]
+(defn dispatch-route [path]
   (let [{handler :handler params :route-params } (bidi/match-route route path)]
     (case handler
           :build             (do
-                               (reset! state-atom nil)
                                (set-state (js/parseInt (:buildnumber params)) nil)
                                {:routing :ok})
           :build-and-step-id (do
@@ -40,18 +39,18 @@
 ; TODO: hacky global variable...
 (def history (History.))
 
-(defn- navigate [state-atom token]
-  (let [nav-result (dispatch-route state-atom token)]
+(defn- navigate [token]
+  (let [nav-result (dispatch-route token)]
     (if (not= :ok (:routing nav-result))
       (.setToken history (:redirect-to nav-result)))))
 
 
-(defn hook-browser-navigation! [state-atom]
+(defn hook-browser-navigation! []
   (doto history
     (events/listen
       EventType/NAVIGATE
       (fn [event]
-        (navigate state-atom (.-token event))))
+        (navigate (.-token event))))
     (.setEnabled true)))
 
 (defn set-build-number [build-number]

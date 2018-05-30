@@ -2,7 +2,7 @@
                        (System/getenv "CLOJURE_VERSION")
                        "1.8.0"))
 
-(defproject lambdacd "0.14.1-SNAPSHOT"
+(defproject lambdacd "0.14.2-SNAPSHOT"
   :description "A library to create a continous delivery pipeline in code."
   :url "http://github.com/flosell/lambdacd"
   :license {:name "Apache License, version 2.0"
@@ -41,7 +41,7 @@
           :themes [:rdash]
           :metadata   {:doc/format :markdown}}
   :plugins [[lein-codox "0.10.2"]
-            [lein-cljsbuild "1.1.3"]
+            [lein-cljsbuild "1.1.7"]
             [lein-doo "0.1.4"]
             [lein-environ "1.0.2"]
             [lein-kibit "0.1.6-beta1"]
@@ -70,12 +70,12 @@
              ;; we don't want them as dependencies of the final library as cljs is already compiled then
              :provided {:dependencies [[bidi "1.18.7"]
                                        [cljs-ajax "0.7.3"]
-                                       [re-frame "0.4.1"]
-                                       [reagent "0.5.1"]
-                                       [reagent-utils "0.1.8"]
+                                       [re-frame "0.10.5"]
+                                       [reagent "0.8.1"]
+                                       [reagent-utils "0.3.1"]
                                        [com.andrewmcveigh/cljs-time "0.5.2"]
                                        [cljsjs/ansiparse "0.0.5-1-0"]
-                                       [org.clojure/clojurescript "1.10.145"]]}
+                                       [org.clojure/clojurescript "1.10.126"]]}
              :dev      {:main         todopipeline.pipeline
                         :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
                         :dependencies [[org.clojure/core.match "0.3.0-alpha4"]
