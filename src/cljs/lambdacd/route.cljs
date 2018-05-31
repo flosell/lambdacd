@@ -44,7 +44,6 @@
     (if (not= :ok (:routing nav-result))
       (.setToken history (:redirect-to nav-result)))))
 
-
 (defn hook-browser-navigation! []
   (doto history
     (events/listen

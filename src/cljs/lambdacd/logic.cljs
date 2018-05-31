@@ -12,9 +12,9 @@
   (go-loop []
            (let [update-in-progress? @(re-frame/subscribe [::db/update-in-progress?])]
              (when-not update-in-progress?
-               (do (re-frame/dispatch [::tick])
-                   (async/<! (async/timeout poll-frequency))
-                   (recur))))))
+               (re-frame/dispatch [::tick])
+               (async/<! (async/timeout poll-frequency))
+               (recur)))))
 
 (defn on-tick [db _]
   (when-not (:update-in-progress? db)

@@ -44,4 +44,8 @@
   (testing "that a tick doesn't dispatch start-update-history if history update is in progress"
     (with-redefs [re-frame/dispatch (mock-fn)]
       (logic/on-tick {:update-in-progress? true} nil)
-      (has-not-received? re-frame/dispatch [[::logic/start-update-history]]))))
+      (has-not-received? re-frame/dispatch [[::logic/start-update-history]])))
+  (testing "that a start-update-history dispatches update-history"
+    (with-redefs [re-frame/dispatch (mock-fn)]
+      (re-frame/dispatch [::logic/update-history])
+      (has-received? re-frame/dispatch [[::logic/update-history]]))))

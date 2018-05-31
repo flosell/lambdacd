@@ -46,6 +46,10 @@ setupNPM() {
   npm install
 }
 
+setupKarma() {
+  npm i -g karma-cli
+}
+
 buildCljsOnce() {
  lein cljsbuild once
 }
@@ -64,10 +68,21 @@ checkRequirement() {
   check "npm" "NPM not installed, go to https://nodejs.org/en/ for details" "NPM installed"
   echo
 }
-setup() {
+
+deps() {
   checkRequirement
 
   setupNPM
+  setupKarma
+  lein deps
+
+  echo
+  echob "[SUCCESS] deps are installed."
+}
+
+setup() {
+  deps
+  
   buildCss
   buildCljsOnce
 
@@ -83,13 +98,12 @@ testallClojure() {
 
 testallClojureScript() {
   echob "Running tests for clojure script code..."
-  lein doo phantom test once
+  lein doo chrome-headless test once
 }
 
 autotestClojureScript() {
-  lein doo phantom test auto
+  lein doo chrome-headless test auto
 }
-
 
 testall() {
   testallClojure && testallClojureScript
@@ -110,11 +124,13 @@ testunitRepeat() {
   done
   echob "Tests didn't fail in a few tries, maybe nothing is flaky."
 }
+
 check-style() {
   echob "Running code-style checks..."
   # kibit can't handle namespaced keywords, removing this output https://github.com/jonase/kibit/issues/14
   lein kibit
 }
+
 clean() {
   lein clean
   rm -f resources/public/css/*.css
@@ -126,9 +142,11 @@ checkGPG() {
     exit 1
   fi
 }
+
 release() {
   checkGPG && testall && clean && buildCss && lein with-profile +release release $1 && scripts/github-release.sh &&  publish-api-doc $(chag latest)
 }
+
 releaseLocal() {
   buildCss && lein with-profile +release install
 }
@@ -205,6 +223,8 @@ publish-api-doc() {
 
 if [ "$1" == "clean" ]; then
     clean
+elif [ "$1" == "deps" ]; then
+    deps
 elif [ "$1" == "setup" ]; then
     setup
 elif [ "$1" == "test" ]; then
@@ -248,6 +268,7 @@ else
 
 goal:
     clean                -- clear all build artifacts
+    deps                 -- install all dependencies
     setup                -- to set up your environment
     test                 -- run all tests
     test-clj             -- run all tests for the clojure-part
