@@ -2,10 +2,10 @@
   "name": "lambdacd",
   "devDependencies": {
     "autoprefixer": "6.6.0",
-    "karma": "^2.0.2",
-    "karma-chrome-launcher": "^2.2.0",
-    "karma-cli": "^1.0.1",
-    "karma-cljs-test": "^0.1.0",
+    "karma": "2.0.2",
+    "karma-chrome-launcher": "2.2.0",
+    "karma-cli": "1.0.1",
+    "karma-cljs-test": "0.1.0",
     "less": "2.7.1",
     "postcss-cli": "2.6.0",
     "watch": "1.0.1"
@@ -15,8 +15,5 @@
     "build": "npm run build:css",
     "build:watch": "watch 'npm run build:css' src/less"
   },
-  "dependencies": {
-    "@cljs-oss/module-deps": "^1.1.1",
-    "npm": "^6.1.0"
-  }
+  "dependencies": {}
 }

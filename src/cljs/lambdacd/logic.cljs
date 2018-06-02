@@ -12,13 +12,12 @@
   (go-loop []
            (let [update-in-progress? @(re-frame/subscribe [::db/update-in-progress?])]
              (when-not update-in-progress?
-               (re-frame/dispatch [::tick])
-               (async/<! (async/timeout poll-frequency))
-               (recur)))))
+               (re-frame/dispatch [::tick]))
+             (async/<! (async/timeout poll-frequency))
+             (recur))))
 
 (defn on-tick [db _]
-  (when-not (:update-in-progress? db)
-    (re-frame/dispatch [::start-update-history]))
+  (re-frame/dispatch [::start-update-history])
   (if (:displayed-build-number db)
     (re-frame/dispatch [::update-pipeline-state]))
   db)

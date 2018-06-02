@@ -2,7 +2,7 @@
                        (System/getenv "CLOJURE_VERSION")
                        "1.8.0"))
 
-(defproject lambdacd "0.14.2-SNAPSHOT"
+(defproject lambdacd "0.14.1-SNAPSHOT"
   :description "A library to create a continous delivery pipeline in code."
   :url "http://github.com/flosell/lambdacd"
   :license {:name "Apache License, version 2.0"
@@ -77,7 +77,7 @@
                                        [reagent-utils "0.3.1"]
                                        [com.andrewmcveigh/cljs-time "0.5.2"]
                                        [cljsjs/ansiparse "0.0.5-1-0"]
-                                       [org.clojure/clojurescript "1.10.126"]]}
+                                       [org.clojure/clojurescript "1.10.238"]]}
              :dev      {:main         todopipeline.pipeline
                         :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
                         :dependencies [[org.clojure/core.match "0.3.0-alpha4"]
@@ -90,7 +90,7 @@
                                        [ring-server "0.4.0"]
                                        [ring/ring-devel "1.3.2"]
                                        [leiningen "2.5.1"]
-                                       [figwheel "0.4.0"]
+                                       [figwheel "0.5.16"]
                                        [weasel "0.7.0"]
                                        [lein-doo "0.1.4"]
                                        [com.cemerick/piggieback "0.2.1"]
@@ -100,7 +100,7 @@
                                        [ch.qos.logback/logback-classic "1.0.13"]]
 
                         :source-paths ["env/dev/clj"]
-                        :plugins      [[lein-figwheel "0.4.0"]]
+                        :plugins      [[lein-figwheel "0.5.16"]]
 
                         :injections   [(require 'pjstadig.humane-test-output)
                                        (pjstadig.humane-test-output/activate!)]
