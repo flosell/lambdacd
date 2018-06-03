@@ -256,16 +256,6 @@
       (is (= [{:status :running}
               {:status :waiting}
               {:status :success}] (slurp-chan result-ch)))))
-  (testing "that it doesn't inherit the status of nested children"; TODO: flaky
-    (let [result-ch (async/chan 100)
-          ctx (some-ctx-with :result-channel result-ch
-                             :pipeline-state-component (noop-pipeline-state/new-no-op-pipeline-state)
-                             :config {:config {:step-updates-per-sec nil}})]
-      ((either (run some-successful-step some-failing-step) some-failing-step) {} ctx)
-      (is (= [{:status :running}
-              {:status :success}
-              {:status :running}
-              {:status :failure}] (slurp-chan result-ch)))))
   (testing "that it kills all children if it was already killed in the beginning"
     (let [is-killed (atom true)
           ctx       (some-ctx-with :is-killed is-killed
