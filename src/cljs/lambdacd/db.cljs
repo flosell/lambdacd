@@ -6,7 +6,8 @@
   {:history nil
    :pipeline-state nil
    :connection-state :lost
-   :update-in-progress? false
+   :update-history-in-progress? false
+   :update-pipeline-in-progress? false
    :displayed-build-number nil
    :raw-step-results-visible false
    :expanded-step-ids #{}
@@ -65,7 +66,8 @@
   (:connection-state db))
 
 (defn update-in-progress?-subscription [db _]
-  (:update-in-progress? db))
+  (or (:update-pipeline-in-progress? db)
+      (:update-history-in-progress? db)))
 
 (defn build-number-subscription [db _]
   (:displayed-build-number db))
