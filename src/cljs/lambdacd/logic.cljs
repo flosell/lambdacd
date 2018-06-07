@@ -19,9 +19,9 @@
 (defn on-tick [db _]
   (re-frame/dispatch [::start-update-history])
   (if (:displayed-build-number db)
-    (re-frame/dispatch [::start-update-pipepile]))
+    (re-frame/dispatch [::start-update-pipeline]))
   db)
-
+start-
 (defn start-update-history-handler [{:keys [db]} _]
   {:db (assoc db :update-history-in-progress? true)
    :dispatch [::update-history]})
@@ -68,6 +68,6 @@
 (re-frame/reg-event-db ::update-history update-history-handler)
 (re-frame/reg-event-fx ::finish-update-history finish-update-history-handler)
 
-(re-frame/reg-event-fx ::start-update-pipepile start-update-pipepile-handler)
+(re-frame/reg-event-fx ::start-update-pipeline start-update-pipepile-handler)
 (re-frame/reg-event-db ::update-pipeline-state update-pipeline-state-handler)
 (re-frame/reg-event-fx ::finish-update-pipeline-state finish-update-pipeline-state-handler)
