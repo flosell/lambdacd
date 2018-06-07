@@ -4,6 +4,17 @@ This changelog contains a loose collection of changes in every release. I will a
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to a "shifted" version of semantic versioning while the major version remains at 0: Minor version changes indicate breaking changes, patch version changes should not contain breaking changes.
 
+## 0.14.1
+
+### Changed
+
+This release contains update of frontend libs and related tools such as: reagent, reframe, figwheel etc.
+
+### Fixed
+
+* Reduced number of requests from frontend. In case of slow network or in case of server issues, frontend doesn't send req before it got response or timeout error for previous ones. [UI request rate #187](https://github.com/flosell/lambdacd/issues/187)
+
+
 ## 0.14.0
 
 **House-Keeping Release**. 
