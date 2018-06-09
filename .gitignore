@@ -16,3 +16,4 @@ node_modules
 resources/public/css/pipeline.css
 resources/public/css/main.css
 gh-pages-api-doc-release
+resources/public/test

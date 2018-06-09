@@ -28,76 +28,76 @@
          (testing "that we can set and update history"
                   (let [db (r/atom db/default-db)]
                     (reset! db (db/history-updated-handler @db [nil [:some :history]]))
-                    (is (= [:some :history] @(db/history-subscription db nil)))))
+                    (is (= [:some :history] (db/history-subscription @db nil)))))
          (testing "that setting the history does set the current build number to the most recent build if none is set"
                   (let [db (r/atom db/default-db)]
                     (reset! db (db/history-updated-handler @db [nil [{:build-number 1} {:build-number 3} {:build-number 2}]]))
-                    (is (= 3 @(db/build-number-subscription db nil)))))
+                    (is (= 3 (db/build-number-subscription @db nil)))))
          (testing "that setting the history does not set the current build number if a different build number is already set"
                   (let [db (r/atom (assoc db/default-db :displayed-build-number 10))]
                     (reset! db (db/history-updated-handler @db [nil [{:build-number 1} {:build-number 3} {:build-number 2}]]))
-                    (is (= 10 @(db/build-number-subscription db nil))))))
+                    (is (= 10 (db/build-number-subscription @db nil))))))
 
 (deftest get-set-pipeline-state-test
   (testing "that we can set and update history"
     (let [db (r/atom db/default-db)]
       (reset! db (db/pipeline-state-updated-handler @db [nil [:some :state]]))
-      (is (= [:some :state] @(db/pipeline-state-subscription db nil))))))
+      (is (= [:some :state] (db/pipeline-state-subscription @db nil))))))
 
 (deftest lost-connection-test
          (testing "that initially there is no connection"
                   (let [db (r/atom db/default-db)]
-                    (is (= :lost @(db/connection-state-subscription db nil)))))
+                    (is (= :lost (db/connection-state-subscription @db nil)))))
          (testing "that updated state restores the connection state"
                   (let [db (r/atom db/default-db)]
                     (reset! db (db/pipeline-state-updated-handler @db [nil [:some :state]]))
-                    (is (= :active @(db/connection-state-subscription db nil)))))
+                    (is (= :active (db/connection-state-subscription @db nil)))))
          (testing "that updated history restores the connection state"
                   (let [db (r/atom db/default-db)]
                     (reset! db (db/history-updated-handler @db [nil [:some :state]]))
-                    (is (= :active @(db/connection-state-subscription db nil)))))
+                    (is (= :active (db/connection-state-subscription @db nil)))))
          (testing "that we can notify about lost connection"
                   (let [db (r/atom db/default-db)]
                     ; first, set it active
                     (reset! db (db/history-updated-handler @db [nil [:some :state]]))
-                    (is (= :active @(db/connection-state-subscription db nil)))
+                    (is (= :active (db/connection-state-subscription @db nil)))
                     ; then loose connection
                     (reset! db (db/lost-connection-handler @db [nil]))
-                    (is (= :lost @(db/connection-state-subscription db nil))))))
+                    (is (= :lost (db/connection-state-subscription @db nil))))))
 
 (deftest build-number-test
          (testing "that initially the build number is not set"
                   (let [db (r/atom db/default-db)]
-                    (is (nil? @(db/build-number-subscription db nil)))))
+                    (is (nil? (db/build-number-subscription db nil)))))
          (testing "that the build-number can be updated"
                   (let [db (r/atom db/default-db)]
                     (reset! db (db/build-number-update-handler @db [nil 42]))
-                    (is (= 42 @(db/build-number-subscription db nil)))))
+                    (is (= 42 (db/build-number-subscription @db nil)))))
          (testing "that updating the build-number also resets the pipeline state"
            (let [db (r/atom db/default-db)]
              (reset! db (db/pipeline-state-updated-handler @db [nil [:some :state]]))
              (reset! db (db/build-number-update-handler @db [nil 42]))
-             (is (= nil @(db/pipeline-state-subscription db nil))))))
+             (is (= nil (db/pipeline-state-subscription @db nil))))))
 
 (deftest step-id-test
          (testing "that initially the step-id is not set"
                   (let [db (r/atom db/default-db)]
-                    (is (nil? @(db/step-id-subscription db nil)))))
+                    (is (nil? (db/step-id-subscription @db nil)))))
          (testing "that the step-id can be updated"
                   (let [db (r/atom db/default-db)]
                     (reset! db (db/step-id-update-handler @db [nil [2 1]]))
-                    (is (= [2 1] @(db/step-id-subscription db nil))))))
+                    (is (= [2 1] (db/step-id-subscription @db nil))))))
 
 (deftest raw-step-results-visible-test
          (testing "that initially the raw-step-results-visible information is not set"
                   (let [db (r/atom db/default-db)]
-                    (is (= false @(db/raw-step-result-visible-subscription db nil)))))
+                    (is (= false (db/raw-step-result-visible-subscription @db nil)))))
          (testing "that the visibility can be updated"
                   (let [db (r/atom db/default-db)]
                     (reset! db (db/toggle-raw-step-results-visible-handler @db nil))
-                    (is (= true @(db/raw-step-result-visible-subscription db nil)))
+                    (is (= true (db/raw-step-result-visible-subscription @db nil)))
                     (reset! db (db/toggle-raw-step-results-visible-handler @db nil))
-                    (is (= false @(db/raw-step-result-visible-subscription db nil))))))
+                    (is (= false (db/raw-step-result-visible-subscription @db nil))))))
 
 
 (deftest current-step-result-test
@@ -105,11 +105,11 @@
     (let [db (r/atom db/default-db)]
       (reset! db (db/pipeline-state-updated-handler @db [nil [some-parallel-build-step]]))
       (reset! db (db/step-id-update-handler @db [nil [8 9]]))
-      (is (= some-other-step @(db/current-step-result-subscription db nil)))))
+      (is (= some-other-step (db/current-step-result-subscription @db nil)))))
   (testing "return nothing if no step id set"
     (let [db (r/atom db/default-db)]
       (reset! db (db/pipeline-state-updated-handler @db [nil [some-parallel-build-step]]))
-      (is (= nil @(db/current-step-result-subscription db nil))))))
+      (is (= nil (db/current-step-result-subscription @db nil))))))
 
 (defn dispatch!
   ([db handler]
@@ -121,7 +121,7 @@
   ([db subs]
    (query db subs nil))
   ([db subs param]
-    @(subs db [nil param])))
+    (subs @db [nil param])))
 
 (def some-state
   [(-> some-build-step

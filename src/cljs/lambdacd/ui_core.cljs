@@ -42,8 +42,6 @@
         build-number-atom (re-frame/subscribe [::db/build-number])
         connection-state (re-frame/subscribe [::db/connection-state])]
     (logic/start-ticker)
-    (route/hook-browser-navigation! state-atom)
+    (route/hook-browser-navigation!)
     ; #' is necessary so that fighweel can update: https://github.com/reagent-project/reagent/issues/94
     (reagent/render-component [#'root build-number-atom state-atom connection-state history/build-history-component wired-current-build-component] (.getElementById js/document "app"))))
-
-
