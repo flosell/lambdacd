@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## 0.14.1
 
+Thanks to @Atsman for cleaning up and improving the frontend code in this release!
+
 ### Changed
 
 This release contains update of frontend libs and related tools such as: reagent, reframe, figwheel etc.
