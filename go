@@ -274,6 +274,7 @@ else
 
 goal:
     clean                -- clear all build artifacts
+    check-dependencies   -- check dependencies for known vulnerabilities
     deps                 -- install all dependencies
     setup                -- to set up your environment
     test                 -- run all tests
