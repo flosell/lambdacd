@@ -14,4 +14,11 @@
         <gav regex="true">^re-frame:re-frame:.*$</gav>
         <cpe>cpe:/a:git:git</cpe>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: closure-compiler-unshaded-v20180204.jar
+   ]]></notes>
+        <gav regex="true">^com\.google\.javascript:closure-compiler-unshaded:.*$</gav>
+        <cpe>cpe:/a:google:google_apps</cpe>
+    </suppress>
 </suppressions>
