@@ -99,8 +99,10 @@
                                        [ch.qos.logback/logback-classic "1.0.13"]]
 
                         :source-paths ["env/dev/clj"]
-                        :plugins      [[lein-figwheel "0.5.16"]]
-
+                        :plugins      [[lein-figwheel "0.5.16"]
+                                       [lein-nvd "0.5.3"]]
+                        :nvd {:suppression-file "suppression.xml"}
+                        
                         :injections   [(require 'pjstadig.humane-test-output)
                                        (pjstadig.humane-test-output/activate!)]
 

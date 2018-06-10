@@ -82,7 +82,7 @@ deps() {
 
 setup() {
   deps
-  
+
   buildCss
   buildCljsOnce
 
@@ -221,8 +221,14 @@ publish-api-doc() {
     popd > /dev/null
 }
 
+check-dependencies() {
+     lein nvd check
+}
+
 if [ "$1" == "clean" ]; then
     clean
+elif [ "$1" == "check-dependencies" ]; then
+    check-dependencies
 elif [ "$1" == "deps" ]; then
     deps
 elif [ "$1" == "setup" ]; then

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.1.xsd">
+    <suppress>
+        <notes><![CDATA[
+      file name: re-frame-0.10.5.jar
+      ]]></notes>
+        <gav regex="true">^re-frame:re-frame:.*$</gav>
+        <cpe>cpe:/a:git_project:git</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: re-frame-0.10.5.jar
+   ]]></notes>
+        <gav regex="true">^re-frame:re-frame:.*$</gav>
+        <cpe>cpe:/a:git:git</cpe>
+    </suppress>
+</suppressions>
