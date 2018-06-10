@@ -89,7 +89,6 @@
                                        [http-kit "2.1.19"]
                                        [ring-server "0.4.0"]
                                        [ring/ring-devel "1.3.2"]
-                                       [leiningen "2.5.1"]
                                        [figwheel "0.5.16"]
                                        [weasel "0.7.0"]
                                        [lein-doo "0.1.4"]
