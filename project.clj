@@ -86,9 +86,7 @@
                                        [org.clojars.runa/conjure "2.2.0"]
                                        [prismatic/dommy "1.0.0"]
                                        [com.gearswithingears/shrubbery "0.4.1"]
-                                       [http-kit "2.1.19"]
-                                       [ring-server "0.4.0"]
-                                       [ring/ring-devel "1.3.2"]
+                                       [http-kit "2.2.0"]
                                        [figwheel "0.5.16"]
                                        [weasel "0.7.0"]
                                        [lein-doo "0.1.4"]
@@ -102,7 +100,7 @@
                         :plugins      [[lein-figwheel "0.5.16"]
                                        [lein-nvd "0.5.3"]]
                         :nvd {:suppression-file "suppression.xml"}
-                        
+
                         :injections   [(require 'pjstadig.humane-test-output)
                                        (pjstadig.humane-test-output/activate!)]
 

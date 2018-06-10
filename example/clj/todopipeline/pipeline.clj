@@ -9,7 +9,7 @@
 
 (ns todopipeline.pipeline
   (:require [lambdacd.core :as core]
-            [ring.server.standalone :as ring-server]
+            [org.httpkit.server :as http-kit]
             [lambdacd.runners :as runners]
             [clojure.tools.logging :as log]
 
@@ -101,8 +101,6 @@
                        (ui-core/ui-for pipeline))]
     (log/info "LambdaCD Home Directory is " home-dir)
     (runners/start-new-run-after-first-step-finished pipeline)
-    (ring-server/serve ring-handler {:open-browser? false
-                                     :port 8080})
+    (http-kit/run-server ring-handler {:port 8080})
     ;; visual styleguide for ui development. you don't need this in production
-    (ring-server/serve (visual-styleguide) {:open-browser? false
-                                     :port 8081})))
+    (http-kit/run-server (visual-styleguide) {:port 8081})))

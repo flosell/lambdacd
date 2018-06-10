@@ -1,6 +1,6 @@
 (ns lambdacd.smoketest.smoke-test
   (:require [lambdacd.smoketest.steps :as steps]
-            [ring.server.standalone :as ring :only serve]
+            [org.httpkit.server :as http-kit]
             [org.httpkit.client :as http]
             [clojure.test :refer :all]
             [clojure.data.json :as json]
@@ -12,7 +12,7 @@
 
 (def url-base "http://localhost:3000")
 (defn- test-server [handler]
-  (ring/serve handler (merge {:join? false, :open-browser? false})))
+  (http-kit/run-server handler {:port 3000}))
 
 (defn- server-status []
   (:status (deref (http/get (str url-base "/api/builds/1/")))))
@@ -64,7 +64,7 @@
   `(let [server# ~server]
      (try
        ~@body
-       (finally (.stop server#)))))
+       (finally (server#)))))
 
 (defn- create-test-repo-at [dir]
   (bash-util/bash dir
