@@ -93,8 +93,8 @@
                                        [com.cemerick/piggieback "0.2.1"]
                                        [org.clojure/tools.nrepl "0.2.12"]
                                        [pjstadig/humane-test-output "0.6.0"]
-                                       [ch.qos.logback/logback-core "1.0.13"]
-                                       [ch.qos.logback/logback-classic "1.0.13"]]
+                                       [ch.qos.logback/logback-core "1.2.3"]
+                                       [ch.qos.logback/logback-classic "1.2.3"]]
 
                         :source-paths ["env/dev/clj"]
                         :plugins      [[lein-figwheel "0.5.16"]
