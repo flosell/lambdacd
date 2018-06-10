@@ -26,7 +26,7 @@
                  [org.slf4j/slf4j-api "1.7.21"]
                  [ring/ring-json "0.3.1"]
                  [cheshire "5.4.0"]
-                 [cljsjs/moment "2.10.6-4"]
+                 [cljsjs/moment "2.22.2-0"]
                  [clj-time "0.9.0"]
                  [com.jezhumble/javasysmon "0.3.6"]
                  [clj-timeframes "0.1.0"]]
