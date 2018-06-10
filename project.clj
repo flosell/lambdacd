@@ -30,7 +30,11 @@
                  [clj-time "0.9.0"]
                  [com.jezhumble/javasysmon "0.3.6"]
                  [clj-timeframes "0.1.0"]]
-  :exclusions [org.jvnet.winp/winp] ; process-tree-killer depends on this for windows only and doesnt provide it...
+  ; excluding a few transitive dependencies:
+  ; process-tree-killer depends on this for windows only and doesnt provide it...
+  ; xz is a dependency of fs, contains a vulnerability and we don't really use it
+  :exclusions [org.jvnet.winp/winp
+               org.tukaani/xz]
   :test-selectors {:default (complement :smoke)
                    :smoke :smoke
                    :all (constantly true)}
