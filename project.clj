@@ -77,7 +77,10 @@
                                        [reagent-utils "0.3.1"]
                                        [com.andrewmcveigh/cljs-time "0.5.2"]
                                        [cljsjs/ansiparse "0.0.5-1-0"]
-                                       [org.clojure/clojurescript "1.10.238"]]}
+                                       [org.clojure/clojurescript "1.10.238"]
+                                       ; protobuf is a transitive dependency of clojurescript.
+                                       ; pinning here since the default is currently a vulnerable version (even though the vulnerability shouldn't affect us)
+                                       [com.google.protobuf/protobuf-java "3.5.1"]]}
              :dev      {:main         todopipeline.pipeline
                         :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
                         :dependencies [[org.clojure/core.match "0.3.0-alpha4"]
