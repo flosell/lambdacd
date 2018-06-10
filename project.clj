@@ -21,7 +21,7 @@
                  [me.raynes/conch "0.8.0"]
                  [me.raynes/fs "1.4.6"]
                  [org.clojure/core.async "0.4.474"]
-                 [compojure "1.6.0"]
+                 [compojure "1.6.1"]
                  [org.clojure/tools.logging "0.3.1"]
                  [org.slf4j/slf4j-api "1.7.21"]
                  [ring/ring-json "0.3.1"]
