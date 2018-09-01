@@ -68,6 +68,10 @@
   (testing "that it ignores build directories with no build state (e.g. because only structure has been written yet"
     (let [home-dir (temp-util/create-temp-dir)]
       (.mkdirs (io/file home-dir "build-1"))
+      (is (= {} (read-build-history-from home-dir)))))
+  (testing "that it ignores build that don't have a valid build number"
+    (let [home-dir (temp-util/create-temp-dir)]
+      (write-build-history home-dir "not-a-build-number" {})
       (is (= {} (read-build-history-from home-dir))))))
 
 (deftest read-pipeline-datas-test ; covers only edge-cases that aren't covered by roundtrip
@@ -77,7 +81,11 @@
   (testing "that it adds a fallback-marker for build directories with no pipeline structure (e.g. because they were created before this feature was available)"
     (let [home-dir (temp-util/create-temp-dir)]
       (.mkdirs (io/file home-dir "build-1"))
-      (is (= {1 :fallback} (read-build-datas home-dir "pipeline-structure.edn"))))))
+      (is (= {1 :fallback} (read-build-datas home-dir "pipeline-structure.edn")))))
+  (testing "that it will return empty data if build directory contains data but no build number"
+    (let [home-dir (temp-util/create-temp-dir)]
+      (.mkdirs (io/file home-dir "build-not-a-build-number"))
+      (is (= {} (read-build-datas home-dir "pipeline-structure.edn"))))))
 
 (defn- roundtrip-date-time [data]
   (dates->clj-times

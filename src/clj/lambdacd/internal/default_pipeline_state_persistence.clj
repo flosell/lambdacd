@@ -41,8 +41,11 @@
 (defn- formatted-step-ids->pipeline-state [m]
   (into {} (map step-result-with-formatted-step-ids->step-result m)))
 
+(defn find-build-number-in-path [path]
+  (second (re-find #"build-(\d+)" (str path))))
+
 (defn- build-number-from-path [path]
-  (sugar/parse-int (second (re-find #"build-(\d+)" (str path)))))
+  (sugar/parse-int (find-build-number-in-path path)))
 
 (defn- build-state-path [dir]
   (io/file dir "build-state.edn"))
@@ -62,7 +65,7 @@
   (let [dir                 (io/file home-dir)
         home-contents       (file-seq dir)
         directories-in-home (filter #(.isDirectory %) home-contents)
-        build-dirs          (filter #(.startsWith (.getName %) "build-") directories-in-home)]
+        build-dirs          (filter find-build-number-in-path directories-in-home)]
     build-dirs))
 
 (defn- build-dir [home-dir build-number]
