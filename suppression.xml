@@ -21,4 +21,11 @@
         <gav regex="true">^com\.google\.javascript:closure-compiler-unshaded:.*$</gav>
         <cpe>cpe:/a:google:google_apps</cpe>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: closure-compiler-unshaded-v20180610.jar
+   ]]></notes>
+        <gav regex="true">^com\.google\.javascript:closure-compiler-unshaded:.*$</gav>
+        <cpe>cpe:/a:google:gmail</cpe>
+    </suppress>
 </suppressions>
