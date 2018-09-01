@@ -4,6 +4,12 @@ This changelog contains a loose collection of changes in every release. I will a
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to a "shifted" version of semantic versioning while the major version remains at 0: Minor version changes indicate breaking changes, patch version changes should not contain breaking changes.
 
+## 0.14.2
+
+### Fixed
+
+* Fixed bug that prevented LambdaCD from starting if home-dir contained build history directories without a build number in their name (#192)
+
 ## 0.14.1
 
 Thanks to @Atsman for cleaning up and improving the frontend code in this release!
