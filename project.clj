@@ -93,7 +93,7 @@
                                        [org.clojars.runa/conjure "2.2.0"]
                                        [prismatic/dommy "1.0.0"]
                                        [com.gearswithingears/shrubbery "0.4.1"]
-                                       [http-kit "2.2.0"]
+                                       [http-kit "2.3.0"]
                                        [figwheel "0.5.16"]
                                        [weasel "0.7.0"]
                                        [lein-doo "0.1.4"]
