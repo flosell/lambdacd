@@ -9,7 +9,7 @@
 (def clean-pipeline-state {})
 
 (defn initial-pipeline-state [{home-dir :home-dir}]
-  (persistence/read-build-history-from home-dir))
+  (persistence/read-build-state-from home-dir))
 
 (defn- update-step-result [new-step-result current-step-result]
   (let [now (t/now)]
@@ -73,8 +73,8 @@
 (defn new-default-pipeline-state [config & {:keys [initial-state-for-testing]}]
   (let [home-dir            (:home-dir config)
         state-atom          (atom (or initial-state-for-testing (initial-pipeline-state config)))
-        structure-atom      (atom (persistence/read-build-datas home-dir "pipeline-structure.edn"))
-        build-metadata-atom (atom (persistence/read-build-datas home-dir "build-metadata.edn"))
+        structure-atom      (atom (persistence/read-normal-build-data-from home-dir "pipeline-structure.edn"))
+        build-metadata-atom (atom (persistence/read-normal-build-data-from home-dir "build-metadata.edn"))
         max-builds          (or (:max-builds config) Integer/MAX_VALUE)
         instance            (->DefaultPipelineState state-atom structure-atom build-metadata-atom home-dir max-builds)]
     instance))

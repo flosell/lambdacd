@@ -9,7 +9,8 @@
             [clj-time.coerce :as c]
             [clojure.edn :as edn]
             [clojure.walk :as walk]
-            [me.raynes.fs :as fs]))
+            [me.raynes.fs :as fs]
+            [clojure.tools.logging :as log]))
 
 (defn convert-if-instance [c f]
   (fn [x]
@@ -44,17 +45,8 @@
 (defn find-build-number-in-path [path]
   (second (re-find #"build-(\d+)" (str path))))
 
-(defn- build-number-from-path [path]
-  (sugar/parse-int (find-build-number-in-path path)))
-
 (defn- build-state-path [dir]
   (io/file dir "build-state.edn"))
-
-(defn- read-build-edn [path]
-  (let [build-number (build-number-from-path path)
-        data-str     (slurp path)
-        state        (formatted-step-ids->pipeline-state (dates->clj-times (edn/read-string data-str)))]
-    {build-number state}))
 
 (defn- write-build-edn [path build]
   (let [serializable-build  (clj-times->dates (pipeline-state->formatted-step-ids build))
@@ -64,9 +56,8 @@
 (defn- build-dirs [home-dir]
   (let [dir                 (io/file home-dir)
         home-contents       (file-seq dir)
-        directories-in-home (filter #(.isDirectory %) home-contents)
-        build-dirs          (filter find-build-number-in-path directories-in-home)]
-    build-dirs))
+        directories-in-home (filter #(.isDirectory %) home-contents)]
+    directories-in-home))
 
 (defn- build-dir [home-dir build-number]
   (let [result (str home-dir "/" "build-" build-number)]
@@ -83,29 +74,39 @@
 (defn file-exists? [f]
   (.exists f))
 
-(defn read-build-history-from [home-dir]
-  (->> (build-dirs home-dir)
-       (map build-state-path)
-       (filter file-exists?)
-       (map read-build-edn)
-       (into {})))
-
-
 (defn write-build-data-edn [home-dir build-number pipeline-data filename]
   (let [f (io/file (build-dir home-dir build-number) filename)]
     (spit f (pr-str pipeline-data))))
 
-(defn- read-pipeline-structure-edn [f]
-  (let [build-number (build-number-from-path f)]
-    (if (file-exists? f)
-      {build-number (edn/read-string (slurp f))}
-      {build-number :fallback})))
+(defn- read-edn-file [path]
+  (if (file-exists? path)
+    (edn/read-string (slurp path))))
 
-(defn read-build-datas [home-dir filename]
-  (->> (build-dirs home-dir)
-       (map #(io/file % filename))
-       (map read-pipeline-structure-edn)
+(defn- build-files [home-dir filename]
+  (map #(io/file % filename) (build-dirs home-dir)))
+
+(defn- process-build-data-file [f post-processor]
+  (if-let [build-number-str (find-build-number-in-path f)]
+    (post-processor (read-edn-file f) (sugar/parse-int build-number-str))
+    (log/debug f "doesn't seem to contain a valid build number, skipping")))
+
+(defn- read-and-process-data-files [home-dir filename post-processor]
+  (->> (build-files home-dir filename)
+       (map #(process-build-data-file % post-processor))
        (into {})))
+
+(defn- post-process-build-state-edn [data build-number]
+  (if data
+    {build-number (formatted-step-ids->pipeline-state (dates->clj-times data))}))
+
+(defn- post-process-pipeline-structure-edn [data build-number]
+  {build-number (or data :fallback)})
+
+(defn read-normal-build-data-from [home-dir filename]
+  (read-and-process-data-files home-dir filename post-process-pipeline-structure-edn))
+
+(defn read-build-state-from [home-dir]
+  (read-and-process-data-files home-dir "build-state.edn" post-process-build-state-edn))
 
 (defn clean-up-old-builds [home-dir old-build-numbers]
   (doall (map (fn [old-build-number]

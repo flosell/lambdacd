@@ -14,25 +14,25 @@
                                     '(0 1 2) {:status :failure :out "something went wrong"}}}
             home-dir            (temp-util/create-temp-dir)]
         (write-build-history home-dir 3 some-pipeline-state)
-        (is (= some-pipeline-state (read-build-history-from home-dir)))))
+        (is (= some-pipeline-state (read-build-state-from home-dir)))))
     (testing "that string-keys in a step result are supported as well (#101)"
       (let [some-pipeline-state {3 {'(0) {:status :success :_git-last-seen-revisions {"refs/heads/master" "some-sha"}}}}
             home-dir            (temp-util/create-temp-dir)]
         (write-build-history home-dir 3 some-pipeline-state)
-        (is (= some-pipeline-state (read-build-history-from home-dir)))))
+        (is (= some-pipeline-state (read-build-state-from home-dir)))))
     (testing "that keyworded values in a step result are suppored as well (#101)"
       (let [some-pipeline-state {3 {'(0) {:status :success :v :x}}}
             home-dir            (temp-util/create-temp-dir)]
         (write-build-history home-dir 3 some-pipeline-state)
-        (is (= some-pipeline-state (read-build-history-from home-dir))))))
+        (is (= some-pipeline-state (read-build-state-from home-dir))))))
   (testing "generic build-data"
     (testing "the standard case"
       (let [home-dir                (temp-util/create-temp-dir)
             some-pipeline-structure pipeline-structure-test/foo-pipeline-display-representation]
         (write-build-data-edn home-dir 1 some-pipeline-structure "pipeline-structure.edn")
         (write-build-data-edn home-dir 2 some-pipeline-structure "pipeline-structure.edn")
-        (is (= some-pipeline-structure (get (read-build-datas home-dir "pipeline-structure.edn") 1)))
-        (is (= some-pipeline-structure (get (read-build-datas home-dir "pipeline-structure.edn") 2)))))))
+        (is (= some-pipeline-structure (get (read-normal-build-data-from home-dir "pipeline-structure.edn") 1)))
+        (is (= some-pipeline-structure (get (read-normal-build-data-from home-dir "pipeline-structure.edn") 2)))))))
 
 (deftest clean-up-old-builds-test
   (testing "cleaning up old history"
@@ -64,28 +64,28 @@
 (deftest read-build-history-from-test ; covers only edge-cases that aren't coverd by roundtrip
   (testing "that it will return an empty history if no state has been written yet"
     (let [home-dir (temp-util/create-temp-dir)]
-      (is (= {} (read-build-history-from home-dir)))))
+      (is (= {} (read-build-state-from home-dir)))))
   (testing "that it ignores build directories with no build state (e.g. because only structure has been written yet"
     (let [home-dir (temp-util/create-temp-dir)]
       (.mkdirs (io/file home-dir "build-1"))
-      (is (= {} (read-build-history-from home-dir)))))
+      (is (= {} (read-build-state-from home-dir)))))
   (testing "that it ignores build that don't have a valid build number"
     (let [home-dir (temp-util/create-temp-dir)]
       (write-build-history home-dir "not-a-build-number" {})
-      (is (= {} (read-build-history-from home-dir))))))
+      (is (= {} (read-build-state-from home-dir))))))
 
 (deftest read-pipeline-datas-test ; covers only edge-cases that aren't covered by roundtrip
   (testing "that it will return an empty data if no state has been written yet"
     (let [home-dir (temp-util/create-temp-dir)]
-      (is (= {} (read-build-datas home-dir "pipeline-structure.edn")))))
+      (is (= {} (read-normal-build-data-from home-dir "pipeline-structure.edn")))))
   (testing "that it adds a fallback-marker for build directories with no pipeline structure (e.g. because they were created before this feature was available)"
     (let [home-dir (temp-util/create-temp-dir)]
       (.mkdirs (io/file home-dir "build-1"))
-      (is (= {1 :fallback} (read-build-datas home-dir "pipeline-structure.edn")))))
+      (is (= {1 :fallback} (read-normal-build-data-from home-dir "pipeline-structure.edn")))))
   (testing "that it will return empty data if build directory contains data but no build number"
     (let [home-dir (temp-util/create-temp-dir)]
       (.mkdirs (io/file home-dir "build-not-a-build-number"))
-      (is (= {} (read-build-datas home-dir "pipeline-structure.edn"))))))
+      (is (= {} (read-normal-build-data-from home-dir "pipeline-structure.edn"))))))
 
 (defn- roundtrip-date-time [data]
   (dates->clj-times
