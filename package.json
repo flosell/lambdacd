@@ -2,14 +2,13 @@
   "name": "lambdacd",
   "devDependencies": {
     "autoprefixer": "6.6.0",
-    "karma": "2.0.2",
+    "karma": "^3.0.0",
     "karma-chrome-launcher": "2.2.0",
     "karma-cli": "1.0.1",
     "karma-cljs-test": "0.1.0",
     "less": "2.7.1",
     "postcss-cli": "2.6.0",
-    "watch": "1.0.1",
-    "hoek": "4.2.1"
+    "watch": "1.0.1"
   },
   "scripts": {
     "build:css": "node_modules/less/bin/lessc src/less/main.less | node_modules/postcss-cli/bin/postcss --use autoprefixer -o resources/public/css/main.css",
