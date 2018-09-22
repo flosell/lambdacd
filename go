@@ -223,12 +223,19 @@ publish-api-doc() {
 
 check-dependencies() {
      lein nvd check
+     npm audit
+}
+
+fix-dependencies() {
+     npm audit fix
 }
 
 if [ "$1" == "clean" ]; then
     clean
 elif [ "$1" == "check-dependencies" ]; then
     check-dependencies
+elif [ "$1" == "fix-dependencies" ]; then
+    fix-dependencies
 elif [ "$1" == "deps" ]; then
     deps
 elif [ "$1" == "setup" ]; then
