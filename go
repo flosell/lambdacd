@@ -26,7 +26,7 @@ echob() {
   echo -e "${bold}$*${normal}"
 }
 
-setupTodopipelineEnv() {
+goal_setupTodopipelineEnv() {
   check "vagrant"
 
   if [ "$(vagrant status | grep running)" == "" ]; then
@@ -38,7 +38,7 @@ setupTodopipelineEnv() {
 
   mkdir -p /tmp/mockrepo
 
-  setup
+  goal_setup
 }
 
 setupNPM() {
@@ -69,7 +69,7 @@ checkRequirement() {
   echo
 }
 
-deps() {
+goal_deps() {
   checkRequirement
 
   setupNPM
@@ -80,8 +80,8 @@ deps() {
   echob "[SUCCESS] deps are installed."
 }
 
-setup() {
-  deps
+goal_setup() {
+  goal_deps
 
   buildCss
   buildCljsOnce
@@ -91,47 +91,47 @@ setup() {
   echo "Call ./go serve to start a demo pipeline."
 }
 
-testallClojure() {
+goal_test-clj() {
   echob "Running tests for clojure code..."
   lein test :all
 }
 
-testallClojureScript() {
+goal_test-cljs() {
   echob "Running tests for clojure script code..."
   lein doo chrome-headless test once
 }
 
-autotestClojureScript() {
+goal_test-cljs-auto() {
   lein doo chrome-headless test auto
 }
 
-testall() {
-  testallClojure && testallClojureScript
+goal_test() {
+  goal_test-clj && goal_test-cljs
 }
 
-testunit() {
+goal_test-clj-unit() {
   lein test
 }
 
-testunitRepeat() {
+goal_test-cljs-unit-repeat() {
   n=0
   echob "Repeating unit tests a couple of times to get a higher likelihood of flaky tests failing."
   echob "If you got here, you can assume that your unit tests are all succeeding, we are just checking for flakiness now"
   until [ $n -ge 10 ]
   do
-    testunit || exit 1
+    goal_test-clj-unit || exit 1
     n=$[$n+1]
   done
   echob "Tests didn't fail in a few tries, maybe nothing is flaky."
 }
 
-check-style() {
+goal_check-style() {
   echob "Running code-style checks..."
   # kibit can't handle namespaced keywords, removing this output https://github.com/jonase/kibit/issues/14
   lein kibit
 }
 
-clean() {
+goal_clean() {
   lein clean
   rm -f resources/public/css/*.css
 }
@@ -143,27 +143,27 @@ checkGPG() {
   fi
 }
 
-release() {
-  checkGPG && testall && clean && buildCss && lein with-profile +release release $1 && scripts/github-release.sh &&  publish-api-doc $(chag latest)
+goal_release() {
+  checkGPG && goal_test && goal_clean && buildCss && lein with-profile +release release $1 && scripts/github-release.sh &&  goal_publish-api-doc $(chag latest)
 }
 
-releaseLocal() {
+goal_release-local() {
   buildCss && lein with-profile +release install
 }
 
-push() {
-  testall && check-style && git push
+goal_push() {
+  goal_test && goal_check-style && git push
 }
 
-serve() {
+goal_serve() {
   lein run
 }
 
-serveClojureScript() {
+goal_serve-cljs() {
   lein figwheel app
 }
 
-serveCss() {
+goal_serve-css() {
   npm run build:watch
 }
 
@@ -172,20 +172,20 @@ buildCss() {
   npm run build
 }
 
-repl-server() {
+goal_repl-server() {
   lein repl :headless :port 58488
 }
 
-generate-howto-toc() {
+goal_generate-howto-toc() {
   check "gh-md-toc" "Make sure gh-md-toc is in PATH or download from https://github.com/ekalinin/github-markdown-toc.go/releases"
   gh-md-toc ${SCRIPT_DIR}/doc/howto.md
 }
 
-generate-api-documentation() {
+goal_generate-api-doc() {
    lein codox
 }
 
-publish-api-doc() {
+goal_publish-api-doc() {
     DOC_LABEL="$1"
     DOC_DIR="api-docs/${DOC_LABEL}"
 
@@ -221,63 +221,19 @@ publish-api-doc() {
     popd > /dev/null
 }
 
-check-dependencies() {
+goal_check-dependencies() {
      lein nvd check
      npm audit
 }
 
-fix-dependencies() {
+goal_fix-dependencies() {
      npm audit fix
 }
 
-if [ "$1" == "clean" ]; then
-    clean
-elif [ "$1" == "check-dependencies" ]; then
-    check-dependencies
-elif [ "$1" == "fix-dependencies" ]; then
-    fix-dependencies
-elif [ "$1" == "deps" ]; then
-    deps
-elif [ "$1" == "setup" ]; then
-    setup
-elif [ "$1" == "test" ]; then
-    testall
-elif [ "$1" == "test-clj" ]; then
-    testallClojure
-elif [ "$1" == "test-clj-unit" ]; then
-    testunit
-elif [ "$1" == "test-cljs" ]; then
-    testallClojureScript
-elif [ "$1" == "test-cljs-auto" ]; then
-    autotestClojureScript
-elif [ "$1" == "check-style" ]; then
-    check-style
-elif [ "$1" == "release" ]; then
-    release $2
-elif [ "$1" == "release-local" ]; then
-    releaseLocal
-elif [ "$1" == "push" ]; then
-    push
-elif [ "$1" == "serve" ]; then
-    serve
-elif [ "$1" == "serve-cljs" ]; then
-    serveClojureScript
-elif [ "$1" == "serve-css" ]; then
-    serveCss
-elif [ "$1" == "repl-server" ]; then
-    repl-server
-elif [ "$1" == "setupTodopipelineEnv" ]; then
-    setupTodopipelineEnv
-elif [ "$1" == "generate-howto-toc" ]; then
-    generate-howto-toc
-elif [ "$1" == "generate-api-doc" ]; then
-    generate-api-documentation
-elif [ "$1" == "publish-api-doc" ]; then
-    publish-api-doc $2
-elif [ "$1" == "test-clj-unit-repeat" ]; then
-    testunitRepeat
+if type -t "goal_$1" &>/dev/null; then
+  goal_$1 ${@:2}
 else
-    echo "usage: $0 <goal>
+  echo "usage: $0 <goal>
 
 goal:
     clean                -- clear all build artifacts
