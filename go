@@ -113,7 +113,7 @@ goal_test-clj-unit() {
   lein test
 }
 
-goal_test-cljs-unit-repeat() {
+goal_test-clj-unit-repeat() {
   n=0
   echob "Repeating unit tests a couple of times to get a higher likelihood of flaky tests failing."
   echob "If you got here, you can assume that your unit tests are all succeeding, we are just checking for flakiness now"
