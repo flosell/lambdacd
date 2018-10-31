@@ -4,16 +4,17 @@
 
 (ns todopipeline.steps
   (:require [lambdacd.steps.shell :as shell]
-            [lambdacd.steps.git :as git]
             [lambdacd.steps.manualtrigger :as manualtrigger]
+            [lambdacd-git.core :as git]
             [clj-time.format :as time-format]
             [clj-time.core :as time]
+            [lambdacd.steps.control-flow :refer [with-workspace]]
             [lambdacd.stepsupport.metadata :as metadata]
             [lambdacd.stepsupport.output :as output]
             [lambdacd.stepsupport.chaining :as chaining]))
 
 ;; Let's define some constants and utility-functions
-(def backend-repo "git@github.com:flosell/todo-backend-compojure.git")
+(def backend-repo "git@github.com:flosell/todo-backend-compojure")
 (def frontend-repo "git@github.com:flosell/todo-backend-client.git")
 
 (defn build-label [ctx]
@@ -33,28 +34,28 @@
 ;; It's a function that just waits until something changes in the repo.
 ;; Once done, it returns and the build can go on
 (defn wait-for-frontend-repo [_ ctx]
-  (let [wait-result (git/wait-with-details ctx frontend-repo "master")
+  (let [wait-result (git/wait-for-git ctx frontend-repo)
         frontend-revision (:revision wait-result)]
     (assoc wait-result :frontend-revision frontend-revision
                        :backend-revision "HEAD")))
 
 (defn wait-for-backend-repo [_ ctx]
-  (let [wait-result (git/wait-with-details ctx backend-repo "master")
+  (let [wait-result (git/wait-for-git ctx backend-repo)
         backend-revision (:revision wait-result)]
     (assoc wait-result :frontend-revision "HEAD"
                        :backend-revision backend-revision)))
 
-;; Define some nice syntactic sugar that lets us run arbitrary build-steps with a
-;; repository checked out. The steps get executed with the folder where the repo
-;; is checked out as :cwd argument.
-;; The ```^{:display-type :container}``` is a hint for the UI to display the child-steps as well.
-(defn with-frontend-git [& steps]
-  (fn [args ctx]
-    (git/checkout-and-execute frontend-repo (:frontend-revision args) args ctx steps)))
 
-(defn with-backend-git [& steps]
-  (fn [args ctx]
-    (git/checkout-and-execute backend-repo (:backend-revision args) args ctx steps)))
+;; Checkout the revision passed down in args from of each repository
+;; into current working directory
+(defn clone-frontend
+  [args ctx]
+  (git/clone ctx frontend-repo (:frontend-revision args) (:cwd args)))
+
+(defn clone-backend
+  [args ctx]
+  (git/clone ctx backend-repo (:backend-revision args) (:cwd args)))
+
 
 (defn wait-for-greeting [args ctx]
   (manualtrigger/parameterized-trigger {:greeting { :desc "some greeting"}} ctx))

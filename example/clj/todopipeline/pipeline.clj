@@ -36,8 +36,8 @@
          wait-for-frontend-repo
          wait-for-backend-repo
          ~(if false
-           always-echo-something)
-         ))
+           always-echo-something)))
+
      ;; you could also wait for a repository to change. to try, point the step to a repo you control,
     ;; uncomment this, run and see the magic happen (the first build will immediately run since there is no known state)
     ; wait-for-frontend-repo
@@ -50,12 +50,13 @@
      (alias "build and publish"
        (in-parallel
         ;; these child steps do some actual work with the checked out git repo
-        (with-frontend-git
-          nil
+        (with-workspace
+          clone-frontend
           create-some-details
           client-package
           client-publish)
-        (with-backend-git
+        (with-workspace
+          clone-backend
           server-test
           server-package
           server-publish)
@@ -69,8 +70,8 @@
 
     ;; now we want the build to fail, just to show it's working.
     (alias "step that always fails" some-failing-step)
-    some-step-that-cant-be-reached
-  ))
+    some-step-that-cant-be-reached))
+
 
 (defn- visual-styleguide []
   (routes

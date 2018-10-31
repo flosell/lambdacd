@@ -100,6 +100,7 @@
                                        [com.cemerick/piggieback "0.2.1"]
                                        [org.clojure/tools.nrepl "0.2.12"]
                                        [pjstadig/humane-test-output "0.6.0"]
+                                       [lambdacd-git "0.4.1"]
                                        [ch.qos.logback/logback-core "1.2.3"]
                                        [ch.qos.logback/logback-classic "1.2.3"]]
 
