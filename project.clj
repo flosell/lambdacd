@@ -19,7 +19,9 @@
                  [hiccup "1.0.5"]
                  [org.clojure/data.json "0.2.6"]
                  [me.raynes/conch "0.8.0"]
-                 [me.raynes/fs "1.4.6"]
+                 [me.raynes/fs "1.4.6" :exclusions [; xz and commons-compress contain vulnerabilities and we don't use the compression features where they are needed
+                                                    org.tukaani/xz
+                                                    org.apache.commons/commons-compress]]
                  [org.clojure/core.async "0.4.474"]
                  [compojure "1.6.1"]
                  [org.clojure/tools.logging "0.3.1"]
@@ -32,9 +34,7 @@
                  [clj-timeframes "0.1.0"]]
   ; excluding a few transitive dependencies:
   ; process-tree-killer depends on this for windows only and doesnt provide it...
-  ; xz is a dependency of fs, contains a vulnerability and we don't really use it
-  :exclusions [org.jvnet.winp/winp
-               org.tukaani/xz]
+  :exclusions [org.jvnet.winp/winp]
   :test-selectors {:default (complement :smoke)
                    :smoke :smoke
                    :all (constantly true)}
