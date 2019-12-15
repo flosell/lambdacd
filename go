@@ -183,8 +183,7 @@ goal_generate-howto-toc() {
 
 goal_check-dependencies() {
      lein nvd check
-#     WIP: Disable NPM audit to get a green build and be able to fix issues one-by-one
-#     npm audit
+     npm audit
 }
 
 goal_fix-dependencies() {
