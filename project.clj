@@ -68,8 +68,12 @@
              :provided {:dependencies [[bidi "1.18.7"]
                                        [cljs-ajax "0.7.5"]
                                        [re-frame "0.10.5"]
-                                       [reagent "0.8.1"]
+                                       [reagent "0.8.1"] ; TODO: when bumping reagent, remove fixed transitive dependencies below
                                        [reagent-utils "0.3.1"]
+                                       ; Manually bump react version to mitigate CVE-2018-6341; remove when increasing reagent version
+                                       [cljsjs/react "16.4.2-0"]
+                                       [cljsjs/react-dom "16.4.2-0"]
+                                       [cljsjs/react-dom-server "16.4.2-0"]
                                        [com.andrewmcveigh/cljs-time "0.5.2"]
                                        [cljsjs/ansiparse "0.0.5-1-0"]
                                        [org.clojure/clojurescript "1.10.439"]
