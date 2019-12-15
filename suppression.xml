@@ -34,10 +34,4 @@
    ]]></notes>
         <cve>CVE-2018-6341</cve>
     </suppress>
-    <suppress>
-        <notes><![CDATA[
-   WIP: suppressing to make build green again and be able to fix issues one-by-one
-   ]]></notes>
-        <cve>CVE-2018-10237</cve>
-    </suppress>
 </suppressions>

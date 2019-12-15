@@ -66,13 +66,13 @@
              ;; the namespace for all the clojurescript-dependencies,
              ;; we don't want them as dependencies of the final library as cljs is already compiled then
              :provided {:dependencies [[bidi "1.18.7"]
-                                       [cljs-ajax "0.7.3"]
+                                       [cljs-ajax "0.7.5"]
                                        [re-frame "0.10.5"]
                                        [reagent "0.8.1"]
                                        [reagent-utils "0.3.1"]
                                        [com.andrewmcveigh/cljs-time "0.5.2"]
                                        [cljsjs/ansiparse "0.0.5-1-0"]
-                                       [org.clojure/clojurescript "1.10.238"]
+                                       [org.clojure/clojurescript "1.10.439"]
                                        ; protobuf is a transitive dependency of clojurescript.
                                        ; pinning here since the default is currently a vulnerable version (even though the vulnerability shouldn't affect us)
                                        [com.google.protobuf/protobuf-java "3.5.1"]]}
