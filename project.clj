@@ -39,15 +39,7 @@
                    :smoke :smoke
                    :all (constantly true)}
 
-  :codox {:namespaces [#"^(?!.*\.internal\.).*$"]
-          :doc-files []
-          :source-uri "https://github.com/flosell/lambdacd/blob/master/{filepath}#L{line}"
-          :project    {:name "LambdaCD"}
-          :themes [:rdash]
-          :metadata   {:doc/format :markdown}}
-
-  :plugins [[lein-codox "0.10.2"]
-            [lein-cljsbuild "1.1.7"]
+  :plugins [[lein-cljsbuild "1.1.7"]
             [lein-doo "0.1.10"]
             [lein-environ "1.0.2"]
             [lein-kibit "0.1.6-beta1"]
@@ -68,7 +60,6 @@
                                         ["vcs" "commit"]
                                         ["vcs" "tag"]
                                         ["deploy"]
-                                        ["codox"]
                                         ["change" "version" "leiningen.release/bump-version"]
                                         ["vcs" "commit"]
                                         ["vcs" "push"]]}
@@ -89,7 +80,6 @@
                         :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
                         :dependencies [[org.clojure/core.match "0.3.0-alpha4"]
                                        [ring-mock "0.1.5"]
-                                       [codox-theme-rdash "0.1.1"]
                                        [org.clojars.runa/conjure "2.2.0"]
                                        [prismatic/dommy "1.0.0"]
                                        [com.gearswithingears/shrubbery "0.4.1"]

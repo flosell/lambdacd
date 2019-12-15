@@ -144,7 +144,7 @@ checkGPG() {
 }
 
 goal_release() {
-  checkGPG && goal_test && goal_clean && buildCss && lein with-profile +release release $1 && scripts/github-release.sh &&  goal_publish-api-doc $(chag latest)
+  checkGPG && goal_test && goal_clean && buildCss && lein with-profile +release release $1 && scripts/github-release.sh
 }
 
 goal_release-local() {
@@ -179,46 +179,6 @@ goal_repl-server() {
 goal_generate-howto-toc() {
   check "gh-md-toc" "Make sure gh-md-toc is in PATH or download from https://github.com/ekalinin/github-markdown-toc.go/releases"
   gh-md-toc ${SCRIPT_DIR}/doc/howto.md
-}
-
-goal_generate-api-doc() {
-   lein codox
-}
-
-goal_publish-api-doc() {
-    DOC_LABEL="$1"
-    DOC_DIR="api-docs/${DOC_LABEL}"
-
-    if [ -z "${DOC_LABEL}" ]; then
-        echob "need to set doc-label"
-        exit 1
-    fi
-
-    rm -rf gh-pages-api-doc-release
-
-    git clone --single-branch --depth 1 --branch gh-pages git@github.com:flosell/lambdacd.git gh-pages-api-doc-release
-    rm -rf gh-pages-api-doc-release/${DOC_DIR}
-    mkdir -p gh-pages-api-doc-release/${DOC_DIR}
-
-    cp -R ${SCRIPT_DIR}/target/doc/ gh-pages-api-doc-release/${DOC_DIR}
-
-    pushd gh-pages-api-doc-release/api-docs > /dev/null
-
-    rm -rf latest
-    ln -s ${DOC_LABEL} latest
-
-    (
-      echo "version"; # header
-      for i in $(find . -depth 1 -type d -or -type l | sort --reverse   ); do
-        echo $(basename ${i});
-      done;
-    ) > ../_data/apidoc-versions.csv
-
-    git add ${DOC_LABEL} latest ../_data/apidoc-versions.csv
-    git commit -m "Update generated API Doc for ${DOC_LABEL}"
-    git push origin gh-pages
-
-    popd > /dev/null
 }
 
 goal_check-dependencies() {
@@ -256,8 +216,6 @@ goal:
     release-local        -- install current version in local repository
     repl-server          -- start a repl cursive can use to run tests in
     setupTodopipelineEnv -- setup everything you need to make the demo pipeline green
-    generate-howto-toc   -- generate table of contents for howto
-    generate-api-doc     -- generate api documentation
-    publish-api-doc      -- publish api documentation to github pages"
+    generate-howto-toc   -- generate table of contents for howto"
     exit 1
 fi
