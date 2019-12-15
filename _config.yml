@@ -14,3 +14,9 @@ github_username:  jekyll
 markdown: kramdown
 gems:
   - jekyll-sitemap
+defaults:
+  -
+    scope:
+      path:            "api-docs/**/*"
+    values:
+      sitemap:         false
