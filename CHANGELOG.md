@@ -4,6 +4,12 @@ This changelog contains a loose collection of changes in every release. I will a
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to a "shifted" version of semantic versioning while the major version remains at 0: Minor version changes indicate breaking changes, patch version changes should not contain breaking changes.
 
+## 0.14.4 
+
+### Security
+
+* Updated a couple of dependencies that had known vulnerabilities. None of these are known to be exploitable in LambdaCD, however upgrading can make sense as a precaution
+
 ## 0.14.3
 
 ### Fixed
