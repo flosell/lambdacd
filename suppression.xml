@@ -28,7 +28,7 @@
         <gav regex="true">^com\.google\.javascript:closure-compiler-unshaded:.*$</gav>
         <cpe>cpe:/a:google:gmail</cpe>
     </suppress>
-    <suppress until="2020-10-01Z">
+    <suppress>
         <notes><![CDATA[
         Suppress CVE in google-closure-library that we shouldn't be vulnerable to and that is a transitive dependency of closurescript that hasn't updated this yet. Recheck in a few months if things have improved upstream.
         ]]></notes>
