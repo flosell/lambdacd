@@ -28,4 +28,16 @@
         <gav regex="true">^com\.google\.javascript:closure-compiler-unshaded:.*$</gav>
         <cpe>cpe:/a:google:gmail</cpe>
     </suppress>
+    <suppress until="2020-10-01Z">
+        <notes><![CDATA[
+        Suppress CVE in google-closure-library that we shouldn't be vulnerable to and that is a transitive dependency of closurescript that hasn't updated this yet. Recheck in a few months if things have improved upstream.
+        ]]></notes>
+        <cve>CVE-2020-8910</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        This CVE is related to the C# version of MessagePack, we are not affected by it.
+        ]]></notes>
+        <cve>CVE-2020-5234</cve>
+    </suppress>
 </suppressions>
