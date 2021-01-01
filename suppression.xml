@@ -40,4 +40,10 @@
         ]]></notes>
         <cve>CVE-2020-5234</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        This CVE is related to Apache HTTP Components which are a transitive dependency to make cljs-ajax work on clj as well - we aren't using it this way so aren't affected. 
+        ]]></notes>
+        <cve>CVE-2020-13956</cve>
+    </suppress>
 </suppressions>
