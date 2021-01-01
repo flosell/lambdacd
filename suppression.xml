@@ -50,7 +50,6 @@
         <notes><![CDATA[
 This is a low-severity issue relating to permissions of temp-files created by Guava. Guava is only used by the clojurescript build so this shouldn't have any effect on lambdacd users
 ]]></notes>
-        <packageUrl regex="true">^pkg:maven/com\.google\.guava/guava@.*$</packageUrl>
         <cve>CVE-2020-8908</cve>
     </suppress>
 </suppressions>
