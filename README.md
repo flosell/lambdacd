@@ -11,7 +11,7 @@
 
 [![Clojars Project](http://clojars.org/lambdacd/latest-version.svg)](http://clojars.org/lambdacd)
 
-[![Build Status](https://travis-ci.org/flosell/lambdacd.svg?branch=master)](https://travis-ci.org/flosell/lambdacd)
+[![Build Status](https://travis-ci.com/flosell/lambdacd.svg?branch=master)](https://travis-ci.com/flosell/lambdacd)
 
 ## Getting started
 
