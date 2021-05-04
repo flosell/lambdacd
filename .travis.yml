@@ -1,3 +1,5 @@
+dist: focal # run the build on ubuntu 20.04 for a recent nodejs version
+
 before_script:
   - ./scripts/travis_prebuild.sh
   - ./go deps
