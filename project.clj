@@ -10,7 +10,6 @@
   :min-lein-version "2.5.0"
   :deploy-repositories [["clojars" {:creds :gpg}]
                         ["releases" :clojars]]
-  :repositories [["gocd" "https://dl.bintray.com/gocd-maven-repo/generic/gocd"]] ; for jezhumbles javasysmon
   :source-paths ["src/clj" "src/cljs"]
   :test-paths ["test/clj" "example/clj"]
   :jar-exclusions [#"logback.xml"]
@@ -30,7 +29,7 @@
                  [cheshire "5.4.0"]
                  [cljsjs/moment "2.22.2-0"]
                  [clj-time "0.9.0"]
-                 [com.jezhumble/javasysmon "0.3.6"]
+                 [com.danielflower.apprunner/javasysmon  "0.3.5.1"]
                  [clj-timeframes "0.1.0"]]
   ; excluding a few transitive dependencies:
   ; process-tree-killer depends on this for windows only and doesnt provide it...
