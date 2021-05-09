@@ -8,7 +8,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ### Fixed
 
-* Replace javasysmon dependency with the one from com.danielflower which is on maven central. 0.3.6 has been deleted from gocd's bintray repo
+* Replace javasysmon dependency with the one from com.danielflower which is on maven central. 0.3.6 has been deleted from gocd's bintray repo (#203). Thanks @hennr for raising this and providing a fix!
+
+### Security
+
+* Updated a couple of dependencies that had known vulnerabilities. None of these are known to be exploitable in LambdaCD, however upgrading can make sense as a precaution
 
 ## 0.14.5 
 
