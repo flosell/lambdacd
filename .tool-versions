@@ -2,3 +2,4 @@ nodejs 15.11.0
 leiningen 2.9.6
 clojure 1.9.0.381
 java openjdk-16
+golang 1.16
