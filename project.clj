@@ -99,7 +99,7 @@
 
                         :source-paths ["env/dev/clj"]
                         :plugins      [[lein-figwheel "0.5.16"]
-                                       [lein-nvd "1.3.1"]]
+                                       [lein-nvd "1.4.1"]]
                         :nvd {:suppression-file "suppression.xml"}
 
                         :injections   [(require 'pjstadig.humane-test-output)
