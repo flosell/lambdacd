@@ -2,7 +2,7 @@
                        (System/getenv "CLOJURE_VERSION")
                        "1.8.0"))
 
-(defproject lambdacd "0.14.6"
+(defproject lambdacd "0.14.7-SNAPSHOT"
   :description "A library to create a continous delivery pipeline in code."
   :url "http://github.com/flosell/lambdacd"
   :license {:name "Apache License, version 2.0"
