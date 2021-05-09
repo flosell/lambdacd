@@ -4,6 +4,12 @@ This changelog contains a loose collection of changes in every release. I will a
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to a "shifted" version of semantic versioning while the major version remains at 0: Minor version changes indicate breaking changes, patch version changes should not contain breaking changes.
 
+## 0.14.6
+
+### Fixed
+
+* Replace javasysmon dependency with the one from com.danielflower which is on maven central. 0.3.6 has been deleted from gocd's bintray repo
+
 ## 0.14.5 
 
 ### Security
