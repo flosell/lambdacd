@@ -24,6 +24,7 @@
                                                     org.apache.commons/commons-compress]]
                  [org.clojure/core.async "0.4.474"]
                  [compojure "1.6.1"]
+                 [commons-io "2.7"]                         ; force transitive dependency to not depend on libraries with known vulnerabilities
                  [org.clojure/tools.logging "0.3.1"]
                  [org.slf4j/slf4j-api "1.7.21"]
                  [ring/ring-json "0.3.1"]
