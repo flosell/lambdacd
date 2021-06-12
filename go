@@ -144,6 +144,10 @@ checkGPG() {
 }
 
 goal_release() {
+  if [ -z "${GITHUB_TOKEN}" ]; then
+    echo "needs GITHUB_TOKEN"
+    exit 1
+  fi
   checkGPG && goal_test && goal_clean && buildCss && lein with-profile +release release $1 && scripts/github-release.sh
 }
 
