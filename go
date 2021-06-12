@@ -183,7 +183,6 @@ goal_generate-howto-toc() {
 
 goal_check-dependencies() {
      lein nvd check
-     npm audit
 }
 
 goal_fix-dependencies() {
