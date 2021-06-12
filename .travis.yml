@@ -16,7 +16,7 @@ script: ./go test && ./go check-style
 jobs:
   include:
     - stage: check dependencies for vulnerabilities
-      script: ./go check-dependencies
+      script: travis_wait 30 ./go check-dependencies
     - stage: check for flakyness
       script: ./go test-clj-unit-repeat
 sudo: required
