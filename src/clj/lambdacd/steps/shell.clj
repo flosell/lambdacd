@@ -5,8 +5,7 @@
             [me.raynes.conch.low-level :as sh]
             [clojure.core.async :as async]
             [lambdacd.util.internal.temp :as temp-util]
-            [lambdacd.stepsupport.output :as output]
-            [lambdacd.util.internal.reflection :as reflection-util])
+            [lambdacd.stepsupport.output :as output])
   (:import (java.util UUID)
            (java.io IOException)
            (com.jezhumble.javasysmon JavaSysMon)))
@@ -18,11 +17,8 @@
     (zero? exit-code) :success
     :default :failure))
 
-(defn- pid-of-process [proc]
-  (reflection-util/private-field proc "pid"))
-
 (defn- kill [was-killed-indicator proc ctx]
-  (let [pid (pid-of-process proc)]
+  (let [pid (.pid proc)]
     (reset! was-killed-indicator true)
     (async/>!! (:result-channel ctx) [:processed-kill true])
     (.destroy proc)
