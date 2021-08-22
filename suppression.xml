@@ -52,4 +52,10 @@ This is a low-severity issue relating to permissions of temp-files created by Gu
 ]]></notes>
         <cve>CVE-2020-8908</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+This is an issue in rust-cache, a false positive.
+]]></notes>
+        <cve>CVE-2020-36448</cve>
+    </suppress>
 </suppressions>
